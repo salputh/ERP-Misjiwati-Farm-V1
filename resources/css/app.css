@@ -1,0 +1,332 @@
+/*
+ * Gaya utama berasal dari template HexaDash (public/assets/css).
+ * File ini hanya untuk penyesuaian khusus aplikasi.
+ */
+
+[x-cloak] { display: none !important; }
+
+.navbar-brand.brand-teks {
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--color-dark);
+    white-space: nowrap;
+}
+
+.tinggi-grafik { position: relative; height: 300px; }
+.tinggi-grafik--pendek { height: 240px; }
+
+/* Preloader template menutup halaman sampai semua aset (termasuk CDN) selesai dimuat. Dimatikan agar halaman tidak putih saat koneksi lambat. */
+body::after { display: none; }
+
+/* Judul grup di sidebar dengan garis pembatas di bawahnya */
+.sidebar_nav .menu-title--garis span {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color, #f1f2f6);
+}
+/* Saat sidebar diperkecil judul disembunyikan template; garisnya tetap menandai batas grup */
+.sidebar.collapsed .menu-title--garis {
+    border-bottom: 1px solid var(--border-color, #f1f2f6);
+    margin: 12px 14px;
+}
+
+/* ===== Lembar recording harian ===== */
+.recording-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 40px;
+    margin-bottom: 20px;
+}
+.recording-info dt { font-size: 12px; font-weight: 400; color: var(--color-gray, #747474); }
+.recording-info dd { margin: 0; font-weight: 600; color: var(--color-dark); }
+
+.recording-gulung {
+    max-height: 72vh;
+    overflow: auto;
+    border: 1px solid var(--border-color, #f1f2f6);
+    border-radius: 8px;
+}
+
+.tabel-recording {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+.tabel-recording th,
+.tabel-recording td {
+    padding: 6px 9px;
+    white-space: nowrap;
+    text-align: right;
+    vertical-align: middle;
+    border-width: 0 1px 1px 0;
+    border-color: var(--border-color, #f1f2f6);
+    background: var(--color-white, #fff);
+    color: var(--color-dark);
+}
+.tabel-recording thead th { text-align: center; font-weight: 600; }
+
+/* Kepala tabel tetap terlihat saat digulir ke bawah */
+.tabel-recording thead { position: sticky; top: 0; z-index: 3; }
+.tabel-recording .recording-kepala-1 th { background: var(--color-primary); color: #fff; border-color: rgba(255, 255, 255, 0.25); }
+.tabel-recording .recording-kepala-2 th { background: #ece0f8; }
+.tabel-recording .recording-kepala-3 th { background: #f7f2fc; font-weight: 500; }
+
+/* Tanggal dan umur tetap terlihat saat digulir ke samping */
+.tabel-recording .recording-lekat-1,
+.tabel-recording .recording-lekat-2 { position: sticky; z-index: 2; text-align: left; }
+.tabel-recording .recording-lekat-1 { left: 0; min-width: 96px; font-weight: 500; }
+.tabel-recording .recording-lekat-2 { left: 96px; min-width: 52px; text-align: center; box-shadow: 2px 0 0 var(--border-color, #e3e6ef); }
+.tabel-recording thead .recording-lekat-1,
+.tabel-recording thead .recording-lekat-2 { z-index: 4; text-align: center; }
+
+/* Batas antar kelompok kolom */
+.tabel-recording .grup-awal { border-left: 2px solid #d9c6ef; }
+
+.tabel-recording .recording-masukan,
+.recording-masukan { color: var(--color-primary); font-weight: 600; }
+.tabel-recording td.color-danger { color: var(--color-danger); }
+.tabel-recording .recording-belum td,
+.tabel-recording .recording-belum th { color: var(--color-gray, #747474); }
+
+.tabel-recording .recording-minggu th,
+.tabel-recording .recording-minggu td { background: #e8f6ea; color: #116b26; font-weight: 600; text-align: left; }
+
+/* ===== Laporan harian dan log pakan ===== */
+.tabel-laporan { font-variant-numeric: tabular-nums; }
+.tabel-laporan tfoot th { border-top: 1px solid var(--border-color, #f1f2f6); font-weight: 600; color: var(--color-dark); }
+.tabel-laporan__batang { min-width: 160px; }
+.tabel-laporan .progress { height: 6px; }
+
+.tabel-log { font-size: 13px; width: 100%; }
+.tabel-log th,
+.tabel-log td { text-align: center; }
+.tabel-log tbody th { font-weight: 500; }
+.tabel-log tfoot th,
+.tabel-log tfoot td { text-align: center; }
+.tabel-recording.tabel-log tfoot .recording-minggu th { text-align: left; }
+.tabel-recording.tabel-log tfoot .recording-minggu td { text-align: center; }
+.tanpa-kapital { text-transform: none; }
+.tabel-laporan--rapat th, .tabel-laporan--rapat td { white-space: nowrap; }
+
+/* Baris lebih rapat dengan garis pemisah di bawah tiap baris */
+.table.tabel-laporan--garis tbody td {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color, #f1f2f6);
+}
+.table.tabel-laporan--garis tfoot th { border-top: 0; padding-top: 14px; }
+
+/* Sorotan sisa pakan per jenis */
+.stok-jenis {
+    --warna: var(--color-primary);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--warna) 9%, #fff);
+}
+.stok-jenis--info { --warna: var(--color-info); }
+.stok-jenis--warning { --warna: var(--color-warning); }
+.stok-jenis--success { --warna: var(--color-success); }
+.stok-jenis--secondary { --warna: var(--color-secondary); }
+/* Tag template (dm-tag) dengan warna jenis pakan */
+.stok-jenis__kode { background: var(--warna); font-weight: 600; }
+.stok-jenis__label { font-size: 12px; font-weight: 600; color: var(--color-dark); }
+.stok-jenis__sisa { margin: 10px 0 2px; font-size: 26px; font-weight: 600; line-height: 1.1; color: var(--color-dark); font-variant-numeric: tabular-nums; }
+.stok-jenis__sisa small { font-size: 13px; font-weight: 400; color: var(--color-gray, #5a5f7d); }
+.stok-jenis__rincian { margin: 0 0 10px; font-size: 12px; color: var(--color-gray, #5a5f7d); }
+.stok-jenis .progress { height: 6px; background: color-mix(in srgb, var(--warna) 18%, #fff); }
+.stok-jenis .progress-bar { background: var(--warna); }
+
+/* ===== Pilihan tunggal (dropdown template pengganti select) ===== */
+.pilih .btn { background-color: var(--color-white); }
+/* Menu menempel di bawah tombol, rata kiri, dan minimal selebar tombolnya. */
+.pilih .dropdown-menu {
+    top: 100% !important;
+    right: auto !important;
+    left: 0 !important;
+    min-width: 100%;
+    margin-top: 4px;
+    transform: none !important;
+}
+.pilih button.dropdown-item { width: 100%; border: 0; text-align: left; }
+/* Pilihan terpilih memakai "light color primary" template (btn-transparent-primary), bukan biru bawaan Bootstrap. */
+.pilih .dropdown-item.active,
+.pilih .dropdown-item:active { background: rgba(var(--color-primary-rgba), .15); color: var(--color-primary); font-weight: 500; }
+
+/* ===== Pemilih tanggal (jQuery UI datepicker template) ===== */
+.pilih-tanggal { width: 190px; }
+.pilih-tanggal .form-control[readonly] { padding-right: 38px; background-color: var(--color-white); cursor: pointer; }
+/* Tanggal di luar rentang: ukuran sama dengan tanggal yang bisa dipilih (template hanya menata tautannya), warna diredupkan. */
+.ui-datepicker-calendar tbody td.ui-state-disabled span {
+    display: block;
+    width: 2rem;
+    height: 2rem;
+    margin: 4px;
+    line-height: 2rem;
+    font-size: .875rem;
+    color: var(--color-lighten);
+}
+
+/* ===== Sampling bobot ===== */
+.sampling-pengaturan { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 28px; }
+.sampling-pengaturan > label,
+.sampling-pengaturan > div { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.sampling-pengaturan > label > span,
+.sampling-pengaturan > div > span { font-size: 12px; color: var(--color-gray, #5a5f7d); }
+.sampling-pengaturan strong { line-height: 31px; color: var(--color-dark); }
+.sampling-pengaturan .btn-group .btn.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.sampling-pengaturan .input-ekor { width: 110px; }
+/* Dropdown kandang disamakan tingginya dengan isian kecil di sebelahnya. */
+.sampling-pengaturan .pilih .btn { height: 31px; padding-top: 0; padding-bottom: 0; }
+
+.tabel-sampling { font-size: 13px; font-variant-numeric: tabular-nums; }
+.tabel-sampling th,
+.tabel-sampling td { text-align: center; vertical-align: middle; padding: 6px 10px; }
+.tabel-sampling thead th { background: #f7f2fc; font-weight: 600; }
+.tabel-sampling tfoot th { text-align: right; font-weight: 500; background: #fafafa; }
+.tabel-sampling tfoot td { background: #fafafa; }
+.tabel-sampling .input-sampel { min-width: 96px; text-align: right; color: var(--color-primary); font-weight: 600; }
+.tabel-sampling .nilai-sampel { color: var(--color-primary); font-weight: 600; }
+
+.tabel-laporan .sampling-sorot td,
+.tabel-laporan .baris-sorot td { background: #f7f2fc; }
+.tabel-laporan .sampling-riwayat--aktif td { background: #f7f2fc; }
+
+/* ===== Panen ===== */
+/* Judul hari panen dan subtotalnya di dalam tabel nota (tabel template table--default). */
+/* Kepala kolom mengikuti jarak sel isi (kanan saja) supaya dua belas kolom muat di layar laptop. */
+.tabel-panen thead th:not(:first-child) { padding-left: 0; }
+.selling-table-wrap .tabel-panen tbody td,
+.selling-table-wrap .tabel-panen thead th,
+.selling-table-wrap .tabel-panen tfoot th { padding-right: 12px; font-size: 13px; }
+/* Tabel dengan banyak kolom angka: judul kolom boleh turun baris supaya lebar kolom mengikuti angkanya. */
+.tabel-panen--lipat thead th { white-space: normal; vertical-align: bottom; }
+.selling-table-wrap .tabel-panen--lipat tbody td,
+.selling-table-wrap .tabel-panen--lipat thead th,
+.selling-table-wrap .tabel-panen--lipat tfoot th { padding-right: 6px; font-size: 12.5px; }
+.tabel-panen .panen-hari th { padding: 12px 15px; background: rgba(var(--color-primary-rgba), .08); color: var(--color-primary); font-weight: 600; }
+.tabel-panen .panen-hari span { margin-left: 8px; font-weight: 400; color: var(--color-gray); }
+.tabel-panen .panen-subtotal td { font-weight: 600; border-top: 1px solid var(--border-color); }
+.tabel-panen .panen-subtotal td:first-child,
+.tabel-panen tfoot th:first-child { padding-left: 15px; }
+
+/* ===== Kas operasional ===== */
+/* Menu dropdown rata kanan tombolnya, untuk pilihan yang berada di tepi kanan kartu. */
+.pilih--kanan .dropdown-menu { left: auto !important; right: 0 !important; }
+.tabel-kas .dm-tag { white-space: nowrap; }
+.tabel-kas__uraian { min-width: 220px; white-space: normal; }
+.tabel-kas__persen { min-width: 44px; text-align: right; }
+/* Keterangan di kanan angka (mis. "120 transaksi") tidak dipatahkan kecuali di layar HP; yang turun baris cukup labelnya. */
+@media (min-width: 576px) {
+    .rincian-kas .tabel-laporan td:last-child { white-space: nowrap; }
+}
+
+/* ===== Bagi hasil ===== */
+/* Di bawah xxl (1600px) kolom tumpukan dan baris di dalamnya dilebur, supaya kartunya menjadi butir baris luar dan bisa diurutkan dengan order-*. */
+@media (max-width: 1599.98px) {
+    .tumpuk-lebur,
+    .tumpuk-lebur > .row { display: contents; }
+}
+/* Kolom porsi diberi jarak dari kolom jumlah di sebelah kirinya. */
+.tabel-kas--kategori thead th:last-child,
+.tabel-kas--kategori tbody td:last-child,
+.tabel-kas--kategori tfoot th:last-child { padding-left: 28px; }
+
+/* ===== Payroll ABK ===== */
+/* Judul kelompok slip per kandang, di antara baris kartu. */
+.slip-gaji__kandang { margin: 5px 0 15px; font-size: 16px; font-weight: 600; color: var(--color-dark); }
+.slip-gaji__kandang span { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--color-gray, #5a5f7d); }
+/* Kartu slip gaji: bagian pendapatan dan potongan, lalu kotak pendapatan bersih di dasar kartu. */
+.slip-gaji { scroll-margin-top: 90px; }
+.slip-gaji__tabel td,
+.slip-gaji__tabel th { padding: 7px 0; vertical-align: top; color: var(--color-dark); }
+.slip-gaji__tabel td:last-child { white-space: nowrap; padding-left: 16px; }
+.slip-gaji__bagian th {
+    padding-top: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--color-gray, #5a5f7d);
+    border-bottom: 1px solid var(--border-color, #f1f2f6);
+}
+.slip-gaji__tabel tr:first-child th { padding-top: 0; }
+.slip-gaji__total td { font-weight: 600; border-top: 1px solid var(--border-color, #f1f2f6); }
+.slip-gaji__bersih {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(var(--color-primary-rgba), .08);
+}
+.slip-gaji__bersih span { font-size: 13px; font-weight: 500; color: var(--color-dark); }
+.slip-gaji__bersih strong { font-size: 18px; font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+
+/* ===== Laporan harian ===== */
+/* Angka utama di modal kartu laporan: label, angka besar, lalu keterangan. */
+.laporan-angka {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color, #f1f2f6);
+    border-radius: 10px;
+    background: #fafafa;
+}
+.laporan-angka span { font-size: 13px; color: var(--color-gray, #5a5f7d); }
+.laporan-angka strong { font-size: 24px; font-weight: 700; line-height: 1.2; color: var(--color-dark); font-variant-numeric: tabular-nums; }
+.laporan-angka small { font-size: 12px; color: var(--color-gray, #5a5f7d); }
+
+/* ===== Lapisan memuat (x-memuat) ===== */
+/* Menutup layar selama aksi Livewire berjalan. Muncul seketika; setelah aksi selesai bertahan sebentar lalu memudar,
+   supaya tetap terlihat walau server menjawab cepat dan tidak berkedip saat halaman berpindah. */
+.lapisan-memuat {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, .72);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .25s ease .35s, visibility 0s linear .6s;
+}
+/* Aksi yang hanya memuat data: langsung memudar begitu selesai. */
+.lapisan-memuat--cepat { transition: opacity .15s ease, visibility 0s linear .15s; }
+.lapisan-memuat--tampil { visibility: visible; opacity: 1; transition: none; }
+.lapisan-memuat__isi {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 26px 34px;
+    border-radius: 12px;
+    background: var(--color-white, #fff);
+    box-shadow: 0 10px 40px rgba(10, 10, 10, .12);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-dark);
+}
+.lapisan-memuat .dm-spin-dots { margin: 0; }
+@media (prefers-reduced-motion: reduce) {
+    .lapisan-memuat,
+    .lapisan-memuat--cepat { transition: none; }
+}
+
+/* ===== Aktivitas ===== */
+/* Dua dropdown saringan di kepala kartu riwayat. */
+.riwayat-aktivitas__saringan { gap: 10px; }
+/* Jam sejajar dengan judul kolom dan judul hari (template menghapus jarak kiri sel pertama). */
+.selling-table-wrap .tabel-aktivitas tbody td:first-child { padding-left: 15px; }
+/* Timeline aktivitas terbaru di ringkasan: modul dan rinciannya lebih redup dari kalimat aktivitasnya. */
+.card-timeline.aktivitas-terbaru .card-timeline-body ul li .card-timeline-body__title p span { margin-left: 10px; font-size: 13px; font-weight: 400; color: var(--color-light); }
+.card-timeline.aktivitas-terbaru .card-timeline-body__time { padding-left: 12px; white-space: nowrap; }
+/* Di layar HP template menggulir timeline ke samping; di sini teksnya turun baris dan rincian pindah ke bawah kalimat. */
+@media (max-width: 575px) {
+    .card-timeline.aktivitas-terbaru .card-timeline-body ul { white-space: normal; }
+    .card-timeline.aktivitas-terbaru .card-timeline-body ul li .card-timeline-body__title p span { display: block; margin-left: 0; }
+}
