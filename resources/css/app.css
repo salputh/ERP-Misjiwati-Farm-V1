@@ -207,6 +207,7 @@ body::after { display: none; }
 .tabel-panen .panen-hari th { padding: 12px 15px; background: rgba(var(--color-primary-rgba), .08); color: var(--color-primary); font-weight: 600; }
 .tabel-panen .panen-hari span { margin-left: 8px; font-weight: 400; color: var(--color-gray); }
 .tabel-panen .panen-subtotal td { font-weight: 600; border-top: 1px solid var(--border-color); }
+.tabel-panen .panen-total th { background: #e8f6ea; }
 .tabel-panen .panen-subtotal td:first-child,
 .tabel-panen tfoot th:first-child { padding-left: 15px; }
 

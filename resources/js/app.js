@@ -2,6 +2,7 @@
 
 import { gambarLaporan } from './gambar-laporan';
 import { gambarPayroll } from './gambar-payroll';
+import { gambarPanen } from './gambar-panen';
 import { gambarSampling } from './gambar-sampling';
 import { berkasPng, muatHuruf } from './kanvas';
 
@@ -197,9 +198,27 @@ document.addEventListener('alpine:init', () => {
     // Saringan nota panen per hari panen; 0 berarti semua hari.
     Alpine.data('saringHari', () => ({
         hari: 0,
+        statusSalin: '',
+        menyalin: false,
 
         tampil(nomor) {
             return this.hari === 0 || this.hari === nomor;
+        },
+
+        async salinGambar(tabel) {
+            this.menyalin = true;
+
+            try {
+                const gambar = gambarPanen(tabel);
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': gambar })]);
+                this.statusSalin = 'Gambar tersalin';
+            } catch (error) {
+                console.error('Gagal menyalin tabel nota panen sebagai gambar.', error);
+                this.statusSalin = 'Gagal menyalin gambar';
+            } finally {
+                this.menyalin = false;
+                setTimeout(() => (this.statusSalin = ''), 2500);
+            }
         },
     }));
 

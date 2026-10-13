@@ -41,6 +41,8 @@ class Panen extends Component
 
     public string $pembeli = '';
 
+    public string $tukangTangkap = '';
+
     public string $mulai = '';
 
     public string $selesai = '';
@@ -68,6 +70,11 @@ class Panen extends Component
         unset($this->rekap);
     }
 
+    public function tambah(): void
+    {
+        $this->bersihkanForm();
+    }
+
     /**
      * @return array<string, mixed>|null
      */
@@ -91,6 +98,7 @@ class Panen extends Component
         $this->noBtpa = $nota->no_btpa;
         $this->noPolisi = $nota->no_polisi;
         $this->pembeli = $nota->pembeli;
+        $this->tukangTangkap = $nota->tukang_tangkap ?? '';
         $this->mulai = $nota->mulai->format('Y-m-d\TH:i');
         $this->selesai = $nota->selesai->format('Y-m-d\TH:i');
         $this->jumlahKrat = (string) $nota->jumlah_krat;
@@ -120,6 +128,7 @@ class Panen extends Component
             ],
             'noPolisi' => ['required', 'string', 'max:255'],
             'pembeli' => ['required', 'string', 'max:255'],
+            'tukangTangkap' => ['nullable', 'string', 'max:2000'],
             'mulai' => ['required', 'date_format:Y-m-d\TH:i'],
             'selesai' => ['required', 'date_format:Y-m-d\TH:i', 'after_or_equal:mulai'],
             'jumlahKrat' => ['required', 'integer', 'min:1', 'max:4294967295'],
@@ -168,6 +177,7 @@ class Panen extends Component
                 'no_btpa' => $noBtpa,
                 'no_polisi' => $data['noPolisi'],
                 'pembeli' => $data['pembeli'],
+                'tukang_tangkap' => $data['tukangTangkap'] ?: null,
                 'mulai' => $mulai,
                 'selesai' => $selesai,
                 'jumlah_krat' => (int) $data['jumlahKrat'],
@@ -187,6 +197,7 @@ class Panen extends Component
         $this->bersihkanForm();
         $this->pesan = 'Nota panen '.$noBtpa.($baru ? ' ditambahkan.' : ' diperbarui.');
         unset($this->periode, $this->rekap);
+        $this->dispatch('nota-panen-disimpan');
     }
 
     public function mintaHapus(int $id): void
@@ -250,6 +261,7 @@ class Panen extends Component
         $this->noBtpa = '';
         $this->noPolisi = '';
         $this->pembeli = '';
+        $this->tukangTangkap = '';
         $this->mulai = $now->format('Y-m-d\TH:i');
         $this->selesai = $now->copy()->addMinutes(30)->format('Y-m-d\TH:i');
         $this->jumlahKrat = '';

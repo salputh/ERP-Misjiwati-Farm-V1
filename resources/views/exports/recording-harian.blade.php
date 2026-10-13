@@ -128,7 +128,7 @@
     </table>
 
     <p class="catatan">
-        Angka dalam kurung berarti negatif. Satu zak = {{ \App\Support\Format::angka(config('standar.kg_per_zak')) }} kg.
+        Angka dalam kurung berarti negatif. Konversi kg pakan memakai berat per zak pada master tiap jenis pakan.
     </p>
 </body>
 </html>

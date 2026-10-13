@@ -103,7 +103,7 @@ class DatabaseSeeder extends Seeder
         $this->periodeJuli($kandang);
         $this->periodeSeptember($kandang['Kandang 2'], $jenis->all());
 
-        $this->call([PanenSeeder::class, RhppSeeder::class, KasOperasionalSeeder::class, BagiHasilSeeder::class, KaryawanSeeder::class, PayrollSeeder::class]);
+        $this->call([PemodalSeeder::class, PemanenSeeder::class, PanenSeeder::class, RhppSeeder::class, KasOperasionalSeeder::class, BagiHasilSeeder::class, KaryawanSeeder::class, PayrollSeeder::class]);
     }
 
     /**

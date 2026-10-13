@@ -290,7 +290,7 @@
 
             <div class="col-lg-12">
                 <p class="fs-12 color-gray mb-0">
-                    Satu zak = @angka(config('standar.kg_per_zak')) kg. FCR dihitung seperti di lembar recording: pakan kumulatif per ekor dibagi ABW timbang terakhir.
+                    Konversi pakan ke kg memakai berat per zak pada master tiap jenis pakan; pemberian tanpa jenis memakai standar @angka(config('standar.kg_per_zak')) kg/zak. FCR dihitung dari pakan kumulatif per ekor dibagi ABW timbang terakhir.
                 </p>
             </div>
         @else

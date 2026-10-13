@@ -67,7 +67,7 @@ class RhppTest extends TestCase
 
         $this->assertSame('P.17', $simulasi['kontrak']);
         $this->assertSame(['dari' => 1.3, 'sampai' => 1.39, 'harga' => 22145], $simulasi['bracket'][0]);
-        $this->assertSame(['dari' => 2.1, 'sampai' => null, 'harga' => 21190], $simulasi['bracket'][8]);
+        $this->assertSame(['dari' => 2.1, 'sampai' => 9.99, 'harga' => 21190], $simulasi['bracket'][8]);
     }
 
     /**

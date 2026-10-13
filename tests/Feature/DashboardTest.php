@@ -80,12 +80,16 @@ class DashboardTest extends TestCase
             ->assertSee('Periode September 2026');
     }
 
-    public function test_module_placeholder_page_renders_for_known_module(): void
+    public function test_pemodal_menu_opens_the_master_data_page(): void
     {
-        $this->get(route('modul', ['master', 'pemodal']))
+        $this->seed(DatabaseSeeder::class);
+
+        $this->get(route('master-data'))
             ->assertOk()
-            ->assertSee('Pemodal')
-            ->assertSee('Modul ini belum dibuat');
+            ->assertSee('Daftar jenis pakan')
+            ->assertSee('Daftar harga kontrak')
+            ->assertSee('Daftar pemodal')
+            ->assertSee('Tambah pemodal');
     }
 
     public function test_production_menu_lists_daily_report(): void

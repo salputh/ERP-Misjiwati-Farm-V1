@@ -164,7 +164,7 @@
 
                         <p class="fs-12 color-gray mt-15 mb-0">
                             Angka <span class="recording-masukan">ungu</span> diisi dari catatan harian (mati, afkir, pakan, ABW); kolom lain dihitung otomatis.
-                            Angka dalam kurung berarti negatif. Satu zak = @angka(config('standar.kg_per_zak')) kg.
+                            Angka dalam kurung berarti negatif. Konversi kg pakan memakai berat per zak pada master tiap jenis pakan.
                         </p>
                     </div>
                 </div>

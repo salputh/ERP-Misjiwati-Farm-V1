@@ -1,10 +1,16 @@
-@props(['hari', 'total'])
+@props(['hari', 'total', 'periodeId'])
 
 {{-- Nota timbang per hari panen dengan subtotal tiap hari dan total seluruh panen. Tab menyaring satu hari (Alpine saringHari). --}}
 <div class="col-lg-12 mb-25" x-data="saringHari">
     <div class="card border-0 px-25">
         <div class="card-header px-0 border-0">
-            <h6>Nota timbang</h6>
+            <div class="card-title d-flex align-items-center gap-3">
+                <img src="{{ asset('assets/img/svg/clipboard.svg') }}" alt="" class="svg me-1">
+                <h6 class="me-1">Nota timbang</h6>
+                <button type="button" class="btn btn-primary btn-xs btn-squared radius-md shadow2 btn-sm" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-form-nota-panen" wire:loading.attr="disabled" wire:target="tambah, simpan">
+                    Tambah data panen
+                </button>
+            </div>
             <div class="card-extra">
                 <ul class="card-tab-links nav-tabs nav" role="tablist">
                     <li>
@@ -16,12 +22,29 @@
                         </li>
                     @endforeach
                 </ul>
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <button type="button" class="btn btn-xs btn-squared btn-outline-primary" @click="salinGambar($refs.tabel)" :disabled="menyalin" aria-live="polite">
+                        <span x-text="statusSalin || (hari === 0 ? 'Salin gambar semua' : 'Salin gambar hari ' + hari)">Salin gambar semua</span>
+                    </button>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-xs btn-squared btn-outline-primary" data-bs-toggle="dropdown" aria-expanded="false">
+                            Export PDF
+                            <i class="uil uil-angle-down"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ route('panen.export', ['periode' => $periodeId]) }}">Semua hari panen</a></li>
+                            @foreach ($hari as $sesi)
+                                <li><a class="dropdown-item" href="{{ route('panen.export', ['periode' => $periodeId, 'hari' => $sesi['nomor']]) }}">Hari {{ $sesi['nomor'] }}</a></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="card-body p-0 pb-25">
             <div class="selling-table-wrap">
                 <div class="table-responsive">
-                    <table class="table table--default table-borderless tabel-laporan tabel-panen mb-0">
+                    <table x-ref="tabel" class="table table--default table-borderless tabel-laporan tabel-panen mb-0">
                         <thead>
                             <tr>
                                 <th class="text-start">No.</th>
@@ -57,13 +80,16 @@
                                         <td class="text-start">
                                             {{ $nota['pembeli'] }}
                                             <span class="d-block fs-12 color-gray">{{ $nota['no_polisi'] }}</span>
+                                            @if ($nota['tukang_tangkap'])
+                                                <span class="d-block fs-12 color-gray">Tukang Tangkap: {{ $nota['tukang_tangkap'] }}</span>
+                                            @endif
                                         </td>
                                         <td class="text-start">{{ $nota['mulai']->translatedFormat('j M H:i') }}</td>
                                         <td class="text-start">{{ $nota['selesai']->translatedFormat('j M H:i') }}</td>
                                         <x-panen.angka :jumlah="$nota" />
                                         <td class="text-end">
                                             <div class="dm-button-list d-inline-flex align-items-center gap-2">
-                                                <button type="button" class="btn btn-xs btn-squared btn-outline-primary" wire:click="ubah({{ $nota['id'] }})" wire:loading.attr="disabled" wire:target="ubah, simpan, hapus">
+                                                <button type="button" class="btn btn-xs btn-squared btn-outline-primary" wire:click="ubah({{ $nota['id'] }})" data-bs-toggle="modal" data-bs-target="#modal-form-nota-panen" wire:loading.attr="disabled" wire:target="ubah, simpan, hapus">
                                                     <img src="{{ asset('assets/img/svg/edit-2.svg') }}" alt="" class="svg me-1">
                                                     Ubah
                                                 </button>
@@ -82,8 +108,9 @@
                                 </tr>
                             </tbody>
                         @endforeach
+                    
                         <tfoot>
-                            <tr>
+                            <tr class="panen-total">
                                 <th colspan="5" class="text-start">Total seluruh panen</th>
                                 <x-panen.angka :jumlah="$total" sel="th" />
                                 <th></th>

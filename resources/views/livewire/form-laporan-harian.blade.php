@@ -152,7 +152,7 @@
                     <div class="col-lg-12">
                         <p class="fs-12 color-gray mb-0">
                             Isian yang dikosongkan dianggap belum dicatat, bukan nol. Data yang disimpan langsung dipakai halaman Laporan harian, Recording harian, serta Pakan dan stok.
-                            Satu zak = @angka(config('standar.kg_per_zak')) kg.
+                            Konversi pakan ke kg memakai berat per zak pada master tiap jenis pakan.
                         </p>
                     </div>
                 </div>

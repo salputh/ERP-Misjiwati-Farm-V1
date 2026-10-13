@@ -17,6 +17,8 @@ class JenisPakanFactory extends Factory
     {
         return [
             'kode' => 'SB-'.fake()->unique()->numberBetween(10, 99),
+            'harga_per_kg' => fake()->numberBetween(7_000, 12_000),
+            'kg_per_zak' => 50,
         ];
     }
 }

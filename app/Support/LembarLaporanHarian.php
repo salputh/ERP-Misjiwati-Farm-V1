@@ -102,7 +102,7 @@ class LembarLaporanHarian
                 fn (array $catatan): string => $catatan['kandang'].', '.$catatan['tanggal']->translatedFormat('j F Y').': '.$catatan['catatan'],
                 $laporan['catatan'],
             ),
-            'keterangan' => 'Satu zak = '.Format::angka(config('standar.kg_per_zak')).' kg. FCR: pakan kumulatif per ekor dibagi ABW timbang terakhir.',
+            'keterangan' => 'Konversi kg memakai berat per zak pada master tiap jenis pakan. FCR: pakan kumulatif per ekor dibagi ABW timbang terakhir.',
         ];
     }
 

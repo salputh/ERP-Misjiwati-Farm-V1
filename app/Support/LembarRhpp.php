@@ -167,8 +167,7 @@ class LembarRhpp
     }
 
     /**
-     * Harga kontrak untuk satu ABW: bracket dengan batas bawah terbesar yang tidak melebihi ABW itu,
-     * seperti LOOKUP di lembar simulasi. Null bila ABW di bawah bracket terkecil.
+     * Harga kontrak untuk satu ABW: harga pada rentang yang mencakup ABW tersebut.
      *
      * @param  Collection<int, HargaKontrak>  $bracket
      */
@@ -178,8 +177,9 @@ class LembarRhpp
             return null;
         }
 
-        // Toleransi kecil karena batas bracket desimal (1,70) tidak selalu tepat di bilangan pecahan biner.
-        return $bracket->sortBy('bobot_min_kg')->last(fn (HargaKontrak $satu): bool => $satu->bobot_min_kg <= $abw + 1e-9)?->harga_per_kg;
+        $abwDalamPerseratus = floor($abw * 100) / 100;
+
+        return $bracket->first(fn (HargaKontrak $satu): bool => $satu->bobot_min_kg <= $abwDalamPerseratus && $satu->bobot_max_kg >= $abwDalamPerseratus)?->harga_per_kg;
     }
 
     /**
@@ -251,18 +251,18 @@ class LembarRhpp
     }
 
     /**
-     * Bracket harga kontrak sebagai rentang ABW: sampai tepat sebelum batas bawah bracket berikutnya.
+     * Bracket harga kontrak sebagai rentang ABW.
      *
      * @param  Collection<int, HargaKontrak>  $bracket
-     * @return list<array{dari: float, sampai: ?float, harga: int}>
+     * @return list<array{dari: float, sampai: float, harga: int}>
      */
     private static function bracket(Collection $bracket): array
     {
         $urut = $bracket->sortBy('bobot_min_kg')->values();
 
-        return $urut->map(fn (HargaKontrak $satu, int $indeks): array => [
+        return $urut->map(fn (HargaKontrak $satu): array => [
             'dari' => $satu->bobot_min_kg,
-            'sampai' => isset($urut[$indeks + 1]) ? round($urut[$indeks + 1]->bobot_min_kg - 0.01, 2) : null,
+            'sampai' => $satu->bobot_max_kg,
             'harga' => $satu->harga_per_kg,
         ])->all();
     }

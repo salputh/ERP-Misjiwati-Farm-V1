@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\NotaPanen;
+use App\Models\PemberianPakan;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
 use Carbon\CarbonInterface;
@@ -22,6 +23,7 @@ class RekapPanen
      */
     public static function buat(Periode $periode): ?array
     {
+        $periode->loadMissing('kandangPeriode.pemberianPakan.jenisPakan');
         $nota = $periode->notaPanen;
         if ($nota->isEmpty()) {
             return null;
@@ -62,6 +64,7 @@ class RekapPanen
                     'no_btpa' => $satu->no_btpa,
                     'no_polisi' => $satu->no_polisi,
                     'pembeli' => $satu->pembeli,
+                    'tukang_tangkap' => $satu->tukang_tangkap,
                     'mulai' => $satu->mulai,
                     'selesai' => $satu->selesai,
                     ...self::jumlah(collect([$satu])),
@@ -101,12 +104,18 @@ class RekapPanen
      */
     private static function performa(Periode $periode, array $total, array $umur): array
     {
+        $kgPerZakStandar = config('standar.kg_per_zak');
         $pakanZak = $periode->rekap_pakan_zak
             ?? (float) $periode->kandangPeriode->sum(fn (PeriodeKandang $kandang): float => (float) $kandang->pemberianPakan->sum('zak'));
         $deplesi = $periode->rekap_deplesi_ekor
             ?? (int) $periode->kandangPeriode->sum(fn (PeriodeKandang $kandang): int => (int) ($kandang->recordings->sum('mati') + $kandang->recordings->sum('afkir')));
 
-        $pakanKg = $pakanZak * config('standar.kg_per_zak');
+        $pakanKg = $periode->rekap_pakan_zak !== null
+            ? $pakanZak * $kgPerZakStandar
+            : (float) $periode->kandangPeriode->flatMap->pemberianPakan->sum(
+                fn (PemberianPakan $pemberian): float => $pemberian->zak * ($pemberian->jenisPakan?->kg_per_zak ?? $kgPerZakStandar),
+            );
+        $kgPerZakRataRata = $pakanZak > 0 ? $pakanKg / $pakanZak : $kgPerZakStandar;
         $doc = (int) $periode->kandangPeriode->sum('populasi_awal');
         $fcr = $total['berat'] > 0 ? $pakanKg / $total['berat'] : null;
         $umurRata = collect($umur)->sum(fn (array $hari): int => $hari['ekor'] * $hari['umur']) / $total['ekor'];
@@ -119,6 +128,7 @@ class RekapPanen
             'pakan_zak' => $pakanZak,
             'pakan_manual' => $periode->rekap_pakan_zak !== null,
             'pakan_kg' => $pakanKg,
+            'kg_per_zak' => $kgPerZakRataRata,
             'fcr' => $fcr,
             'doc' => $doc,
             'deplesi' => $deplesi,

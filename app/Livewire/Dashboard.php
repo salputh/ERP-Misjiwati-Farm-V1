@@ -41,13 +41,13 @@ class Dashboard extends Component
         }
 
         $standar = $this->standar();
-        $kgPerZak = config('standar.kg_per_zak');
+        $kgPerZakStandar = config('standar.kg_per_zak');
 
         return $this->periode->kandangPeriode()
-            ->with(['kandang', 'periode', 'recordings', 'pemberianPakan'])
+            ->with(['kandang', 'periode', 'recordings', 'pemberianPakan.jenisPakan'])
             ->get()
             ->sortBy('kandang.nama')
-            ->map(function (PeriodeKandang $periodeKandang) use ($standar, $kgPerZak): array {
+            ->map(function (PeriodeKandang $periodeKandang) use ($standar, $kgPerZakStandar): array {
                 $ringkasan = $periodeKandang->ringkasan();
                 $nama = $periodeKandang->kandang->nama;
 
@@ -56,7 +56,11 @@ class Dashboard extends Component
                     'kode' => trim(str_ireplace('kandang', '', $nama)) ?: $nama,
                     'status' => StatusBobot::dariSelisih($ringkasan['abw_selisih']),
                     'bobot_harian' => $this->interpolasi($ringkasan['titik_aktual'], $standar),
-                    'pakan_harian' => $periodeKandang->pemberianPakan->groupBy('umur')->map(fn ($pemberian) => $pemberian->sum('zak') * $kgPerZak)->all(),
+                    'pakan_harian' => $periodeKandang->pemberianPakan->groupBy('umur')->map(
+                        fn ($pemberian): float => (float) $pemberian->sum(
+                            fn ($satu): float => $satu->zak * ($satu->jenisPakan?->kg_per_zak ?? $kgPerZakStandar),
+                        ),
+                    )->all(),
                     'kematian_harian' => $periodeKandang->recordings->mapWithKeys(fn ($r) => [$r->umur => $r->mati + $r->afkir])->all(),
                 ];
             })

@@ -19,7 +19,7 @@ class HargaKontrak extends Model
 
     protected function casts(): array
     {
-        return ['bobot_min_kg' => 'float'];
+        return ['bobot_min_kg' => 'float', 'bobot_max_kg' => 'float'];
     }
 
     public function periode(): BelongsTo

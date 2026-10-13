@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\PeranBagiHasil;
+use App\Models\Pemodal;
 use App\Models\PenerimaBagiHasil;
 use App\Models\PeriodeKandang;
 use Illuminate\Support\Collection;
@@ -51,6 +52,14 @@ class LembarBagiHasil
         $abk = $masukan->penerimaBerperan(PeranBagiHasil::Abk);
         $bonusPerorangan = $masukan->penerimaBerperan(PeranBagiHasil::BonusPasar);
         $entertain = $masukan->penerimaBerperan(PeranBagiHasil::Entertain);
+        $pemodal = $masukan->penerimaBerperan(PeranBagiHasil::Pemodal);
+        if ($pemodal->isEmpty()) {
+            $pemodal = $periodeKandang->kandang->pemodal
+                ->map(fn (Pemodal $satu): PenerimaBagiHasil => new PenerimaBagiHasil([
+                    'nama' => $satu->nama,
+                    'persen' => $satu->pivot->persen,
+                ]));
+        }
 
         $gaji = (int) round($masukan->tarif_gaji_abk_per_kg * $kg);
         $premiTetap = (int) $abk->sum('jumlah');
@@ -134,7 +143,7 @@ class LembarBagiHasil
                 'premi_tetap' => $premiTetap,
                 'total' => (int) array_sum(array_column($pembagianAbk, 'jumlah')),
             ],
-            'pemodal' => self::pembagianPemodal($masukan->penerimaBerperan(PeranBagiHasil::Pemodal), $sisaAkhir),
+            'pemodal' => self::pembagianPemodal($pemodal, $sisaAkhir),
         ];
     }
 

@@ -189,7 +189,7 @@ class BagiHasilTest extends TestCase
         $this->seed(BagiHasilSeeder::class);
 
         $this->assertSame(2, BagiHasil::count());
-        $this->assertSame(16, PenerimaBagiHasil::count());
+        $this->assertSame(13, PenerimaBagiHasil::count());
     }
 
     public function test_page_shows_the_sheet_for_each_house(): void

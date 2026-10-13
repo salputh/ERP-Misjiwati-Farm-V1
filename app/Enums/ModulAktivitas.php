@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 enum ModulAktivitas: string
 {
     case LaporanHarian = 'laporan-harian';
+    case PakanDanStok = 'pakan-dan-stok';
     case SamplingBobot = 'sampling-bobot';
     case Panen = 'panen';
     case KasOperasional = 'kas-operasional';

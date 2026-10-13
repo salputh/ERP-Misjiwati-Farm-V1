@@ -11,6 +11,7 @@ use App\Support\RekapPanen;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\PanenSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -116,12 +117,56 @@ class PanenTest extends TestCase
             ->assertSee('Rekapitulasi panen gabungan')
             ->assertSee('Masa panen')
             ->assertSee('CHIKO MAJU BERSAMA. CV')
+            ->assertSee('Tambah data panen')
+            ->assertSeeHtml('data-bs-target="#modal-form-nota-panen"')
+            ->assertSeeHtml('id="modal-form-nota-panen"')
             ->assertSee('BM 8591 DT')
             ->assertSee('SPA 1890115910')
             ->assertSee('Subtotal hari 6')
             ->assertSee('79.821,20')
             ->assertSee('1,402')
             ->assertSee('421');
+    }
+
+    public function test_page_offers_exports_for_all_harvest_days_and_each_day(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+
+        $this->get(route('panen.rekap', ['periode' => $periode->id]))
+            ->assertOk()
+            ->assertSee('Salin gambar semua')
+            ->assertSee('Export PDF')
+            ->assertSee('Semua hari panen')
+            ->assertSee('Hari 1')
+            ->assertSee(route('panen.export', ['periode' => $periode->id]))
+            ->assertSee(route('panen.export', ['periode' => $periode->id, 'hari' => 1]));
+    }
+
+    public function test_pdf_export_downloads_all_days_or_one_day(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+
+        foreach ([null, 1] as $hari) {
+            $parameter = ['periode' => $periode->id];
+            $namaRuangLingkup = 'semua';
+            if ($hari !== null) {
+                $parameter['hari'] = $hari;
+                $namaRuangLingkup = 'hari-'.$hari;
+            }
+
+            $response = $this->get(route('panen.export', $parameter));
+
+            $response->assertOk()->assertDownload(Str::slug("nota-panen-{$periode->nama}-{$namaRuangLingkup}").'.pdf');
+            $this->assertStringStartsWith('%PDF-', $response->getContent());
+        }
+    }
+
+    public function test_pdf_export_rejects_a_day_without_harvest_notes(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+
+        $this->get(route('panen.export', ['periode' => $periode->id, 'hari' => 99]))
+            ->assertNotFound();
     }
 
     public function test_page_explains_when_a_period_has_no_harvest_yet(): void
@@ -146,6 +191,7 @@ class PanenTest extends TestCase
             ->set('noBtpa', '18001')
             ->set('noPolisi', 'BM 1234 AA')
             ->set('pembeli', 'Pembeli Baru')
+            ->set('tukangTangkap', "Budi, Andi\nCaca")
             ->set('mulai', '2026-08-17T20:00')
             ->set('selesai', '2026-08-17T20:30')
             ->set('jumlahKrat', '50')
@@ -154,12 +200,16 @@ class PanenTest extends TestCase
             ->set('nettoNotaKg', '1098.50')
             ->call('simpan')
             ->assertHasNoErrors()
+            ->assertDispatched('nota-panen-disimpan')
             ->assertSee('Nota panen 18001 ditambahkan.')
             ->assertSee('18001');
 
         $baru = NotaPanen::where('periode_id', $periode->id)->where('no_btpa', '18001')->firstOrFail();
         $komponen->assertSeeHtml('wire:key="nota-panen-'.$baru->id.'"');
         $this->assertSame('2026-08-17', $baru->tanggal_panen->toDateString());
+        $this->assertSame("Budi, Andi\nCaca", $baru->tukang_tangkap);
+        $komponen->assertSee('Tukang Tangkap: Budi, Andi')
+            ->assertSee('Caca');
         $this->assertDatabaseHas('aktivitas', [
             'jenis' => JenisAktivitas::Tambah->value,
             'modul' => ModulAktivitas::Panen->value,
@@ -169,14 +219,21 @@ class PanenTest extends TestCase
         $komponen->call('ubah', $nota->id)
             ->assertSet('notaId', $nota->id)
             ->assertSet('noBtpa', $nota->no_btpa)
+            ->set('tukangTangkap', 'Dedi dan Eko')
             ->set('noBtpa', '18002')
             ->set('beratKg', '1111.25')
             ->call('simpan')
             ->assertHasNoErrors()
+            ->assertDispatched('nota-panen-disimpan')
             ->assertSee('Nota panen 18002 diperbarui.')
             ->assertSee('18002');
 
-        $this->assertDatabaseHas('nota_panens', ['id' => $nota->id, 'no_btpa' => '18002', 'berat_kg' => 1111.25]);
+        $this->assertDatabaseHas('nota_panens', [
+            'id' => $nota->id,
+            'no_btpa' => '18002',
+            'berat_kg' => 1111.25,
+            'tukang_tangkap' => 'Dedi dan Eko',
+        ]);
         $this->assertDatabaseHas('aktivitas', [
             'jenis' => JenisAktivitas::Ubah->value,
             'modul' => ModulAktivitas::Panen->value,

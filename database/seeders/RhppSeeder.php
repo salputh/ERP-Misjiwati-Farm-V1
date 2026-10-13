@@ -101,8 +101,16 @@ class RhppSeeder extends Seeder
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->with('kandangPeriode.kandang')->firstOrFail();
 
-        foreach (self::JULI_HARGA_KONTRAK as $bobotMin => $harga) {
-            HargaKontrak::updateOrCreate(['periode_id' => $periode->id, 'bobot_min_kg' => $bobotMin], ['harga_per_kg' => $harga]);
+        $bobotMinimum = array_keys(self::JULI_HARGA_KONTRAK);
+        foreach ($bobotMinimum as $indeks => $bobotMin) {
+            $bobotMaksimum = isset($bobotMinimum[$indeks + 1])
+                ? number_format((float) $bobotMinimum[$indeks + 1] - 0.01, 2, '.', '')
+                : 9.99;
+
+            HargaKontrak::updateOrCreate(
+                ['periode_id' => $periode->id, 'bobot_min_kg' => $bobotMin],
+                ['bobot_max_kg' => $bobotMaksimum, 'harga_per_kg' => self::JULI_HARGA_KONTRAK[$bobotMin]],
+            );
         }
 
         // Sel kuning lembar simulasi: harga DOC, biaya pakan (2.238 zak, rata-rata Rp 497.410 per zak), OVK, insentif.

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\PemberianPakan;
 use App\Models\PeriodeKandang;
 use App\Models\Recording;
 
@@ -21,18 +22,28 @@ class LembarRecording
      */
     public static function baris(PeriodeKandang $periodeKandang): array
     {
+        $periodeKandang->loadMissing(['periode', 'recordings', 'pemberianPakan.jenisPakan']);
+
         $periode = $periodeKandang->periode;
         $beratDoc = (float) $periode->berat_doc_gram;
         $standar = new Standar($periode->strain, $beratDoc);
         $populasi = $periodeKandang->populasi_awal;
-        $gramPerZak = config('standar.kg_per_zak') * 1000;
+        $gramPerZakStandar = config('standar.kg_per_zak') * 1000;
         $catatan = $periodeKandang->recordings->keyBy('umur');
-        $zakPerUmur = $periodeKandang->pemberianPakan->groupBy('umur')->map->sum('zak');
+        $pemberianPerUmur = $periodeKandang->pemberianPakan->groupBy('umur');
+        $zakPerUmur = $pemberianPerUmur->map->sum('zak');
+        $gramPakanPerUmur = $pemberianPerUmur->map(
+            fn ($pemberian): float => (float) $pemberian->sum(
+                fn (PemberianPakan $satu): float => $satu->zak * ($satu->jenisPakan?->kg_per_zak ?? config('standar.kg_per_zak')) * 1000,
+            ),
+        );
 
         // Hari chick-in (umur 0) tidak punya baris di lembar, tetapi kematian dan pakannya ikut dihitung.
         $deplesiKumulatif = (int) ($catatan->get(0)?->mati + $catatan->get(0)?->afkir);
         $zakKumulatif = (float) $zakPerUmur->get(0, 0);
-        $pakanKumulatif = $zakKumulatif * $gramPerZak / ($populasi - $deplesiKumulatif);
+        $gramPakanKumulatif = (float) $gramPakanPerUmur->get(0, 0);
+        $pakanKumulatif = $gramPakanKumulatif / ($populasi - $deplesiKumulatif);
+        $pakanKgKumulatif = $gramPakanKumulatif / 1000;
 
         $pakanStandarKumulatif = 0.0;
         $zakStandarKumulatif = 0.0;
@@ -77,10 +88,12 @@ class LembarRecording
 
             if ($hasil['terisi']) {
                 $zak = (float) $zakPerUmur->get($umur, 0);
-                $zakStandar = $pakanStandar * $saldo / $gramPerZak;
+                $zakStandar = $pakanStandar * $saldo / $gramPerZakStandar;
                 $zakStandarKumulatif += $zakStandar;
                 $zakKumulatif += $zak;
-                $pakanGram = $zak * $gramPerZak / $saldo;
+                $gramPakan = (float) $gramPakanPerUmur->get($umur, 0);
+                $pakanKgKumulatif += $gramPakan / 1000;
+                $pakanGram = $gramPakan / $saldo;
                 $pakanKumulatif += $pakanGram;
 
                 $hasil += [
@@ -88,6 +101,7 @@ class LembarRecording
                     'zak_standar_kumulatif' => $zakStandarKumulatif,
                     'zak' => $adaPakan ? $zak : null,
                     'zak_kumulatif' => $zakKumulatif,
+                    'pakan_kg_kumulatif' => $pakanKgKumulatif,
                     'pakan_gram' => $adaPakan ? $pakanGram : null,
                     'pakan_gram_kumulatif' => $pakanKumulatif,
                     'selisih_zak' => $zakKumulatif - $zakStandarKumulatif,

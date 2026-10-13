@@ -16,9 +16,9 @@
                             <td class="fs-12 color-gray text-start">{{ $performa['pakan_manual'] ? 'input manual' : 'dari log pemberian pakan' }}</td>
                         </tr>
                         <tr>
-                            <td>Berat per zak</td>
-                            <td class="text-end">@angka(config('standar.kg_per_zak')) kg</td>
-                            <td></td>
+                            <td>Berat rata-rata per zak</td>
+                            <td class="text-end">@angka($performa['kg_per_zak'], 2) kg</td>
+                            <td class="fs-12 color-gray text-start">{{ $performa['pakan_manual'] ? 'standar, input manual' : 'tertimbang dari master jenis pakan' }}</td>
                         </tr>
                         <tr>
                             <td>Total pakan</td>
@@ -93,7 +93,7 @@
                 </table>
             </div>
             <p class="fs-12 color-gray mt-15 mb-0">
-                Angka <span class="recording-masukan">ungu</span> diisi manual di rekap panen. FCR memakai seluruh pakan periode dibagi berat ayam yang sudah terpanen. IP disajikan dua versi: basis ekor terpanen (konservatif) dan basis populasi hidup.
+                Angka <span class="recording-masukan">ungu</span> diisi manual di rekap panen. FCR memakai seluruh pakan periode dalam kg dibagi berat ayam yang sudah terpanen. IP disajikan dua versi: basis ekor terpanen (konservatif) dan basis populasi hidup.
             </p>
         </div>
     </div>

@@ -41,8 +41,6 @@ class BagiHasilSeeder extends Seeder
                 [PeranBagiHasil::BonusPasar, 'Rohim', 500_000, null, null, false],
                 [PeranBagiHasil::Entertain, 'Heri', 500_000, null, null, true],
                 [PeranBagiHasil::Entertain, 'Dian', 500_000, null, null, true],
-                [PeranBagiHasil::Pemodal, 'Muchrizan', null, 79.9, null, true],
-                [PeranBagiHasil::Pemodal, 'Chatam', null, 20.1, null, true],
             ],
         ],
         'Kandang 2' => [
@@ -64,7 +62,6 @@ class BagiHasilSeeder extends Seeder
                 [PeranBagiHasil::Abk, 'Rafi', null, null, null, true],
                 [PeranBagiHasil::Entertain, 'Heri', 500_000, null, null, true],
                 [PeranBagiHasil::Entertain, 'Dian', 500_000, null, null, true],
-                [PeranBagiHasil::Pemodal, 'Muchrizan', null, 100, null, true],
             ],
         ],
     ];

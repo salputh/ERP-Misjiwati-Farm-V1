@@ -77,7 +77,7 @@ class PeriodeKandang extends Model
             'mati' => (int) $baris->sum('mati'),
             'afkir' => (int) $baris->sum('afkir'),
             'mortalitas' => (float) ($terakhir['deplesi_persen'] ?? 0),
-            'pakan_kg' => (float) ($terakhir['zak_kumulatif'] ?? 0) * config('standar.kg_per_zak'),
+            'pakan_kg' => (float) ($terakhir['pakan_kg_kumulatif'] ?? 0),
             'abw' => $timbangTerakhir['abw'] ?? null,
             'abw_umur' => $timbangTerakhir['umur'] ?? null,
             'abw_standar' => $timbangTerakhir['abw_standar'] ?? null,

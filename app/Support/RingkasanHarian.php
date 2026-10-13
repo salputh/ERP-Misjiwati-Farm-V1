@@ -116,7 +116,7 @@ class RingkasanHarian
      * Terpakai diambil dari log pemberian pakan. Pemberian tanpa jenis dikumpulkan di baris tersendiri.
      * Tanpa tanggal, semua catatan periode dihitung.
      *
-     * @return Collection<int, array{jenis: string, masuk: ?float, terpakai_hari_ini: float, terpakai: float, sisa: ?float, persen_terpakai: ?float}>
+     * @return Collection<int, array{jenis: string, masuk: ?float, terpakai_hari_ini: float, terpakai: float, sisa: ?float, kg_per_zak: float, sisa_kg: ?float, persen_terpakai: ?float}>
      */
     public static function opname(Periode $periode, ?CarbonInterface $tanggal = null): Collection
     {
@@ -135,19 +135,26 @@ class RingkasanHarian
         return $masuk->keys()->merge($pemberian->keys())->unique()
             ->sortBy(fn (string $jenis) => [$jenis === $tanpaJenis, $jenis])
             ->values()
-            ->map(function (string $jenis) use ($masuk, $pemberian, $tanggal, $tanpaJenis): array {
+            ->map(function (string $jenis) use ($masuk, $pemberian, $tanggal, $tanpaJenis, $periode): array {
                 $jumlahMasuk = (float) $masuk->get($jenis, 0);
-                $terpakai = (float) $pemberian->get($jenis, collect())->sum('zak');
+                $barisPemberian = $pemberian->get($jenis, collect());
+                $terpakai = (float) $barisPemberian->sum('zak');
+                $jenisPakan = $barisPemberian->first()?->jenisPakan
+                    ?? $periode->penerimaanPakan->first(fn ($penerimaan) => $penerimaan->jenisPakan->kode === $jenis)?->jenisPakan;
+                $kgPerZak = (float) ($jenisPakan?->kg_per_zak ?? config('standar.kg_per_zak'));
 
                 // Pemberian tanpa jenis tidak bisa dicocokkan dengan pakan masuk, jadi stoknya tidak dihitung.
                 $bisaDihitung = $jenis !== $tanpaJenis;
+                $sisa = $bisaDihitung ? $jumlahMasuk - $terpakai : null;
 
                 return [
                     'jenis' => $jenis,
                     'masuk' => $bisaDihitung ? $jumlahMasuk : null,
-                    'terpakai_hari_ini' => (float) $pemberian->get($jenis, collect())->filter(fn ($beri) => $tanggal && $beri->tanggal->isSameDay($tanggal))->sum('zak'),
+                    'terpakai_hari_ini' => (float) $barisPemberian->filter(fn ($beri) => $tanggal && $beri->tanggal->isSameDay($tanggal))->sum('zak'),
                     'terpakai' => $terpakai,
-                    'sisa' => $bisaDihitung ? $jumlahMasuk - $terpakai : null,
+                    'sisa' => $sisa,
+                    'kg_per_zak' => $kgPerZak,
+                    'sisa_kg' => $sisa === null ? null : $sisa * $kgPerZak,
                     'persen_terpakai' => $bisaDihitung && $jumlahMasuk > 0 ? min(100, $terpakai / $jumlahMasuk * 100) : null,
                 ];
             });
