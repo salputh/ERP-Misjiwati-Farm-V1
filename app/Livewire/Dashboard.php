@@ -40,22 +40,22 @@ class Dashboard extends Component
             return [];
         }
 
-        $standar = $this->standar();
         $kgPerZakStandar = config('standar.kg_per_zak');
 
         return $this->periode->kandangPeriode()
             ->with(['kandang', 'periode', 'recordings', 'pemberianPakan.jenisPakan'])
             ->get()
             ->sortBy('kandang.nama')
-            ->map(function (PeriodeKandang $periodeKandang) use ($standar, $kgPerZakStandar): array {
+            ->map(function (PeriodeKandang $periodeKandang) use ($kgPerZakStandar): array {
                 $ringkasan = $periodeKandang->ringkasan();
                 $nama = $periodeKandang->kandang->nama;
+                $standarKandang = new Standar($this->periode->strain, (float) $periodeKandang->beratDocGramEfektif());
 
                 return $ringkasan + [
                     'nama' => $nama,
                     'kode' => trim(str_ireplace('kandang', '', $nama)) ?: $nama,
                     'status' => StatusBobot::dariSelisih($ringkasan['abw_selisih']),
-                    'bobot_harian' => $this->interpolasi($ringkasan['titik_aktual'], $standar),
+                    'bobot_harian' => $this->interpolasi($ringkasan['titik_aktual'], $standarKandang),
                     'pakan_harian' => $periodeKandang->pemberianPakan->groupBy('umur')->map(
                         fn ($pemberian): float => (float) $pemberian->sum(
                             fn ($satu): float => $satu->zak * ($satu->jenisPakan?->kg_per_zak ?? $kgPerZakStandar),
@@ -71,14 +71,15 @@ class Dashboard extends Component
     /**
      * Total semua kandang.
      *
-     * @return array{sisa: int, awal: int, mati: int, afkir: int, mortalitas: float, pakan_kg: float, bobot_hidup_kg: float, fcr: ?float, abw: ?float, abw_standar: ?float, abw_selisih: ?float, abw_umur: ?int}
+     * @return array{sisa: int, awal: int, mati: int, afkir: int, terpanen: int, mortalitas: float, pakan_kg: float, bobot_hidup_kg: float, fcr: ?float, abw: ?float, abw_standar: ?float, abw_selisih: ?float, abw_umur: ?int}
      */
     #[Computed]
     public function total(): array
     {
         $kandang = collect($this->kandang);
         $awal = (int) $kandang->sum('populasi_awal');
-        $sisa = (int) $kandang->sum('sisa');
+        $terpanen = (int) $this->periode->notaPanen()->sum('ekor');
+        $sisa = (int) $kandang->sum('sisa') - $terpanen;
         $bobotHidup = (float) $kandang->sum(fn (array $k) => $k['abw'] ? $k['sisa'] * $k['abw'] / 1000 : 0);
 
         $gabungan = $this->bobotGabungan();
@@ -91,6 +92,7 @@ class Dashboard extends Component
             'awal' => $awal,
             'mati' => (int) $kandang->sum('mati'),
             'afkir' => (int) $kandang->sum('afkir'),
+            'terpanen' => $terpanen,
             'mortalitas' => $awal ? ($kandang->sum('mati') + $kandang->sum('afkir')) / $awal * 100 : 0.0,
             'pakan_kg' => (float) $kandang->sum('pakan_kg'),
             'bobot_hidup_kg' => $bobotHidup,

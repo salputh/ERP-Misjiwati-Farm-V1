@@ -52,6 +52,8 @@ class KasOperasional extends Component
 
     public function mount(Kandang $kandang): void
     {
+        abort_unless($kandang->farm_id === $this->farm?->id, 404);
+
         $this->kandang = $kandang;
         $this->tanggal = now()->toDateString();
         $this->pilihKategori($this->kategori);
@@ -60,6 +62,13 @@ class KasOperasional extends Component
     public function pilihKategori(string $kategori): void
     {
         $this->kategori = KategoriKas::tryFrom($kategori)?->value ?? '';
+    }
+
+    public function tambah(): void
+    {
+        $this->pesan = null;
+        $this->transaksiHapusId = null;
+        $this->bersihkanForm();
     }
 
     /**
@@ -147,6 +156,7 @@ class KasOperasional extends Component
 
     public function simpan(): void
     {
+        $this->pastikanPeriodeDapatDiubah();
         $data = $this->validate([
             'tanggal' => ['required', 'date'],
             'kategoriTransaksi' => ['required', 'string', 'in:'.implode(',', array_column(KategoriKas::cases(), 'value'))],
@@ -206,6 +216,7 @@ class KasOperasional extends Component
         });
 
         $this->pesan = 'Transaksi kas '.$tanggal->translatedFormat('j F Y').($baru ? ' ditambahkan.' : ' diperbarui.');
+        $this->dispatch('tutup-modal-kas');
         $this->bersihkanForm();
         $this->segarkanBuku();
     }
@@ -220,6 +231,7 @@ class KasOperasional extends Component
 
     public function hapus(): void
     {
+        $this->pastikanPeriodeDapatDiubah();
         $id = $this->transaksiHapusId ?? abort(404);
         $periodeKandang = $this->periodeKandang ?? abort(404);
         $rincian = "{$this->kandang->nama}, {$this->periode->nama}";

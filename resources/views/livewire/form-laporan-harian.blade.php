@@ -1,15 +1,56 @@
-<div class="container-fluid">
+<div>
+    @if (! $inline)
+    <div class="container-fluid">
     <div class="row">
-        <x-breadcrumb judul="Form laporan harian" :jejak="['Produksi', 'Laporan harian', 'Form']">
-            <x-pilih-periode :daftar="$this->daftarPeriode" :terpilih="$this->periode" rute="laporan.harian.form" />
-        </x-breadcrumb>
+        <x-breadcrumb judul="Form laporan harian" :jejak="['Produksi', 'Laporan harian', 'Form']" />
 
         @if ($this->kandang->isNotEmpty())
+            <div class="col-12 mb-25">
+                <div class="card border-0">
+                    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <h6 class="mb-5">{{ $this->tersimpan ? 'Ubah laporan harian' : 'Laporan harian baru' }}</h6>
+                            <span class="fs-12 color-gray">{{ $this->labelTanggal }} · {{ $this->kandang->pluck('kandang.nama')->join(', ') }}</span>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-default btn-squared px-30" data-bs-toggle="modal" data-bs-target="#modal-form-laporan-harian">
+                            {{ $this->tersimpan ? 'Ubah laporan' : 'Isi laporan' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @elseif ($this->periode)
+            <div class="col-lg-12 mb-25">
+                <div class="card border-0">
+                    <div class="card-body p-30">
+                        <h5 class="mb-10">Periode ini belum punya kandang</h5>
+                        <p class="color-gray mb-0">Laporan harian diisi per kandang. Form ini terbuka setelah kandang ditambahkan ke periode terpilih.</p>
+                    </div>
+                </div>
+            </div>
+        @else
+            <div class="col-lg-12 mb-25">
+                <div class="card border-0">
+                    <div class="card-body p-30">
+                        <h5 class="mb-10">Belum ada periode</h5>
+                        <p class="color-gray mb-0">Laporan harian diisi untuk satu periode. Form ini terbuka setelah periode pertama dibuat.</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+    </div>
+    </div>
+    @endif
+
+    @if ($this->kandang->isNotEmpty())
+        <x-modal
+            id="modal-form-laporan-harian"
+            :judul="$this->tersimpan ? 'Ubah laporan harian' : 'Laporan harian baru'"
+            ukuran="xl">
             {{-- Enter di isian mana pun sama dengan menekan tombol simpan, termasuk konfirmasinya saat mengubah laporan --}}
-            <form class="col-12" x-data x-on:submit.prevent="$refs.simpan.click()" novalidate>
+            <form x-data x-on:submit.prevent="$refs.simpan.click()" novalidate>
                 <div class="row">
                     {{-- Tanggal laporan; mengganti tanggal memuat isian tanggal itu --}}
-                    <div class="col-lg-12 mb-25">
+                    <div class="col-lg-12 mb-15">
                         <div class="card border-0">
                             <div class="card-header border-0">
                                 <div class="card-extra fs-14 tanpa-kapital">
@@ -36,10 +77,6 @@
                                         <strong>{{ $this->umur }} hari</strong>
                                     </div>
                                     <div>
-                                        <span>Periode</span>
-                                        <strong>{{ $this->periode->nama }}</strong>
-                                    </div>
-                                    <div>
                                         <span>Kandang</span>
                                         <strong>{{ $this->kandang->pluck('kandang.nama')->join(', ') }}</strong>
                                     </div>
@@ -51,13 +88,13 @@
                     <div class="col-lg-12">
                         <div class="row">
                             {{-- Pakan masuk ke farm pada tanggal ini --}}
-                            <div class="col-lg-12 mb-25">
+                            <div class="col-lg-12 mb-15">
                                 <div class="card border-0">
                                     <div class="card-header border-0">
                                         <h6>Pakan masuk</h6>
                                         <div class="card-extra fs-14 color-gray tanpa-kapital">zak yang diterima farm pada tanggal ini</div>
                                     </div>
-                                    <div class="card-body pb-5">
+                                    <div class="card-body">
                                         <div class="row">
                                             @foreach ($this->jenisPakan as $jenis)
                                                 <div class="col-md-4" wire:key="masuk-{{ $jenis->id }}">
@@ -71,13 +108,13 @@
 
                             {{-- Satu kartu per kandang --}}
                             @foreach ($this->kandang as $satu)
-                                <div @class(['mb-25', 'col-xxl-6' => $this->kandang->count() > 1, 'col-lg-12' => $this->kandang->count() === 1]) wire:key="kandang-{{ $satu->id }}">
+                                <div @class(['mb-15', 'col-xxl-6' => $this->kandang->count() > 1, 'col-lg-12' => $this->kandang->count() === 1]) wire:key="kandang-{{ $satu->id }}">
                                     <div class="card border-0 h-100">
                                         <div class="card-header border-0">
                                             <h6>{{ $satu->kandang->nama }}</h6>
                                             <div class="card-extra fs-14 color-gray tanpa-kapital">sisa @angka($this->sisaSebelum['k'.$satu->id]) dari @angka($satu->populasi_awal) ekor</div>
                                         </div>
-                                        <div class="card-body pb-5">
+                                        <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <x-laporan.isian label="Kematian (ekor)" :model="'isian.k'.$satu->id.'.mati'" />
@@ -124,7 +161,7 @@
                     </div>
 
                     {{-- Simpan, batal, hapus --}}
-                    <div class="col-lg-12 mb-25">
+                    <div class="col-lg-12">
                         <div class="card border-0">
                             <div class="card-body d-flex flex-wrap align-items-center gap-3">
                                 @if ($this->tersimpan)
@@ -150,13 +187,14 @@
                     </div>
 
                     <div class="col-lg-12">
-                        <p class="fs-12 color-gray mb-0">
+                        <p class="fs-20 color-gray mb-0">
                             Isian yang dikosongkan dianggap belum dicatat, bukan nol. Data yang disimpan langsung dipakai halaman Laporan harian, Recording harian, serta Pakan dan stok.
                             Konversi pakan ke kg memakai berat per zak pada master tiap jenis pakan.
                         </p>
                     </div>
                 </div>
             </form>
+        </x-modal>
 
             @if ($this->tersimpan)
                 <x-konfirmasi id="konfirmasi-simpan-laporan" judul="Simpan perubahan laporan {{ $this->labelTanggal }}?" aksi="simpan" tombol="Ya, simpan">
@@ -171,24 +209,5 @@
             <x-memuat target="simpan" teks="Menyimpan laporan harian" />
             <x-memuat target="hapus" teks="Menghapus laporan harian" />
             <x-memuat target="tanggal" teks="Memuat data tanggal ini" cepat />
-        @elseif ($this->periode)
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">Periode ini belum punya kandang</h5>
-                        <p class="color-gray mb-0">Laporan harian diisi per kandang. Form ini terbuka setelah kandang ditambahkan ke {{ $this->periode->nama }}.</p>
-                    </div>
-                </div>
-            </div>
-        @else
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">Belum ada periode</h5>
-                        <p class="color-gray mb-0">Laporan harian diisi untuk satu periode. Form ini terbuka setelah periode pertama dibuat.</p>
-                    </div>
-                </div>
-            </div>
-        @endif
-    </div>
+    @endif
 </div>

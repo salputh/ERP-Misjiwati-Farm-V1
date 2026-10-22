@@ -15,12 +15,24 @@ class RhppReal extends Model
     /** @use HasFactory<RhppRealFactory> */
     use HasFactory;
 
+    /**
+     * Dokumen masih boleh diubah.
+     */
+    public const SEMENTARA = 'sementara';
+
+    /**
+     * Dokumen dikunci: tidak dapat diubah sampai dibuka kembali dengan password admin.
+     */
+    public const DIKUNCI = 'dikunci';
+
     protected $guarded = [];
 
     protected function casts(): array
     {
         return [
             'tanggal_proses' => 'date',
+            'doc_ekor' => 'integer',
+            'doc_diklaim_ekor' => 'integer',
             'pakan_kg' => 'float',
             'ovk_jumlah' => 'float',
             'fcr_aktual' => 'float',
@@ -34,5 +46,13 @@ class RhppReal extends Model
     public function periode(): BelongsTo
     {
         return $this->belongsTo(Periode::class);
+    }
+
+    /**
+     * Apakah dokumen ini dikunci sehingga tidak dapat diubah.
+     */
+    public function terkunci(): bool
+    {
+        return $this->status === self::DIKUNCI;
     }
 }

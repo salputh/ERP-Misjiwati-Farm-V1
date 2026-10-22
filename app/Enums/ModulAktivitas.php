@@ -9,11 +9,15 @@ use Illuminate\Support\Arr;
  */
 enum ModulAktivitas: string
 {
+    case Farm = 'farm';
+    case Periode = 'periode';
     case LaporanHarian = 'laporan-harian';
     case PakanDanStok = 'pakan-dan-stok';
     case SamplingBobot = 'sampling-bobot';
     case Panen = 'panen';
     case KasOperasional = 'kas-operasional';
+    case Rhpp = 'rhpp';
+    case BagiHasil = 'bagi-hasil';
 
     public function label(): string
     {

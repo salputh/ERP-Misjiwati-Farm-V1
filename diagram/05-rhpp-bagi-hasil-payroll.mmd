@@ -1,0 +1,23 @@
+flowchart TD
+    A([Panen selesai]) --> B[Hitung harga per nota: bracket kontrak berdasarkan ABW + penyesuaian]
+    B --> C[Simulasi RHPP: penjualan dikurangi DOC, pakan, OVK]
+    C --> D[Terima dokumen RHPP resmi dari inti]
+    D --> E[Input RHPP Real: sapronak, harga real per nota, prestasi, subsidi pasar]
+    E --> F[Hitung pendapatan bersih dan banding simulasi vs real]
+    F --> G[Alokasi ke kandang sesuai aturan terpilih]
+    G --> H[Tarik total operasional dari buku besar, dikurangi pinjaman makan dan karyawan]
+    H --> I[Hitung bagi hasil per kandang]
+    I --> I1[Gaji ABK per kg, premi, upah controller 3 persen]
+    I --> I2[Bonus pasar: ABK 30 persen, controller 10 persen]
+    I1 --> J[Entertain dan zakat 2,5 persen]
+    I2 --> J
+    J --> K[Sisa dibagi ke pemodal per persentase]
+    I1 --> L[Payroll: bagi hasil, bonus, premi, gaji panen]
+    I2 --> L
+    L --> M[Potongan: uang makan, pinjaman, potongan lain]
+    M --> N[Buat slip gaji otomatis]
+    K --> O{Disetujui pemilik?}
+    N --> O
+    O -->|Tidak| I
+    O -->|Ya| P[Bekukan hasil dan tutup periode]
+    P --> Q([Selesai])

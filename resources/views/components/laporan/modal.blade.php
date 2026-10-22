@@ -173,6 +173,7 @@
                                         @endisset
                                     </table>
                                 </div>
+                                <p class="fs-12 color-gray mt-10 mb-0">Sisa per kandang belum dikurangi panen karena nota gabungan tidak mencatat kandang asal; total sisa sudah dikurangi seluruh ekor panen sampai tanggal laporan.</p>
                             </div>
                         </div>
 

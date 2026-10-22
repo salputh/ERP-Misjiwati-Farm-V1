@@ -46,20 +46,20 @@
                 <div class="table-responsive">
                     <table x-ref="tabel" class="table table--default table-borderless tabel-laporan tabel-panen mb-0">
                         <thead>
-                            <tr>
-                                <th class="text-start">No.</th>
-                                <th class="text-start">No. BTPA / SPA</th>
-                                <th class="text-start">Pembeli / no. polisi</th>
-                                <th class="text-start">Mulai</th>
-                                <th class="text-start">Selesai</th>
-                                <th class="text-end">Krat</th>
-                                <th class="text-end">Ekor</th>
-                                <th class="text-end">Berat (kg)</th>
-                                <th class="text-end">BW (kg)</th>
-                                <th class="text-end">Kg / krat</th>
-                                <th class="text-end">Netto (kg)</th>
-                                <th class="text-end">Selisih</th>
-                                <th class="text-end">Aksi</th>
+                            <tr class="userDatatable-header">
+                                <th class="text-start"><span class="userDatatable-title">No.</span></th>
+                                <th class="text-start"><span class="userDatatable-title">No. BTPA / SPA</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Pembeli / no. polisi</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Mulai</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Selesai</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Krat</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Ekor</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Berat (kg)</span></th>
+                                <th class="text-end"><span class="userDatatable-title">BW (kg)</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Kg / krat</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Netto (kg)</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Selisih</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Aksi</span></th>
                             </tr>
                         </thead>
                         @foreach ($hari as $sesi)
@@ -80,7 +80,16 @@
                                         <td class="text-start">
                                             {{ $nota['pembeli'] }}
                                             <span class="d-block fs-12 color-gray">{{ $nota['no_polisi'] }}</span>
-                                            @if ($nota['tukang_tangkap'])
+                                            @if ($nota['pemanen_krat'] !== [])
+                                                @foreach ($nota['pemanen_krat'] as $pemanen)
+                                                    <span class="d-block fs-12 color-gray">
+                                                        Tukang Tangkap: {{ $pemanen['nama'] }} (mulai krat {{ $pemanen['krat_mulai'] }})
+                                                        @if ($pemanen['berat_timbang_kg'] !== null)
+                                                            — @angka($pemanen['berat_timbang_kg'], 2) kg
+                                                        @endif
+                                                    </span>
+                                                @endforeach
+                                            @elseif ($nota['tukang_tangkap'])
                                                 <span class="d-block fs-12 color-gray">Tukang Tangkap: {{ $nota['tukang_tangkap'] }}</span>
                                             @endif
                                         </td>
@@ -88,16 +97,10 @@
                                         <td class="text-start">{{ $nota['selesai']->translatedFormat('j M H:i') }}</td>
                                         <x-panen.angka :jumlah="$nota" />
                                         <td class="text-end">
-                                            <div class="dm-button-list d-inline-flex align-items-center gap-2">
-                                                <button type="button" class="btn btn-xs btn-squared btn-outline-primary" wire:click="ubah({{ $nota['id'] }})" data-bs-toggle="modal" data-bs-target="#modal-form-nota-panen" wire:loading.attr="disabled" wire:target="ubah, simpan, hapus">
-                                                    <img src="{{ asset('assets/img/svg/edit-2.svg') }}" alt="" class="svg me-1">
-                                                    Ubah
-                                                </button>
-                                                <button type="button" class="btn btn-xs btn-squared btn-outline-danger" wire:click="mintaHapus({{ $nota['id'] }})" data-bs-toggle="modal" data-bs-target="#konfirmasi-hapus-nota-panen" wire:loading.attr="disabled" wire:target="mintaHapus, hapus">
-                                                    <img src="{{ asset('assets/img/svg/trash-2.svg') }}" alt="" class="svg me-1">
-                                                    Hapus
-                                                </button>
-                                            </div>
+                                            <x-aksi.ikon :aksi="[
+                                                ['kelas' => 'edit', 'label' => 'Ubah nota panen '.$nota['no_btpa'], 'click' => 'ubah('.$nota['id'].')', 'modal' => '#modal-form-nota-panen'],
+                                                ['kelas' => 'remove', 'label' => 'Hapus nota panen '.$nota['no_btpa'], 'click' => 'mintaHapus('.$nota['id'].')', 'modal' => '#konfirmasi-hapus-nota-panen'],
+                                            ]" />
                                         </td>
                                     </tr>
                                 @endforeach

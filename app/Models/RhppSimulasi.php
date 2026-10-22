@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Input manual simulasi RHPP satu periode: harga DOC, biaya pakan, OVK, dan insentif.
+ * Input simulasi RHPP satu periode. Kolom insentif lama tetap ada untuk kompatibilitas data.
  */
 class RhppSimulasi extends Model
 {

@@ -9,8 +9,9 @@ return [
         'label' => 'Periode',
         'fase' => null,
         'item' => [
-            'periode' => ['ikon' => 'uil-calendar-alt', 'label' => 'Periode', 'isi' => 'Chick-in, DOC, status'],
-            'kandang' => ['ikon' => 'uil-home', 'label' => 'Kandang', 'isi' => 'Populasi, controller'],
+            'farm' => ['ikon' => 'uil-building', 'label' => 'Farm', 'isi' => 'Identitas dan konteks farm', 'rute' => 'periode.index'],
+            'periode' => ['ikon' => 'uil-calendar-alt', 'label' => 'Periode', 'isi' => 'Chick-in, DOC, status', 'rute' => 'periode.index'],
+            'kandang' => ['ikon' => 'uil-home', 'label' => 'Kandang', 'isi' => 'Populasi, controller', 'rute' => 'periode.index'],
         ],
     ],
     'produksi' => [
@@ -33,6 +34,13 @@ return [
             'bagi-hasil' => ['ikon' => 'uil-percentage', 'label' => 'Bagi hasil', 'isi' => 'Potongan berurutan, tarif dari master, porsi pemodal', 'per_kandang' => 'bagi.hasil'],
             'payroll-abk' => ['ikon' => 'uil-money-bill', 'label' => 'Payroll ABK', 'isi' => 'Komponen pendapatan, uang makan, pinjaman, slip per orang'],
             'payroll-pemanen' => ['ikon' => 'uil-money-bill', 'label' => 'Payroll pemanen', 'isi' => 'Upah berdasarkan berat panen dan tarif per orang', 'rute' => 'payroll.pemanen'],
+        ],
+    ],
+    'project' => [
+        'label' => 'Project',
+        'fase' => null,
+        'item' => [
+            'project' => ['ikon' => 'uil-folder-open', 'label' => 'Project', 'isi' => 'Project, anggota, tenggat, dan progres tugas', 'rute' => 'project.index'],
         ],
     ],
     'master' => [

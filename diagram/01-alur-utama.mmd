@@ -1,0 +1,29 @@
+flowchart TD
+    A([Mulai]) --> B[Login]
+    B --> C[Daftar Kandang + kartu Farm/Gabungan]
+    C --> D{Pilih pintu masuk}
+    D -->|Kandang| E[Pilih Kandang]
+    D -->|Farm/Gabungan| Z[Ruang kerja Farm: RHPP inti, stok gudang, biaya bersama, ringkasan gabungan]
+    E --> F[Pilih Periode, default periode aktif]
+    F --> G{Periode sudah tutup?}
+    G -->|Ya| H[Mode baca-saja]
+    G -->|Tidak| I[Mode input]
+    H --> J[Menu Kandang]
+    I --> J
+    J --> J1[Recording Harian]
+    J --> J2[Pakan]
+    J --> J3[Sampling Bobot]
+    J --> J4[Panen]
+    J --> J5[Operasional]
+    J --> J6[Bagi Hasil dan Slip Gaji]
+    J --> J7[Laporan]
+    J1 --> K{Ganti kandang atau periode?}
+    J2 --> K
+    J3 --> K
+    J4 --> K
+    J5 --> K
+    J6 --> K
+    J7 --> K
+    K -->|Ya| C
+    K -->|Tidak| L([Selesai])
+    Z --> K

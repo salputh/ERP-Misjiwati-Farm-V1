@@ -26,6 +26,8 @@ class FormLaporanHarian extends Component
 {
     use MemilihPeriode;
 
+    public bool $inline = false;
+
     /** Tanggal laporan (Y-m-d). Kosong berarti hari setelah laporan terakhir. */
     #[Url(as: 'tanggal')]
     public string $tanggal = '';
@@ -75,9 +77,16 @@ class FormLaporanHarian extends Component
     #[Computed]
     public function batas(): array
     {
-        $min = $this->periode->tanggal_chick_in->copy()->startOfDay();
-        $umurMaksimal = (new Standar($this->periode->strain, (float) $this->periode->berat_doc_gram))->umurMaksimal();
-        $maks = $min->copy()->addDays($umurMaksimal)->min(today());
+        $kandang = $this->periode->kandangPeriode;
+        $min = $kandang->isNotEmpty()
+            ? $kandang->map(fn (PeriodeKandang $satu) => $satu->tanggalChickInEfektif())->min()->copy()->startOfDay()
+            : $this->periode->tanggal_chick_in->copy()->startOfDay();
+        $tanggalAkhir = $kandang->isNotEmpty()
+            ? $kandang->map(fn (PeriodeKandang $satu) => $satu->tanggalChickInEfektif()->copy()->addDays(
+                (new Standar($this->periode->strain, (float) $satu->beratDocGramEfektif()))->umurMaksimal(),
+            ))->max()
+            : $min->copy()->addDays((new Standar($this->periode->strain, (float) $this->periode->berat_doc_gram))->umurMaksimal());
+        $maks = $tanggalAkhir->min(today());
 
         return ['min' => $min, 'maks' => $maks->lt($min) ? $min : $maks];
     }
@@ -137,7 +146,7 @@ class FormLaporanHarian extends Component
     public function sisaSebelum(): array
     {
         return $this->kandang->mapWithKeys(fn (PeriodeKandang $kandang): array => [
-            'k'.$kandang->id => $kandang->populasi_awal - (int) $kandang->recordings
+            'k'.$kandang->id => $kandang->populasiAktual() - (int) $kandang->recordings
                 ->reject(fn ($rekaman): bool => $rekaman->tanggal->toDateString() === $this->tanggal)
                 ->sum(fn ($rekaman): int => $rekaman->mati + $rekaman->afkir),
         ])->all();
@@ -145,9 +154,11 @@ class FormLaporanHarian extends Component
 
     public function simpan(): void
     {
+        $this->pastikanPeriodeDapatDiubah();
         $data = $this->withValidator(function (Validator $validator): void {
             $validator->after(function (Validator $validator): void {
                 $this->periksaSisaAyam($validator);
+                $this->periksaTanggalKandang($validator);
                 $this->periksaTerisi($validator);
             });
         })->validate($this->aturan(), $this->pesanValidasi(), $this->namaIsian());
@@ -161,6 +172,7 @@ class FormLaporanHarian extends Component
 
     public function hapus(): void
     {
+        $this->pastikanPeriodeDapatDiubah();
         $tanggal = Carbon::parse($this->tanggal);
         IsianLaporanHarian::hapus($this->periode, $tanggal);
 
@@ -270,6 +282,25 @@ class FormLaporanHarian extends Component
 
             if ($berkurang > 0 && $berkurang >= $this->sisaSebelum[$kunci]) {
                 $validator->errors()->add("isian.{$kunci}.mati", 'Kematian dan afkir harus kurang dari sisa ayam ('.number_format($this->sisaSebelum[$kunci], 0, ',', '.').' ekor).');
+            }
+        }
+    }
+
+    private function periksaTanggalKandang(Validator $validator): void
+    {
+        $tanggal = Carbon::parse($this->tanggal);
+        foreach ($this->kandang as $kandang) {
+            $isian = $this->isian['k'.$kandang->id] ?? [];
+            $adaIsian = collect($isian)->except('pakan')->contains(fn (mixed $nilai): bool => filled($nilai))
+                || collect($isian['pakan'] ?? [])->contains(fn (mixed $nilai): bool => filled($nilai));
+            if (! $adaIsian) {
+                continue;
+            }
+
+            $umur = (int) $kandang->tanggalChickInEfektif()->diffInDays($tanggal, false);
+            $umurMaksimal = (new Standar($this->periode->strain, (float) $kandang->beratDocGramEfektif()))->umurMaksimal();
+            if ($umur < 0 || $umur > $umurMaksimal) {
+                $validator->errors()->add("isian.k{$kandang->id}.catatan", 'Tanggal isian berada di luar masa pemeliharaan kandang.');
             }
         }
     }

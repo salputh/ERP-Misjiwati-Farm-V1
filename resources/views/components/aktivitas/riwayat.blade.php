@@ -25,11 +25,11 @@
                 <div class="table-responsive">
                     <table class="table table--default table-borderless tabel-laporan tabel-panen tabel-kas tabel-aktivitas mb-0">
                         <thead>
-                            <tr>
-                                <th class="text-start">Waktu</th>
-                                <th class="text-start">Aksi</th>
-                                <th class="text-start">Modul</th>
-                                <th class="text-start">Keterangan</th>
+                            <tr class="userDatatable-header">
+                                <th class="text-start"><span class="userDatatable-title">Waktu</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Aksi</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Modul</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Keterangan</span></th>
                             </tr>
                         </thead>
                         @forelse ($perHari as $tanggal => $sehari)

@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -14,7 +15,7 @@ use Illuminate\Support\Collection;
 class RingkasanHarian
 {
     /**
-     * Tanggal terakhir yang punya catatan (pakan atau recording) pada periode ini.
+     * Tanggal terakhir yang punya catatan pemeliharaan pada periode ini.
      */
     public static function tanggalTerakhir(Periode $periode): ?CarbonInterface
     {
@@ -25,22 +26,40 @@ class RingkasanHarian
     }
 
     /**
+     * Tanggal laporan terakhir, termasuk tanggal panen agar laporan dapat dilihat pada hari panen.
+     */
+    public static function tanggalTerakhirDenganPanen(Periode $periode): ?CarbonInterface
+    {
+        $tanggalTerakhir = self::tanggalTerakhir($periode);
+        $tanggalPanenTerakhir = $periode->notaPanen()->max('tanggal_panen');
+
+        return collect([$tanggalTerakhir, $tanggalPanenTerakhir ? Carbon::parse($tanggalPanenTerakhir) : null])
+            ->filter()
+            ->max();
+    }
+
+    /**
      * Pakai relasi kandangPeriode (kandang, recordings, pemberianPakan.jenisPakan) dan penerimaanPakan.jenisPakan yang sudah di-load.
      *
      * @return array{tanggal: CarbonInterface, umur: int, populasi: int, pakan_masuk: list<array<string, mixed>>, total_pakan_masuk: float, opname: list<array<string, mixed>>, total_opname: array<string, float>, hari_cukup: ?float, kandang: list<array<string, mixed>>, total: array<string, mixed>, catatan: list<array<string, mixed>>}
      */
     public static function buat(Periode $periode, CarbonInterface $tanggal): array
     {
-        $umur = $periode->umurPada($tanggal);
-        $kandang = $periode->kandangPeriode
+        $kandangAktif = $periode->kandangPeriode
+            ->filter(fn (PeriodeKandang $kandang): bool => $kandang->populasiAktual() > 0);
+        $umur = $kandangAktif
+            ->map(fn (PeriodeKandang $kandang): int => (int) $kandang->tanggalChickInEfektif()->diffInDays($tanggal, false))
+            ->max() ?? $periode->umurPada($tanggal);
+        $kandang = $kandangAktif
             ->sortBy('kandang.nama')
-            ->map(fn (PeriodeKandang $periodeKandang): array => self::kandang($periodeKandang->setRelation('periode', $periode), $umur))
+            ->map(fn (PeriodeKandang $periodeKandang): array => self::kandang($periodeKandang->setRelation('periode', $periode), $tanggal))
             ->values();
 
         $opname = self::opname($periode, $tanggal);
         $sisa = $opname->whereNotNull('sisa')->isEmpty() ? null : (float) $opname->sum('sisa');
         $terpakaiHariIni = (float) $opname->sum('terpakai_hari_ini');
         $bobotHidup = $kandang->sum(fn (array $k) => $k['abw'] ? $k['sisa'] * $k['abw'] : 0);
+        $terpanen = (int) $periode->notaPanen()->whereDate('tanggal_panen', '<=', $tanggal)->sum('ekor');
 
         return [
             'tanggal' => $tanggal,
@@ -66,12 +85,13 @@ class RingkasanHarian
                 'mati_hari_ini' => (int) $kandang->sum('mati_hari_ini'),
                 'mati_kumulatif' => (int) $kandang->sum('mati_kumulatif'),
                 'mortalitas' => $kandang->sum('populasi') ? $kandang->sum('mati_kumulatif') / $kandang->sum('populasi') * 100 : 0.0,
-                'sisa' => (int) $kandang->sum('sisa'),
+                'terpanen' => $terpanen,
+                'sisa' => (int) $kandang->sum('sisa') - $terpanen,
                 // ABW dan FCR gabungan ditimbang jumlah ayam (dan bobot hidup) tiap kandang.
                 'abw' => $bobotHidup ? $bobotHidup / $kandang->sum(fn (array $k) => $k['abw'] ? $k['sisa'] : 0) : null,
                 'fcr' => $bobotHidup ? $kandang->sum(fn (array $k) => $k['fcr'] ? $k['fcr'] * $k['sisa'] * $k['abw'] : 0) / $bobotHidup : null,
             ],
-            'catatan' => $periode->kandangPeriode
+            'catatan' => $kandangAktif
                 ->flatMap(fn (PeriodeKandang $periodeKandang) => $periodeKandang->recordings
                     ->filter(fn ($rekam) => filled($rekam->catatan) && $rekam->umur <= $umur)
                     ->map(fn ($rekam): array => ['kandang' => $periodeKandang->kandang->nama, 'tanggal' => $rekam->tanggal, 'catatan' => $rekam->catatan]))
@@ -86,8 +106,27 @@ class RingkasanHarian
      *
      * @return array<string, mixed>
      */
-    private static function kandang(PeriodeKandang $periodeKandang, int $umur): array
+    private static function kandang(PeriodeKandang $periodeKandang, CarbonInterface $tanggal): array
     {
+        $umur = (int) $periodeKandang->tanggalChickInEfektif()->diffInDays($tanggal, false);
+        if ($umur < 0) {
+            return [
+                'nama' => $periodeKandang->kandang->nama,
+                'populasi' => $periodeKandang->populasiAktual(),
+                'umur' => $umur,
+                'mati_hari_ini' => 0,
+                'mati_kumulatif' => 0,
+                'mortalitas' => 0.0,
+                'sisa' => $periodeKandang->populasiAktual(),
+                'abw' => null,
+                'abw_umur' => null,
+                'abw_standar' => null,
+                'abw_selisih' => null,
+                'fcr' => null,
+                'fcr_standar' => null,
+            ];
+        }
+
         $rekaman = $periodeKandang->recordings->where('umur', '<=', $umur);
         $hariIni = $rekaman->firstWhere('umur', $umur);
         $matiKumulatif = (int) $rekaman->sum(fn ($rekam) => $rekam->mati + $rekam->afkir);
@@ -97,11 +136,14 @@ class RingkasanHarian
 
         return [
             'nama' => $periodeKandang->kandang->nama,
-            'populasi' => $periodeKandang->populasi_awal,
+            'populasi' => $periodeKandang->populasiAktual(),
+            'umur' => $umur,
             'mati_hari_ini' => (int) ($hariIni?->mati + $hariIni?->afkir),
             'mati_kumulatif' => $matiKumulatif,
-            'mortalitas' => $matiKumulatif / $periodeKandang->populasi_awal * 100,
-            'sisa' => $periodeKandang->populasi_awal - $matiKumulatif,
+            'mortalitas' => $periodeKandang->populasiAktual() > 0
+                ? $matiKumulatif / $periodeKandang->populasiAktual() * 100
+                : 0.0,
+            'sisa' => $periodeKandang->populasiAktual() - $matiKumulatif,
             'abw' => $timbang['abw'] ?? null,
             'abw_umur' => $timbang['umur'] ?? null,
             'abw_standar' => $timbang['abw_standar'] ?? null,

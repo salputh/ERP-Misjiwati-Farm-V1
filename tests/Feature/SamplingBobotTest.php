@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\SamplingBobot;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
+use App\Models\Recording;
 use App\Models\SesiSampling;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -218,6 +219,242 @@ class SamplingBobotTest extends TestCase
         foreach (Periode::all() as $periode) {
             $this->get(route('sampling.bobot', ['periode' => $periode->id]))->assertOk()->assertSee('Rekap hasil sampel bobot ayam');
         }
+    }
+
+    /**
+     * Halaman dibuka dengan ringkasan seluruh kandangs, sebelum form sampling kandangs terpilih.
+     */
+    public function test_the_page_opens_with_the_summary_of_every_house(): void
+    {
+        $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+
+        $this->get(route('sampling.bobot', ['periode' => $periode->id]))
+            ->assertOk()
+            ->assertSee('Ringkasan sampling')
+            ->assertSee('Kandang 1')
+            ->assertSee('Kandang 2')
+            ->assertSeeInOrder(['Ringkasan sampling', 'Sesi terakhir', 'Kandang 2 ·']);
+    }
+
+    /**
+     * Jumlah ekor tiap titik boleh berbeda, jadi ABW dihitung dari ekor yang benar-benar ditimbang.
+     */
+    public function test_head_count_per_point_is_stored_and_used_for_the_average(): void
+    {
+        $komponen = $this->komponen('2026-09-15')->assertSet('sesiId', null);
+
+        foreach (config('sampling.lantai') as $lantai => $info) {
+            foreach ($info['line'] as $line) {
+                $komponen->set("berat.{$lantai}.campuran.{$line}.1", 1000)
+                    ->set("berat.{$lantai}.campuran.{$line}.2", 1000)
+                    ->set("ekorTitik.{$lantai}.campuran.{$line}.1", 20)
+                    ->set("ekorTitik.{$lantai}.campuran.{$line}.2", 10);
+            }
+        }
+
+        $komponen->call('simpan')->assertHasNoErrors();
+
+        $sesi = SesiSampling::whereDate('tanggal', '2026-09-15')->with('titik')->firstOrFail();
+        $this->assertCount(24, $sesi->titik);
+        $this->assertSame([10, 20], $sesi->titik->pluck('ekor')->unique()->sort()->values()->all());
+        $this->assertSame(360, $sesi->titik->sum('ekor'));
+        $this->assertSame(24000, $sesi->titik->sum('berat_gram'));
+        $this->assertEqualsWithDelta(66.6667, $sesi->abw(), 0.001);
+    }
+
+    public function test_the_default_head_count_applies_to_every_point(): void
+    {
+        $komponen = $this->komponen('2026-09-15')->set('ekor.campuran', 16);
+        $titik = $komponen->instance()->ekorTitik;
+
+        $this->assertSame(16, $titik['bawah']['campuran']['A'][1]);
+        $this->assertSame(16, $titik['atas']['campuran']['O'][2]);
+    }
+
+    /**
+     * ABW hasil sampling langsung mengisi ABW aktual di recording harian.
+     */
+    public function test_saving_a_session_fills_the_body_weight_into_the_daily_recording(): void
+    {
+        $komponen = $this->komponen('2026-09-15');
+
+        foreach (config('sampling.lantai') as $lantai => $info) {
+            foreach ($info['line'] as $line) {
+                $komponen->set("berat.{$lantai}.campuran.{$line}.1", 2400)->set("berat.{$lantai}.campuran.{$line}.2", 2600);
+            }
+        }
+
+        $komponen->call('simpan')->assertHasNoErrors()->assertSee('ABW 125,0 g masuk ke recording harian');
+
+        $rekaman = Recording::whereDate('tanggal', '2026-09-15')->firstOrFail();
+        $this->assertSame(4, $rekaman->umur);
+        $this->assertSame(125.0, $rekaman->bobot_rata_gram);
+    }
+
+    public function test_saving_a_session_replaces_the_body_weight_already_in_the_recording(): void
+    {
+        $komponen = $this->komponen('2026-10-02')->assertSet('sesiId', null);
+
+        foreach (config('sampling.lantai') as $lantai => $info) {
+            foreach (['jantan', 'betina'] as $kelamin) {
+                foreach ($info['line'] as $line) {
+                    $komponen->set("berat.{$lantai}.{$kelamin}.{$line}.1", 700)->set("berat.{$lantai}.{$kelamin}.{$line}.2", 720);
+                }
+            }
+        }
+
+        $komponen->call('simpan')->assertHasNoErrors();
+
+        $rekaman = Recording::whereDate('tanggal', '2026-10-02')->firstOrFail();
+        $this->assertSame(21, $rekaman->umur);
+        $this->assertSame(71.0, $rekaman->bobot_rata_gram);
+    }
+
+    /**
+     * Jarak antar sesi lebih dari satu hari, maka DG dinormalkan per hari (FR-405).
+     */
+    public function test_daily_gain_is_normalized_when_the_previous_session_is_more_than_a_day_old(): void
+    {
+        $komponen = $this->komponen('2026-09-15');
+
+        foreach (config('sampling.lantai') as $lantai => $info) {
+            foreach ($info['line'] as $line) {
+                $komponen->set("berat.{$lantai}.campuran.{$line}.1", 2400)->set("berat.{$lantai}.campuran.{$line}.2", 2600);
+            }
+        }
+
+        $hasil = $komponen->instance()->hasil;
+
+        // Sesi sebelumnya berumur 1 hari (ABW 71,67 g), jadi jaraknya tiga hari.
+        $this->assertSame(3, $hasil['gabungan']['hari']);
+        $this->assertEqualsWithDelta(53.3333, $hasil['gabungan']['dg'], 0.001);
+        $this->assertEqualsWithDelta(17.7778, $hasil['gabungan']['dg_per_hari'], 0.001);
+        $this->assertSame(23.0, $hasil['gabungan']['dg_standar']);
+        $this->assertEqualsWithDelta(-5.2222, $hasil['gabungan']['selisih_dg'], 0.001);
+        $this->assertEqualsWithDelta(17.9167, $hasil['lantai']['bawah']['campuran']['dg_per_hari'], 0.001);
+    }
+
+    /**
+     * Ringkasan gabungan antar kandang dalam periode (FR-404).
+     */
+    public function test_the_combined_summary_collects_every_house_of_the_period(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $kandang = $periode->kandangPeriode()->get();
+
+        foreach ($kandang as $satu) {
+            $sesi = SesiSampling::create([
+                'periode_kandang_id' => $satu->id,
+                'tanggal' => '2026-07-20',
+                'umur' => 5,
+                'dengan_sexing' => false,
+            ]);
+            $sesi->titik()->create([
+                'lantai' => 'bawah',
+                'line' => 'A',
+                'kelamin' => 'campuran',
+                'urutan' => 1,
+                'berat_gram' => 2000,
+                'ekor' => 20,
+            ]);
+        }
+
+        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id, 'tanggal' => '2026-07-20'])
+            ->test(SamplingBobot::class);
+
+        $gabungan = $komponen->instance()->gabunganKandang;
+
+        $this->assertCount(2, $gabungan['kandang']);
+        $this->assertSame(['Kandang 1', 'Kandang 2'], array_column($gabungan['kandang'], 'kandang'));
+        $this->assertSame(2, $gabungan['total']['titik']);
+        $this->assertSame(40, $gabungan['total']['ekor']);
+        $this->assertSame(100.0, $gabungan['total']['abw']);
+    }
+
+    /**
+     * Ringkasan memakai sesi terbaru tiap kandangs, bukan hanya tanggal yang sedang dipilih.
+     */
+    public function test_the_summary_shows_the_latest_session_of_every_house(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $kandang = $periode->kandangPeriode()->get();
+
+        foreach ($kandang as $satu) {
+            $sesi = SesiSampling::create([
+                'periode_kandang_id' => $satu->id,
+                'tanggal' => '2026-07-20',
+                'umur' => 5,
+                'dengan_sexing' => false,
+            ]);
+            $sesi->titik()->create([
+                'lantai' => 'bawah',
+                'line' => 'A',
+                'kelamin' => 'campuran',
+                'urutan' => 1,
+                'berat_gram' => 2000,
+                'ekor' => 20,
+            ]);
+        }
+
+        // Kandang 1 punya sesi yang lebih baru lagi.
+        $sesiBaru = SesiSampling::create([
+            'periode_kandang_id' => $kandang->first()->id,
+            'tanggal' => '2026-07-22',
+            'umur' => 7,
+            'dengan_sexing' => false,
+        ]);
+        $sesiBaru->titik()->create([
+            'lantai' => 'bawah',
+            'line' => 'A',
+            'kelamin' => 'campuran',
+            'urutan' => 1,
+            'berat_gram' => 3000,
+            'ekor' => 20,
+        ]);
+
+        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id, 'tanggal' => '2026-07-20'])
+            ->test(SamplingBobot::class);
+
+        $gabungan = $komponen->instance()->gabunganKandang;
+
+        $this->assertSame('2026-07-22', $gabungan['kandang'][0]['tanggal']->format('Y-m-d'));
+        $this->assertSame(7, $gabungan['kandang'][0]['umur']);
+        $this->assertSame(150.0, $gabungan['kandang'][0]['abw']);
+        $this->assertSame('2026-07-20', $gabungan['kandang'][1]['tanggal']->format('Y-m-d'));
+        $this->assertSame(100.0, $gabungan['kandang'][1]['abw']);
+        $this->assertSame(125.0, $gabungan['total']['abw']);
+    }
+
+    /**
+     * Tombol Buka pada ringkasan memuatkan sesi terakhir kandangs itu ke form.
+     */
+    public function test_the_summary_opens_the_latest_session_of_a_house(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $kandang = $periode->kandangPeriode()->get();
+
+        $sesi = SesiSampling::create([
+            'periode_kandang_id' => $kandang->last()->id,
+            'tanggal' => '2026-07-20',
+            'umur' => 5,
+            'dengan_sexing' => false,
+        ]);
+        $sesi->titik()->create([
+            'lantai' => 'bawah',
+            'line' => 'A',
+            'kelamin' => 'campuran',
+            'urutan' => 1,
+            'berat_gram' => 2000,
+            'ekor' => 20,
+        ]);
+
+        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id, 'tanggal' => '2026-07-10'])
+            ->test(SamplingBobot::class)
+            ->call('bukaSesi', $kandang->last()->id, '2026-07-20');
+
+        $komponen->assertSet('periodeKandangId', $kandang->last()->id);
+        $komponen->assertSet('tanggal', '2026-07-20');
+        $komponen->assertSet('sesiId', $sesi->id);
     }
 
     private function komponen(string $tanggal): Testable

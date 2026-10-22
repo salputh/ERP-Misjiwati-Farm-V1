@@ -33,7 +33,7 @@ class PayrollPemanen extends Component
             return null;
         }
 
-        $notas = $this->periode->notaPanen()->orderBy('mulai')->get();
+        $notas = $this->periode->notaPanen()->with('pemanenKrat')->orderBy('mulai')->get();
         if ($notas->isEmpty()) {
             return null;
         }
@@ -48,6 +48,121 @@ class PayrollPemanen extends Component
         foreach ($notas as $nota) {
             $beratNota = (int) round((float) $nota->berat_kg * 100);
             $beratTotal += $beratNota;
+
+            if ($nota->pemanenKrat->isNotEmpty()) {
+                $totalKrat = (int) $nota->jumlah_krat;
+                if ($totalKrat < 1) {
+                    $beratTanpaNama += $beratNota;
+
+                    continue;
+                }
+
+                $daftarPemanen = $nota->pemanenKrat->sortBy('krat_mulai')->values();
+                $adaBeratTimbangManual = $daftarPemanen->contains(
+                    fn ($pemanenNota): bool => $pemanenNota->berat_timbang_kg !== null,
+                );
+                $rentangPemanen = [];
+                $beratManualTotal = 0;
+                $kratTanpaBeratTotal = 0;
+                $grupMenurutKratMulai = $daftarPemanen->groupBy('krat_mulai')->sortKeys()->values();
+
+                foreach ($grupMenurutKratMulai as $index => $grupPemanen) {
+                    $kratMulai = (int) $grupPemanen->first()->krat_mulai;
+                    $kratSelesai = min(
+                        $index + 1 < $grupMenurutKratMulai->count()
+                            ? (int) $grupMenurutKratMulai[$index + 1]->first()->krat_mulai - 1
+                            : $totalKrat,
+                        $totalKrat,
+                    );
+
+                    if ($kratMulai < 1 || $kratMulai > $totalKrat || $kratSelesai < $kratMulai) {
+                        continue;
+                    }
+
+                    foreach ($grupPemanen as $pemanenNota) {
+                        $beratManual = $pemanenNota->berat_timbang_kg === null
+                            ? null
+                            : (int) round((float) $pemanenNota->berat_timbang_kg * 100);
+                        $rentangPemanen[] = [
+                            'pemanen' => $pemanenNota,
+                            'krat_mulai' => $kratMulai,
+                            'krat_selesai' => $kratSelesai,
+                            'berat_manual' => $beratManual,
+                        ];
+
+                        if ($beratManual !== null) {
+                            $beratManualTotal += $beratManual;
+                        } else {
+                            $kratTanpaBeratTotal += $kratSelesai - $kratMulai + 1;
+                        }
+                    }
+                }
+
+                $beratDialokasikan = 0;
+                $beratPerNamaDiNota = [];
+                $kratTanpaBeratTerkumulasi = 0;
+                $beratSisaUntukPemanenTanpaBerat = max(0, $beratNota - $beratManualTotal);
+
+                foreach ($rentangPemanen as $rentang) {
+                    $pemanenNota = $rentang['pemanen'];
+                    $kratMulai = $rentang['krat_mulai'];
+                    $kratSelesai = $rentang['krat_selesai'];
+                    if ($rentang['berat_manual'] !== null) {
+                        $beratPemanen = $rentang['berat_manual'];
+                    } elseif ($adaBeratTimbangManual && $kratTanpaBeratTotal > 0) {
+                        $kratTanpaBeratTerkumulasi += $kratSelesai - $kratMulai + 1;
+                        $sampai = (int) round(
+                            $beratSisaUntukPemanenTanpaBerat * $kratTanpaBeratTerkumulasi / $kratTanpaBeratTotal,
+                        );
+                        $sebelum = (int) round(
+                            $beratSisaUntukPemanenTanpaBerat
+                            * ($kratTanpaBeratTerkumulasi - ($kratSelesai - $kratMulai + 1))
+                            / $kratTanpaBeratTotal,
+                        );
+                        $beratPemanen = $sampai - $sebelum;
+                    } else {
+                        $sebelum = (int) round($beratNota * ($kratMulai - 1) / $totalKrat);
+                        $sampai = (int) round($beratNota * $kratSelesai / $totalKrat);
+                        $beratPemanen = $sampai - $sebelum;
+                    }
+
+                    $nama = trim((string) $pemanenNota->nama);
+
+                    if ($nama === '') {
+                        continue;
+                    }
+
+                    $beratDialokasikan += $beratPemanen;
+                    $namaKunci = mb_strtolower($nama);
+                    $beratPerNamaDiNota[$namaKunci] ??= ['nama' => $nama, 'berat' => 0];
+                    $beratPerNamaDiNota[$namaKunci]['berat'] += $beratPemanen;
+                }
+
+                $beratTanpaNama += $beratNota - $beratDialokasikan;
+
+                foreach ($beratPerNamaDiNota as $orang) {
+                    $pemanenTerdaftar = $pemanenMenurutNama->get(mb_strtolower($orang['nama']));
+
+                    if ($pemanenTerdaftar) {
+                        $beratPerPemanen[$pemanenTerdaftar->id] ??= [
+                            'nama' => $pemanenTerdaftar->nama,
+                            'jumlah_nota' => 0,
+                            'berat' => 0,
+                            'upah_per_kg' => (int) $pemanenTerdaftar->upah_per_kg,
+                        ];
+                        $beratPerPemanen[$pemanenTerdaftar->id]['jumlah_nota']++;
+                        $beratPerPemanen[$pemanenTerdaftar->id]['berat'] += $orang['berat'];
+
+                        continue;
+                    }
+
+                    $namaKunci = mb_strtolower($orang['nama']);
+                    $beratNamaBelumTerdaftar[$namaKunci] ??= ['nama' => $orang['nama'], 'berat' => 0];
+                    $beratNamaBelumTerdaftar[$namaKunci]['berat'] += $orang['berat'];
+                }
+
+                continue;
+            }
 
             $namaTim = collect(preg_split('/[,;\r\n]+/u', $nota->tukang_tangkap ?? '', -1, PREG_SPLIT_NO_EMPTY))
                 ->map(fn (string $nama): string => trim($nama))

@@ -162,26 +162,27 @@ class KasOperasionalSeeder extends Seeder
         $kandang = Kandang::where('nama', 'Kandang 2')->firstOrFail();
         $periodeKandang = PeriodeKandang::where(['periode_id' => $periode->id, 'kandang_id' => $kandang->id])->firstOrFail();
 
-        if ($periodeKandang->transaksiKas()->exists()) {
-            return;
+        if (! $periodeKandang->transaksiKas()->exists()) {
+            foreach (self::JULI_KANDANG_2_DANA as [$tanggal, $jumlah]) {
+                $periodeKandang->transaksiKas()->create([
+                    'tanggal' => $tanggal,
+                    'kategori' => KategoriKas::DanaOperasional,
+                    'uraian' => 'Uang masuk (operasional)',
+                    'jumlah' => $jumlah,
+                ]);
+            }
+
+            foreach (self::JULI_KANDANG_2_KELUAR as [$tanggal, $kategori, $uraian, $jumlah]) {
+                $periodeKandang->transaksiKas()->create([
+                    'tanggal' => $tanggal,
+                    'kategori' => $kategori,
+                    'uraian' => $uraian,
+                    'jumlah' => $jumlah,
+                ]);
+            }
         }
 
-        foreach (self::JULI_KANDANG_2_DANA as [$tanggal, $jumlah]) {
-            $periodeKandang->transaksiKas()->create([
-                'tanggal' => $tanggal,
-                'kategori' => KategoriKas::DanaOperasional,
-                'uraian' => 'Uang masuk (operasional)',
-                'jumlah' => $jumlah,
-            ]);
-        }
-
-        foreach (self::JULI_KANDANG_2_KELUAR as [$tanggal, $kategori, $uraian, $jumlah]) {
-            $periodeKandang->transaksiKas()->create([
-                'tanggal' => $tanggal,
-                'kategori' => $kategori,
-                'uraian' => $uraian,
-                'jumlah' => $jumlah,
-            ]);
-        }
+        $this->call(KasOperasionalSeptemberSeeder::class);
+        $this->call(KasOperasionalSeptemberKandangSatuSeeder::class);
     }
 }

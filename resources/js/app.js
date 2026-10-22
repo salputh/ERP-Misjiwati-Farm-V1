@@ -5,6 +5,7 @@ import { gambarPayroll } from './gambar-payroll';
 import { gambarPanen } from './gambar-panen';
 import { gambarSampling } from './gambar-sampling';
 import { berkasPng, muatHuruf } from './kanvas';
+import { tangkapHalaman, unduhPng } from './halaman';
 
 const WARNA = { utama: '#8231D3', info: '#00AAFF', bahaya: '#FF0F0F', teks: '#747474', garis: '#F1F2F6' };
 
@@ -23,8 +24,8 @@ const KALENDER_INDONESIA = {
 };
 
 const digit = (nilai) => String(nilai ?? '').replace(/\D/g, '');
-// Angka bulat dengan titik pemisah ribuan: 12000000 menjadi 12.000.000; kosong tetap kosong.
-const ribuan = (nilai) => digit(nilai).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+// Angka bulat dengan pemisah ribuan: kosong tetap kosong.
+const ribuan = (nilai, pemisah = '.') => digit(nilai).replace(/\B(?=(\d{3})+(?!\d))/g, pemisah);
 
 // Simpan satu lembar sebagai PNG atau salin ke clipboard untuk ditempel di chat; gambar(lembar) melukis kanvasnya.
 // Data dibaca dari data-lembar saat tombol ditekan, karena Livewire menggantinya tiap lembar lain dibuka.
@@ -72,6 +73,54 @@ const eksporGambar = (gambar) => () => ({
 });
 
 document.addEventListener('alpine:init', () => {
+    Alpine.data('panduanSistem', (langkah) => ({
+        langkah,
+        indeks: 0,
+        terbuka: false,
+        gagalMenyimpan: false,
+        kunciPenyimpanan: 'misjiwati-farm-panduan-sistem-v1',
+
+        init() {
+            try {
+                this.terbuka = window.localStorage.getItem(this.kunciPenyimpanan) !== 'selesai';
+            } catch (error) {
+                console.warn('Preferensi panduan sistem tidak dapat dibaca dari penyimpanan browser.', error);
+                this.gagalMenyimpan = true;
+                this.terbuka = true;
+            }
+        },
+
+        buka() {
+            this.indeks = 0;
+            this.terbuka = true;
+        },
+
+        sebelumnya() {
+            this.indeks = Math.max(0, this.indeks - 1);
+        },
+
+        berikutnya() {
+            if (this.indeks === this.langkah.length - 1) {
+                this.hentikan();
+                return;
+            }
+
+            this.indeks++;
+        },
+
+        hentikan() {
+            this.terbuka = false;
+
+            try {
+                window.localStorage.setItem(this.kunciPenyimpanan, 'selesai');
+                this.gagalMenyimpan = false;
+            } catch (error) {
+                console.warn('Preferensi panduan sistem tidak dapat disimpan di penyimpanan browser.', error);
+                this.gagalMenyimpan = true;
+            }
+        },
+    }));
+
     // Bobot aktual terhadap standar strain, bisa dipilih per kandang.
     Alpine.data('grafikBobot', (data) => ({
         data,
@@ -251,17 +300,22 @@ document.addEventListener('alpine:init', () => {
 
     // Isian angka bulat yang tampil dengan titik pemisah ribuan selagi diketik.
     // Pengganti wire:model.blur: properti Livewire tetap menerima angka mentahnya saat isian ditinggalkan.
-    Alpine.data('isianRibuan', (properti) => ({
+    Alpine.data('isianRibuan', (properti, pemisah = '.', kursorDiAkhir = false) => ({
         init() {
-            this.$el.value = ribuan(this.$wire.$get(properti));
+            this.$el.value = ribuan(this.$wire.$get(properti), pemisah);
             // Nilai yang diganti server (mis. sesi tanggal lain dimuat) ditampilkan ulang.
-            this.$watch(() => this.$wire.$get(properti), (nilai) => (this.$el.value = ribuan(nilai)));
+            this.$watch(() => this.$wire.$get(properti), (nilai) => (this.$el.value = ribuan(nilai, pemisah)));
         },
 
         format() {
             const isian = this.$el;
             const digitSebelumKursor = digit(isian.value.slice(0, isian.selectionStart)).length;
-            isian.value = ribuan(isian.value);
+            isian.value = ribuan(isian.value, pemisah);
+
+            if (kursorDiAkhir) {
+                isian.setSelectionRange(isian.value.length, isian.value.length);
+                return;
+            }
 
             // Kursor dikembalikan ke posisi digit yang sama, karena titik yang bertambah menggeser letaknya.
             let posisi = 0;
@@ -282,4 +336,27 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('eksporSampling', eksporGambar(gambarSampling));
     Alpine.data('eksporLaporan', eksporGambar(gambarLaporan));
     Alpine.data('eksporPayroll', eksporGambar(gambarPayroll));
+
+    // Potret halaman apa adanya menjadi PNG, supaya hasilnya sama persis dengan yang di layar.
+    Alpine.data('eksporHalaman', (selector, nama) => ({
+        selector,
+        nama,
+        sibuk: false,
+        gagal: false,
+
+        async simpan() {
+            this.sibuk = true;
+            this.gagal = false;
+
+            try {
+                const kanvas = await tangkapHalaman(this.selector);
+                await unduhPng(kanvas, this.nama);
+            } catch (error) {
+                console.error('Gagal memotret halaman untuk ekspor PNG.', error);
+                this.gagal = true;
+            } finally {
+                this.sibuk = false;
+            }
+        },
+    }));
 });

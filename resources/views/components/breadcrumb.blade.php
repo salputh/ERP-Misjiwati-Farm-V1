@@ -6,7 +6,7 @@
         <h4 class="text-capitalize breadcrumb-title">{{ $judul }}</h4>
         <div class="breadcrumb-action justify-content-center flex-wrap">
             {{ $slot }}
-            <nav aria-label="breadcrumb">
+            <nav aria-label="breadcrumb" class="d-flex align-items-center">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="uil uil-create-dashboard"></i>Ringkasan</a></li>
                     @foreach ($jejak as $label)

@@ -31,7 +31,16 @@
                 <tr><td>Total ekor tersampel</td><td class="text-end">@angka($hasil['gabungan']['ekor'])</td></tr>
                 <tr class="sampling-sorot"><td><strong>ABW per ekor{{ $denganSexing ? ' gabungan' : '' }}</strong></td><td class="text-end"><strong>@angka($hasil['gabungan']['abw']) g</strong></td></tr>
                 <tr><td>ABW standar</td><td class="text-end">@angka($hasil['gabungan']['abw_standar']) g</td></tr>
-                <tr><td>DG aktual <span class="fs-12 color-gray">(dari ABW kemarin @angka($hasil['gabungan']['abw_sebelumnya']) g)</span></td><td class="text-end">@angka($hasil['gabungan']['dg'])</td></tr>
+                <tr><td>DG aktual <span class="fs-12 color-gray">(dari ABW sebelumnya @angka($hasil['gabungan']['abw_sebelumnya']) g)</span></td><td class="text-end">@angka($hasil['gabungan']['dg'])</td></tr>
+                <tr>
+                    <td>
+                        DG per hari
+                        @if ($hasil['gabungan']['hari'] > 1)
+                            <span class="fs-12 color-gray">(jarak {{ $hasil['gabungan']['hari'] }} hari)</span>
+                        @endif
+                    </td>
+                    <td class="text-end">@angka($hasil['gabungan']['dg_per_hari'])</td>
+                </tr>
                 <tr><td>DG standar</td><td class="text-end">@angka($hasil['gabungan']['dg_standar'])</td></tr>
                 <tr>
                     <td>Selisih DG</td>

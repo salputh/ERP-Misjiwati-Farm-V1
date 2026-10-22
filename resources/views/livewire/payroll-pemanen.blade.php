@@ -1,15 +1,12 @@
 <div class="container-fluid">
     <div class="row">
-        <x-breadcrumb judul="Payroll pemanen" :jejak="['Keuangan', 'Payroll pemanen']">
-            <x-pilih-periode :daftar="$this->daftarPeriode" :terpilih="$this->periode" rute="payroll.pemanen" />
-        </x-breadcrumb>
+        <x-breadcrumb judul="Payroll pemanen" :jejak="['Keuangan', 'Payroll pemanen']" />
 
         @if ($this->periode && $this->lembar)
             <div class="col-lg-12 mb-25">
                 <div class="card border-0">
                     <div class="card-body">
                         <dl class="recording-info mb-0">
-                            <div><dt>Periode</dt><dd>{{ $this->periode->nama }}</dd></div>
                             <div><dt>Nota panen</dt><dd>@angka($this->lembar['jumlah_nota'])</dd></div>
                             <div><dt>Total berat panen</dt><dd>@angka($this->lembar['berat_total'], 2) kg</dd></div>
                             <div><dt>Total payroll</dt><dd>Rp @angka($this->lembar['total_upah'])</dd></div>
@@ -37,7 +34,7 @@
                 <div class="col-lg-12 mb-25">
                     <div class="alert alert-warning" role="alert">
                         <div class="alert-content">
-                            <p class="mb-0">@angka($this->lembar['berat_tanpa_nama'], 2) kg belum memiliki nama tukang tangkap, sehingga belum masuk ke payroll. Lengkapi nama di data panen agar dapat dihitung.</p>
+                            <p class="mb-0">@angka($this->lembar['berat_tanpa_nama'], 2) kg belum teralokasi ke pemanen, sehingga belum masuk ke payroll. Lengkapi nama dan krat mulai di data panen agar dapat dihitung.</p>
                         </div>
                     </div>
                 </div>
@@ -48,7 +45,7 @@
                     <div class="card-header px-0 border-0">
                         <div>
                             <h6>Rincian payroll pemanen</h6>
-                            <span class="fs-12 color-gray">Setiap nama pemanen yang tercatat menerima perhitungan dari seluruh tonase nota tersebut. Tarif mengikuti Master Data.</span>
+                            <span class="fs-12 color-gray">Berat timbang aktual dipakai jika diisi; sisa tonase dibagi menurut jumlah krat. Tarif mengikuti Master Data.</span>
                         </div>
                     </div>
                     <div class="card-body px-0">
@@ -95,7 +92,7 @@
             </div>
 
             <div class="col-lg-12 mb-25">
-                <p class="fs-12 color-gray mb-0">Upah setiap pemanen dihitung dari seluruh berat bruto nota yang mencantumkan namanya dikalikan tarif pemanen yang berlaku saat ini. Jika beberapa pemanen tercatat pada satu nota, masing-masing menerima perhitungan atas seluruh berat nota. Perubahan nama atau tarif tukang tangkap dapat dilakukan di halaman Panen dan Master Data.</p>
+                <p class="fs-12 color-gray mb-0">Untuk nota dengan krat mulai, berat timbang aktual pemanen digunakan bila dicatat; sisa berat nota dibagi proporsional berdasarkan jumlah krat di antara pemanen yang beratnya belum diisi. Jika berat aktual tidak digunakan, berat bruto nota dibagi proporsional terhadap rentang krat tiap pemanen. Krat sebelum krat mulai pertama belum dialokasikan. Nota lama tanpa krat mulai tetap memakai seluruh berat nota untuk setiap nama yang tercatat. Perubahan data dapat dilakukan di halaman Panen dan Master Data.</p>
             </div>
         @elseif ($this->periode)
             <div class="col-lg-12 mb-25">

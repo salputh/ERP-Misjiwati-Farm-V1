@@ -49,6 +49,23 @@ class Format
     }
 
     /**
+     * Angka ringkas: nol tetap ditulis "0" supaya tidak terbaca sebagai data kosong,
+     * negatif ditulis dalam kurung seperti di lembar recording, dan null jadi tanda hubung.
+     */
+    public static function ringkasKurung(int|float|null $nilai, int $desimalMaksimal = 1): string
+    {
+        if ($nilai === null) {
+            return '-';
+        }
+
+        if ($nilai < 0) {
+            return self::kurung($nilai, $desimalMaksimal);
+        }
+
+        return $nilai == 0 ? '0' : self::ringkas($nilai, $desimalMaksimal);
+    }
+
+    /**
      * Persen tanpa nol di belakang koma: 3%, 2,5%, 79,9%.
      */
     public static function persen(int|float $nilai): string

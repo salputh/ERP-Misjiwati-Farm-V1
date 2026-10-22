@@ -113,7 +113,7 @@ class RhppSeeder extends Seeder
             );
         }
 
-        // Sel kuning lembar simulasi: harga DOC, biaya pakan (2.238 zak, rata-rata Rp 497.410 per zak), OVK, insentif.
+        // Nilai sapronak simulasi dihitung dari data periode; simpan kontrak dan kolom insentif lama untuk kompatibilitas.
         RhppSimulasi::updateOrCreate(['periode_id' => $periode->id], [
             'kontrak' => 'P.17',
             'harga_doc' => 9415,

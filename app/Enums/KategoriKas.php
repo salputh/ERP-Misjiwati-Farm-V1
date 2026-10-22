@@ -11,10 +11,12 @@ enum KategoriKas: string
     case DanaOperasional = 'dana-operasional';
     case SewaLahan = 'sewa-lahan';
     case Listrik = 'listrik';
+    case Starlink = 'starlink';
     case Gas = 'gas';
     case Solar = 'solar';
     case Berobat = 'berobat';
     case Upah = 'upah';
+    case GajiKaryawan = 'gaji-karyawan';
     case MakanMinum = 'makan-minum';
     case LainLain = 'lain-lain';
     case ObatAyam = 'obat-ayam';
@@ -22,6 +24,7 @@ enum KategoriKas: string
     case Transport = 'transport';
     case PinjamanMakan = 'pinjaman-makan';
     case PinjamanAbk = 'pinjaman-abk';
+    case PinjamanKaryawan = 'pinjaman-karyawan';
     case Maintenance = 'maintenance';
 
     public function label(): string
@@ -30,10 +33,12 @@ enum KategoriKas: string
             self::DanaOperasional => 'Dana Operasional',
             self::SewaLahan => 'Biaya Sewa Lahan',
             self::Listrik => 'PLN & Kelistrikan',
+            self::Starlink => 'Starlink',
             self::Gas => 'Gas',
             self::Solar => 'Solar',
             self::Berobat => 'Berobat',
             self::Upah => 'Upah',
+            self::GajiKaryawan => 'Gaji Karyawan',
             self::MakanMinum => 'Meal & Drink',
             self::LainLain => 'Lain-lain',
             self::ObatAyam => 'Obat Ayam',
@@ -41,6 +46,7 @@ enum KategoriKas: string
             self::Transport => 'Transport',
             self::PinjamanMakan => 'Pinjaman Makan (Uang Makan)',
             self::PinjamanAbk => 'Pinjaman ABK',
+            self::PinjamanKaryawan => 'Pinjaman Karyawan',
             self::Maintenance => 'Maintenance',
         };
     }
@@ -58,7 +64,7 @@ enum KategoriKas: string
      */
     public function pinjaman(): bool
     {
-        return in_array($this, [self::PinjamanMakan, self::PinjamanAbk], true);
+        return in_array($this, [self::PinjamanMakan, self::PinjamanAbk, self::PinjamanKaryawan], true);
     }
 
     /**

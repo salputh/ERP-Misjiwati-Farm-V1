@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Farm;
 use App\Models\JenisPakan;
 use App\Models\Kandang;
 use App\Models\PemberianPakan;
@@ -95,13 +96,14 @@ class DatabaseSeeder extends Seeder
         $jenis = collect(['SB-10', 'SB-11', 'SB-12'])
             ->mapWithKeys(fn (string $kode): array => [$kode => JenisPakan::create(['kode' => $kode])]);
 
+        $farm = Farm::query()->where('kode', 'K0242')->firstOrFail();
         $kandang = [
-            'Kandang 1' => Kandang::create(['nama' => 'Kandang 1', 'kapasitas' => 20000]),
-            'Kandang 2' => Kandang::create(['nama' => 'Kandang 2', 'kapasitas' => 26000]),
+            'Kandang 1' => Kandang::create(['farm_id' => $farm->id, 'nama' => 'Kandang 1', 'kapasitas' => 20000]),
+            'Kandang 2' => Kandang::create(['farm_id' => $farm->id, 'nama' => 'Kandang 2', 'kapasitas' => 26000]),
         ];
 
-        $this->periodeJuli($kandang);
-        $this->periodeSeptember($kandang['Kandang 2'], $jenis->all());
+        $this->periodeJuli($farm, $kandang);
+        $this->periodeSeptember($farm, $kandang['Kandang 2'], $jenis->all());
 
         $this->call([PemodalSeeder::class, PemanenSeeder::class, PanenSeeder::class, RhppSeeder::class, KasOperasionalSeeder::class, BagiHasilSeeder::class, KaryawanSeeder::class, PayrollSeeder::class]);
     }
@@ -109,16 +111,20 @@ class DatabaseSeeder extends Seeder
     /**
      * @param  array<string, Kandang>  $kandang
      */
-    private function periodeJuli(array $kandang): void
+    private function periodeJuli(Farm $farm, array $kandang): void
     {
         $chickIn = Carbon::create(2026, 7, 15);
 
         $periode = Periode::create([
+            'farm_id' => $farm->id,
             'nama' => 'Periode Juli 2026',
+            'nomor_siklus' => 18,
+            'inti' => 'PT. Indojaya Agrinusa',
+            'ppl' => 'PPL Misjiwati',
             'strain' => 'Standar farm',
             'tanggal_chick_in' => $chickIn,
             'berat_doc_gram' => 37,
-            'status' => 'selesai',
+            'status' => 'tutup_rhpp',
         ]);
 
         foreach (self::JULI as $nama => $data) {
@@ -126,6 +132,10 @@ class DatabaseSeeder extends Seeder
                 'periode_id' => $periode->id,
                 'kandang_id' => $kandang[$nama]->id,
                 'populasi_awal' => $data['populasi'],
+                'tanggal_chick_in' => $chickIn,
+                'berat_doc_gram' => 37,
+                'harga_doc_per_ekor' => 9415,
+                'bonus_doc_ekor' => 0,
             ]);
 
             foreach ($data['harian'] as $indeks => [$mati, $zak, $abw]) {
@@ -157,23 +167,31 @@ class DatabaseSeeder extends Seeder
      *
      * @param  array<string, JenisPakan>  $jenis
      */
-    private function periodeSeptember(Kandang $kandangDua, array $jenis): void
+    private function periodeSeptember(Farm $farm, Kandang $kandangDua, array $jenis): void
     {
         $chickIn = Carbon::create(2026, 9, 11);
 
         $periode = Periode::create([
+            'farm_id' => $farm->id,
             'nama' => 'Periode September 2026',
+            'nomor_siklus' => 19,
+            'inti' => 'PT. Indojaya Agrinusa',
+            'ppl' => 'PPL Misjiwati',
             'strain' => 'Standar farm',
             'tanggal_chick_in' => $chickIn,
             // Berat DOC periode ini tidak tercantum di laporan; memakai angka periode Juli.
             'berat_doc_gram' => 37,
-            'status' => 'aktif',
+            'status' => 'berjalan',
         ]);
 
         $periodeKandang = PeriodeKandang::create([
             'periode_id' => $periode->id,
             'kandang_id' => $kandangDua->id,
             'populasi_awal' => 26000,
+            'tanggal_chick_in' => $chickIn,
+            'berat_doc_gram' => 37,
+            'harga_doc_per_ekor' => 9415,
+            'bonus_doc_ekor' => 0,
         ]);
 
         foreach (self::SEPTEMBER_PAKAN_MASUK as [$tanggal, $kode, $zak]) {

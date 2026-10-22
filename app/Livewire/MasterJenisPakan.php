@@ -113,6 +113,7 @@ class MasterJenisPakan extends Component
         $jenisPakan->save();
 
         $this->pesan = 'Jenis pakan '.$jenisPakan->kode.($this->jenisPakanId ? ' diperbarui.' : ' ditambahkan.');
+        $this->dispatch('tutup-modal-jenis-pakan');
         $this->batal();
         unset($this->daftar);
     }

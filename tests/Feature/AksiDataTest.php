@@ -122,7 +122,7 @@ class AksiDataTest extends TestCase
             route('kas.operasional', ['kandang' => $kandangDua, 'periode' => $juli->id]) => 'wire:target="pilihKategori"',
             route('payroll.abk', ['periode' => $juli->id]) => 'wire:target="pilihKandang"',
             route('laporan.harian.form', ['periode' => $juli->id, 'tanggal' => '2026-07-20']) => 'wire:target="tanggal"',
-            route('laporan.harian', ['periode' => $juli->id]) => 'wire:target="hapus"',
+            route('laporan.harian', ['periode' => $juli->id]) => 'wire:target="hapus, hapusTerpilih"',
         ];
 
         foreach ($halaman as $alamat => $sasaran) {

@@ -2,8 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\MemilihPeriode;
 use App\Models\Kandang;
 use App\Models\Pemodal;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -17,6 +19,8 @@ use Livewire\Component;
 #[Title('Pemodal')]
 class MasterPemodal extends Component
 {
+    use MemilihPeriode;
+
     public bool $formTerbuka = false;
 
     #[Locked]
@@ -43,6 +47,8 @@ class MasterPemodal extends Component
     public function daftar(): Collection
     {
         return Pemodal::query()
+            ->whereDoesntHave('kandangs')
+            ->orWhereHas('kandangs', fn ($query) => $query->where('farm_id', $this->farm?->id))
             ->with('kandangs')
             ->orderBy('nama')
             ->get();
@@ -54,9 +60,9 @@ class MasterPemodal extends Component
     #[Computed]
     public function kandangs(): Collection
     {
-        return Kandang::query()
-            ->orderBy('nama')
-            ->get();
+        return $this->farm
+            ? $this->farm->kandangs()->orderBy('nama')->get()
+            : new Collection;
     }
 
     public function tambah(): void
@@ -73,9 +79,9 @@ class MasterPemodal extends Component
 
     public function ubah(int $id): void
     {
-        $pemodal = Pemodal::query()
+        $pemodal = $this->pemodalDiFarm($id)
             ->with('kandangs')
-            ->findOrFail($id);
+            ->firstOrFail();
 
         $this->resetValidation();
         $this->pesan = null;
@@ -156,21 +162,27 @@ class MasterPemodal extends Component
 
         DB::transaction(function () use ($data, $alokasi): void {
             $pemodal = $this->pemodalId
-                ? Pemodal::query()->findOrFail($this->pemodalId)
+                ? $this->pemodalDiFarm($this->pemodalId)->firstOrFail()
                 : new Pemodal;
             $pemodal->nama = $data['nama'];
             $pemodal->save();
-            $pemodal->kandangs()->sync($alokasi);
+
+            $kandangFarmIds = $this->kandangs->modelKeys();
+            $pemodal->kandangs()->syncWithoutDetaching($alokasi);
+            if ($kandangFarmIds !== []) {
+                $pemodal->kandangs()->detach(array_diff($kandangFarmIds, array_keys($alokasi)));
+            }
         });
 
         $this->pesan = 'Pemodal '.$data['nama'].($sedangMengubah ? ' diperbarui.' : ' ditambahkan.');
+        $this->dispatch('tutup-modal-pemodal');
         $this->batal();
         unset($this->daftar);
     }
 
     public function mintaHapus(int $id): void
     {
-        $pemodal = Pemodal::query()->findOrFail($id);
+        $pemodal = $this->pemodalDiFarm($id)->firstOrFail();
 
         $this->resetErrorBag('hapus');
         $this->pesan = null;
@@ -181,13 +193,20 @@ class MasterPemodal extends Component
     public function hapus(): void
     {
         $id = $this->pemodalHapusId ?? abort(404);
-        $pemodal = Pemodal::query()->findOrFail($id);
+        $pemodal = $this->pemodalDiFarm($id)->with('kandangs')->firstOrFail();
         $nama = $pemodal->nama;
-        $pemodal->delete();
+        $idKandangFarm = $this->kandangs->modelKeys();
+        $pemodal->kandangs()->detach($idKandangFarm);
+        $masihDigunakanDiFarmLain = $pemodal->kandangs()->exists();
+        if (! $masihDigunakanDiFarmLain) {
+            $pemodal->delete();
+        }
 
         $this->pemodalHapusId = null;
         $this->namaHapus = '';
-        $this->pesan = 'Pemodal '.$nama.' dihapus.';
+        $this->pesan = $masihDigunakanDiFarmLain
+            ? 'Pemodal '.$nama.' dihapus dari farm ini.'
+            : 'Pemodal '.$nama.' dihapus.';
         $this->resetErrorBag('hapus');
         unset($this->daftar);
     }
@@ -195,5 +214,17 @@ class MasterPemodal extends Component
     public function render(): View
     {
         return view('livewire.master-pemodal');
+    }
+
+    private function pemodalDiFarm(int $id): Builder
+    {
+        $farmId = $this->farm?->id;
+
+        return Pemodal::query()
+            ->whereKey($id)
+            ->where(function ($query) use ($farmId): void {
+                $query->whereDoesntHave('kandangs')
+                    ->orWhereHas('kandangs', fn ($kandangs) => $kandangs->where('farm_id', $farmId));
+            });
     }
 }

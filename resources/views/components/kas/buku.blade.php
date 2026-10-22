@@ -20,15 +20,15 @@
                 <div class="table-responsive">
                     <table class="table table--default table-borderless tabel-laporan tabel-panen tabel-kas mb-0">
                         <thead>
-                            <tr>
-                                <th class="text-start">No.</th>
-                                <th class="text-start">Tanggal</th>
-                                <th class="text-start">Kategori</th>
-                                <th class="text-start">Uraian</th>
-                                <th class="text-end">Masuk (Rp)</th>
-                                <th class="text-end">Keluar (Rp)</th>
-                                <th class="text-end">Saldo (Rp)</th>
-                                <th class="text-end">Aksi</th>
+                            <tr class="userDatatable-header">
+                                <th class="text-start"><span class="userDatatable-title">No.</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Tanggal</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Kategori</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Uraian</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Masuk (Rp)</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Keluar (Rp)</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Saldo (Rp)</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Aksi</span></th>
                             </tr>
                         </thead>
                         @foreach ($tersaring['bulan'] as $sebulan)
@@ -49,10 +49,12 @@
                                         <td class="text-end">@kurung($baris['keluar'])</td>
                                         <td @class(['text-end', 'color-danger' => $baris['saldo'] < 0])>@kurung($baris['saldo'])</td>
                                         <td class="text-end">
-                                            <div class="dm-button-list d-inline-flex align-items-center gap-2">
-                                                <button type="button" class="btn btn-xs btn-squared btn-outline-primary" wire:click="ubah({{ $baris['id'] }})" wire:loading.attr="disabled" wire:target="ubah">Ubah</button>
-                                                <button type="button" class="btn btn-xs btn-squared btn-outline-danger" wire:click="mintaHapus({{ $baris['id'] }})" data-bs-toggle="modal" data-bs-target="#konfirmasi-hapus-transaksi-kas" wire:loading.attr="disabled" wire:target="mintaHapus, hapus">Hapus</button>
-                                            </div>
+                                            @unless ($this->periode->tertutup())
+                                                <x-aksi.ikon :aksi="[
+                                                    ['kelas' => 'edit', 'label' => 'Ubah transaksi '.$baris['tanggal']->translatedFormat('j F Y'), 'click' => 'ubah('.$baris['id'].')', 'modal' => '#modal-form-kas'],
+                                                    ['kelas' => 'remove', 'label' => 'Hapus transaksi '.$baris['tanggal']->translatedFormat('j F Y'), 'click' => 'mintaHapus('.$baris['id'].')', 'modal' => '#konfirmasi-hapus-transaksi-kas'],
+                                                ]" />
+                                            @endunless
                                         </td>
                                     </tr>
                                 @endforeach

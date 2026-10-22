@@ -1,0 +1,23 @@
+flowchart TD
+    A([Mulai panen]) --> B[Controller buka menu Panen kandang]
+    B --> C[Input nota: SPA, BTPA, polisi, pembeli, waktu, krat, ekor, berat, netto]
+    C --> D[Hitung ABW nota, rata-rata per krat, selisih netto]
+    D --> E{Ada kandang lain dengan No. BTPA sama?}
+    E -->|Ya| F[Merge otomatis: satu baris di administrasi inti]
+    E -->|Tidak| G[Nota tampil apa adanya di administrasi inti]
+    F --> H[Rekap Gabungan]
+    G --> H
+    H --> I{Perlu dipisah ulang per kandang?}
+    I -->|Tidak| N[Hitung umur panen tertimbang, FCR, IP]
+    I -->|Ya| J[Buka halaman Split nota]
+    J --> K[Pilih nota gabungan]
+    K --> L[Tentukan range krat per kandang]
+    L --> M{Ada krat campur?}
+    M -->|Ya| M1[Bagi proporsional per ekor]
+    M -->|Tidak| M2[Alokasi penuh per krat]
+    M1 --> O{Total alokasi = total nota asli?}
+    M2 --> O
+    O -->|Tidak| L
+    O -->|Ya| P[Simpan split dan catat riwayat]
+    P --> H
+    N --> Q([Selesai])

@@ -1,0 +1,16 @@
+flowchart TD
+    A([Mulai periode]) --> B[Buat periode: nomor siklus, inti, PPL]
+    B --> C[Atur house_cycle per kandang: populasi DOC, tgl chick-in, berat DOC, harga DOC]
+    C --> D[Catat pakan masuk dan dana operasional]
+    D --> E[Pemeliharaan harian: recording, pakan, sampling]
+    E --> F{Umur panen tercapai?}
+    F -->|Belum| E
+    F -->|Ya| G[Panen per kandang: nota timbang]
+    G --> H[Merge otomatis ke administrasi inti]
+    H --> I[Simulasi RHPP]
+    I --> J[Terima RHPP resmi dari inti]
+    J --> K[Input RHPP Real, alokasi per kandang]
+    K --> L[Hitung bagi hasil per kandang]
+    L --> M[Payroll dan slip gaji]
+    M --> N[Tutup periode, data terkunci]
+    N --> O([Selesai])

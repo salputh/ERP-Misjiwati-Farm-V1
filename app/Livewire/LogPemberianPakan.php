@@ -68,7 +68,10 @@ class LogPemberianPakan extends Component
     public function daftarKandang(): Collection
     {
         return $this->periode
-            ? $this->periode->kandangPeriode()->with('kandang')->get()->sortBy('kandang.nama')->values()
+            ? $this->periode->kandangPeriode()->with('kandang', 'pemberianPakan')->get()
+                ->filter(fn (PeriodeKandang $kandang): bool => $kandang->populasiAktual() > 0 || $kandang->pemberianPakan->isNotEmpty())
+                ->sortBy('kandang.nama')
+                ->values()
             : new Collection;
     }
 
@@ -90,9 +93,14 @@ class LogPemberianPakan extends Component
     public function batasTanggal(): array
     {
         $periode = $this->periode ?? abort(404);
-        $min = $periode->tanggal_chick_in->toDateString();
-        $maks = $periode->tanggal_chick_in->copy()
-            ->addDays((new Standar($periode->strain, (float) $periode->berat_doc_gram))->umurMaksimal())
+        $kandangPeriode = $this->periodeKandangId !== ''
+            ? $periode->kandangPeriode()->find($this->periodeKandangId)
+            : null;
+        $tanggalMulai = $kandangPeriode?->tanggalChickInEfektif() ?? $periode->tanggal_chick_in;
+        $beratDoc = $kandangPeriode?->beratDocGramEfektif() ?? $periode->berat_doc_gram;
+        $min = $tanggalMulai->toDateString();
+        $maks = $tanggalMulai->copy()
+            ->addDays((new Standar($periode->strain, (float) $beratDoc))->umurMaksimal())
             ->min(today());
 
         return ['min' => $min, 'max' => $maks->lt($min) ? $min : $maks->toDateString()];
@@ -104,11 +112,56 @@ class LogPemberianPakan extends Component
     #[Computed]
     public function log(): ?array
     {
-        if (! $this->periode) {
+        $periode = $this->periode?->fresh();
+        if (! $periode) {
             return null;
         }
 
-        return LogPakan::buat($this->periode->loadMissing(['kandangPeriode.kandang', 'kandangPeriode.pemberianPakan.jenisPakan', 'penerimaanPakan.jenisPakan']));
+        return LogPakan::buat($periode->load([
+            'kandangPeriode.kandang',
+            'kandangPeriode.pemberianPakan.jenisPakan',
+            'penerimaanPakan.jenisPakan',
+        ]));
+    }
+
+    /**
+     * Ringkasan singkat halaman: pakan yang masuk, terpakai, dan tersisa, serta banyaknya hari pemberian.
+     *
+     * @return array{masuk: float, masuk_kg: float, terpakai: float, terpakai_kg: float, sisa: ?float, sisa_kg: ?float, hari: int, catatan: int}
+     */
+    #[Computed]
+    public function ringkasan(): array
+    {
+        $log = $this->log;
+
+        if (! $log) {
+            return [
+                'masuk' => 0.0,
+                'masuk_kg' => 0.0,
+                'terpakai' => 0.0,
+                'terpakai_kg' => 0.0,
+                'sisa' => null,
+                'sisa_kg' => null,
+                'hari' => 0,
+                'catatan' => 0,
+            ];
+        }
+
+        $hari = collect($log['hari'])->filter(fn (array $satu): bool => $satu['jenis'] !== []);
+        $catatan = $hari->sum(fn (array $satu): int => collect($satu['jenis'])->sum(
+            fn (array $jenis): int => collect($jenis['catatan'])->sum(fn (array $daftar): int => count($daftar)),
+        ));
+
+        return [
+            'masuk' => $log['total_stok']['masuk'],
+            'masuk_kg' => $log['total_stok']['masuk_kg'],
+            'terpakai' => $log['total_stok']['terpakai'],
+            'terpakai_kg' => $log['total_stok']['terpakai_kg'],
+            'sisa' => $log['total_stok']['sisa'],
+            'sisa_kg' => $log['total_stok']['sisa_kg'],
+            'hari' => $hari->count(),
+            'catatan' => $catatan,
+        ];
     }
 
     public function tambahPenerimaan(): void
@@ -156,6 +209,7 @@ class LogPemberianPakan extends Component
 
     public function simpan(): void
     {
+        $this->pastikanPeriodeDapatDiubah();
         $periode = $this->periode ?? abort(404);
         $aturanTanggal = [
             'required',
@@ -166,7 +220,11 @@ class LogPemberianPakan extends Component
         $data = $this->validate([
             'tipeForm' => ['required', Rule::in(['penerimaan', 'pemberian'])],
             'tanggal' => $aturanTanggal,
-            'jenisPakanId' => ['nullable', 'integer', Rule::exists('jenis_pakans', 'id')],
+            'jenisPakanId' => [
+                'nullable',
+                'integer',
+                Rule::exists('jenis_pakans', 'id'),
+            ],
             'periodeKandangId' => [
                 Rule::requiredIf($this->tipeForm === 'pemberian'),
                 'nullable',
@@ -190,6 +248,14 @@ class LogPemberianPakan extends Component
 
         $mengubah = $this->catatanId !== null;
         $tanggal = Carbon::parse($data['tanggal']);
+        $periodeKandang = $this->tipeForm === 'pemberian'
+            ? $periode->kandangPeriode()->findOrFail($data['periodeKandangId'])
+            : null;
+        if ($periodeKandang && $tanggal->lt($periodeKandang->tanggalChickInEfektif())) {
+            $this->addError('tanggal', 'Tanggal pemberian tidak boleh sebelum chick-in kandang.');
+
+            return;
+        }
         $jenisPakan = $data['jenisPakanId'] ? JenisPakan::findOrFail($data['jenisPakanId']) : null;
         $subjek = $this->tipeForm === 'penerimaan'
             ? 'Pakan masuk '.($jenisPakan?->kode ?? 'tanpa jenis')
@@ -212,7 +278,7 @@ class LogPemberianPakan extends Component
                 'periode_kandang_id' => $data['periodeKandangId'],
                 'jenis_pakan_id' => $data['jenisPakanId'] ?: null,
                 'tanggal' => $tanggal,
-                'umur' => $periode->umurPada($tanggal),
+                'umur' => (int) $periodeKandang->tanggalChickInEfektif()->diffInDays($tanggal, false),
                 'zak' => $data['zak'],
             ]);
         }
@@ -228,7 +294,9 @@ class LogPemberianPakan extends Component
         });
 
         $this->pesan = $subjek.($mengubah ? ' diperbarui.' : ' ditambahkan.');
+        $this->dispatch('tutup-modal-pakan');
         $this->batal();
+        $periode->unsetRelation('kandangPeriode')->unsetRelation('penerimaanPakan');
         unset($this->daftarPeriode, $this->periode, $this->log, $this->daftarPenerimaan);
         $this->dispatch('pakan-disimpan');
     }
@@ -247,6 +315,7 @@ class LogPemberianPakan extends Component
 
     public function hapus(): void
     {
+        $this->pastikanPeriodeDapatDiubah();
         $id = $this->catatanHapusId ?? abort(404);
         if ($this->tipeHapus === 'penerimaan') {
             $catatan = $this->penerimaanUntukPeriode($id);
@@ -267,6 +336,7 @@ class LogPemberianPakan extends Component
         $this->catatanHapus = '';
         $this->pesan = $subjek.' dihapus.';
         $this->resetValidation();
+        $this->periode->unsetRelation('kandangPeriode')->unsetRelation('penerimaanPakan');
         unset($this->daftarPeriode, $this->periode, $this->log, $this->daftarPenerimaan);
     }
 

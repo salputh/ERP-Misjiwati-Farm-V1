@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 /**
  * Satu sesi sampling bobot di satu kandang pada satu tanggal.
@@ -49,13 +50,37 @@ class SesiSampling extends Model
     }
 
     /**
+     * Jumlah ekor tiap titik dalam bentuk isian form: [lantai][kelamin][line][urutan] => ekor.
+     *
+     * @return array<string, array<string, array<string, array<int, int>>>>
+     */
+    public function isianEkor(): array
+    {
+        $isian = [];
+        foreach ($this->titik as $titik) {
+            $isian[$titik->lantai][$titik->kelamin][$titik->line][$titik->urutan] = (int) $titik->ekor;
+        }
+
+        return $isian;
+    }
+
+    /**
      * Ekor per sampel tiap kelamin, diambil dari titik yang tersimpan.
+     * Nilai yang paling banyak dipakai dalam kelompok itu yang ditampilkan, karena satu sesi
+     * boleh memuat titik dengan jumlah ekor berbeda-beda.
      *
      * @return array<string, int>
      */
     public function ekorPerSampel(): array
     {
-        return $this->titik->groupBy('kelamin')->map(fn ($titik) => (int) $titik->first()->ekor)->all();
+        return $this->titik
+            ->groupBy('kelamin')
+            ->map(function (Collection $titik): int {
+                $hitungan = $titik->pluck('ekor')->countBy();
+
+                return (int) $hitungan->sortByDesc(fn (int $jumlah): int => $jumlah)->keys()->first();
+            })
+            ->all();
     }
 
     /**

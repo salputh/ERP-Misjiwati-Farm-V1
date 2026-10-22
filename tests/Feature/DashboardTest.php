@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\StatusBobot;
 use App\Livewire\Dashboard;
+use App\Models\NotaPanen;
 use App\Models\Periode;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,7 +24,11 @@ class DashboardTest extends TestCase
     {
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Belum ada periode');
+            ->assertSee('Belum ada periode')
+            ->assertSee('Panduan sistem')
+            ->assertSee('Hentikan panduan')
+            ->assertSee('Siapkan data dasar')
+            ->assertSee('Tinjau dan tutup periode');
     }
 
     public function test_dashboard_shows_period_summary_and_each_coop(): void
@@ -45,9 +50,11 @@ class DashboardTest extends TestCase
         $dashboard = Livewire::withQueryParams(['periode' => $this->periodeJuli()->id])->test(Dashboard::class)->instance();
         $kandang = collect($dashboard->kandang);
         $total = $dashboard->total;
+        $terpanen = (int) NotaPanen::where('periode_id', $this->periodeJuli()->id)->sum('ekor');
 
-        $this->assertSame($kandang->sum('sisa'), $total['sisa']);
-        $this->assertSame($total['awal'] - $total['mati'] - $total['afkir'], $total['sisa']);
+        $this->assertSame($terpanen, $total['terpanen']);
+        $this->assertSame($kandang->sum('sisa') - $terpanen, $total['sisa']);
+        $this->assertSame($total['awal'] - $total['mati'] - $total['afkir'] - $terpanen, $total['sisa']);
         $this->assertEqualsWithDelta($total['pakan_kg'], array_sum($dashboard->grafik['pakan']), 0.5);
     }
 
@@ -77,6 +84,32 @@ class DashboardTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
+            ->assertSee('Periode September 2026')
+            ->assertSee('Pilih periode');
+    }
+
+    public function test_dashboard_defaults_to_the_active_period_before_a_newer_closed_period(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $periodeAktif = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periodeTerbaru = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        $periodeAktif->update(['status' => 'berjalan']);
+        $periodeTerbaru->update(['status' => 'tutup_rhpp']);
+
+        $this->assertSame($periodeAktif->id, Livewire::test(Dashboard::class)->instance()->periode->id);
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Periode Juli 2026');
+    }
+
+    public function test_dashboard_handles_cash_only_coop_without_a_bird_population(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $this->get(route('dashboard', ['periode' => Periode::where('nama', 'Periode September 2026')->value('id')]))
+            ->assertOk()
+            ->assertSee('Kandang 1')
             ->assertSee('Periode September 2026');
     }
 

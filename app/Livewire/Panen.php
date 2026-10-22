@@ -9,8 +9,10 @@ use App\Models\Aktivitas;
 use App\Models\NotaPanen as ModelNotaPanen;
 use App\Support\RekapPanen;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -41,8 +43,6 @@ class Panen extends Component
 
     public string $pembeli = '';
 
-    public string $tukangTangkap = '';
-
     public string $mulai = '';
 
     public string $selesai = '';
@@ -54,6 +54,13 @@ class Panen extends Component
     public string $beratKg = '';
 
     public string $nettoNotaKg = '';
+
+    public string $tukangTangkap = '';
+
+    /**
+     * @var array<string, array{kratMulai: string, beratTimbang: string}>
+     */
+    public array $detailPemanen = [];
 
     public ?string $pesan = null;
 
@@ -73,6 +80,27 @@ class Panen extends Component
     public function tambah(): void
     {
         $this->bersihkanForm();
+    }
+
+    public function updatedTukangTangkap(): void
+    {
+        unset($this->rincianPemanen);
+    }
+
+    /**
+     * @return list<array{nama: string, kunci: string, kratMulai: string, beratTimbang: string}>
+     */
+    #[Computed]
+    public function rincianPemanen(): array
+    {
+        return $this->namaPemanen()
+            ->map(fn (string $nama): array => [
+                'nama' => $nama,
+                'kunci' => $this->kunciPemanen($nama),
+                'kratMulai' => $this->detailPemanen[$this->kunciPemanen($nama)]['kratMulai'] ?? '',
+                'beratTimbang' => $this->detailPemanen[$this->kunciPemanen($nama)]['beratTimbang'] ?? '',
+            ])
+            ->all();
     }
 
     /**
@@ -98,7 +126,18 @@ class Panen extends Component
         $this->noBtpa = $nota->no_btpa;
         $this->noPolisi = $nota->no_polisi;
         $this->pembeli = $nota->pembeli;
+        $pemanenKrat = $nota->pemanenKrat()->orderBy('krat_mulai')->get();
         $this->tukangTangkap = $nota->tukang_tangkap ?? '';
+        $this->detailPemanen = $pemanenKrat
+            ->mapWithKeys(fn ($pemanen): array => [
+                $this->kunciPemanen($pemanen->nama) => [
+                    'kratMulai' => $pemanen->krat_mulai === 1 ? '' : (string) $pemanen->krat_mulai,
+                    'beratTimbang' => $pemanen->berat_timbang_kg === null
+                        ? ''
+                        : number_format($pemanen->berat_timbang_kg, 2, '.', ''),
+                ],
+            ])
+            ->all();
         $this->mulai = $nota->mulai->format('Y-m-d\TH:i');
         $this->selesai = $nota->selesai->format('Y-m-d\TH:i');
         $this->jumlahKrat = (string) $nota->jumlah_krat;
@@ -114,6 +153,7 @@ class Panen extends Component
 
     public function simpan(): void
     {
+        $this->pastikanPeriodeDapatDiubah();
         $periode = $this->periode ?? abort(404);
         $data = $this->validate([
             'tanggalPanen' => ['required', 'date_format:Y-m-d'],
@@ -129,6 +169,9 @@ class Panen extends Component
             'noPolisi' => ['required', 'string', 'max:255'],
             'pembeli' => ['required', 'string', 'max:255'],
             'tukangTangkap' => ['nullable', 'string', 'max:2000'],
+            'detailPemanen' => ['array', 'max:50'],
+            'detailPemanen.*.kratMulai' => ['nullable', 'integer', 'min:1', 'max:4294967295', 'lte:jumlahKrat'],
+            'detailPemanen.*.beratTimbang' => ['nullable', 'numeric', 'gt:0', 'max:99999999.99'],
             'mulai' => ['required', 'date_format:Y-m-d\TH:i'],
             'selesai' => ['required', 'date_format:Y-m-d\TH:i', 'after_or_equal:mulai'],
             'jumlahKrat' => ['required', 'integer', 'min:1', 'max:4294967295'],
@@ -142,6 +185,12 @@ class Panen extends Component
             'noBtpa.unique' => 'Nomor BTPA sudah digunakan di periode ini.',
             'noPolisi.required' => 'Nomor polisi wajib diisi.',
             'pembeli.required' => 'Nama pembeli wajib diisi.',
+            'detailPemanen.*.kratMulai.integer' => 'Krat mulai harus berupa bilangan bulat.',
+            'detailPemanen.*.kratMulai.min' => 'Krat mulai minimal 1.',
+            'detailPemanen.*.kratMulai.lte' => 'Krat mulai tidak boleh melebihi jumlah krat nota.',
+            'detailPemanen.*.beratTimbang.numeric' => 'Berat timbangan pemanen harus berupa angka.',
+            'detailPemanen.*.beratTimbang.gt' => 'Berat timbangan pemanen harus lebih dari 0.',
+            'detailPemanen.*.beratTimbang.max' => 'Berat timbangan pemanen terlalu besar.',
             'mulai.required' => 'Waktu mulai timbang wajib diisi.',
             'mulai.date_format' => 'Waktu mulai timbang tidak valid.',
             'selesai.required' => 'Waktu selesai timbang wajib diisi.',
@@ -161,12 +210,41 @@ class Panen extends Component
             'nettoNotaKg.min' => 'Netto nota tidak boleh kurang dari 0.',
         ]);
 
+        $namaPemanen = $this->namaPemanen();
+        $inputPemanen = $namaPemanen
+            ->map(function (string $nama) use ($data): array {
+                $detail = $data['detailPemanen'][$this->kunciPemanen($nama)] ?? [];
+
+                return [
+                    'nama' => $nama,
+                    'krat_mulai' => (int) (($detail['kratMulai'] ?? '') ?: 1),
+                    'berat_timbang_kg' => ($detail['beratTimbang'] ?? '') === '' ? null : $detail['beratTimbang'],
+                ];
+            })
+            ->all();
+
+        $adaDetailKhusus = collect($inputPemanen)->contains(
+            fn (array $pemanen): bool => $pemanen['krat_mulai'] > 1 || $pemanen['berat_timbang_kg'] !== null,
+        );
+        $daftarPemanenKrat = $adaDetailKhusus ? $inputPemanen : [];
+
+        $totalBeratTimbangSen = collect($daftarPemanenKrat)
+            ->sum(fn (array $pemanen): int => $pemanen['berat_timbang_kg'] === null
+                ? 0
+                : (int) round((float) $pemanen['berat_timbang_kg'] * 100));
+        if ($totalBeratTimbangSen > (int) round((float) $data['beratKg'] * 100)) {
+            throw ValidationException::withMessages([
+                'detailPemanen' => 'Jumlah berat timbangan pemanen tidak boleh melebihi berat panen pada nota.',
+            ]);
+        }
+
+        $daftarPemanenKrat = collect($daftarPemanenKrat)->sortBy('krat_mulai')->values();
         $mulai = Carbon::createFromFormat('Y-m-d\TH:i', $data['mulai']);
         $selesai = Carbon::createFromFormat('Y-m-d\TH:i', $data['selesai']);
         $baru = $this->notaId === null;
         $noBtpa = $data['noBtpa'];
 
-        DB::transaction(function () use ($data, $periode, $mulai, $selesai, $baru, $noBtpa): void {
+        DB::transaction(function () use ($data, $daftarPemanenKrat, $periode, $mulai, $selesai, $baru, $noBtpa): void {
             $nota = $this->notaId
                 ? $periode->notaPanen()->whereKey($this->notaId)->lockForUpdate()->firstOrFail()
                 : $periode->notaPanen()->make();
@@ -177,7 +255,7 @@ class Panen extends Component
                 'no_btpa' => $noBtpa,
                 'no_polisi' => $data['noPolisi'],
                 'pembeli' => $data['pembeli'],
-                'tukang_tangkap' => $data['tukangTangkap'] ?: null,
+                'tukang_tangkap' => trim($data['tukangTangkap']) ?: null,
                 'mulai' => $mulai,
                 'selesai' => $selesai,
                 'jumlah_krat' => (int) $data['jumlahKrat'],
@@ -185,6 +263,9 @@ class Panen extends Component
                 'berat_kg' => $data['beratKg'],
                 'netto_nota_kg' => $data['nettoNotaKg'],
             ])->save();
+
+            $nota->pemanenKrat()->delete();
+            $nota->pemanenKrat()->createMany($daftarPemanenKrat->all());
 
             Aktivitas::catat(
                 $baru ? JenisAktivitas::Tambah : JenisAktivitas::Ubah,
@@ -196,6 +277,7 @@ class Panen extends Component
 
         $this->bersihkanForm();
         $this->pesan = 'Nota panen '.$noBtpa.($baru ? ' ditambahkan.' : ' diperbarui.');
+        $this->dispatch('tutup-modal-panen');
         unset($this->periode, $this->rekap);
         $this->dispatch('nota-panen-disimpan');
     }
@@ -211,6 +293,7 @@ class Panen extends Component
 
     public function hapus(): void
     {
+        $this->pastikanPeriodeDapatDiubah();
         $id = $this->notaHapusId ?? abort(404);
         $periode = $this->periode ?? abort(404);
         $noBtpa = DB::transaction(function () use ($id, $periode): string {
@@ -262,6 +345,7 @@ class Panen extends Component
         $this->noPolisi = '';
         $this->pembeli = '';
         $this->tukangTangkap = '';
+        $this->detailPemanen = [];
         $this->mulai = $now->format('Y-m-d\TH:i');
         $this->selesai = $now->copy()->addMinutes(30)->format('Y-m-d\TH:i');
         $this->jumlahKrat = '';
@@ -269,5 +353,23 @@ class Panen extends Component
         $this->beratKg = '';
         $this->nettoNotaKg = '';
         $this->pesan = null;
+        unset($this->rincianPemanen);
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    private function namaPemanen(): Collection
+    {
+        return collect(preg_split('/[,;\r\n]+/u', $this->tukangTangkap, -1, PREG_SPLIT_NO_EMPTY))
+            ->map(fn (string $nama): string => trim($nama))
+            ->filter()
+            ->unique(fn (string $nama): string => mb_strtolower($nama))
+            ->values();
+    }
+
+    private function kunciPemanen(string $nama): string
+    {
+        return hash('sha256', mb_strtolower(trim($nama)));
     }
 }

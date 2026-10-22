@@ -7,7 +7,6 @@ use App\Models\JenisPakan;
 use App\Models\PemberianPakan;
 use App\Models\PenerimaanPakan;
 use App\Models\Periode;
-use App\Models\PeriodeKandang;
 use App\Support\LembarRecording;
 use App\Support\LogPakan;
 use Database\Seeders\DatabaseSeeder;
@@ -94,8 +93,9 @@ class LogPemberianPakanTest extends TestCase
         $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
         $log = $this->log('Periode September 2026');
         $stokSb10 = collect($log['per_jenis'])->firstWhere('jenis', 'SB-10');
-        $periodeKandang = PeriodeKandang::with(['periode', 'recordings', 'pemberianPakan'])
-            ->where('periode_id', $periode->id)
+        $periodeKandang = $periode->kandangPeriode()
+            ->with(['periode', 'recordings', 'pemberianPakan'])
+            ->whereHas('kandang', fn ($query) => $query->where('nama', 'Kandang 2'))
             ->firstOrFail();
         $barisTerakhir = collect(LembarRecording::baris($periodeKandang))
             ->filter(fn (array $baris): bool => $baris['terisi'])
@@ -135,10 +135,11 @@ class LogPemberianPakanTest extends TestCase
         $this->get(route('pakan.log'))->assertOk()->assertSee('Belum ada periode');
 
         $this->seed(DatabaseSeeder::class);
+        Periode::where('nama', 'Periode September 2026')->update(['status' => 'berjalan']);
 
         $this->get(route('pakan.log'))
             ->assertOk()
-            ->assertSeeInOrder(['Daftar pakan masuk', 'Log harian pemberian pakan'])
+            ->assertSeeInOrder(['Log harian pemberian pakan', 'Daftar pakan masuk'])
             ->assertSee('Log harian pemberian pakan')
             ->assertSee('Daftar pakan masuk')
             ->assertDontSee('Daftar pemberian pakan')
@@ -163,10 +164,23 @@ class LogPemberianPakanTest extends TestCase
             ->assertSee('Kandang 2 (zak)');
     }
 
+    public function test_feed_page_does_not_show_transfer_controls_or_stock_labels(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $this->get(route('pakan.log'))
+            ->assertOk()
+            ->assertDontSee('Daftar transfer pakan')
+            ->assertDontSee('Transfer pakan ke kandang')
+            ->assertDontSee('Dipindahkan ke kandang')
+            ->assertDontSee('Stok di farm');
+    }
+
     public function test_feed_receipts_can_be_created_updated_and_deleted_from_the_feed_and_stock_page(): void
     {
         $this->seed(DatabaseSeeder::class);
         $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $jenisPakan = JenisPakan::where('kode', 'SB-10')->firstOrFail();
 
         $halaman = Livewire::withQueryParams(['periode' => $periode->id])
@@ -214,7 +228,10 @@ class LogPemberianPakanTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
         $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
-        $kandang = $periode->kandangPeriode()->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
+        $kandang = $periode->kandangPeriode()
+            ->whereHas('kandang', fn ($query) => $query->where('nama', 'Kandang 2'))
+            ->firstOrFail();
         $jenisPakan = JenisPakan::where('kode', 'SB-12')->firstOrFail();
 
         $halaman = Livewire::withQueryParams(['periode' => $periode->id])
@@ -226,8 +243,7 @@ class LogPemberianPakanTest extends TestCase
             ->set('zak', '2.5')
             ->call('simpan')
             ->assertHasNoErrors()
-            ->assertSee('Pemberian pakan SB-12 Kandang 2 ditambahkan.')
-            ->assertSee('2,5');
+            ->assertSee('Pemberian pakan SB-12 Kandang 2 ditambahkan.');
 
         $pemberian = PemberianPakan::query()
             ->where('periode_kandang_id', $kandang->id)
@@ -235,6 +251,7 @@ class LogPemberianPakanTest extends TestCase
             ->where('zak', 2.5)
             ->firstOrFail();
         $this->assertSame(22, $pemberian->umur);
+        $halaman->assertSee('2,5');
 
         $halaman->call('ubahPemberian', $pemberian->id)
             ->set('tanggal', '2026-10-02')
@@ -256,6 +273,23 @@ class LogPemberianPakanTest extends TestCase
             ->assertSee('Pemberian pakan SB-12 Kandang 2 dihapus.');
 
         $this->assertDatabaseMissing('pemberian_pakans', ['id' => $pemberian->id]);
+    }
+
+    public function test_feed_transfers_are_no_longer_supported_from_the_feed_page(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+
+        Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(LogPemberianPakan::class)
+            ->call('tambahPemberian')
+            ->set('tipeForm', 'transfer')
+            ->set('tanggal', '2026-10-03')
+            ->set('zak', '10')
+            ->call('simpan')
+            ->assertHasErrors(['tipeForm']);
+
+        $this->assertDatabaseCount('transfer_pakans', 0);
     }
 
     public function test_feed_record_mutations_are_scoped_to_the_selected_period_and_reject_future_dates(): void

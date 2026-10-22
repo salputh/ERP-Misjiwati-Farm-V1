@@ -13,13 +13,13 @@
                 <div class="table-responsive">
                     <table class="table table--default table-borderless tabel-laporan tabel-panen mb-0">
                         <thead>
-                            <tr>
-                                <th class="text-start">Nama</th>
-                                <th class="text-start d-none d-md-table-cell">Jabatan</th>
-                                <th class="text-end d-none d-md-table-cell">Hari kerja</th>
-                                <th class="text-end d-none d-sm-table-cell">Pendapatan (Rp)</th>
-                                <th class="text-end d-none d-sm-table-cell">Potongan (Rp)</th>
-                                <th class="text-end">Bersih diterima (Rp)</th>
+                            <tr class="userDatatable-header">
+                                <th class="text-start"><span class="userDatatable-title">Nama</span></th>
+                                <th class="text-start d-none d-md-table-cell"><span class="userDatatable-title">Jabatan</span></th>
+                                <th class="text-end d-none d-md-table-cell"><span class="userDatatable-title">Hari kerja</span></th>
+                                <th class="text-end d-none d-sm-table-cell"><span class="userDatatable-title">Pendapatan (Rp)</span></th>
+                                <th class="text-end d-none d-sm-table-cell"><span class="userDatatable-title">Potongan (Rp)</span></th>
+                                <th class="text-end"><span class="userDatatable-title">Bersih diterima (Rp)</span></th>
                             </tr>
                         </thead>
                         @foreach ($lembar['kandang'] as $kandang)

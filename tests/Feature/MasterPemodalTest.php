@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\MasterPemodal;
+use App\Models\Farm;
 use App\Models\Kandang;
 use App\Models\Pemodal;
 use App\Models\Periode;
@@ -128,5 +129,44 @@ class MasterPemodalTest extends TestCase
             'bagi_hasil_id' => $periodeKandang->bagiHasil->id,
             'peran' => 'pemodal',
         ]);
+    }
+
+    public function test_updating_investor_shares_in_one_farm_preserves_other_farm_allocations(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $farmUtama = Farm::query()->where('kode', 'K0242')->firstOrFail();
+        $farmKedua = Farm::query()->create(['nama' => 'Farm Kedua', 'kode' => 'F002']);
+        $kandangUtama = Kandang::query()->where('farm_id', $farmUtama->id)->firstOrFail();
+        $kandangKedua = Kandang::query()->create([
+            'farm_id' => $farmKedua->id,
+            'nama' => 'Kandang 1',
+            'kapasitas' => 15000,
+        ]);
+        $pemodal = Pemodal::query()->create(['nama' => 'Pemodal Lintas Farm']);
+        $pemodal->kandangs()->attach([
+            $kandangUtama->id => ['persen' => 25],
+            $kandangKedua->id => ['persen' => 35],
+        ]);
+
+        Livewire::withQueryParams(['farm' => $farmKedua->id])
+            ->test(MasterPemodal::class)
+            ->call('ubah', $pemodal->id)
+            ->set('porsiKandang.'.$kandangKedua->id, '40')
+            ->call('simpan')
+            ->assertHasNoErrors()
+            ->call('mintaHapus', $pemodal->id)
+            ->call('hapus')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('kandang_pemodal', [
+            'pemodal_id' => $pemodal->id,
+            'kandang_id' => $kandangUtama->id,
+            'persen' => 25,
+        ]);
+        $this->assertDatabaseMissing('kandang_pemodal', [
+            'pemodal_id' => $pemodal->id,
+            'kandang_id' => $kandangKedua->id,
+        ]);
+        $this->assertDatabaseHas('pemodals', ['id' => $pemodal->id]);
     }
 }

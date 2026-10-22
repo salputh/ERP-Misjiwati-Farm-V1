@@ -25,9 +25,10 @@ class LembarRecording
         $periodeKandang->loadMissing(['periode', 'recordings', 'pemberianPakan.jenisPakan']);
 
         $periode = $periodeKandang->periode;
-        $beratDoc = (float) $periode->berat_doc_gram;
+        $beratDoc = (float) $periodeKandang->beratDocGramEfektif();
+        $tanggalChickIn = $periodeKandang->tanggalChickInEfektif();
         $standar = new Standar($periode->strain, $beratDoc);
-        $populasi = $periodeKandang->populasi_awal;
+        $populasi = $periodeKandang->populasiAktual();
         $gramPerZakStandar = config('standar.kg_per_zak') * 1000;
         $catatan = $periodeKandang->recordings->keyBy('umur');
         $pemberianPerUmur = $periodeKandang->pemberianPakan->groupBy('umur');
@@ -42,7 +43,8 @@ class LembarRecording
         $deplesiKumulatif = (int) ($catatan->get(0)?->mati + $catatan->get(0)?->afkir);
         $zakKumulatif = (float) $zakPerUmur->get(0, 0);
         $gramPakanKumulatif = (float) $gramPakanPerUmur->get(0, 0);
-        $pakanKumulatif = $gramPakanKumulatif / ($populasi - $deplesiKumulatif);
+        $populasiHidup = $populasi - $deplesiKumulatif;
+        $pakanKumulatif = $populasiHidup > 0 ? $gramPakanKumulatif / $populasiHidup : 0.0;
         $pakanKgKumulatif = $gramPakanKumulatif / 1000;
 
         $pakanStandarKumulatif = 0.0;
@@ -67,13 +69,13 @@ class LembarRecording
             $saldo = $populasi - $deplesiKumulatif;
 
             $hasil = [
-                'tanggal' => $periode->tanggal_chick_in->copy()->addDays($umur),
+                'tanggal' => $tanggalChickIn->copy()->addDays($umur),
                 'umur' => $umur,
                 'terisi' => $rekam || $adaPakan,
                 'mati' => $rekam?->mati,
                 'afkir' => $rekam?->afkir,
                 'deplesi_kumulatif' => $deplesiKumulatif,
-                'deplesi_persen' => $deplesiKumulatif / $populasi * 100,
+                'deplesi_persen' => $populasi > 0 ? $deplesiKumulatif / $populasi * 100 : 0.0,
                 'deplesi_persen_standar' => $standar->deplesiPersen($umur),
                 // Dikali dulu baru dibagi agar tidak kena galat pembulatan float (772,5 bukan 772,4999).
                 'deplesi_ekor_standar' => round($standar->deplesiPersen($umur) * $populasi) / 100,
@@ -82,7 +84,7 @@ class LembarRecording
                 'abw_standar' => $abwStandar,
                 'dg_standar' => $dgStandar,
                 'persen_pakan_bw_standar' => $dgStandar / $pakanStandar * 100,
-                'fcr_standar' => $pakanStandarKumulatif / $abwStandar,
+                'fcr_standar' => $standar->fcr($umur),
                 'saldo' => $saldo,
             ];
 
@@ -93,7 +95,7 @@ class LembarRecording
                 $zakKumulatif += $zak;
                 $gramPakan = (float) $gramPakanPerUmur->get($umur, 0);
                 $pakanKgKumulatif += $gramPakan / 1000;
-                $pakanGram = $gramPakan / $saldo;
+                $pakanGram = $saldo > 0 ? $gramPakan / $saldo : 0.0;
                 $pakanKumulatif += $pakanGram;
 
                 $hasil += [

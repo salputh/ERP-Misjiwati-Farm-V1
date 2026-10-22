@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\MemilihPeriode;
 use App\Models\Karyawan;
 use App\Models\Periode;
 use App\Support\DaftarKaryawan;
@@ -18,13 +19,18 @@ use Livewire\Component;
 #[Title('Karyawan')]
 class DataKaryawan extends Component
 {
+    use MemilihPeriode;
+
     /**
      * Periode terbaru yang sudah punya slip gaji; sumber hari kerja dan pendapatan bersih di daftar.
      */
     #[Computed]
     public function periodeSlip(): ?Periode
     {
-        return Periode::whereHas('kandangPeriode.slipGaji')->orderByDesc('tanggal_chick_in')->first();
+        return $this->farm?->periodes()
+            ->whereHas('kandangPeriode.slipGaji')
+            ->orderByDesc('tanggal_chick_in')
+            ->first();
     }
 
     /**
@@ -43,7 +49,11 @@ class DataKaryawan extends Component
             $payroll = LembarPayroll::buat($kandangPeriode, LembarRhpp::real($this->periodeSlip->loadMissing(LembarRhpp::RELASI)));
         }
 
-        return DaftarKaryawan::buat(Karyawan::with('kandang')->get(), $payroll);
+        $karyawan = $this->farm
+            ? Karyawan::query()->whereHas('kandang', fn ($query) => $query->where('farm_id', $this->farm->id))->with('kandang')->get()
+            : collect();
+
+        return DaftarKaryawan::buat($karyawan, $payroll);
     }
 
     public function render(): View

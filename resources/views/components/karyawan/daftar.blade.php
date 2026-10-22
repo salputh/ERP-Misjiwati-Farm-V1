@@ -19,14 +19,14 @@
                 <div class="table-responsive">
                     <table class="table table--default table-borderless tabel-laporan tabel-panen mb-0">
                         <thead>
-                            <tr>
-                                <th class="text-start">No.</th>
-                                <th class="text-start">Nama</th>
-                                <th class="text-start">Jabatan</th>
-                                <th class="text-start d-none d-md-table-cell">Keterangan</th>
+                            <tr class="userDatatable-header">
+                                <th class="text-start"><span class="userDatatable-title">No.</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Nama</span></th>
+                                <th class="text-start"><span class="userDatatable-title">Jabatan</span></th>
+                                <th class="text-start d-none d-md-table-cell"><span class="userDatatable-title">Keterangan</span></th>
                                 @isset($periodeSlip)
-                                    <th class="text-end d-none d-md-table-cell">Hari kerja</th>
-                                    <th class="text-end">Bersih diterima (Rp)</th>
+                                    <th class="text-end d-none d-md-table-cell"><span class="userDatatable-title">Hari kerja</span></th>
+                                    <th class="text-end"><span class="userDatatable-title">Bersih diterima (Rp)</span></th>
                                 @endisset
                             </tr>
                         </thead>

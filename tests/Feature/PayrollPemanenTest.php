@@ -26,7 +26,7 @@ class PayrollPemanenTest extends TestCase
             ->assertOk()
             ->assertSee('Payroll pemanen')
             ->assertSee(route('payroll.pemanen'), false)
-            ->assertSee('masing-masing menerima perhitungan atas seluruh berat nota');
+            ->assertSee('Berat timbang aktual dipakai jika diisi');
 
         Livewire::test(PayrollPemanen::class)
             ->set('periodeId', $periode->id)
@@ -37,6 +37,92 @@ class PayrollPemanenTest extends TestCase
             ->assertSee('Rp 50.000')
             ->assertSee('Rp 80.000')
             ->assertSee('Rp 130.000');
+    }
+
+    public function test_note_weight_is_allocated_by_each_harvesters_starting_crate(): void
+    {
+        $periode = $this->buatPeriode();
+        Pemanen::create(['nama' => 'Rizal', 'upah_per_kg' => 20]);
+        Pemanen::create(['nama' => 'David', 'upah_per_kg' => 40]);
+        $nota = $this->buatNota($periode, 'BT003', '100.00', '');
+        $nota->update(['jumlah_krat' => 10]);
+        $nota->pemanenKrat()->createMany([
+            ['nama' => 'Rizal', 'krat_mulai' => 1],
+            ['nama' => 'David', 'krat_mulai' => 4],
+        ]);
+
+        Livewire::test(PayrollPemanen::class)
+            ->set('periodeId', $periode->id)
+            ->assertSee('30,00 kg')
+            ->assertSee('70,00 kg')
+            ->assertSee('Rp 600')
+            ->assertSee('Rp 2.800')
+            ->assertSee('Rp 3.400');
+    }
+
+    public function test_krat_before_the_first_harvesters_start_remain_unallocated(): void
+    {
+        $periode = $this->buatPeriode();
+        Pemanen::create(['nama' => 'Rizal', 'upah_per_kg' => 20]);
+        $nota = $this->buatNota($periode, 'BT004', '100.00', '');
+        $nota->update(['jumlah_krat' => 10]);
+        $nota->pemanenKrat()->create([
+            'nama' => 'Rizal',
+            'krat_mulai' => 3,
+        ]);
+
+        Livewire::test(PayrollPemanen::class)
+            ->set('periodeId', $periode->id)
+            ->assertSee('80,00 kg')
+            ->assertSee('20,00 kg belum teralokasi ke pemanen')
+            ->assertSee('Rp 1.600')
+            ->assertDontSee('Rp 2.000');
+    }
+
+    public function test_manual_harvester_weights_are_used_and_the_remaining_note_weight_is_split_by_crates(): void
+    {
+        $periode = $this->buatPeriode();
+        Pemanen::create(['nama' => 'Rizal', 'upah_per_kg' => 20]);
+        Pemanen::create(['nama' => 'David', 'upah_per_kg' => 20]);
+        Pemanen::create(['nama' => 'Budi', 'upah_per_kg' => 20]);
+        $nota = $this->buatNota($periode, 'BT005', '100.00', '');
+        $nota->update(['jumlah_krat' => 10]);
+        $nota->pemanenKrat()->createMany([
+            ['nama' => 'Rizal', 'krat_mulai' => 1, 'berat_timbang_kg' => 20],
+            ['nama' => 'David', 'krat_mulai' => 4],
+            ['nama' => 'Budi', 'krat_mulai' => 8],
+        ]);
+
+        Livewire::test(PayrollPemanen::class)
+            ->set('periodeId', $periode->id)
+            ->assertSee('20,00 kg')
+            ->assertSee('45,71 kg')
+            ->assertSee('34,29 kg')
+            ->assertSee('Rp 400')
+            ->assertSee('Rp 914')
+            ->assertSee('Rp 686')
+            ->assertSee('Rp 2.000');
+    }
+
+    public function test_all_entered_harvester_weights_override_the_crate_proportions(): void
+    {
+        $periode = $this->buatPeriode();
+        Pemanen::create(['nama' => 'Rizal', 'upah_per_kg' => 20]);
+        Pemanen::create(['nama' => 'David', 'upah_per_kg' => 20]);
+        $nota = $this->buatNota($periode, 'BT006', '100.00', '');
+        $nota->update(['jumlah_krat' => 10]);
+        $nota->pemanenKrat()->createMany([
+            ['nama' => 'Rizal', 'krat_mulai' => 1, 'berat_timbang_kg' => 25.25],
+            ['nama' => 'David', 'krat_mulai' => 4, 'berat_timbang_kg' => 74.75],
+        ]);
+
+        Livewire::test(PayrollPemanen::class)
+            ->set('periodeId', $periode->id)
+            ->assertSee('25,25 kg')
+            ->assertSee('74,75 kg')
+            ->assertSee('Rp 505')
+            ->assertSee('Rp 1.495')
+            ->assertSee('Rp 2.000');
     }
 
     public function test_unregistered_and_unassigned_harvest_weight_is_reported_not_paid(): void
@@ -50,7 +136,7 @@ class PayrollPemanenTest extends TestCase
             ->set('periodeId', $periode->id)
             ->assertSee('Pemanen Asing')
             ->assertSee('12,03 kg')
-            ->assertSee('10,00 kg belum memiliki nama tukang tangkap')
+            ->assertSee('10,00 kg belum teralokasi ke pemanen')
             ->assertSee('Rp 241')
             ->assertDontSee('Rp 480');
     }
@@ -71,7 +157,7 @@ class PayrollPemanenTest extends TestCase
             'strain' => 'Ross',
             'tanggal_chick_in' => '2026-10-01',
             'berat_doc_gram' => 40,
-            'status' => 'selesai',
+            'status' => 'tutup_rhpp',
         ]);
     }
 

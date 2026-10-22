@@ -1,8 +1,6 @@
 <div class="container-fluid">
     <div class="row">
-        <x-breadcrumb judul="Recording harian pemeliharaan ayam broiler" :jejak="['Produksi', 'Recording harian']">
-            <x-pilih-periode :daftar="$this->daftarPeriode" :terpilih="$this->periode" rute="recording.harian" />
-        </x-breadcrumb>
+        <x-breadcrumb judul="Recording harian pemeliharaan ayam broiler" :jejak="['Produksi', 'Recording harian']" />
 
         @if ($this->terpilih)
             <div class="col-lg-12 mb-25">
@@ -43,7 +41,6 @@
                     <div class="card-body pt-0">
                         <dl class="recording-info">
                             <div><dt>Peternak</dt><dd>Misjiwati</dd></div>
-                            <div><dt>Periode</dt><dd>{{ $this->periode->nama }}</dd></div>
                             <div><dt>Populasi</dt><dd>@angka($this->terpilih->populasi_awal) ekor</dd></div>
                             <div><dt>Tanggal chick-in</dt><dd>{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</dd></div>
                             <div><dt>Berat DOC</dt><dd>@angka($this->periode->berat_doc_gram) g</dd></div>

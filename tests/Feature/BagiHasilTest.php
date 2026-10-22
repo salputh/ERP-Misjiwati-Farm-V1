@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\BagiHasil;
 use App\Models\Kandang;
 use App\Models\PenerimaBagiHasil;
+use App\Models\Pengaturan;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
 use App\Support\BukuKas;
@@ -13,6 +14,7 @@ use App\Support\LembarRhpp;
 use Database\Seeders\BagiHasilSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class BagiHasilTest extends TestCase
@@ -99,7 +101,7 @@ class BagiHasilTest extends TestCase
         $this->assertSame('Rp 5.679,45 per ekor populasi', $lembar['pendapatan'][4]['rumus']);
 
         $this->assertSame([
-            'Operasional' => 59_944_239,
+            'Operasional' => 54_287_239,
             'Gaji ABK' => 23_474_635,
             'Premi pemeliharaan ABK' => 1_050_000,
             'Premi controller Salman' => 262_500,
@@ -107,13 +109,191 @@ class BagiHasilTest extends TestCase
             'Upah controller Salman' => 6_299_512,
             'Bonus pasar ABK' => 17_774_249,
             'Bonus pasar controller Salman' => 5_924_750,
-            'Total operasional pemeliharaan' => 115_229_885,
+            'Total operasional pemeliharaan' => 109_572_885,
         ], array_column($lembar['pengeluaran'], 'jumlah', 'label'));
 
-        $this->assertSame([86_003_861, 1_000_000, 2_125_097, 82_878_764], [
+        $this->assertSame([91_660_861, 1_000_000, 2_266_522, 88_394_339], [
             $lembar['ringkasan']['sisa'], $lembar['ringkasan']['entertain'], $lembar['ringkasan']['zakat'], $lembar['ringkasan']['sisa_akhir'],
         ]);
         $this->assertSame([], $lembar['tidak_dijumlahkan']);
+    }
+
+    public function test_house_two_bagi_hasil_inputs_can_be_saved_and_recalculated(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'aktif']);
+        $kandang = $this->kandang('Kandang 2');
+
+        $editor = Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(\App\Livewire\BagiHasil::class, ['kandang' => $kandang])
+            ->assertSet('masukan.operasional', '54287239')
+            ->assertSet('pemodal.0.nama', 'Muchrizan')
+            ->assertSee('Pengaturan bagi hasil Kandang 2')
+            ->assertSee('Simpan dan hitung ulang')
+            ->set('masukan.operasional', '60000000') // percobaan mengetik, harus diabaikan
+            ->set('masukan.tarif_gaji_abk_per_kg', '600')
+            ->set('masukan.controller', 'Salman A')
+            ->set('masukan.persen_upah_controller', '4')
+            ->set('abk.0.jumlah', '700000')
+            ->set('abk.0.keterangan', 'koordinator')
+            ->set('entertain.0.jumlah', '400000')
+            ->set('pemodal.0.nama', 'Muchrizan Baru')
+            ->call('simpan')
+            ->assertHasNoErrors()
+            ->assertSet('pesan', 'Data bagi hasil Kandang 2 berhasil disimpan.');
+
+        // Operasional dikunci dari buku kas, jadi angka yang diketik tidak dipakai.
+        $this->assertSame(54_287_239, $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->operasional);
+        $this->assertSame(600, $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->tarif_gaji_abk_per_kg);
+        $this->assertSame(4.0, $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->persen_upah_controller);
+        $this->assertSame('Salman A', $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->controller);
+        $frengky = $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->penerima()->where('nama', 'Frengky')->firstOrFail();
+        $this->assertSame(700_000, $frengky->jumlah);
+        $this->assertSame('koordinator', $frengky->keterangan);
+        $this->assertSame(400_000, $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->penerima()->where('nama', 'Heri')->value('jumlah'));
+        $this->assertSame('Muchrizan Baru', $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->penerima()->where('peran', 'pemodal')->value('nama'));
+        $this->assertSame([
+            116_480_150,
+            84_753_596,
+            900_000,
+            2_096_340,
+            81_757_256,
+        ], [
+            $editor->instance()->lembar['ringkasan']['pengeluaran'],
+            $editor->instance()->lembar['ringkasan']['sisa'],
+            $editor->instance()->lembar['ringkasan']['entertain'],
+            $editor->instance()->lembar['ringkasan']['zakat'],
+            $editor->instance()->lembar['ringkasan']['sisa_akhir'],
+        ]);
+    }
+
+    public function test_bagi_hasil_page_offers_pdf_and_png_export(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $kandang = $this->kandang('Kandang 2');
+
+        $this->get($this->alamat('Kandang 2', 'Periode Juli 2026'))
+            ->assertOk()
+            ->assertSee('Ekspor PDF')
+            ->assertSee('Ekspor PNG')
+            // Elemen yang dipotret untuk gambar PNG.
+            ->assertSee('id="halaman-bagi-hasil"', false)
+            ->assertSee(route('bagi.hasil.export.pdf', ['kandang' => $kandang->id, 'periode' => $periode->id]), false);
+    }
+
+    public function test_bagi_hasil_sheet_can_be_exported_to_pdf(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $kandang = $this->kandang('Kandang 2');
+
+        $respons = $this->get(route('bagi.hasil.export.pdf', ['kandang' => $kandang->id, 'periode' => $periode->id]));
+
+        $respons->assertOk();
+        $respons->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('attachment;', $respons->headers->get('content-disposition'));
+        $this->assertStringContainsString('bagi-hasil-kandang-2', $respons->headers->get('content-disposition'));
+        $this->assertGreaterThan(1000, strlen($respons->getContent()));
+    }
+
+    public function test_bagi_hasil_pdf_export_is_refused_for_a_cage_outside_the_period(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $kandangLain = Kandang::query()->create(['farm_id' => $periode->farm_id, 'nama' => 'Kandang 3', 'kapasitas' => 20000]);
+
+        $this->get(route('bagi.hasil.export.pdf', ['kandang' => $kandangLain->id, 'periode' => $periode->id]))
+            ->assertNotFound();
+    }
+
+    public function test_bagi_hasil_sheet_can_be_locked_with_the_admin_password(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'aktif']);
+        $kandang = $this->kandang('Kandang 2');
+
+        Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(\App\Livewire\BagiHasil::class, ['kandang' => $kandang])
+            ->assertSee('Kunci bagi hasil')
+            ->call('bukaModalKunci')
+            ->set('sandiAdmin', 'rahasia123')
+            ->set('sandiAdminUlang', 'rahasia123')
+            ->call('kunciBagiHasil')
+            ->assertHasNoErrors()
+            ->assertSet('pesan', 'Lembar bagi hasil Kandang 2 dikunci.')
+            ->assertSet('bagiHasilTerkunci', true);
+
+        $this->assertSame('dikunci', $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->status);
+        $this->assertDatabaseHas('aktivitas', [
+            'subjek' => 'Bagi hasil Kandang 2 pada Periode Juli 2026',
+            'rincian' => 'Lembar dikunci, password admin ditetapkan',
+        ]);
+        $this->assertTrue(Pengaturan::cocokPasswordAdmin('rahasia123'));
+    }
+
+    public function test_locked_bagi_hasil_sheet_cannot_be_saved(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'aktif']);
+        $kandang = $this->kandang('Kandang 2');
+        Pengaturan::setPasswordAdmin('rahasia123');
+        $this->periodeKandang('Kandang 2')->bagiHasil->update(['status' => 'dikunci']);
+
+        Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(\App\Livewire\BagiHasil::class, ['kandang' => $kandang])
+            ->assertSet('bagiHasilTerkunci', true)
+            ->assertSee('Bagi hasil Kandang 2 dikunci')
+            ->set('masukan.operasional', '60000000') // percobaan mengetik, harus diabaikan
+            ->call('simpan')
+            ->assertHasErrors(['masukan']);
+
+        $this->assertSame(59_944_239, $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->operasional);
+    }
+
+    public function test_bagi_hasil_lock_needs_the_right_admin_password(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'aktif']);
+        $kandang = $this->kandang('Kandang 2');
+        Pengaturan::setPasswordAdmin('rahasia123');
+
+        Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(\App\Livewire\BagiHasil::class, ['kandang' => $kandang])
+            ->call('bukaModalKunci')
+            ->set('sandiAdmin', 'salah')
+            ->call('kunciBagiHasil')
+            ->assertHasErrors(['sandiAdmin']);
+
+        $this->assertSame('sementara', $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->status);
+    }
+
+    public function test_house_two_bagi_hasil_requires_all_investor_shares_to_equal_one_hundred_percent(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'aktif']);
+        $kandang = $this->kandang('Kandang 2');
+
+        Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(\App\Livewire\BagiHasil::class, ['kandang' => $kandang])
+            ->set('pemodal.0.persen', '99')
+            ->call('simpan')
+            ->assertHasErrors(['pemodal'])
+            ->assertSee('Jumlah porsi seluruh pemodal harus tepat 100%.');
+
+        $this->assertSame(59_944_239, $this->periodeKandang('Kandang 2')->fresh()->bagiHasil->operasional);
+    }
+
+    public function test_closed_period_keeps_the_house_two_editor_locked(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $kandang = $this->kandang('Kandang 2');
+
+        $this->get($this->alamat('Kandang 2', 'Periode Juli 2026'))
+            ->assertOk()
+            ->assertDontSee('Pengaturan bagi hasil Kandang 2');
+
+        Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(\App\Livewire\BagiHasil::class, ['kandang' => $kandang])
+            ->call('simpan')
+            ->assertStatus(403);
     }
 
     public function test_abk_income_is_split_evenly_after_fixed_premiums(): void
@@ -142,13 +322,34 @@ class BagiHasilTest extends TestCase
         $this->assertSame([100.0, 25_978_276], [$satu['persen'], $satu['total']]);
 
         $dua = $this->lembar('Kandang 2')['pemodal'];
-        $this->assertSame([['nama' => 'Muchrizan', 'persen' => 100.0, 'jumlah' => 82_878_764]], $dua['penerima']);
+        $this->assertSame([['nama' => 'Muchrizan', 'persen' => 100.0, 'jumlah' => 88_394_339]], $dua['penerima']);
     }
 
-    public function test_operational_cost_is_compared_with_the_cash_book(): void
+    public function test_operational_input_is_locked_to_the_cash_book(): void
     {
-        $this->assertSame(['lembar' => 75_995_246, 'kas' => null, 'selisih' => null], $this->lembar('Kandang 1')['operasional']);
-        $this->assertSame(['lembar' => 59_944_239, 'kas' => 67_327_239, 'selisih' => 7_383_000], $this->lembar('Kandang 2')['operasional']);
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'aktif']);
+        $kandang = $this->kandang('Kandang 2');
+
+        $html = Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(\App\Livewire\BagiHasil::class, ['kandang' => $kandang])
+            ->assertSet('masukan.operasional', '54287239')
+            ->html();
+
+        preg_match('/<input[^>]*id="bagi-hasil-operasional"[^>]*>/', $html, $isian);
+
+        $this->assertNotEmpty($isian, 'Field operasional自己没有 ada di form');
+        $this->assertStringContainsString('readonly', $isian[0]);
+        $this->assertStringContainsString('diambil otomatis dari total biaya operasional', $html);
+        $this->assertStringContainsString('Kas operasional Kandang 2', $html);
+    }
+
+    public function test_operational_cost_is_taken_from_the_cash_book(): void
+    {
+        // Kandang 1 belum punya buku kas, jadi angka terakhir yang tersimpan dipakai.
+        $this->assertSame(['nilai' => 75_995_246, 'kas' => null, 'dari_kas' => false], $this->lembar('Kandang 1')['operasional']);
+        // Kandang 2: total biaya operasional di buku kas, yaitu keluar dikurangi pinjaman (BR-11).
+        $this->assertSame(['nilai' => 54_287_239, 'kas' => 54_287_239, 'dari_kas' => true], $this->lembar('Kandang 2')['operasional']);
     }
 
     public function test_loss_is_not_charged_zakat_and_uneven_rupiah_go_to_the_first_abk(): void
@@ -205,7 +406,7 @@ class BagiHasilTest extends TestCase
             ->assertSee('25.978.276')
             ->assertSee('Bonus pasar Rohim')
             ->assertSee('tercantum di lembar asli tetapi tidak masuk totalnya')
-            ->assertSee('belum bisa dicocokkan')
+            ->assertSee('memakai nilai terakhir yang tersimpan')
             ->assertSee('79,9%')
             ->assertSee('20.756.643')
             ->assertSee('Mustofa')
@@ -215,12 +416,12 @@ class BagiHasilTest extends TestCase
             ->assertOk()
             ->assertSee('Bagi hasil Kandang 2')
             ->assertSee('Premi tetap Frengky (ketua ABK)')
-            ->assertSee('115.229.885')
-            ->assertSee('82.878.764')
+            ->assertSee('109.572.885')
+            ->assertSee('88.394.339')
             ->assertSee('10.949.721')
-            ->assertSee('Operasional berbeda dari')
-            ->assertSee('67.327.239')
-            ->assertSee('7.383.000')
+            ->assertSee('Operasional diambil otomatis dari total biaya operasional')
+            ->assertSee('54.287.239')
+            ->assertSee('tidak termasuk pinjaman makan dan pinjaman karyawan')
             ->assertDontSee('tercantum di lembar asli tetapi tidak masuk totalnya');
     }
 
@@ -264,7 +465,7 @@ class BagiHasilTest extends TestCase
         $periodeKandang = $this->periodeKandang($kandang);
         $periode = $periodeKandang->periode->load(['notaPanen', 'hargaKontrak', 'rhppReal', 'kandangPeriode.kandang', 'kandangPeriode.recordings', 'kandangPeriode.pemberianPakan']);
 
-        return LembarBagiHasil::buat($periodeKandang, LembarRhpp::real($periode), BukuKas::buat($periodeKandang)['ringkasan']['keluar'] ?? null);
+        return LembarBagiHasil::buat($periodeKandang, LembarRhpp::real($periode), BukuKas::buat($periodeKandang));
     }
 
     private function periodeKandang(string $kandang): PeriodeKandang

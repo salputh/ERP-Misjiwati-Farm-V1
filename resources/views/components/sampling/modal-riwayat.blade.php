@@ -43,11 +43,11 @@
 
                         <div class="row g-4 mb-25">
                             @foreach (config('sampling.lantai') as $lantai => $info)
-                                <div @class(['col-lg-6' => ! $sesi->dengan_sexing, 'col-12' => $sesi->dengan_sexing]) wire:key="riwayat-lantai-{{ $sesi->id }}-{{ $lantai }}">
+                                <div class="col-12" wire:key="riwayat-lantai-{{ $sesi->id }}-{{ $lantai }}">
                                     <h6 class="mb-15">{{ $info['label'] }}</h6>
                                     <div class="row g-4">
                                         @foreach ($hasil['kelamin'] as $kelamin)
-                                            <div @class(['col-xl-6' => $sesi->dengan_sexing, 'col-12' => ! $sesi->dengan_sexing])>
+                                            <div class="col-12">
                                                 @if ($sesi->dengan_sexing)
                                                     <x-sampling.kelamin :kelamin="$kelamin" />
                                                 @endif

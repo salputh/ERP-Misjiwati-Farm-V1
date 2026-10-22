@@ -191,10 +191,14 @@ class PanenTest extends TestCase
             ->set('noBtpa', '18001')
             ->set('noPolisi', 'BM 1234 AA')
             ->set('pembeli', 'Pembeli Baru')
-            ->set('tukangTangkap', "Budi, Andi\nCaca")
+            ->set('tukangTangkap', 'Budi, Andi, Caca')
             ->set('mulai', '2026-08-17T20:00')
             ->set('selesai', '2026-08-17T20:30')
             ->set('jumlahKrat', '50')
+            ->set('detailPemanen', [
+                hash('sha256', 'andi') => ['kratMulai' => '21', 'beratTimbang' => '300.25'],
+                hash('sha256', 'caca') => ['kratMulai' => '41', 'beratTimbang' => ''],
+            ])
             ->set('ekor', '650')
             ->set('beratKg', '1100.50')
             ->set('nettoNotaKg', '1098.50')
@@ -207,9 +211,17 @@ class PanenTest extends TestCase
         $baru = NotaPanen::where('periode_id', $periode->id)->where('no_btpa', '18001')->firstOrFail();
         $komponen->assertSeeHtml('wire:key="nota-panen-'.$baru->id.'"');
         $this->assertSame('2026-08-17', $baru->tanggal_panen->toDateString());
-        $this->assertSame("Budi, Andi\nCaca", $baru->tukang_tangkap);
-        $komponen->assertSee('Tukang Tangkap: Budi, Andi')
-            ->assertSee('Caca');
+        $this->assertSame('Budi, Andi, Caca', $baru->tukang_tangkap);
+        $this->assertDatabaseHas('nota_panen_pemanens', [
+            'nota_panen_id' => $baru->id,
+            'nama' => 'Andi',
+            'krat_mulai' => 21,
+            'berat_timbang_kg' => 300.25,
+        ]);
+        $komponen->assertSee('Tukang Tangkap: Budi (mulai krat 1)')
+            ->assertSee('Tukang Tangkap: Andi (mulai krat 21)')
+            ->assertSee('300,25 kg')
+            ->assertSee('Tukang Tangkap: Caca (mulai krat 41)');
         $this->assertDatabaseHas('aktivitas', [
             'jenis' => JenisAktivitas::Tambah->value,
             'modul' => ModulAktivitas::Panen->value,
@@ -219,7 +231,8 @@ class PanenTest extends TestCase
         $komponen->call('ubah', $nota->id)
             ->assertSet('notaId', $nota->id)
             ->assertSet('noBtpa', $nota->no_btpa)
-            ->set('tukangTangkap', 'Dedi dan Eko')
+            ->set('tukangTangkap', 'Dedi, Eko')
+            ->set('detailPemanen.'.hash('sha256', 'eko'), ['kratMulai' => '2', 'beratTimbang' => ''])
             ->set('noBtpa', '18002')
             ->set('beratKg', '1111.25')
             ->call('simpan')
@@ -232,7 +245,12 @@ class PanenTest extends TestCase
             'id' => $nota->id,
             'no_btpa' => '18002',
             'berat_kg' => 1111.25,
-            'tukang_tangkap' => 'Dedi dan Eko',
+            'tukang_tangkap' => 'Dedi, Eko',
+        ]);
+        $this->assertDatabaseHas('nota_panen_pemanens', [
+            'nota_panen_id' => $nota->id,
+            'nama' => 'Eko',
+            'krat_mulai' => 2,
         ]);
         $this->assertDatabaseHas('aktivitas', [
             'jenis' => JenisAktivitas::Ubah->value,
@@ -272,6 +290,84 @@ class PanenTest extends TestCase
         $this->assertDatabaseHas('nota_panens', ['id' => $nota->id, 'no_btpa' => $nota->no_btpa]);
     }
 
+    public function test_multiple_harvesters_can_start_at_the_same_crate_and_start_must_be_within_note(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $nota = NotaPanen::where('periode_id', $periode->id)->firstOrFail();
+
+        Livewire::test(HalamanPanen::class)
+            ->set('periodeId', $periode->id)
+            ->call('ubah', $nota->id)
+            ->set('tukangTangkap', 'Rizal, David')
+            ->set('detailPemanen.'.hash('sha256', 'david'), ['kratMulai' => '', 'beratTimbang' => '20'])
+            ->call('simpan')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('nota_panen_pemanens', [
+            'nota_panen_id' => $nota->id,
+            'nama' => 'Rizal',
+            'krat_mulai' => 1,
+        ]);
+
+        Livewire::test(HalamanPanen::class)
+            ->set('periodeId', $periode->id)
+            ->call('ubah', $nota->id)
+            ->set('tukangTangkap', 'Rizal')
+            ->set('detailPemanen.'.hash('sha256', 'rizal'), [
+                'kratMulai' => (string) ($nota->jumlah_krat + 1),
+                'beratTimbang' => '',
+            ])
+            ->call('simpan')
+            ->assertHasErrors(['detailPemanen.'.hash('sha256', 'rizal').'.kratMulai']);
+
+        Livewire::test(HalamanPanen::class)
+            ->set('periodeId', $periode->id)
+            ->call('ubah', $nota->id)
+            ->set('tukangTangkap', 'Rizal')
+            ->set('detailPemanen.'.hash('sha256', 'rizal'), [
+                'kratMulai' => '',
+                'beratTimbang' => (string) ((float) $nota->berat_kg + 1),
+            ])
+            ->call('simpan')
+            ->assertHasErrors(['detailPemanen']);
+    }
+
+    public function test_names_stay_in_the_main_field_with_optional_per_harvester_details(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+
+        Livewire::test(HalamanPanen::class)
+            ->set('periodeId', $periode->id)
+            ->set('tukangTangkap', 'Rizal, David')
+            ->assertSee('Tukang Tangkap')
+            ->assertSee('Detail pemanen')
+            ->assertSee('Rizal')
+            ->assertSee('David')
+            ->assertSee('Krat mulai (default 1)')
+            ->assertSee('Berat timbang (kg, opsional)');
+    }
+
+    public function test_legacy_harvester_names_remain_editable_without_crate_allocations(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $nota = NotaPanen::factory()
+            ->for($periode)
+            ->create(['tukang_tangkap' => 'Budi, Andi']);
+
+        Livewire::test(HalamanPanen::class)
+            ->set('periodeId', $periode->id)
+            ->call('ubah', $nota->id)
+            ->assertSet('tukangTangkap', 'Budi, Andi')
+            ->set('tukangTangkap', 'Budi, Caca')
+            ->call('simpan')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('nota_panens', [
+            'id' => $nota->id,
+            'tukang_tangkap' => 'Budi, Caca',
+        ]);
+    }
+
     public function test_harvest_note_actions_cannot_access_a_note_from_another_period(): void
     {
         $nota = NotaPanen::firstOrFail();
@@ -290,8 +386,8 @@ class PanenTest extends TestCase
         Livewire::test(HalamanPanen::class)
             ->set('periodeId', $periode->id)
             ->assertSeeHtml('wire:target="ubah, simpan, mintaHapus, hapus"')
-            ->assertSeeHtml('wire:click="ubah(')
-            ->assertSeeHtml('wire:click="mintaHapus(');
+            ->assertSeeHtml('wire:click.prevent="ubah(')
+            ->assertSeeHtml('wire:click.prevent="mintaHapus(');
     }
 
     /**

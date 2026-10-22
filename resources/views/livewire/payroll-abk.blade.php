@@ -1,8 +1,6 @@
 <div class="container-fluid">
     <div class="row">
-        <x-breadcrumb judul="Slip gaji ABK" :jejak="['Keuangan', 'Payroll ABK']">
-            <x-pilih-periode :daftar="$this->daftarPeriode" :terpilih="$this->periode" rute="payroll.abk" />
-        </x-breadcrumb>
+        <x-breadcrumb judul="Slip gaji ABK" :jejak="['Keuangan', 'Payroll ABK']" />
 
         @if ($this->lembar)
             {{-- Identitas dan saringan kandang --}}
@@ -37,7 +35,6 @@
                     <div class="card-body pt-0">
                         <dl class="recording-info mb-0">
                             <div><dt>Farm</dt><dd>Misjiwati / K0242</dd></div>
-                            <div><dt>Periode</dt><dd>{{ $this->periode->nama }}</dd></div>
                             @if ($this->periode->notaPanen->isNotEmpty())
                                 <div><dt>Periode panen</dt><dd>{{ $this->periode->notaPanen->min('mulai')->translatedFormat('j F') }} s/d {{ $this->periode->notaPanen->max('selesai')->translatedFormat('j F Y') }}</dd></div>
                             @endif
@@ -94,7 +91,7 @@
                 <div class="card border-0">
                     <div class="card-body p-30">
                         <h5 class="mb-10">Belum ada slip gaji di periode ini</h5>
-                        <p class="color-gray mb-0">Slip gaji {{ $this->periode->nama }} dibuat setelah panen selesai dan bagi hasil tiap kandang dihitung.</p>
+                        <p class="color-gray mb-0">Slip gaji periode terpilih dibuat setelah panen selesai dan bagi hasil tiap kandang dihitung.</p>
                     </div>
                 </div>
             </div>

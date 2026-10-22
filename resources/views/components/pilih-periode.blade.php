@@ -5,7 +5,7 @@
 @if ($daftar->count() > 1)
     <x-pilih class="me-3" :label="$terpilih->nama" nama="Pilih periode">
         @foreach ($daftar as $pilihan)
-            <a href="{{ route($rute, [...$parameter, 'periode' => $pilihan->id]) }}" @class(['dropdown-item', 'active' => $pilihan->is($terpilih)]) @if ($pilihan->is($terpilih)) aria-current="true" @endif>{{ $pilihan->nama }}</a>
+            <a href="{{ route($rute, [...$parameter, 'farm' => request()->query('farm'), 'periode' => $pilihan->id]) }}" @class(['dropdown-item', 'active' => $pilihan->is($terpilih)]) @if ($pilihan->is($terpilih)) aria-current="true" @endif>{{ $pilihan->nama }}</a>
         @endforeach
     </x-pilih>
 @endif

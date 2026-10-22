@@ -1,8 +1,7 @@
 <div class="container-fluid">
     <div class="row">
-        <x-breadcrumb judul="Laporan harian pemeliharaan ayam broiler" :jejak="['Produksi', 'Laporan harian']">
-            <x-pilih-periode :daftar="$this->daftarPeriode" :terpilih="$this->periode" rute="laporan.harian" />
-        </x-breadcrumb>
+        <x-breadcrumb judul="Laporan harian pemeliharaan ayam broiler" :jejak="['Produksi', 'Laporan harian']" />
+        <x-periode-tertutup :periode="$this->periode" />
 
         @isset($pesan)
             <div class="col-lg-12">
@@ -38,14 +37,15 @@
                             <button type="button" class="btn btn-outline-light btn-sm btn-squared tanpa-kapital" x-on:click="salin">
                                 <i class="uil uil-copy"></i> <span x-text="labelSalin" aria-live="polite">Salin PNG</span>
                             </button>
-                            <a href="{{ route('laporan.harian.form', ['periode' => $this->periode->id, 'tanggal' => $this->laporan['tanggal']->format('Y-m-d')]) }}" class="btn btn-outline-primary btn-sm btn-squared tanpa-kapital">Ubah laporan ini</a>
-                            <a href="{{ route('laporan.harian.form', ['periode' => $this->periode->id]) }}" class="btn btn-primary btn-sm btn-squared tanpa-kapital">Tambah laporan</a>
+                            @unless ($this->periode->tertutup())
+                                <a href="{{ route('laporan.harian.form', ['periode' => $this->periode->id, 'tanggal' => $this->laporan['tanggal']->format('Y-m-d')]) }}" class="btn btn-outline-primary btn-sm btn-squared tanpa-kapital">Ubah laporan ini</a>
+                                <button type="button" class="btn btn-primary btn-sm btn-squared tanpa-kapital" data-bs-toggle="modal" data-bs-target="#modal-form-laporan-harian">Tambah laporan</button>
+                            @endunless
                         </div>
                     </div>
                     <div class="card-body pt-0">
                         <dl class="recording-info mb-0">
                             <div><dt>Peternak</dt><dd>Misjiwati</dd></div>
-                            <div><dt>Periode</dt><dd>{{ $this->periode->nama }}</dd></div>
                             <div><dt>Kandang</dt><dd>{{ collect($this->laporan['kandang'])->pluck('nama')->join(', ') }}</dd></div>
                             <div><dt>Jumlah ayam</dt><dd>@angka($this->laporan['populasi']) ekor</dd></div>
                             <div><dt>Tanggal laporan</dt><dd>{{ $this->laporan['tanggal']->translatedFormat('l, j F Y') }}</dd></div>
@@ -58,7 +58,7 @@
 
             {{-- Angka utama hari ini --}}
             <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->laporan['total']['sisa'])" label="Sisa ayam di kandang" ikon="uil-layer-group" warna="primary">
-                <small>dari @angka($this->laporan['total']['populasi']) ekor chick-in</small>
+                <small>dari @angka($this->laporan['total']['populasi']) ekor chick-in, dikurangi @angka($this->laporan['total']['terpanen']) ekor panen</small>
             </x-dashboard.kartu>
 
             <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->laporan['total']['mati_hari_ini'])" label="Kematian hari ini" ikon="uil-heart-break" warna="info">
@@ -278,7 +278,7 @@
                 </div>
             @endif
 
-            <x-laporan.daftar :daftar="$this->daftar" :periode="$this->periode" :tanggal-aktif="$this->laporan['tanggal']" />
+            <x-laporan.daftar :daftar="$this->daftar" :periode="$this->periode" :tanggal-aktif="$this->laporan['tanggal']" :tanggal-dipilih="$this->tanggalDipilihYangAda" />
 
             <x-laporan.modal :lembar="$this->dilihat" :periode="$this->periode" />
 
@@ -286,7 +286,11 @@
                 Kematian, afkir, ABW, pakan diberikan, dan pakan masuk pada tanggal ini dihapus dan tidak bisa dikembalikan.
             </x-konfirmasi>
 
-            <x-memuat target="hapus" teks="Menghapus laporan harian" />
+            <x-konfirmasi id="konfirmasi-hapus-laporan-terpilih" judul="Hapus laporan terpilih?" aksi="hapusTerpilih" tombol="Ya, hapus semua" warna="danger" memuat="mintaHapusTerpilih">
+                {{ count($tanggalHapusTerpilih) }} laporan harian beserta catatan terkait akan dihapus. Tindakan ini tidak dapat dibatalkan.
+            </x-konfirmasi>
+
+            <x-memuat target="hapus, hapusTerpilih" teks="Menghapus laporan harian" />
 
             <div class="col-lg-12">
                 <p class="fs-12 color-gray mb-0">
@@ -300,11 +304,14 @@
                         <h5 class="mb-10">Belum ada data untuk dilaporkan</h5>
                         <p @class(['color-gray', 'mb-20' => $this->periode, 'mb-0' => ! $this->periode])>Laporan harian muncul setelah periode dibuat dan pakan atau recording pertamanya dicatat.</p>
                         @if ($this->periode)
-                            <a href="{{ route('laporan.harian.form', ['periode' => $this->periode->id]) }}" class="btn btn-primary btn-default btn-squared">Tambah laporan</a>
+                            <button type="button" class="btn btn-primary btn-default btn-squared" data-bs-toggle="modal" data-bs-target="#modal-form-laporan-harian">Tambah laporan</button>
                         @endif
                     </div>
                 </div>
             </div>
         @endif
     </div>
+    @if ($this->periode)
+        @livewire(\App\Livewire\FormLaporanHarianModal::class, ['periodeId' => $this->periode->id], key('form-laporan-harian-modal-'.$this->periode->id))
+    @endif
 </div>

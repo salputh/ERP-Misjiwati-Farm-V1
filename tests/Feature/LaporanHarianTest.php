@@ -36,8 +36,45 @@ class LaporanHarianTest extends TestCase
 
         $this->assertSame(5, $laporan['total']['mati_hari_ini']);
         $this->assertSame(1002, $laporan['total']['mati_kumulatif']);
+        $this->assertSame(0, $laporan['total']['terpanen']);
         $this->assertSame(24998, $laporan['total']['sisa']);
         $this->assertSame(1269.0, $laporan['total']['abw']);
+    }
+
+    public function test_report_subtracts_harvested_chickens_only_through_the_report_date(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $september = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        $september->notaPanen()->create([
+            'tanggal_panen' => '2026-10-01',
+            'no_btpa' => 'TEST-001',
+            'no_polisi' => 'BM TEST',
+            'pembeli' => 'Pembeli Tes',
+            'mulai' => '2026-10-01 20:00:00',
+            'selesai' => '2026-10-01 21:00:00',
+            'jumlah_krat' => 10,
+            'ekor' => 200,
+            'berat_kg' => 300,
+            'netto_nota_kg' => 300,
+        ]);
+        $september->notaPanen()->create([
+            'tanggal_panen' => '2026-10-03',
+            'no_btpa' => 'TEST-002',
+            'no_polisi' => 'BM TEST',
+            'pembeli' => 'Pembeli Tes',
+            'mulai' => '2026-10-03 20:00:00',
+            'selesai' => '2026-10-03 21:00:00',
+            'jumlah_krat' => 5,
+            'ekor' => 100,
+            'berat_kg' => 150,
+            'netto_nota_kg' => 150,
+        ]);
+
+        $sebelumPanenKedua = $this->laporan('Periode September 2026', '2026-10-02');
+        $setelahPanenKedua = $this->laporan('Periode September 2026', '2026-10-03');
+
+        $this->assertSame([200, 24798], [$sebelumPanenKedua['total']['terpanen'], $sebelumPanenKedua['total']['sisa']]);
+        $this->assertSame([300, 24698], [$setelahPanenKedua['total']['terpanen'], $setelahPanenKedua['total']['sisa']]);
     }
 
     public function test_report_only_counts_data_up_to_the_report_date(): void
@@ -77,11 +114,23 @@ class LaporanHarianTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
         $september = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        $september->notaPanen()->create([
+            'tanggal_panen' => '2026-10-03',
+            'no_btpa' => 'TEST-003',
+            'no_polisi' => 'BM TEST',
+            'pembeli' => 'Pembeli Tes',
+            'mulai' => '2026-10-03 20:00:00',
+            'selesai' => '2026-10-03 21:00:00',
+            'jumlah_krat' => 5,
+            'ekor' => 100,
+            'berat_kg' => 150,
+            'netto_nota_kg' => 150,
+        ]);
 
         $this->get(route('laporan.harian'))
             ->assertOk()
-            ->assertSee('Jumat, 2 Oktober 2026')
-            ->assertSee('24.998')
+            ->assertSee('Sabtu, 3 Oktober 2026')
+            ->assertSee('24.898')
             ->assertSee('Akumulasi kematian hari 0 sampai 20');
 
         $this->get(route('laporan.harian', ['periode' => $september->id, 'tanggal' => '2026-09-21']))
@@ -91,10 +140,10 @@ class LaporanHarianTest extends TestCase
         // Tanggal di luar periode atau tidak sah kembali ke tanggal terakhir.
         $this->get(route('laporan.harian', ['periode' => $september->id, 'tanggal' => '2030-01-01']))
             ->assertOk()
-            ->assertSee('Jumat, 2 Oktober 2026');
+            ->assertSee('Sabtu, 3 Oktober 2026');
         $this->get(route('laporan.harian', ['periode' => $september->id, 'tanggal' => 'bukan-tanggal']))
             ->assertOk()
-            ->assertSee('Jumat, 2 Oktober 2026');
+            ->assertSee('Sabtu, 3 Oktober 2026');
     }
 
     public function test_page_renders_for_every_period_and_without_data(): void

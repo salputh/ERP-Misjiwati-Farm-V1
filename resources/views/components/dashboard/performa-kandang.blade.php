@@ -8,9 +8,9 @@
             <div class="card-extra">
                 <ul class="card-tab-links nav-tabs nav" role="tablist">
                     @foreach (['semua' => 'Semua', 'perlu' => 'Perlu dicek', 'sesuai' => 'Sesuai'] as $kunci => $teks)
-                        <li>
-                            <a href="#" role="tab" @class(['active' => $loop->first]) :class="saring === '{{ $kunci }}' && 'active'" :aria-selected="saring === '{{ $kunci }}'" @click.prevent="saring = '{{ $kunci }}'">{{ $teks }}</a>
-                        </li>
+                    <li>
+                        <a href="#" role="tab" @class(['active'=> $loop->first]) :class="saring === '{{ $kunci }}' && 'active'" :aria-selected="saring === '{{ $kunci }}'" @click.prevent="saring = '{{ $kunci }}'">{{ $teks }}</a>
+                    </li>
                     @endforeach
                 </ul>
             </div>
@@ -32,27 +32,27 @@
                         </thead>
                         <tbody>
                             @foreach ($kandang as $baris)
-                                <tr wire:key="kandang-{{ $baris['kode'] }}" x-show="tampil('{{ $baris['status']->value }}')">
-                                    <td><strong>{{ $baris['nama'] }}</strong></td>
-                                    <td>@angka($baris['sisa'])</td>
-                                    <td>
-                                        @isset($baris['abw'])
-                                            @angka($baris['abw']) g
-                                        @else
-                                            -
-                                        @endisset
-                                    </td>
-                                    <td>
-                                        @isset($baris['abw_selisih'])
-                                            <x-selisih :nilai="$baris['abw_selisih']" />
-                                        @else
-                                            -
-                                        @endisset
-                                    </td>
-                                    <td>@angka($baris['mortalitas'], 2)%</td>
-                                    <td>@angka($baris['fcr'], 2)</td>
-                                    <td><span class="{{ $baris['status']->kelasLencana() }} rounded-pill userDatatable-content-status active">{{ $baris['status']->label() }}</span></td>
-                                </tr>
+                            <tr wire:key="kandang-{{ $baris['kode'] }}" x-show="tampil('{{ $baris['status']->value }}')">
+                                <td><strong>{{ $baris['nama'] }}</strong></td>
+                                <td>@angka($baris['sisa'])</td>
+                                <td>
+                                    @isset($baris['abw'])
+                                    @angka($baris['abw']) g
+                                    @else
+                                    -
+                                    @endisset
+                                </td>
+                                <td>
+                                    @isset($baris['abw_selisih'])
+                                    <x-selisih :nilai="$baris['abw_selisih']" />
+                                    @else
+                                    -
+                                    @endisset
+                                </td>
+                                <td>@angka($baris['mortalitas'], 2)%</td>
+                                <td>@angka($baris['fcr'], 2)</td>
+                                <td><span class="{{ $baris['status']->kelasLencana() }} rounded-pill userDatatable-content-status active">{{ $baris['status']->label() }}</span></td>
+                            </tr>
                             @endforeach
                             <tr x-show="kosong" x-cloak>
                                 <td colspan="7" class="color-gray">Tidak ada kandang di kategori ini.</td>
@@ -61,6 +61,7 @@
                     </table>
                 </div>
             </div>
+            <p class="fs-12 color-gray mb-15">Jumlah per kandang belum dikurangi panen karena nota panen gabungan tidak mencatat kandang asal. Angka ayam hidup pada ringkasan sudah dikurangi dari total ekor panen.</p>
         </div>
     </div>
 </div>

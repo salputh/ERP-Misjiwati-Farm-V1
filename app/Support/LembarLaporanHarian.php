@@ -44,7 +44,7 @@ class LembarLaporanHarian
                 ['label' => 'Usia', 'nilai' => $laporan['umur'].' hari'],
             ],
             'utama' => [
-                self::angkaUtama('Sisa ayam di kandang', Format::angka($total['sisa']), 'dari '.Format::angka($total['populasi']).' ekor chick-in'),
+                self::angkaUtama('Sisa ayam di kandang', Format::angka($total['sisa']), 'dari '.Format::angka($total['populasi']).' ekor chick-in, dikurangi '.Format::angka($total['terpanen']).' ekor panen'),
                 self::angkaUtama('Kematian hari ini', Format::angka($total['mati_hari_ini']), 'kumulatif '.Format::angka($total['mati_kumulatif']).' ekor ('.Format::angka($total['mortalitas'], 2).'%)'),
                 isset($satuKandang['abw_selisih'])
                     ? self::angkaUtama('ABW', self::gram($total['abw']), 'dari standar '.Format::angka($satuKandang['abw_standar']).' g', self::selisih($satuKandang['abw_selisih']))

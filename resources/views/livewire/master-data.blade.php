@@ -3,6 +3,7 @@
         <div class="row">
             <x-breadcrumb judul="Master data" :jejak="['Master data']" />
 
+            <livewire:master-harga-doc wire:key="master-harga-doc" />
             <livewire:master-jenis-pakan wire:key="master-jenis-pakan" />
             <livewire:master-harga-kontrak wire:key="master-harga-kontrak" />
             <livewire:master-pemodal wire:key="master-pemodal" />

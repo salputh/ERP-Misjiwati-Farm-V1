@@ -103,6 +103,7 @@ class MasterPemanen extends Component
         ])->save();
 
         $this->pesan = 'Pemanen '.$pemanen->nama.($sedangMengubah ? ' diperbarui.' : ' ditambahkan.');
+        $this->dispatch('tutup-modal-pemanen');
         $this->batal();
         unset($this->daftar);
     }

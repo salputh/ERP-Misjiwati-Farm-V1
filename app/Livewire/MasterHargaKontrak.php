@@ -125,7 +125,8 @@ class MasterHargaKontrak extends Component
             'harga_per_kg' => $data['hargaPerKg'],
         ])->save();
 
-        $this->pesan = 'Bracket BW '.number_format($hargaKontrak->bobot_min_kg, 2, ',', '.').'–'.number_format($hargaKontrak->bobot_max_kg, 2, ',', '.').' kg tersimpan.';
+        $this->pesan = $this->hargaKontrakId ? 'Bracket harga diperbarui.' : 'Bracket harga baru ditambahkan.';
+        $this->dispatch('tutup-modal-harga-kontrak');
         $this->batal();
         unset($this->daftar);
     }

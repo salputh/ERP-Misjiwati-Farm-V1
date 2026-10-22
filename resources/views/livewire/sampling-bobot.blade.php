@@ -1,10 +1,45 @@
 <div class="container-fluid">
     <div class="row">
-        <x-breadcrumb judul="Rekap hasil sampel bobot ayam" :jejak="['Produksi', 'Sampling bobot']">
-            <x-pilih-periode :daftar="$this->daftarPeriode" :terpilih="$this->periode" rute="sampling.bobot" />
-        </x-breadcrumb>
+        <x-breadcrumb judul="Rekap hasil sampel bobot ayam" :jejak="['Produksi', 'Sampling bobot']" />
+        <x-periode-tertutup :periode="$this->periode" />
 
         @if ($this->terpilih)
+            {{-- Ringkasan kedua kandangs, yang pertama dilihat sebelum masuk ke form sampling --}}
+            <div class="col-lg-12 mb-25">
+                <div class="card border-0 px-25">
+                    <div class="card-header px-0 border-0">
+                        <div>
+                            <h6>Ringkasan sampling</h6>
+                            <span class="fs-12 color-gray">Sesi terbaru tiap kandangs dalam periode ini.</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0 pb-25">
+                        <x-sampling.ringkasan-kandang :gabungan="$this->gabunganKandang" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-12 mb-25">
+                <div class="card border-0">
+                    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <h6 class="mb-5">{{ $sesiId ? 'Ubah sampling tersimpan' : 'Sampling baru' }}</h6>
+                            <span class="fs-12 color-gray">{{ $this->terpilih->kandang->nama }} · {{ $this->labelTanggal }} · usia {{ $this->umur }} hari</span>
+                        </div>
+                        @unless ($this->periode->tertutup())
+                            <button type="button" class="btn btn-primary btn-default btn-squared" data-bs-toggle="modal" data-bs-target="#modal-form-sampling">
+                                {{ $sesiId ? 'Ubah sampling' : 'Isi sampling' }}
+                            </button>
+                        @endunless
+                    </div>
+                </div>
+            </div>
+
+            <x-modal
+                id="modal-form-sampling"
+                :judul="$sesiId ? 'Ubah sampling bobot' : 'Sampling bobot baru'"
+                ukuran="xl">
+                <div class="row">
             {{-- Pengaturan sesi --}}
             <div class="col-lg-12 mb-25">
                 <div class="card border-0">
@@ -35,7 +70,7 @@
                                 <x-pilih-tanggal
                                     :nilai="$tanggal"
                                     :min="$this->periode->tanggal_chick_in->format('Y-m-d')"
-                                    :maks="$this->periode->tanggal_chick_in->copy()->addDays(42)->format('Y-m-d')"
+                                    :maks="$this->periode->tanggal_chick_in->copy()->addDays($this->umurMaksimal)->format('Y-m-d')"
                                     x-on:tanggal-dipilih="$wire.set('tanggal', $event.detail)"
                                 />
                             </label>
@@ -62,6 +97,7 @@
                         </div>
                         <p class="fs-12 color-gray mt-10 mb-0">
                             Mulai umur {{ config('sampling.umur_mulai_sexing') }} hari sampel dipisah jantan dan betina; jenis sampling dipilih otomatis dari tanggal dan bisa diganti dengan tombol di atas.
+                            Ekor per sampel berlaku untuk semua titik alike; bila ada titik yang ditimbang dengan jumlah ekor berbeda, ubah angkanya di kolom Ekor pada tabel.
                         </p>
                     </div>
                 </div>
@@ -69,7 +105,7 @@
 
             {{-- Isian per lantai --}}
             @foreach (config('sampling.lantai') as $lantai => $info)
-                <div @class(['mb-25', 'col-xxl-6' => ! $denganSexing, 'col-lg-12' => $denganSexing]) wire:key="lantai-{{ $lantai }}-{{ $denganSexing ? 'sexing' : 'campuran' }}">
+                <div class="col-12 mb-25" wire:key="lantai-{{ $lantai }}-{{ $denganSexing ? 'sexing' : 'campuran' }}">
                     <div class="card border-0 h-100">
                         <div class="card-header border-0">
                             <h6>{{ $info['label'] }}</h6>
@@ -77,7 +113,7 @@
                         <div class="card-body pt-0">
                             <div class="row g-4">
                                 @foreach ($this->hasil['kelamin'] as $kelamin)
-                                    <div @class(['col-xl-6' => $denganSexing, 'col-12' => ! $denganSexing])>
+                                    <div class="col-12">
                                         @if ($denganSexing)
                                             <x-sampling.kelamin :kelamin="$kelamin" />
                                         @endif
@@ -93,27 +129,32 @@
             @endforeach
 
             {{-- Ringkasan --}}
-            <div class="col-xxl-7 mb-25">
-                <div class="card border-0 px-25 h-100">
+            <div class="col-12 mb-25">
+                <div class="card border-0 px-25">
                     <div class="card-header px-0 border-0">
                         <h6>Ringkasan hasil</h6>
                     </div>
                     <div class="card-body p-0 pb-25">
                         <x-sampling.ringkasan :hasil="$this->hasil" :pakan="$this->pakan" :dengan-sexing="$denganSexing" :umur="$this->umur" />
-
-                        <div class="d-flex flex-wrap align-items-center gap-3 mt-25">
-                            @if ($sesiId)
-                                <button type="button" class="btn btn-primary btn-default btn-squared" wire:key="tombol-simpan-perubahan" data-bs-toggle="modal" data-bs-target="#konfirmasi-simpan-sampling" wire:loading.attr="disabled" wire:target="simpan">Simpan perubahan</button>
-                            @else
-                                <button type="button" class="btn btn-primary btn-default btn-squared" wire:key="tombol-simpan-baru" wire:click="simpan" wire:loading.attr="disabled" wire:target="simpan">Simpan sampling</button>
-                            @endif
-                            @if ($errors->any())
-                                <span class="color-danger fs-14" role="alert">Lengkapi semua berat sampel dan ekor per sampel sebelum menyimpan ({{ $errors->count() }} isian belum benar).</span>
-                            @endif
-                        </div>
+                        <p class="fs-12 color-gray mt-15 mb-0">
+                            ABW hasil sampling ini otomatis mengisi ABW aktual di recording harian tanggal yang sama, jadi tidak perlu disalin manual.
+                        </p>
                     </div>
                 </div>
             </div>
+                </div>
+
+                <x-slot:footer>
+                    @if ($errors->any())
+                        <span class="color-danger fs-14 me-auto" role="alert">Lengkapi semua berat sampel dan jumlah ekor setiap titik sebelum menyimpan ({{ $errors->count() }} isian belum benar).</span>
+                    @endif
+                    @if ($sesiId)
+                        <button type="button" class="btn btn-primary btn-default btn-squared" wire:key="tombol-simpan-perubahan" data-bs-toggle="modal" data-bs-target="#konfirmasi-simpan-sampling" wire:loading.attr="disabled" wire:target="simpan">Simpan perubahan</button>
+                    @else
+                        <button type="button" class="btn btn-primary btn-default btn-squared" wire:key="tombol-simpan-baru" wire:click="simpan" wire:loading.attr="disabled" wire:target="simpan">Simpan sampling</button>
+                    @endif
+                </x-slot:footer>
+            </x-modal>
 
             {{-- Pemberian pakan dan riwayat --}}
             <div class="col-xxl-5 d-flex flex-column">

@@ -1,15 +1,13 @@
 <div class="crm mb-25">
     <div class="container-fluid">
         <div class="row">
-            <x-breadcrumb judul="Ringkasan" :jejak="[$this->periode?->nama ?? 'Belum ada periode']">
-                <x-pilih-periode :daftar="$this->daftarPeriode" :terpilih="$this->periode" rute="dashboard" />
-            </x-breadcrumb>
+            <x-breadcrumb judul="Ringkasan" />
 
             @if ($this->periode)
                 <div class="col-xxl-6">
                     <div class="row h-100">
                         <x-dashboard.kartu :nilai="\App\Support\Format::angka($this->total['sisa'])" label="Ayam hidup" ikon="uil-layer-group" warna="primary">
-                            <small>dari @angka($this->total['awal']) ekor chick-in</small>
+                            <small>dari @angka($this->total['awal']) ekor chick-in, dikurangi @angka($this->total['terpanen']) ekor panen</small>
                         </x-dashboard.kartu>
 
                         <x-dashboard.kartu :nilai="\App\Support\Format::angka($this->total['mortalitas'], 2).'%'" label="Mortalitas kumulatif" ikon="uil-heart-break" warna="info">

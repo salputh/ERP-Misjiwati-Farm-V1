@@ -1,0 +1,23 @@
+flowchart TD
+    A([Mulai hari umur N]) --> B[Input mati dan afkir per kandang]
+    B --> C{Jumlah valid dan tidak melebihi saldo?}
+    C -->|Tidak| B
+    C -->|Ya| D[Hitung deplesi kumulatif, saldo ayam]
+    D --> E[Catat pemberian pakan: jenis, jam, zak]
+    E --> F{Stok kandang cukup?}
+    F -->|Tidak| G[Catat pembagian pakan gudang ke kandang]
+    G --> E
+    F -->|Ya| H[Update stok dan pakan terpakai]
+    H --> I{Hari sampling?}
+    I -->|Ya| J[Input sesi sampling: line, sampel 1 dan 2, ekor per titik]
+    J --> K[Hitung ABW dan DG]
+    K --> L[ABW otomatis jadi ABW aktual di Recording]
+    I -->|Tidak| M[Gunakan ABW sebelumnya]
+    L --> N[Hitung FCR, selisih vs standar]
+    M --> N
+    N --> O{Mati harian melebihi ambang?}
+    O -->|Ya| P[Peringatan ke controller]
+    O -->|Tidak| Q[Simpan recording harian]
+    P --> Q
+    Q --> R[Update Recording Gabungan dan laporan harian]
+    R --> S([Selesai hari ini])

@@ -6,6 +6,7 @@ use Database\Factories\NotaPanenFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Satu nota timbang panen (satu truk). Muatan dari beberapa kandang dicatat sebagai satu nota utuh.
@@ -31,5 +32,10 @@ class NotaPanen extends Model
     public function periode(): BelongsTo
     {
         return $this->belongsTo(Periode::class);
+    }
+
+    public function pemanenKrat(): HasMany
+    {
+        return $this->hasMany(NotaPanenPemanen::class);
     }
 }

@@ -13,22 +13,23 @@ use Illuminate\Support\Collection;
 class LogPakan
 {
     /**
-     * Pakai relasi kandangPeriode (kandang, pemberianPakan.jenisPakan) dan penerimaanPakan.jenisPakan yang sudah di-load.
+     * Pakai relasi kandangPeriode, pemberianPakan, dan penerimaanPakan yang sudah di-load.
      *
      * @return array{kandang: array<int, string>, hari: list<array<string, mixed>>, total_kandang: array<int, float>, total: float, total_kg: float, per_jenis: list<array<string, mixed>>, total_stok: array{masuk: float, masuk_kg: float, terpakai: float, terpakai_kg: float, sisa: ?float, sisa_kg: ?float}}
      */
     public static function buat(Periode $periode): array
     {
-        $kandang = $periode->kandangPeriode->sortBy('kandang.nama');
+        $kandang = $periode->kandangPeriode
+            ->filter(fn (PeriodeKandang $satu): bool => $satu->populasiAktual() > 0 || $satu->pemberianPakan->isNotEmpty())
+            ->sortBy('kandang.nama');
         $pemberian = $kandang->flatMap->pemberianPakan;
         $perUmur = $pemberian->groupBy('umur');
 
         $umurAkhir = max(
             (int) $pemberian->max('umur'),
-            $periode->status === 'aktif' ? min($periode->umurPada(today()), (new Standar($periode->strain, 0))->umurMaksimal()) : 0,
+            in_array($periode->status, ['berjalan', 'aktif'], true) ? min($periode->umurPada(today()), (new Standar($periode->strain, 0))->umurMaksimal()) : 0,
         );
 
-        // Sisa per jenis = pakan masuk dikurangi pemberian di log ini.
         $stok = RingkasanHarian::opname($periode);
 
         $hari = [];

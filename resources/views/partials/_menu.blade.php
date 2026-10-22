@@ -1,13 +1,13 @@
 <div class="sidebar__menu-group">
     <ul class="sidebar_nav">
         <li>
-            <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])>
+            <a href="{{ route('dashboard', ['farm' => $farm?->id, 'periode' => $periode?->id]) }}" @class(['active' => request()->routeIs('dashboard')])>
                 <span class="nav-icon uil uil-create-dashboard"></span>
                 <span class="menu-text">Ringkasan</span>
             </a>
         </li>
         <li>
-            <a href="{{ route('aktivitas') }}" @class(['active' => request()->routeIs('aktivitas')])>
+            <a href="{{ route('aktivitas', ['farm' => $farm?->id, 'periode' => $periode?->id]) }}" @class(['active' => request()->routeIs('aktivitas')])>
                 <span class="nav-icon uil uil-history"></span>
                 <span class="menu-text">Aktivitas</span>
             </a>
@@ -29,14 +29,14 @@
                         <ul>
                             @foreach ($kandangMenu as $kandang)
                                 <li @class(['active' => request()->is($kunciGrup.'/'.$slug.'/'.$kandang->id)])>
-                                    <a href="{{ route($item['per_kandang'], $kandang) }}">{{ $kandang->nama }}</a>
+                                    <a href="{{ route($item['per_kandang'], ['kandang' => $kandang, 'farm' => $farm?->id, 'periode' => $periode?->id]) }}">{{ $kandang->nama }}</a>
                                 </li>
                             @endforeach
                         </ul>
                     </li>
                 @else
                     <li>
-                        <a href="{{ isset($item['rute']) ? route($item['rute']) : route('modul', [$kunciGrup, $slug]) }}" @class(['active' => isset($item['rute']) ? request()->routeIs($item['rute']) : request()->is($kunciGrup.'/'.$slug, $kunciGrup.'/'.$slug.'/*')])>
+                        <a href="{{ isset($item['rute']) ? route($item['rute'], ['farm' => $farm?->id, 'periode' => $periode?->id]) : route('modul', ['grup' => $kunciGrup, 'slug' => $slug, 'farm' => $farm?->id, 'periode' => $periode?->id]) }}" @class(['active' => isset($item['rute']) ? request()->routeIs($item['rute']) : request()->is($kunciGrup.'/'.$slug, $kunciGrup.'/'.$slug.'/*')])>
                             <span class="nav-icon uil {{ $item['ikon'] }}"></span>
                             <span class="menu-text">{{ $item['label'] }}</span>
                         </a>

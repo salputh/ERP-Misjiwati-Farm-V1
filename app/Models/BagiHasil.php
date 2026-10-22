@@ -19,6 +19,16 @@ class BagiHasil extends Model
     /** @use HasFactory<BagiHasilFactory> */
     use HasFactory;
 
+    /**
+     * Lembar masih boleh diubah.
+     */
+    public const SEMENTARA = 'sementara';
+
+    /**
+     * Lembar dikunci: tidak dapat diubah sampai dibuka kembali dengan password admin.
+     */
+    public const DIKUNCI = 'dikunci';
+
     protected $guarded = [];
 
     protected function casts(): array
@@ -34,6 +44,14 @@ class BagiHasil extends Model
     public function periodeKandang(): BelongsTo
     {
         return $this->belongsTo(PeriodeKandang::class);
+    }
+
+    /**
+     * Apakah lembar ini dikunci sehingga tidak dapat diubah.
+     */
+    public function terkunci(): bool
+    {
+        return $this->status === self::DIKUNCI;
     }
 
     public function penerima(): HasMany

@@ -147,7 +147,103 @@ class KasOperasionalTest extends TestCase
     {
         $this->seed(KasOperasionalSeeder::class);
 
-        $this->assertSame(124, TransaksiKas::count());
+        $this->assertSame(290, TransaksiKas::count());
+    }
+
+    public function test_september_kandang_two_cash_report_matches_its_summary_and_categories(): void
+    {
+        $buku = $this->bukuSeptemberKandangDua();
+
+        $this->assertSame(
+            [43_862_000, 42_636_000, 1_226_000, 1_360_000, 41_276_000, 5, 66, 9, 57],
+            [
+                $buku['ringkasan']['masuk'],
+                $buku['ringkasan']['keluar'],
+                $buku['ringkasan']['selisih'],
+                $buku['ringkasan']['pinjaman'],
+                $buku['ringkasan']['biaya'],
+                $buku['ringkasan']['jumlah_masuk'],
+                $buku['ringkasan']['jumlah_keluar'],
+                $buku['ringkasan']['jumlah_pinjaman'],
+                $buku['ringkasan']['jumlah_biaya'],
+            ],
+        );
+
+        $biaya = collect($buku['biaya'])->mapWithKeys(
+            fn (array $baris): array => [$baris['kategori']->label() => $baris['jumlah']],
+        )->all();
+        $pinjaman = collect($buku['pinjaman'])->mapWithKeys(
+            fn (array $baris): array => [$baris['kategori']->label() => $baris['jumlah']],
+        )->all();
+
+        $this->assertSame([
+            'Maintenance' => 17_017_000,
+            'PLN & Kelistrikan' => 10_996_000,
+            'Gas' => 5_040_000,
+            'Gaji Karyawan' => 3_750_000,
+            'Solar' => 2_100_000,
+            'Upah' => 1_000_000,
+            'Meal & Drink' => 723_000,
+            'Transport' => 380_000,
+            'Berobat' => 270_000,
+        ], $biaya);
+        $this->assertSame(['Pinjaman ABK' => 1_360_000], $pinjaman);
+        $this->assertSame(71, $buku['ringkasan']['jumlah_masuk'] + $buku['ringkasan']['jumlah_keluar']);
+    }
+
+    public function test_september_kandang_one_cash_report_matches_its_transactions_and_categories(): void
+    {
+        $buku = $this->bukuSeptemberKandangSatu();
+
+        $this->assertSame(
+            [85_060_750, 97_663_750, -12_603_000, 13_170_000, 84_493_750, 9, 86, 10, 76],
+            [
+                $buku['ringkasan']['masuk'],
+                $buku['ringkasan']['keluar'],
+                $buku['ringkasan']['selisih'],
+                $buku['ringkasan']['pinjaman'],
+                $buku['ringkasan']['biaya'],
+                $buku['ringkasan']['jumlah_masuk'],
+                $buku['ringkasan']['jumlah_keluar'],
+                $buku['ringkasan']['jumlah_pinjaman'],
+                $buku['ringkasan']['jumlah_biaya'],
+            ],
+        );
+
+        $biaya = collect($buku['biaya'])->mapWithKeys(
+            fn (array $baris): array => [$baris['kategori']->label() => $baris['jumlah']],
+        )->all();
+        $pinjaman = collect($buku['pinjaman'])->mapWithKeys(
+            fn (array $baris): array => [$baris['kategori']->label() => $baris['jumlah']],
+        )->all();
+
+        $this->assertSame([
+            'Maintenance' => 57_393_750,
+            'Gaji Karyawan' => 11_900_000,
+            'PLN & Kelistrikan' => 10_833_000,
+            'Transport' => 1_800_000,
+            'Starlink' => 800_000,
+            'Upah' => 720_000,
+            'Berobat' => 710_000,
+            'Meal & Drink' => 337_000,
+        ], $biaya);
+        $this->assertSame([
+            'Pinjaman Makan (Uang Makan)' => 10_670_000,
+            'Pinjaman Karyawan' => 2_500_000,
+        ], $pinjaman);
+        $this->assertSame(['2026-08-29', '2026-10-10'], [
+            $buku['mulai']->toDateString(),
+            $buku['selesai']->toDateString(),
+        ]);
+    }
+
+    public function test_september_cash_seeder_is_idempotent(): void
+    {
+        $this->seed(KasOperasionalSeeder::class);
+
+        $this->assertSame(290, TransaksiKas::count());
+        $this->assertSame(71, $this->bukuSeptemberKandangDua()['ringkasan']['jumlah_masuk'] + $this->bukuSeptemberKandangDua()['ringkasan']['jumlah_keluar']);
+        $this->assertSame(95, $this->bukuSeptemberKandangSatu()['ringkasan']['jumlah_masuk'] + $this->bukuSeptemberKandangSatu()['ringkasan']['jumlah_keluar']);
     }
 
     public function test_page_shows_the_report_for_a_house_with_transactions(): void
@@ -170,11 +266,28 @@ class KasOperasionalTest extends TestCase
             ->assertSee('Total seluruh transaksi');
     }
 
+    public function test_create_button_submits_the_transaction_form_from_the_modal_footer(): void
+    {
+        $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+
+        $html = Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(KasOperasional::class, ['kandang' => $this->kandang('Kandang 2')])
+            ->html();
+
+        // Tombol simpan di footer modal harus berada di dalam form, kalau tidak kliknya tidak mengirim apa pun.
+        $this->assertStringContainsString('<form wire:submit="simpan">', $html);
+        preg_match('/<form wire:submit="simpan">(.*?)<\/form>/s', $html, $isiForm);
+        $this->assertNotEmpty($isiForm);
+        $this->assertStringContainsString('type="submit"', $isiForm[1]);
+    }
+
     public function test_operational_funds_must_be_recorded_before_an_expense(): void
     {
         $periodeKandang = $this->periodeKandang('Kandang 1');
+        $periodeKandang->periode->update(['status' => 'berjalan']);
         $halaman = Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
             ->test(KasOperasional::class, ['kandang' => $this->kandang('Kandang 1')])
+            ->call('tambah')
             ->set('tanggal', '2026-07-10')
             ->set('kategoriTransaksi', KategoriKas::Gas->value)
             ->set('uraian', 'Gas kandang')
@@ -203,6 +316,7 @@ class KasOperasionalTest extends TestCase
     public function test_cash_transactions_can_be_updated_and_deleted(): void
     {
         $periodeKandang = $this->periodeKandang('Kandang 1');
+        $periodeKandang->periode->update(['status' => 'berjalan']);
         $dana = TransaksiKas::factory()->for($periodeKandang)->danaMasuk(1_000_000)->create(['tanggal' => '2026-07-10']);
         $pengeluaran = TransaksiKas::factory()->for($periodeKandang)->keluar(KategoriKas::Gas, 500_000)->create(['tanggal' => '2026-07-11']);
         $halaman = Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
@@ -227,6 +341,7 @@ class KasOperasionalTest extends TestCase
     public function test_last_operational_fund_cannot_be_deleted_while_expenses_remain(): void
     {
         $periodeKandang = $this->periodeKandang('Kandang 1');
+        $periodeKandang->periode->update(['status' => 'berjalan']);
         $dana = TransaksiKas::factory()->for($periodeKandang)->danaMasuk(1_000_000)->create();
         TransaksiKas::factory()->for($periodeKandang)->keluar(KategoriKas::Gas, 500_000)->create();
         $halaman = Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
@@ -276,11 +391,19 @@ class KasOperasionalTest extends TestCase
 
         $this->get($this->alamat('Kandang 1', 'Periode September 2026'))
             ->assertOk()
-            ->assertSee('Kandang 1 tidak dipakai di periode ini');
+            ->assertSee('Laporan biaya operasional Kandang 1')
+            ->assertSee('85.060.750')
+            ->assertSee('97.663.750')
+            ->assertSee('12.603.000');
 
         $this->get($this->alamat('Kandang 2', 'Periode September 2026'))
             ->assertOk()
-            ->assertSee('Belum ada transaksi kas');
+            ->assertSee('Laporan biaya operasional Kandang 2')
+            ->assertSee('4 September s/d 7 Oktober 2026')
+            ->assertSee('5 dana masuk, 66 pengeluaran')
+            ->assertSee('43.862.000')
+            ->assertSee('42.636.000')
+            ->assertSee('Gaji Karyawan');
     }
 
     public function test_sidebar_lists_each_house_under_kas_operasional_and_bare_url_redirects(): void
@@ -303,6 +426,34 @@ class KasOperasionalTest extends TestCase
     private function buku(string $kandang): ?array
     {
         return BukuKas::buat($this->periodeKandang($kandang));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function bukuSeptemberKandangDua(): array
+    {
+        $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        $periodeKandang = PeriodeKandang::where([
+            'periode_id' => $periode->id,
+            'kandang_id' => $this->kandang('Kandang 2')->id,
+        ])->firstOrFail();
+
+        return BukuKas::buat($periodeKandang->load('transaksiKas'));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function bukuSeptemberKandangSatu(): array
+    {
+        $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        $periodeKandang = PeriodeKandang::where([
+            'periode_id' => $periode->id,
+            'kandang_id' => $this->kandang('Kandang 1')->id,
+        ])->with('transaksiKas')->firstOrFail();
+
+        return BukuKas::buat($periodeKandang);
     }
 
     private function periodeKandang(string $kandang): PeriodeKandang

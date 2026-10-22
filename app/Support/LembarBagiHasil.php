@@ -3,9 +3,11 @@
 namespace App\Support;
 
 use App\Enums\PeranBagiHasil;
+use App\Models\BagiHasil;
 use App\Models\Pemodal;
 use App\Models\PenerimaBagiHasil;
 use App\Models\PeriodeKandang;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
 /**
@@ -16,24 +18,71 @@ use Illuminate\Support\Collection;
 class LembarBagiHasil
 {
     /**
+     * Bangun lembar simulasi dari proyeksi RHPP dan masukan sementara tanpa menyimpan apa pun.
+     *
+     * @param  array<string, mixed>|null  $simulasiRhpp
+     * @param  array<string, mixed>  $masukan
+     * @return ?array<string, mixed>
+     */
+    public static function simulasi(PeriodeKandang $periodeKandang, ?array $simulasiRhpp, array $masukan): ?array
+    {
+        $kolomSimulasi = collect($simulasiRhpp['kandang']['baris'] ?? [])
+            ->firstWhere('id', $periodeKandang->id);
+
+        if (! $kolomSimulasi || $kolomSimulasi['sapronak'] === null) {
+            return null;
+        }
+
+        $kolom = [
+            'kandang_id' => $periodeKandang->kandang_id,
+            'tonase' => $kolomSimulasi['berat'],
+            'total_panen' => $kolomSimulasi['penjualan'],
+            'sapronak' => $kolomSimulasi['sapronak'],
+            'selisih_budidaya' => $kolomSimulasi['laba_kotor'],
+            'efisiensi' => $kolomSimulasi['selisih_efisiensi'],
+            'subsidi' => 0,
+            'subsidi_per_kg' => 0,
+            'bersih' => $kolomSimulasi['laba'],
+        ];
+        $penerima = new EloquentCollection(collect($masukan['penerima'] ?? [])
+            ->map(fn (array $penerima): PenerimaBagiHasil => new PenerimaBagiHasil($penerima))
+            ->values()
+            ->all());
+        unset($masukan['penerima']);
+        $model = new BagiHasil($masukan);
+        $model->setRelation('penerima', $penerima);
+        $periodeKandangDraft = clone $periodeKandang;
+        $periodeKandangDraft->setRelation('bagiHasil', $model);
+
+        return self::buat($periodeKandangDraft, [
+            'kandang' => ['kolom' => [$kolom]],
+            'rekap' => ['tarif_efisiensi' => $simulasiRhpp['hasil']['tarif_efisiensi_per_kg'] ?? 0],
+        ]);
+    }
+
+    /**
      * Pakai relasi bagiHasil.penerima yang sudah di-load. $rhpp adalah hasil LembarRhpp::real() periode itu,
-     * $kasKeluar total pengeluaran buku kas kandang (null bila buku kas kosong).
-     * Mengembalikan null bila masukan bagi hasil atau pendapatan RHPP real kandang ini belum ada.
+     * $kas adalah isi BukuKas::buat() kandang itu (null bila buku kas kosong).
+     *
+     * Biaya operasional diambil otomatis dari buku kas: total biaya dikurangi pinjaman makan dan
+     * pinjaman karyawan/ABK (FR-903, BR-11). Bila buku kas belum diisi, angka terakhir yang tersimpan
+     * pada lembar dipakai sebagai gantinya.
      *
      * @param  array<string, mixed>|null  $rhpp
+     * @param  array<string, mixed>|null  $kas
      * @return ?array{
      *     identitas: array{populasi: int, kg: float, controller: ?string},
      *     ringkasan: array{pendapatan: int, pengeluaran: int, sisa: int, entertain: int, zakat: int, sisa_akhir: int, abk: int, jumlah_abk: int},
      *     pendapatan: list<array<string, mixed>>,
      *     pengeluaran: list<array<string, mixed>>,
      *     sisa: list<array<string, mixed>>,
-     *     operasional: array{lembar: int, kas: ?int, selisih: ?int},
+     *     operasional: array{nilai: int, kas: ?int, dari_kas: bool},
      *     tidak_dijumlahkan: list<array{nama: string, jumlah: int}>,
      *     abk: array{rekap: list<array<string, mixed>>, sumber: array{gaji: int, bonus_pasar: int, premi_pemeliharaan: int}, penerima: list<array{nama: string, keterangan: ?string, rata: int, premi_tetap: int, jumlah: int}>, rata: int, premi_tetap: int, total: int},
      *     pemodal: array{penerima: list<array{nama: string, persen: float, jumlah: int}>, persen: float, total: int}
      * }
      */
-    public static function buat(PeriodeKandang $periodeKandang, ?array $rhpp, ?int $kasKeluar = null): ?array
+    public static function buat(PeriodeKandang $periodeKandang, ?array $rhpp, ?array $kas = null): ?array
     {
         $masukan = $periodeKandang->bagiHasil;
         $kolom = collect($rhpp['kandang']['kolom'] ?? [])->firstWhere('kandang_id', $periodeKandang->kandang_id);
@@ -67,7 +116,11 @@ class LembarBagiHasil
         $bonusAbk = (int) round($bonusPasar * $masukan->persen_bonus_pasar_abk / 100);
         $bonusController = (int) round($bonusPasar * $masukan->persen_bonus_pasar_controller / 100);
 
-        $pengeluaran = $masukan->operasional + $gaji + $masukan->premi_pemeliharaan_abk + $masukan->premi_controller + $premiTetap
+        // Biaya operasional diambil dari buku kas, tidak diketik (T5, FR-903, BR-11).
+        $operasionalKas = $kas['ringkasan']['biaya'] ?? null;
+        $operasional = $operasionalKas ?? (int) $masukan->operasional;
+
+        $pengeluaran = $operasional + $gaji + $masukan->premi_pemeliharaan_abk + $masukan->premi_controller + $premiTetap
             + $upahController + $bonusAbk + $bonusController + (int) $bonusPerorangan->where('dijumlahkan', true)->sum('jumlah');
 
         $sisa = $pendapatan - $pengeluaran;
@@ -81,7 +134,7 @@ class LembarBagiHasil
         $pembagianAbk = self::pembagianAbk($abk, $upahAbk + $bonusAbk);
 
         return [
-            'identitas' => ['populasi' => $periodeKandang->populasi_awal, 'kg' => $kg, 'controller' => $masukan->controller],
+            'identitas' => ['populasi' => $periodeKandang->populasiAktual(), 'kg' => $kg, 'controller' => $masukan->controller],
             'ringkasan' => [
                 'pendapatan' => $pendapatan,
                 'pengeluaran' => $pengeluaran,
@@ -97,12 +150,12 @@ class LembarBagiHasil
                 self::baris('Dikurangi sapronak', $kolom['sapronak'], 'alokasi sapronak RHPP real menurut tonase'),
                 self::baris('Hasil usaha budidaya', $kolom['selisih_budidaya'], 'penjualan − sapronak', tebal: true),
                 self::baris('Selisih efisiensi', $kolom['efisiensi'], $teksKg.' × Rp '.Format::angka($rhpp['rekap']['tarif_efisiensi'])),
-                self::baris('Total budidaya', $totalBudidaya, 'Rp '.Format::angka($periodeKandang->populasi_awal > 0 ? $totalBudidaya / $periodeKandang->populasi_awal : 0, 2).' per ekor populasi', tebal: true),
+                self::baris('Total budidaya', $totalBudidaya, 'Rp '.Format::angka($periodeKandang->populasiAktual() > 0 ? $totalBudidaya / $periodeKandang->populasiAktual() : 0, 2).' per ekor populasi', tebal: true),
                 self::baris('Bonus pasar', $bonusPasar, $teksKg.' × Rp '.Format::angka($kolom['subsidi_per_kg'] ?? 0, 2).' subsidi harga pasar'),
                 self::baris('Jumlah pendapatan', $pendapatan, 'total budidaya + bonus pasar', sorot: true),
             ],
             'pengeluaran' => [
-                self::baris('Operasional', $masukan->operasional, 'termasuk pinjaman makan dan pinjaman ABK', masukan: true),
+                self::baris('Operasional', $operasional, $operasionalKas !== null ? 'dari total biaya operasional di buku kas' : 'nilai terakhir yang tersimpan, buku kas belum diisi', masukan: true),
                 self::baris('Gaji ABK', $gaji, $teksKg.' × Rp '.Format::angka($masukan->tarif_gaji_abk_per_kg)),
                 self::baris('Premi pemeliharaan ABK', $masukan->premi_pemeliharaan_abk, masukan: true),
                 self::baris('Premi controller'.$controller, $masukan->premi_controller, masukan: true),
@@ -123,9 +176,9 @@ class LembarBagiHasil
                 self::baris('Sisa akhir diperoleh', $sisaAkhir, 'dibagi ke pemodal', sorot: true),
             ],
             'operasional' => [
-                'lembar' => $masukan->operasional,
-                'kas' => $kasKeluar,
-                'selisih' => $kasKeluar !== null ? $kasKeluar - $masukan->operasional : null,
+                'nilai' => $operasional,
+                'kas' => $operasionalKas,
+                'dari_kas' => $operasionalKas !== null,
             ],
             'tidak_dijumlahkan' => $bonusPerorangan->where('dijumlahkan', false)
                 ->map(fn (PenerimaBagiHasil $satu): array => ['nama' => $satu->nama, 'jumlah' => (int) $satu->jumlah])

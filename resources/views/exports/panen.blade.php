@@ -149,7 +149,16 @@
                         <td class="teks-kiri">
                             {{ $nota['pembeli'] }}
                             <span class="rincian">{{ $nota['no_polisi'] }}</span>
-                            @if ($nota['tukang_tangkap'])
+                            @if ($nota['pemanen_krat'] !== [])
+                                @foreach ($nota['pemanen_krat'] as $pemanen)
+                                    <span class="rincian">
+                                        Tukang Tangkap: {{ $pemanen['nama'] }} (mulai krat {{ $pemanen['krat_mulai'] }})
+                                        @if ($pemanen['berat_timbang_kg'] !== null)
+                                            — @angka($pemanen['berat_timbang_kg'], 2) kg
+                                        @endif
+                                    </span>
+                                @endforeach
+                            @elseif ($nota['tukang_tangkap'])
                                 <span class="rincian">Tukang Tangkap: {{ $nota['tukang_tangkap'] }}</span>
                             @endif
                         </td>

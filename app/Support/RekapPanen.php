@@ -16,14 +16,15 @@ use Illuminate\Support\Collection;
 class RekapPanen
 {
     /**
-     * Pakai relasi notaPanen dan kandangPeriode (recordings, pemberianPakan) yang sudah di-load.
+     * Pakai relasi notaPanen dan kandVangPeriode (recordings, pemberianPakan) yang sudah di-load.
      * Mengembalikan null bila periode belum punya nota panen.
      *
+     * @param  int  $docDiklaim  DOC yang mati di perjalanan dan diklaim kembali ke inti; mengurangi DOC yang dibesarkan.
      * @return ?array{mulai: CarbonInterface, selesai: CarbonInterface, hari: list<array<string, mixed>>, total: array<string, int|float|null>, umur: list<array<string, mixed>>, performa: array<string, mixed>}
      */
-    public static function buat(Periode $periode): ?array
+    public static function buat(Periode $periode, int $docDiklaim = 0): ?array
     {
-        $periode->loadMissing('kandangPeriode.pemberianPakan.jenisPakan');
+        $periode->loadMissing(['notaPanen.pemanenKrat', 'kandangPeriode.pemberianPakan.jenisPakan']);
         $nota = $periode->notaPanen;
         if ($nota->isEmpty()) {
             return null;
@@ -38,7 +39,7 @@ class RekapPanen
             'hari' => self::hari($nota),
             'total' => $total,
             'umur' => $umur,
-            'performa' => self::performa($periode, $total, $umur),
+            'performa' => self::performa($periode, $total, $umur, $docDiklaim),
         ];
     }
 
@@ -65,6 +66,14 @@ class RekapPanen
                     'no_polisi' => $satu->no_polisi,
                     'pembeli' => $satu->pembeli,
                     'tukang_tangkap' => $satu->tukang_tangkap,
+                    'pemanen_krat' => $satu->pemanenKrat
+                        ->sortBy('krat_mulai')
+                        ->map(fn ($pemanen): array => [
+                            'nama' => $pemanen->nama,
+                            'krat_mulai' => $pemanen->krat_mulai,
+                            'berat_timbang_kg' => $pemanen->berat_timbang_kg,
+                        ])
+                        ->all(),
                     'mulai' => $satu->mulai,
                     'selesai' => $satu->selesai,
                     ...self::jumlah(collect([$satu])),
@@ -98,11 +107,13 @@ class RekapPanen
      * FCR memakai seluruh pakan periode dibagi berat ayam terpanen. IP disajikan dua versi:
      * basis ekor terpanen dan basis populasi hidup (DOC dikurangi deplesi).
      *
+     * DOC yang diklaim kembali ke inti tidak pernah dibesarkan, jadi tidak masuk pembagi deplesi dan IP.
+     *
      * @param  array<string, int|float|null>  $total
      * @param  list<array<string, mixed>>  $umur
      * @return array<string, mixed>
      */
-    private static function performa(Periode $periode, array $total, array $umur): array
+    private static function performa(Periode $periode, array $total, array $umur, int $docDiklaim = 0): array
     {
         $kgPerZakStandar = config('standar.kg_per_zak');
         $pakanZak = $periode->rekap_pakan_zak
@@ -116,11 +127,12 @@ class RekapPanen
                 fn (PemberianPakan $pemberian): float => $pemberian->zak * ($pemberian->jenisPakan?->kg_per_zak ?? $kgPerZakStandar),
             );
         $kgPerZakRataRata = $pakanZak > 0 ? $pakanKg / $pakanZak : $kgPerZakStandar;
-        $doc = (int) $periode->kandangPeriode->sum('populasi_awal');
+        $doc = (int) $periode->kandangPeriode->sum(fn (PeriodeKandang $kandang): int => $kandang->populasiAktual());
+        $docEfektif = max(0, $doc - max(0, $docDiklaim));
         $fcr = $total['berat'] > 0 ? $pakanKg / $total['berat'] : null;
         $umurRata = collect($umur)->sum(fn (array $hari): int => $hari['ekor'] * $hari['umur']) / $total['ekor'];
-        $deplesiPersen = $doc > 0 ? $deplesi / $doc * 100 : null;
-        $hidupTerpanen = $doc > 0 ? $total['ekor'] / $doc * 100 : null;
+        $deplesiPersen = $docEfektif > 0 ? $deplesi / $docEfektif * 100 : null;
+        $hidupTerpanen = $docEfektif > 0 ? $total['ekor'] / $docEfektif * 100 : null;
         $hidupDeplesi = $deplesiPersen !== null ? 100 - $deplesiPersen : null;
         $ip = fn (?float $hidup): ?float => $hidup !== null && $fcr && $umurRata > 0 ? $hidup * $total['bw'] / ($fcr * $umurRata) * 100 : null;
 
@@ -131,6 +143,8 @@ class RekapPanen
             'kg_per_zak' => $kgPerZakRataRata,
             'fcr' => $fcr,
             'doc' => $doc,
+            'doc_diklaim' => max(0, $docDiklaim),
+            'doc_efektif' => $docEfektif,
             'deplesi' => $deplesi,
             'deplesi_manual' => $periode->rekap_deplesi_ekor !== null,
             'deplesi_persen' => $deplesiPersen,

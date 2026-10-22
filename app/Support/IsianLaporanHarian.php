@@ -53,7 +53,9 @@ class IsianLaporanHarian
 
                 return [
                     'tanggal' => $hari,
-                    'umur' => $periode->umurPada($hari),
+                    'umur' => $periode->kandangPeriode
+                        ->map(fn (PeriodeKandang $satu): int => (int) $satu->tanggalChickInEfektif()->diffInDays($hari, false))
+                        ->max() ?? $periode->umurPada($hari),
                     // Null berarti kematian belum dicatat pada tanggal itu, bukan nol.
                     'kematian' => $rekaman->isEmpty() ? null : (int) $rekaman->sum(fn (Recording $satu): int => $satu->mati + $satu->afkir),
                     'pakan_terpakai' => (float) $pemberian->get($tanggal, collect())->sum('zak'),
@@ -122,9 +124,7 @@ class IsianLaporanHarian
     public static function simpan(Periode $periode, CarbonInterface $tanggal, array $masuk, array $isian): void
     {
         $tanggal = Carbon::parse($tanggal->toDateString());
-        $umur = $periode->umurPada($tanggal);
-
-        DB::transaction(function () use ($periode, $tanggal, $umur, $masuk, $isian): void {
+        DB::transaction(function () use ($periode, $tanggal, $masuk, $isian): void {
             $jenis = self::ada($periode, $tanggal) ? JenisAktivitas::Ubah : JenisAktivitas::Tambah;
 
             $periode->penerimaanPakan()->whereDate('tanggal', $tanggal)->delete();
@@ -135,6 +135,11 @@ class IsianLaporanHarian
             }
 
             foreach ($periode->kandangPeriode()->get() as $kandang) {
+                $umur = (int) $kandang->tanggalChickInEfektif()->diffInDays($tanggal, false);
+                if ($umur < 0) {
+                    continue;
+                }
+
                 $satu = $isian['k'.$kandang->id] ?? [];
                 $rekaman = $kandang->recordings()->whereDate('tanggal', $tanggal)->first();
 

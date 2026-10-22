@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BagiHasilExportController;
 use App\Http\Controllers\PanenExportController;
 use App\Http\Controllers\RecordingHarianExportController;
 use App\Http\Controllers\TemplateController;
@@ -10,11 +11,13 @@ use App\Livewire\FormLaporanHarian;
 use App\Livewire\KasOperasional;
 use App\Livewire\LaporanHarian;
 use App\Livewire\LogPemberianPakan;
+use App\Livewire\ManajemenPeriode;
 use App\Livewire\MasterData;
 use App\Livewire\Modul;
 use App\Livewire\Panen;
 use App\Livewire\PayrollAbk;
 use App\Livewire\PayrollPemanen;
+use App\Livewire\Projects;
 use App\Livewire\RecordingHarian;
 use App\Livewire\Rhpp;
 use App\Livewire\RiwayatAktivitas;
@@ -25,6 +28,8 @@ use Illuminate\Support\Facades\Route;
 Route::redirect('/', '/dashboard');
 Route::get('/dashboard', Dashboard::class)->name('dashboard');
 Route::get('/aktivitas', RiwayatAktivitas::class)->name('aktivitas');
+Route::get('/periode', ManajemenPeriode::class)->name('periode.index');
+Route::get('/project', Projects::class)->name('project.index');
 Route::get('/produksi/recording-harian', RecordingHarian::class)->name('recording.harian');
 Route::get('/produksi/recording-harian/{periodeKandang}/export/{format}', RecordingHarianExportController::class)
     ->whereIn('format', ['pdf', 'xlsx'])
@@ -44,6 +49,9 @@ Route::get('/keuangan/kas-operasional', fn () => to_route('kas.operasional', Kan
 Route::get('/keuangan/kas-operasional/{kandang}', KasOperasional::class)->name('kas.operasional');
 Route::get('/keuangan/bagi-hasil', fn () => to_route('bagi.hasil', Kandang::orderBy('nama')->firstOrFail()));
 Route::get('/keuangan/bagi-hasil/{kandang}', BagiHasil::class)->name('bagi.hasil');
+Route::get('/keuangan/bagi-hasil/{kandang}/{periode}/export/pdf', BagiHasilExportController::class)
+    ->whereNumber('periode')
+    ->name('bagi.hasil.export.pdf');
 Route::get('/keuangan/payroll-abk', PayrollAbk::class)->name('payroll.abk');
 Route::get('/keuangan/payroll-pemanen', PayrollPemanen::class)->name('payroll.pemanen');
 Route::get('/master', MasterData::class)->name('master-data');

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\FormLaporanHarian;
+use App\Livewire\FormLaporanHarianModal;
 use App\Livewire\LaporanHarian;
 use App\Models\JenisPakan;
 use App\Models\Kandang;
@@ -42,6 +43,17 @@ class FormLaporanHarianTest extends TestCase
             ->assertSee('sisa 24.998 dari 26.000 ekor')
             ->assertSet('isian.'.$this->kunciKandang('Periode September 2026', 'Kandang 2').'.mati', '')
             ->assertDontSee('Hapus laporan');
+    }
+
+    public function test_inline_report_modal_starts_on_the_next_unreported_day(): void
+    {
+        $september = $this->periode('Periode September 2026');
+
+        Livewire::withQueryParams(['periode' => $september->id, 'tanggal' => '2026-10-01'])
+            ->test(FormLaporanHarianModal::class, ['periodeId' => $september->id])
+            ->assertSet('tanggal', '2026-10-03')
+            ->assertSee('Laporan baru')
+            ->assertSeeHtml('id="modal-form-laporan-harian"');
     }
 
     public function test_saving_a_new_report_stores_recording_feed_use_and_feed_received(): void
@@ -107,6 +119,7 @@ class FormLaporanHarianTest extends TestCase
 
     public function test_feed_without_a_recorded_type_keeps_its_own_field(): void
     {
+        $this->periode('Periode Juli 2026')->update(['status' => 'berjalan']);
         $satu = $this->kunciKandang('Periode Juli 2026', 'Kandang 1');
         $dua = $this->kunciKandang('Periode Juli 2026', 'Kandang 2');
 
@@ -233,7 +246,8 @@ class FormLaporanHarianTest extends TestCase
             ->assertSee('Daftar laporan harian')
             ->assertSee('Tambah laporan')
             ->assertSee('Ubah laporan ini')
-            ->assertSee(route('laporan.harian.form', ['periode' => $september->id]), false)
+            ->assertSeeHtml('data-bs-target="#modal-form-laporan-harian"')
+            ->assertSeeHtml('id="modal-form-laporan-harian"')
             ->assertSee(e(route('laporan.harian.form', ['periode' => $september->id, 'tanggal' => '2026-10-01'])), false)
             ->assertSee(e(route('laporan.harian', ['periode' => $september->id, 'tanggal' => '2026-10-01'])), false)
             ->assertSee('Hapus laporan 1 Oktober 2026');
@@ -246,7 +260,7 @@ class FormLaporanHarianTest extends TestCase
         Livewire::withQueryParams(['periode' => $september->id, 'tanggal' => '2026-10-02'])
             ->test(LaporanHarian::class)
             ->call('hapus')
-            ->assertDontSee('dihapus.')
+            ->assertDontSee('Laporan harian 2 Oktober 2026 dihapus.')
             ->call('mintaHapus', '2026-12-31')
             ->assertSet('tanggalDihapus', null)
             ->assertSeeHtml('data-bs-target="#konfirmasi-hapus-laporan"')
@@ -259,6 +273,7 @@ class FormLaporanHarianTest extends TestCase
             ->call('hapus')
             ->assertSet('tanggalDihapus', null)
             ->assertSet('tanggal', null)
+            ->assertSet('pesan', 'Laporan harian 2 Oktober 2026 dihapus.')
             ->assertSee('Laporan harian 2 Oktober 2026 dihapus.')
             // Laporan kembali ke tanggal terakhir yang masih ada.
             ->assertSee('Kamis, 1 Oktober 2026')
@@ -266,6 +281,80 @@ class FormLaporanHarianTest extends TestCase
 
         $this->assertSame(0, Recording::whereDate('tanggal', '2026-10-02')->count());
         $this->assertSame(0, PenerimaanPakan::whereDate('tanggal', '2026-10-02')->count());
+    }
+
+    public function test_selected_reports_can_be_deleted_together_after_confirmation(): void
+    {
+        $september = $this->periode('Periode September 2026');
+
+        Livewire::withQueryParams(['periode' => $september->id, 'tanggal' => '2026-10-02'])
+            ->test(LaporanHarian::class)
+            ->assertSee('Pilih semua laporan harian')
+            ->assertSee('Hapus terpilih')
+            ->set('tanggalTerpilih', ['2026-10-01', '2026-10-02'])
+            ->assertSee('2 laporan dipilih')
+            ->call('mintaHapusTerpilih')
+            ->assertSet('tanggalHapusTerpilih', ['2026-10-01', '2026-10-02'])
+            ->assertSee('Hapus laporan terpilih?')
+            ->assertSee('2 laporan harian beserta catatan terkait akan dihapus.')
+            ->call('hapusTerpilih')
+            ->assertHasNoErrors()
+            ->assertSet('tanggalTerpilih', [])
+            ->assertSet('tanggalHapusTerpilih', [])
+            ->assertSet('tanggal', null)
+            ->assertSee('2 laporan harian berhasil dihapus.')
+            ->assertSee('Sel, 29 Sep 2026')
+            ->assertDontSee('1 Oktober 2026')
+            ->assertDontSee('2 Oktober 2026');
+
+        foreach (['2026-10-01', '2026-10-02'] as $tanggal) {
+            $this->assertSame(0, Recording::whereDate('tanggal', $tanggal)->count());
+            $this->assertSame(0, PemberianPakan::whereDate('tanggal', $tanggal)->count());
+            $this->assertSame(0, PenerimaanPakan::whereDate('tanggal', $tanggal)->count());
+        }
+
+        $this->assertContains(
+            '2026-09-29',
+            array_map(
+                fn (array $baris): string => $baris['tanggal']->format('Y-m-d'),
+                IsianLaporanHarian::daftar($this->periodeTermuat('Periode September 2026')),
+            ),
+        );
+    }
+
+    public function test_select_all_toggles_only_the_current_period_report_dates(): void
+    {
+        $september = $this->periode('Periode September 2026');
+        $jumlahTanggal = count(IsianLaporanHarian::daftar($this->periodeTermuat('Periode September 2026')));
+
+        Livewire::withQueryParams(['periode' => $september->id])
+            ->test(LaporanHarian::class)
+            ->call('pilihSemua')
+            ->assertSet(
+                'tanggalTerpilih',
+                array_map(
+                    fn (array $baris): string => $baris['tanggal']->format('Y-m-d'),
+                    IsianLaporanHarian::daftar($this->periodeTermuat('Periode September 2026')),
+                ),
+            )
+            ->call('pilihSemua')
+            ->assertSet('tanggalTerpilih', []);
+    }
+
+    public function test_bulk_delete_ignores_dates_outside_the_selected_period(): void
+    {
+        $september = $this->periode('Periode September 2026');
+
+        Livewire::withQueryParams(['periode' => $september->id])
+            ->test(LaporanHarian::class)
+            ->set('tanggalTerpilih', ['2026-08-08'])
+            ->call('mintaHapusTerpilih')
+            ->assertSet('tanggalHapusTerpilih', [])
+            ->assertHasErrors(['tanggalTerpilih'])
+            ->call('hapusTerpilih')
+            ->assertHasErrors(['tanggalTerpilih']);
+
+        $this->assertGreaterThan(0, Recording::whereDate('tanggal', '2026-08-08')->count());
     }
 
     public function test_changing_a_saved_report_asks_for_confirmation_but_a_new_report_saves_directly(): void
@@ -297,7 +386,7 @@ class FormLaporanHarianTest extends TestCase
         $this->assertSame(['laporan-harian-periode-september-2026-2026-10-02', '2026-10-02', '2 Oktober 2026'], [$lembar['berkas'], $lembar['tanggal'], $lembar['judul']]);
         $this->assertSame(['Peternak' => 'Misjiwati', 'Periode' => 'Periode September 2026', 'Kandang' => 'Kandang 2', 'Jumlah ayam' => '26.000 ekor', 'Tanggal laporan' => 'Jumat, 2 Oktober 2026', 'Usia' => '21 hari'], array_column($lembar['info'], 'nilai', 'label'));
         $this->assertSame(['Sisa ayam di kandang' => '24.998', 'Kematian hari ini' => '5', 'ABW' => '1.269 g', 'FCR' => '1,066'], array_column($lembar['utama'], 'nilai', 'label'));
-        $this->assertSame(['dari 26.000 ekor chick-in', 'kumulatif 1.002 ekor (3,85%)', 'dari standar 1.069 g', 'standar 1,271'], array_column($lembar['utama'], 'catatan'));
+        $this->assertSame(['dari 26.000 ekor chick-in, dikurangi 0 ekor panen', 'kumulatif 1.002 ekor (3,85%)', 'dari standar 1.069 g', 'standar 1,271'], array_column($lembar['utama'], 'catatan'));
         $this->assertSame(['teks' => '18,7%', 'naik' => true], $lembar['utama'][2]['selisih']);
 
         $this->assertCount(12, $lembar['pakan_masuk']['baris']);
@@ -313,6 +402,17 @@ class FormLaporanHarianTest extends TestCase
             'sisa' => '24.998', 'abw' => '1.269 g', 'abw_selisih' => ['teks' => '18,7%', 'naik' => true], 'fcr' => '1,066', 'fcr_standar' => 'standar 1,271',
         ], $lembar['kandang']['baris'][0]);
         $this->assertSame(['Kandang 2, 1 Oktober 2026: Akumulasi kematian hari 0 sampai 20. Rincian per hari belum dicatat.'], $lembar['catatan']);
+    }
+
+    public function test_closed_period_rejects_daily_report_mutations(): void
+    {
+        $periode = Periode::query()->where('nama', 'Periode September 2026')->firstOrFail();
+        $periode->update(['status' => 'tutup_rhpp']);
+
+        Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(FormLaporanHarian::class)
+            ->call('simpan')
+            ->assertStatus(403);
     }
 
     public function test_report_sheet_totals_several_houses_and_marks_uncounted_stock(): void
@@ -369,7 +469,12 @@ class FormLaporanHarianTest extends TestCase
 
     public function test_form_pages_open_for_every_period_and_without_data(): void
     {
-        $this->get(route('laporan.harian.form'))->assertOk()->assertSee('Form laporan harian')->assertSee('Simpan laporan');
+        $this->get(route('laporan.harian.form'))
+            ->assertOk()
+            ->assertSee('Form laporan harian')
+            ->assertSee('Simpan laporan')
+            ->assertSeeHtml('data-bs-target="#modal-form-laporan-harian"')
+            ->assertSeeHtml('id="modal-form-laporan-harian"');
         $this->get(route('laporan.harian.form', ['periode' => $this->periode('Periode Juli 2026')->id, 'tanggal' => '2026-07-20']))->assertOk()->assertSee('Simpan perubahan');
 
         // Periode selesai: laporan baru dibatasi umur terakhir di standar strain, bukan hari ini.

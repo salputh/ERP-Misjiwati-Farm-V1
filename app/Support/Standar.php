@@ -42,6 +42,28 @@ class Standar
     }
 
     /**
+     * FCR standar kumulatif pada umur tertentu.
+     */
+    public function fcr(int $umur): ?float
+    {
+        $abw = $this->abw($umur);
+        if ($abw === null || $abw <= 0) {
+            return null;
+        }
+
+        $pakanKumulatif = 0.0;
+        for ($hari = 1; $hari <= $umur; $hari++) {
+            $pakan = $this->pakanGram($hari);
+            if ($pakan === null) {
+                return null;
+            }
+            $pakanKumulatif += $pakan;
+        }
+
+        return $pakanKumulatif / $abw;
+    }
+
+    /**
      * @return array<int, int|float>
      */
     private function tabel(string $jenis): array
