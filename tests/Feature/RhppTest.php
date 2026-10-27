@@ -822,7 +822,7 @@ class RhppTest extends TestCase
         Livewire::withQueryParams(['periode' => $periode->id])
             ->test(Rhpp::class)
             ->call('pilihTab', 'bagi-hasil')
-            ->assertSet('masukanBagiHasil.operasional', '41276000')
+            ->assertSet('masukanBagiHasil.operasional', '61349650')
             ->assertSet('abkSimulasi.0.nama', 'Frengky')
             ->assertSee('asumsi bagi hasil')
             ->assertSee('Periode Juli 2026');

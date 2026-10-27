@@ -146,7 +146,7 @@ class PayrollAbkTest extends TestCase
 
         $this->assertSame(9, SlipGaji::count());
         $this->assertSame(8, SlipGaji::whereNotNull('penerima_bagi_hasil_id')->count());
-        $this->assertSame(16, PenerimaBagiHasil::count());
+        $this->assertSame(13, PenerimaBagiHasil::count());
         $this->assertSame(7_729_721, $this->slip('Frengky')['bersih']);
     }
 

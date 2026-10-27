@@ -184,6 +184,7 @@ class PanenTest extends TestCase
     public function test_harvest_notes_can_be_created_updated_and_deleted_from_the_page(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $nota = NotaPanen::where('periode_id', $periode->id)->firstOrFail();
         $komponen = Livewire::test(HalamanPanen::class)->set('periodeId', $periode->id);
 
@@ -277,6 +278,7 @@ class PanenTest extends TestCase
     public function test_harvest_note_validation_prevents_duplicate_numbers_and_invalid_times(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $nota = NotaPanen::where('periode_id', $periode->id)->firstOrFail();
 
         Livewire::test(HalamanPanen::class)
@@ -294,6 +296,7 @@ class PanenTest extends TestCase
     public function test_multiple_harvesters_can_start_at_the_same_crate_and_start_must_be_within_note(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $nota = NotaPanen::where('periode_id', $periode->id)->firstOrFail();
 
         Livewire::test(HalamanPanen::class)
@@ -376,6 +379,7 @@ class PanenTest extends TestCase
     public function test_legacy_harvester_names_remain_editable_without_crate_allocations(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $nota = NotaPanen::factory()
             ->for($periode)
             ->create(['tukang_tangkap' => 'Budi, Andi']);

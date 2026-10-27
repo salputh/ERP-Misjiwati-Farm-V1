@@ -9,6 +9,7 @@ use App\Livewire\LaporanHarian;
 use App\Livewire\RiwayatAktivitas;
 use App\Livewire\SamplingBobot;
 use App\Models\Aktivitas;
+use App\Models\Farm;
 use App\Models\Kandang;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
@@ -255,11 +256,13 @@ class AktivitasTest extends TestCase
 
     public function test_sidebar_links_to_the_history_page(): void
     {
+        $tautan = route('aktivitas', ['farm' => Farm::query()->sole()->id]);
+
         $this->get(route('aktivitas'))
             ->assertOk()
-            ->assertSee('<a href="'.route('aktivitas').'" class="active">', false);
+            ->assertSee('<a href="'.$tautan.'" class="active">', false);
 
-        $this->get(route('dashboard'))->assertSee('<a href="'.route('aktivitas').'" class="">', false);
+        $this->get(route('dashboard'))->assertSee('<a href="'.$tautan.'" class="">', false);
     }
 
     private function formLaporan(?string $tanggal = null): Testable

@@ -448,9 +448,11 @@ class BagiHasilTest extends TestCase
 
     public function test_page_explains_what_is_missing(): void
     {
-        $this->get($this->alamat('Kandang 1', 'Periode September 2026'))
+        Kandang::create(['farm_id' => $this->kandang('Kandang 1')->farm_id, 'nama' => 'Kandang 3', 'kapasitas' => 10000]);
+
+        $this->get($this->alamat('Kandang 3', 'Periode September 2026'))
             ->assertOk()
-            ->assertSee('Kandang 1 tidak dipakai di periode ini');
+            ->assertSee('Kandang 3 tidak dipakai di periode ini');
 
         $this->get($this->alamat('Kandang 2', 'Periode September 2026'))
             ->assertOk()
