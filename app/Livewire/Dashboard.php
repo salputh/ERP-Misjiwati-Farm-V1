@@ -188,10 +188,11 @@ class Dashboard extends Component
         }
 
         $umur = $kandang->flatMap(fn (array $k) => [...array_keys($k['pakan_harian']), ...array_keys($k['kematian_harian'])])->unique()->sort()->values();
+        $standar = $this->standar();
 
         return [
             'hari' => range(0, self::HARI_MAKS),
-            'standar' => array_map(fn (int $umur) => $this->standar()->abw($umur), range(0, self::HARI_MAKS)),
+            'standar' => array_map(fn (int $umur) => $standar->abw($umur), range(0, self::HARI_MAKS)),
             'bobot' => $bobot,
             'umur' => $umur->all(),
             'pakan' => $umur->map(fn (int $u) => round($kandang->sum(fn (array $k) => $k['pakan_harian'][$u] ?? 0), 1))->all(),
