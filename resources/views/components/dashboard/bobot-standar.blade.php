@@ -31,9 +31,17 @@
                     <span class="label-detailed__type label-detailed__type--info">Standar</span>
                     <strong class="label-detailed__total" x-text="akhir < 0 ? '-' : fmt(data.standar[akhir]) + ' g'"></strong>
                 </div>
+                {{-- Timbang dengan sexing: ABW jantan dan betina terakhir, hanya bila kandang terpilih pernah sampling dengan sexing. --}}
+                <template x-for="kelamin in ['jantan', 'betina']" :key="kelamin">
+                    <div class="label-detailed__single" x-show="sexingTerakhir(kelamin)">
+                        <span class="label-detailed__type" :class="'label-detailed__type--' + kelamin" x-text="kelamin === 'jantan' ? 'Jantan' : 'Betina'"></span>
+                        <strong class="label-detailed__total" x-text="sexingTerakhir(kelamin) ? fmt(sexingTerakhir(kelamin).gram) + ' g' : '-'"></strong>
+                        <span class="label-detailed__status color-light" x-text="sexingTerakhir(kelamin) ? 'hari ke-' + sexingTerakhir(kelamin).umur : ''"></span>
+                    </div>
+                </template>
             </div>
             <div class="tinggi-grafik">
-                <canvas x-ref="kanvas" role="img" aria-label="Grafik bobot aktual terhadap standar strain per hari"></canvas>
+                <canvas x-ref="kanvas" role="img" aria-label="Grafik bobot aktual, jantan, dan betina terhadap standar strain per hari"></canvas>
             </div>
         </div>
     </div>

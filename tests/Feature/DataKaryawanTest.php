@@ -3,6 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\Jabatan;
+use App\Enums\JenisAktivitas;
+use App\Enums\ModulAktivitas;
+use App\Livewire\DataKaryawan as DataKaryawanPage;
+use App\Models\Aktivitas;
 use App\Models\Kandang;
 use App\Models\Karyawan;
 use App\Models\Periode;
@@ -14,6 +18,7 @@ use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\KaryawanSeeder;
 use Database\Seeders\PayrollSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class DataKaryawanTest extends TestCase
@@ -131,6 +136,102 @@ class DataKaryawanTest extends TestCase
 
         $this->assertSame(9, Karyawan::count());
         $this->assertSame(4, Karyawan::whereNull('kandang_id')->count());
+    }
+
+    public function test_employee_can_be_added_from_the_page_and_is_logged(): void
+    {
+        $kandangDua = Kandang::where('nama', 'Kandang 2')->firstOrFail();
+
+        Livewire::test(DataKaryawanPage::class)
+            ->call('tambah')
+            ->set('nama', '  Bagas ')
+            ->set('jabatan', Jabatan::Joker->value)
+            ->set('kandangId', $kandangDua->id)
+            ->set('keterangan', 'pengganti cuti')
+            ->call('simpan')
+            ->assertHasNoErrors()
+            ->assertSet('pesan', 'Karyawan Bagas ditambahkan.')
+            ->assertSee('Bagas')
+            ->assertSee('10 orang');
+
+        $this->assertDatabaseHas('karyawans', ['nama' => 'Bagas', 'jabatan' => 'Joker', 'kandang_id' => $kandangDua->id, 'keterangan' => 'pengganti cuti']);
+        $aktivitas = Aktivitas::sole();
+        $this->assertSame([JenisAktivitas::Tambah, ModulAktivitas::Karyawan], [$aktivitas->jenis, $aktivitas->modul]);
+        $this->assertSame(['Karyawan Bagas ditambahkan', 'Joker, Kandang 2'], [$aktivitas->kalimat(), $aktivitas->rincian]);
+    }
+
+    public function test_employee_can_be_updated_after_confirmation_and_unchanged_saves_are_not_logged(): void
+    {
+        $rohim = Karyawan::where('nama', 'Rohim')->firstOrFail();
+        $kandangSatu = Kandang::where('nama', 'Kandang 1')->firstOrFail();
+
+        $halaman = Livewire::test(DataKaryawanPage::class)
+            ->call('ubah', $rohim->id)
+            ->assertSet('nama', 'Rohim')
+            ->assertSeeHtml('data-bs-target="#konfirmasi-simpan-karyawan"')
+            ->call('simpan')
+            ->assertHasNoErrors();
+        $this->assertSame(0, Aktivitas::count());
+
+        $halaman->call('ubah', $rohim->id)
+            ->set('jabatan', Jabatan::Abk->value)
+            ->set('kandangId', $kandangSatu->id)
+            ->call('simpan')
+            ->assertHasNoErrors()
+            ->assertSet('pesan', 'Karyawan Rohim diperbarui.');
+
+        $this->assertSame([Jabatan::Abk, $kandangSatu->id], [$rohim->fresh()->jabatan, $rohim->fresh()->kandang_id]);
+        $this->assertSame(['Karyawan Rohim diubah', 'ABK, Kandang 1'], [Aktivitas::sole()->kalimat(), Aktivitas::sole()->rincian]);
+        // Slip gaji lama tetap mencatat jabatan saat slip dibuat.
+        $this->assertSame(Jabatan::Joker, SlipGaji::where('karyawan_id', $rohim->id)->firstOrFail()->jabatan);
+    }
+
+    public function test_employee_form_requires_a_name_unique_within_the_house(): void
+    {
+        $kandangSatu = Kandang::where('nama', 'Kandang 1')->firstOrFail();
+
+        Livewire::test(DataKaryawanPage::class)
+            ->call('tambah')
+            ->set('nama', '')
+            ->call('simpan')
+            ->assertHasErrors(['nama' => 'required'])
+            ->set('nama', 'Wahyu')
+            ->set('kandangId', $kandangSatu->id)
+            ->call('simpan')
+            ->assertHasErrors(['nama' => 'unique'])
+            ->set('kandangId', Kandang::where('nama', 'Kandang 2')->firstOrFail()->id)
+            ->call('simpan')
+            ->assertHasNoErrors();
+
+        $this->assertSame(2, Karyawan::where('nama', 'Wahyu')->count());
+    }
+
+    public function test_deleting_an_employee_keeps_their_payroll_slips(): void
+    {
+        $mustofa = Karyawan::where('nama', 'Mustofa')->firstOrFail();
+        $jumlahSlip = SlipGaji::where('karyawan_id', $mustofa->id)->count();
+
+        Livewire::test(DataKaryawanPage::class)
+            ->call('mintaHapus', $mustofa->id)
+            ->assertSet('namaHapus', 'Mustofa')
+            ->call('hapus')
+            ->assertSet('pesan', 'Karyawan Mustofa dihapus.')
+            ->assertSee('8 orang');
+
+        $this->assertModelMissing($mustofa);
+        $this->assertGreaterThan(0, $jumlahSlip);
+        $this->assertSame($jumlahSlip, SlipGaji::where('nama', 'Mustofa')->whereNull('karyawan_id')->count());
+        $this->assertSame(['Karyawan Mustofa dihapus', 'ABK, Kandang 1'], [Aktivitas::sole()->kalimat(), Aktivitas::sole()->rincian]);
+    }
+
+    public function test_unplaced_employee_stays_listed_so_it_can_be_edited(): void
+    {
+        Karyawan::factory()->create(['nama' => 'Tanpa Kandang']);
+
+        $this->get(route('karyawan'))
+            ->assertOk()
+            ->assertSee('Belum ditempatkan')
+            ->assertSee('Tanpa Kandang');
     }
 
     /**

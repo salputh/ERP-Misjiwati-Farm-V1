@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Farm;
 use App\Models\Periode;
+use App\Support\Notifikasi;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
@@ -44,7 +45,9 @@ class AppServiceProvider extends ServiceProvider
             $periodeTerpilih = $daftarPeriode->firstWhere('id', (int) request()->query('periode'))
                 ?? $daftarPeriode->first();
 
-            $view->with(compact('daftarFarm', 'farm', 'daftarPeriode', 'periodeTerpilih'));
+            $notifikasi = Notifikasi::untukPeriode($periodeTerpilih);
+
+            $view->with(compact('daftarFarm', 'farm', 'daftarPeriode', 'periodeTerpilih', 'notifikasi'));
         });
 
         // @kurung($nilai, 3): sama, tetapi nilai negatif ditulis dalam kurung dan null dikosongkan.

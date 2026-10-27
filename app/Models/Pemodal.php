@@ -16,4 +16,14 @@ class Pemodal extends Model
             ->withTimestamps()
             ->orderBy('kandangs.nama');
     }
+
+    /**
+     * Porsi tetap pemodal pada satu kandang dalam persen, atau null bila tidak punya porsi di kandang itu.
+     */
+    public function porsiDi(Kandang $kandang): ?float
+    {
+        $persen = $this->kandangs->firstWhere('id', $kandang->id)?->pivot->persen;
+
+        return $persen === null ? null : (float) $persen;
+    }
 }

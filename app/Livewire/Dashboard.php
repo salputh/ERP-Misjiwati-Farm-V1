@@ -6,8 +6,11 @@ use App\Enums\StatusBobot;
 use App\Livewire\Concerns\MemilihPeriode;
 use App\Models\Aktivitas;
 use App\Models\PeriodeKandang;
+use App\Support\LembarRhpp;
 use App\Support\Standar;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -43,7 +46,7 @@ class Dashboard extends Component
         $kgPerZakStandar = config('standar.kg_per_zak');
 
         return $this->periode->kandangPeriode()
-            ->with(['kandang', 'periode', 'recordings', 'pemberianPakan.jenisPakan'])
+            ->with(['kandang', 'periode', 'recordings', 'pemberianPakan.jenisPakan', 'sesiSampling.titik'])
             ->get()
             ->sortBy('kandang.nama')
             ->map(function (PeriodeKandang $periodeKandang) use ($kgPerZakStandar): array {
@@ -62,6 +65,7 @@ class Dashboard extends Component
                         ),
                     )->all(),
                     'kematian_harian' => $periodeKandang->recordings->mapWithKeys(fn ($r) => [$r->umur => $r->mati + $r->afkir])->all(),
+                    'sexing' => $this->timbangSexing($periodeKandang),
                 ];
             })
             ->values()
@@ -106,26 +110,89 @@ class Dashboard extends Component
     }
 
     /**
+     * Umur ayam dan hari kerja, keduanya dihitung dari tanggal chick-in DOC.
+     * Umur berhenti di panen terakhir setelah ayam habis dipanen; hari kerja berhenti di panen terakhir setelah periode ditutup.
+     *
+     * @return array{chick_in: CarbonInterface, umur: int, umur_selesai: bool, hari_kerja: int, kerja_selesai: bool, panen_terakhir: ?CarbonInterface}
+     */
+    #[Computed]
+    public function waktu(): array
+    {
+        $panenTerakhir = $this->periode->notaPanen()->max('tanggal_panen');
+        $panenTerakhir = $panenTerakhir ? Carbon::parse($panenTerakhir) : null;
+        $umurSelesai = $panenTerakhir && ($this->periode->tertutup() || ($this->total['terpanen'] > 0 && $this->total['sisa'] <= 0));
+        $kerjaSelesai = $panenTerakhir && $this->periode->tertutup();
+        $hariIni = today();
+
+        return [
+            'chick_in' => $this->periode->tanggal_chick_in,
+            'umur' => max(0, $this->periode->umurPada($umurSelesai ? $panenTerakhir : $hariIni)),
+            'umur_selesai' => (bool) $umurSelesai,
+            // Hari chick-in dihitung sebagai hari kerja pertama.
+            'hari_kerja' => max(0, $this->periode->umurPada($kerjaSelesai ? $panenTerakhir : $hariIni) + 1),
+            'kerja_selesai' => (bool) $kerjaSelesai,
+            'panen_terakhir' => $panenTerakhir,
+        ];
+    }
+
+    /**
+     * Angka ringkasan ayam dari dokumen RHPP real, hanya setelah dokumennya dikunci.
+     *
+     * @return array{ekor: int, doc: ?int, deplesi: ?float, deplesi_standar: ?float, bw_gram: ?float, fcr: ?float, fcr_standar: ?float, umur_rata: ?float}|null
+     */
+    #[Computed]
+    public function real(): ?array
+    {
+        if (! $this->periode->rhppReal?->terkunci()) {
+            return null;
+        }
+
+        $lembar = LembarRhpp::real($this->periode);
+        if (! $lembar) {
+            return null;
+        }
+
+        $kinerja = $lembar['kinerja'];
+
+        return [
+            'ekor' => (int) $kinerja['ekor'],
+            'doc' => $this->periode->rhppReal->doc_ekor,
+            'deplesi' => $kinerja['deplesi']['aktual'],
+            'deplesi_standar' => $kinerja['deplesi']['standar'],
+            'bw_gram' => $kinerja['bw'] !== null ? $kinerja['bw'] * 1000 : null,
+            'fcr' => $kinerja['fcr']['aktual'],
+            'fcr_standar' => $kinerja['fcr']['standar'],
+            'umur_rata' => $kinerja['umur_rata'],
+        ];
+    }
+
+    /**
      * Data grafik untuk Chart.js: bobot per kandang dan gabungan terhadap standar, serta pakan dan kematian harian.
      *
-     * @return array{hari: list<int>, standar: list<float>, bobot: array<string, array{nama: string, label: string, data: list<float>}>, umur: list<int>, pakan: list<float>, kematian: list<int>}
+     * @return array{hari: list<int>, standar: list<float>, bobot: array<string, array{nama: string, label: string, data: list<float>, sexing: array{jantan: list<?float>, betina: list<?float>}|null}>, umur: list<int>, pakan: list<float>, kematian: list<int>}
      */
     #[Computed]
     public function grafik(): array
     {
         $kandang = collect($this->kandang);
 
-        $bobot = ['semua' => ['nama' => 'Semua kandang', 'label' => 'Semua', 'data' => $this->bobotGabungan()]];
+        $bobot = ['semua' => [
+            'nama' => 'Semua kandang',
+            'label' => 'Semua',
+            'data' => $this->bobotGabungan(),
+            'sexing' => $this->seriSexing($kandang->pluck('sexing')->all()),
+        ]];
         foreach ($this->kandang as $k) {
             // Kunci diberi awalan agar urutan tab tidak diubah JavaScript (kunci angka diurutkan lebih dulu).
-            $bobot['kandang-'.$k['kode']] = ['nama' => $k['nama'], 'label' => $k['kode'], 'data' => $k['bobot_harian']];
+            $bobot['kandang-'.$k['kode']] = ['nama' => $k['nama'], 'label' => $k['kode'], 'data' => $k['bobot_harian'], 'sexing' => $this->seriSexing([$k['sexing']])];
         }
 
         $umur = $kandang->flatMap(fn (array $k) => [...array_keys($k['pakan_harian']), ...array_keys($k['kematian_harian'])])->unique()->sort()->values();
+        $standar = $this->standar();
 
         return [
             'hari' => range(0, self::HARI_MAKS),
-            'standar' => array_map(fn (int $umur) => $this->standar()->abw($umur), range(0, self::HARI_MAKS)),
+            'standar' => array_map(fn (int $umur) => $standar->abw($umur), range(0, self::HARI_MAKS)),
             'bobot' => $bobot,
             'umur' => $umur->all(),
             'pakan' => $umur->map(fn (int $u) => round($kandang->sum(fn (array $k) => $k['pakan_harian'][$u] ?? 0), 1))->all(),
@@ -152,6 +219,52 @@ class Dashboard extends Component
     public function render(): View
     {
         return view('livewire.dashboard');
+    }
+
+    /**
+     * Jumlah berat dan ekor sampel jantan dan betina per umur, dari sesi sampling yang memakai sexing.
+     * Disimpan sebagai jumlah, bukan rata-rata, supaya beberapa kandang bisa digabung tertimbang ekor sampel.
+     *
+     * @return array<string, array<int, array{berat: int, ekor: int}>>
+     */
+    private function timbangSexing(PeriodeKandang $periodeKandang): array
+    {
+        $hasil = ['jantan' => [], 'betina' => []];
+
+        foreach ($periodeKandang->sesiSampling->where('dengan_sexing', true) as $sesi) {
+            $umur = (int) $sesi->umur;
+
+            foreach ($sesi->titik->whereIn('kelamin', array_keys($hasil))->groupBy('kelamin') as $kelamin => $titik) {
+                $hasil[$kelamin][$umur]['berat'] = ($hasil[$kelamin][$umur]['berat'] ?? 0) + (int) $titik->sum('berat_gram');
+                $hasil[$kelamin][$umur]['ekor'] = ($hasil[$kelamin][$umur]['ekor'] ?? 0) + (int) $titik->sum('ekor');
+            }
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * Seri grafik ABW jantan dan betina sepanjang sumbu umur; null pada hari tanpa timbang sexing.
+     * Null bila kandang-kandang itu belum pernah sampling dengan sexing.
+     *
+     * @param  list<array<string, array<int, array{berat: int, ekor: int}>>>  $daftarSexing
+     * @return array{jantan: list<?float>, betina: list<?float>}|null
+     */
+    private function seriSexing(array $daftarSexing): ?array
+    {
+        $seri = [];
+        foreach (['jantan', 'betina'] as $kelamin) {
+            $seri[$kelamin] = array_map(function (int $umur) use ($daftarSexing, $kelamin): ?float {
+                $berat = array_sum(array_map(fn (array $sexing): int => $sexing[$kelamin][$umur]['berat'] ?? 0, $daftarSexing));
+                $ekor = array_sum(array_map(fn (array $sexing): int => $sexing[$kelamin][$umur]['ekor'] ?? 0, $daftarSexing));
+
+                return $ekor > 0 ? round($berat / $ekor) : null;
+            }, range(0, self::HARI_MAKS));
+        }
+
+        $adaTimbang = collect($seri)->flatten()->contains(fn (?float $gram): bool => $gram !== null);
+
+        return $adaTimbang ? $seri : null;
     }
 
     /**

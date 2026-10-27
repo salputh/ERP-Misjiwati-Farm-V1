@@ -22,27 +22,27 @@ const dataUri = async (url) => {
     });
 };
 
+// SVG dimuat sebagai data: URL, bukan blob: URL. Chrome menandai kanvas "tainted" bila SVG berisi foreignObject
+// dimuat dari blob:, sehingga toBlob ditolak; data: URL tidak.
 const gambarDariSvg = (svg) => new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
     const gambar = new Image();
 
     gambar.onload = () => {
-        URL.revokeObjectURL(url);
-
-        const kanvas = document.createElement('canvas');
-        kanvas.width = gambar.width;
-        kanvas.height = gambar.height;
-        kanvas.getContext('2d').drawImage(gambar, 0, 0);
-        kanvas.toBlob((berkas) => {
-            if (berkas) resolve(berkas);
-            else reject(new Error('Browser gagal membuat gambar PNG.'));
-        }, 'image/png');
+        try {
+            const kanvas = document.createElement('canvas');
+            kanvas.width = gambar.width;
+            kanvas.height = gambar.height;
+            kanvas.getContext('2d').drawImage(gambar, 0, 0);
+            kanvas.toBlob((berkas) => {
+                if (berkas) resolve(berkas);
+                else reject(new Error('Browser gagal membuat gambar PNG.'));
+            }, 'image/png');
+        } catch (error) {
+            reject(error);
+        }
     };
-    gambar.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error('Browser gagal merender tampilan tabel sebagai gambar.'));
-    };
-    gambar.src = url;
+    gambar.onerror = () => reject(new Error('Browser gagal merender tampilan tabel sebagai gambar.'));
+    gambar.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 });
 
 export async function gambarPanen(tabel) {
@@ -51,6 +51,16 @@ export async function gambarPanen(tabel) {
     const tujuan = [salinan, ...salinan.querySelectorAll('*')];
 
     sumber.forEach((elemen, indeks) => gayaInline(elemen, tujuan[indeks]));
+
+    // Atribut Livewire dan Alpine (wire:key, wire:click.prevent, x-on:click, @click) tidak sah sebagai atribut XML
+    // di dalam foreignObject, sehingga browser menolak merender SVG-nya. Atribut itu hanya untuk interaksi halaman.
+    tujuan.forEach((elemen) => {
+        for (const atribut of Array.from(elemen.attributes)) {
+            if (/[:@]/.test(atribut.name)) {
+                elemen.removeAttribute(atribut.name);
+            }
+        }
+    });
 
     const lebar = Math.ceil(Math.max(tabel.scrollWidth, tabel.getBoundingClientRect().width));
     const tinggi = Math.ceil(Math.max(tabel.scrollHeight, tabel.getBoundingClientRect().height));

@@ -18,4 +18,14 @@ class Farm extends Model
     {
         return $this->hasMany(Kandang::class);
     }
+
+    public function koheStok(): HasMany
+    {
+        return $this->hasMany(KoheStok::class);
+    }
+
+    public function kohePenjualan(): HasMany
+    {
+        return $this->hasMany(KohePenjualan::class);
+    }
 }

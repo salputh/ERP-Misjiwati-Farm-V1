@@ -15,6 +15,7 @@ use App\Models\Pemodal;
 use App\Models\Pengaturan;
 use App\Models\Periode as ModelPeriode;
 use App\Models\PeriodeKandang;
+use App\Models\StandarStrain;
 use App\Support\BagiDocChickIn;
 use App\Support\Format;
 use App\Support\LembarRhpp;
@@ -329,7 +330,7 @@ class ManajemenPeriode extends Component
     public function masterData(): array
     {
         return [
-            'standar' => array_keys(config('standar.strain', [])),
+            'standar' => StandarStrain::query()->orderBy('nama')->pluck('nama')->all(),
             'pakan' => JenisPakan::query()->orderBy('kode')->get(['id', 'kode']),
             'harga' => $this->periodeTerpilih?->hargaKontrak ?? new Collection,
             'karyawan' => Karyawan::query()
@@ -353,7 +354,7 @@ class ManajemenPeriode extends Component
         $this->nomorSiklus = '';
         $this->inti = '';
         $this->ppl = '';
-        $this->strain = (string) array_key_first(config('standar.strain', []));
+        $this->strain = (string) StandarStrain::query()->orderBy('nama')->value('nama');
         $this->tanggalChickIn = today()->toDateString();
         $this->beratDocGram = '37';
         $this->jumlahDocChickIn = null;
@@ -405,7 +406,7 @@ class ManajemenPeriode extends Component
             ],
             'inti' => ['required', 'string', 'max:150'],
             'ppl' => ['required', 'string', 'max:150'],
-            'strain' => ['required', 'string', Rule::in(array_keys(config('standar.strain', [])))],
+            'strain' => ['required', 'string', Rule::in(StandarStrain::query()->orderBy('nama')->pluck('nama')->all())],
             'tanggalChickIn' => ['required', 'date_format:Y-m-d'],
             'beratDocGram' => ['required', 'integer', 'min:1', 'max:1000'],
             'jumlahDocChickIn' => ['nullable', 'integer', 'min:1', 'max:1000000'],

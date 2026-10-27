@@ -6,6 +6,7 @@ use App\Enums\JenisAktivitas;
 use App\Enums\ModulAktivitas;
 use App\Livewire\Panen as HalamanPanen;
 use App\Models\NotaPanen;
+use App\Models\Pemanen;
 use App\Models\Periode;
 use App\Support\RekapPanen;
 use Database\Seeders\DatabaseSeeder;
@@ -117,9 +118,9 @@ class PanenTest extends TestCase
             ->assertSee('Rekapitulasi panen gabungan')
             ->assertSee('Masa panen')
             ->assertSee('CHIKO MAJU BERSAMA. CV')
-            ->assertSee('Tambah data panen')
-            ->assertSeeHtml('data-bs-target="#modal-form-nota-panen"')
-            ->assertSeeHtml('id="modal-form-nota-panen"')
+            // Periode Juli sudah tutup RHPP: nota hanya dapat dilihat.
+            ->assertDontSee('Tambah data panen')
+            ->assertSeeHtml('data-bs-target="#modal-detail-nota-panen"')
             ->assertSee('BM 8591 DT')
             ->assertSee('SPA 1890115910')
             ->assertSee('Subtotal hari 6')
@@ -183,6 +184,7 @@ class PanenTest extends TestCase
     public function test_harvest_notes_can_be_created_updated_and_deleted_from_the_page(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $nota = NotaPanen::where('periode_id', $periode->id)->firstOrFail();
         $komponen = Livewire::test(HalamanPanen::class)->set('periodeId', $periode->id);
 
@@ -276,6 +278,7 @@ class PanenTest extends TestCase
     public function test_harvest_note_validation_prevents_duplicate_numbers_and_invalid_times(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $nota = NotaPanen::where('periode_id', $periode->id)->firstOrFail();
 
         Livewire::test(HalamanPanen::class)
@@ -293,6 +296,7 @@ class PanenTest extends TestCase
     public function test_multiple_harvesters_can_start_at_the_same_crate_and_start_must_be_within_note(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $nota = NotaPanen::where('periode_id', $periode->id)->firstOrFail();
 
         Livewire::test(HalamanPanen::class)
@@ -332,6 +336,30 @@ class PanenTest extends TestCase
             ->assertHasErrors(['detailPemanen']);
     }
 
+    public function test_the_form_shows_derived_weights_while_typing(): void
+    {
+        $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+
+        $ringkasan = Livewire::test(HalamanPanen::class)
+            ->set('periodeId', $periode->id)
+            ->call('tambah')
+            ->set('jumlahKrat', '72')
+            ->set('ekor', '1028')
+            ->set('beratKg', '1530')
+            ->set('nettoNotaKg', '1528.5')
+            ->set('mulai', '2026-10-05T20:12')
+            ->set('selesai', '2026-10-05T20:59')
+            ->assertSee('Hasil timbang')
+            ->assertSee('lama timbang 47 menit')
+            ->instance()->ringkasanForm;
+
+        $this->assertEqualsWithDelta(1.488, $ringkasan['bw'], 0.001);
+        $this->assertSame(21.25, $ringkasan['per_krat']);
+        $this->assertEqualsWithDelta(14.28, $ringkasan['ekor_per_krat'], 0.01);
+        $this->assertSame(1.5, $ringkasan['selisih']);
+        $this->assertSame(47, $ringkasan['durasi_menit']);
+    }
+
     public function test_names_stay_in_the_main_field_with_optional_per_harvester_details(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
@@ -339,17 +367,19 @@ class PanenTest extends TestCase
         Livewire::test(HalamanPanen::class)
             ->set('periodeId', $periode->id)
             ->set('tukangTangkap', 'Rizal, David')
-            ->assertSee('Tukang Tangkap')
-            ->assertSee('Detail pemanen')
+            ->assertSee('Tim tangkap')
+            ->assertSee('Nama tukang tangkap')
             ->assertSee('Rizal')
             ->assertSee('David')
-            ->assertSee('Krat mulai (default 1)')
-            ->assertSee('Berat timbang (kg, opsional)');
+            ->assertSee('Krat mulai')
+            ->assertSee('Berat timbang (kg)')
+            ->assertSeeHtml('placeholder="dibagi menurut krat"');
     }
 
     public function test_legacy_harvester_names_remain_editable_without_crate_allocations(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode->update(['status' => 'berjalan']);
         $nota = NotaPanen::factory()
             ->for($periode)
             ->create(['tukang_tangkap' => 'Budi, Andi']);
@@ -381,10 +411,12 @@ class PanenTest extends TestCase
 
     public function test_harvest_note_page_has_loading_indicators_for_database_actions(): void
     {
-        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        NotaPanen::factory()->for($periode)->create();
 
         Livewire::test(HalamanPanen::class)
             ->set('periodeId', $periode->id)
+            ->assertSee('Tambah data panen')
             ->assertSeeHtml('wire:target="ubah, simpan, mintaHapus, hapus"')
             ->assertSeeHtml('wire:click.prevent="ubah(')
             ->assertSeeHtml('wire:click.prevent="mintaHapus(');
@@ -393,6 +425,79 @@ class PanenTest extends TestCase
     /**
      * @return array<string, mixed>|null
      */
+    public function test_every_note_row_has_a_view_action_and_closed_periods_only_view(): void
+    {
+        $juli = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+
+        $html = Livewire::withQueryParams(['periode' => $juli->id])->test(HalamanPanen::class)->html();
+
+        $this->assertSame(53, substr_count($html, 'wire:click.prevent="lihat('));
+        $this->assertSame(0, substr_count($html, 'wire:click.prevent="ubah('));
+        $this->assertStringNotContainsString('Tambah data panen', $html);
+    }
+
+    public function test_viewing_a_note_shows_all_of_its_data(): void
+    {
+        $juli = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $nota = $juli->notaPanen()->where('no_btpa', '15882')->firstOrFail();
+
+        $halaman = Livewire::withQueryParams(['periode' => $juli->id])
+            ->test(HalamanPanen::class)
+            ->call('lihat', $nota->id)
+            ->assertSet('notaDilihatId', $nota->id)
+            ->assertSee('Nota timbang 15882')
+            ->assertSee('Hari panen 1')
+            ->assertSee('Nota ini belum mencatat nama tukang tangkap.');
+
+        $detail = $halaman->instance()->notaDilihat;
+        $this->assertSame(['15882', 1], [$detail['identitas']['no_btpa'], $detail['identitas']['hari']]);
+        $this->assertSame([22145, 44267855, 22703, 45383297], [$detail['harga']['kontrak'], $detail['harga']['nilai_kontrak'], $detail['harga']['real'], $detail['harga']['nilai_real']]);
+        $this->assertSame(['Ekor', 'Berat timbang', 'BW rata-rata', 'Umur panen'], array_column($detail['utama'], 'label'));
+        $this->assertSame([], $detail['tim']);
+        $this->assertSame((float) $nota->berat_kg, $detail['tanpa_nama_kg']);
+    }
+
+    public function test_the_note_detail_splits_the_weight_over_the_catching_team(): void
+    {
+        $september = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        Pemanen::updateOrCreate(['nama' => 'Rizal'], ['upah_per_kg' => 20]);
+        Pemanen::where('nama', 'Budi')->delete();
+        $nota = NotaPanen::factory()->for($september)->create(['no_btpa' => 'TIM-01', 'jumlah_krat' => 10, 'berat_kg' => 100, 'netto_nota_kg' => 100, 'tukang_tangkap' => null]);
+        $nota->pemanenKrat()->createMany([
+            ['nama' => 'Rizal', 'krat_mulai' => 1, 'berat_timbang_kg' => 20],
+            ['nama' => 'ABK', 'krat_mulai' => 4],
+            ['nama' => 'Budi', 'krat_mulai' => 8],
+        ]);
+
+        $detail = Livewire::withQueryParams(['periode' => $september->id])
+            ->test(HalamanPanen::class)
+            ->call('lihat', $nota->id)
+            ->assertSee('ABK, tidak dibayar')
+            ->assertSee('Belum terdaftar')
+            ->instance()->notaDilihat;
+
+        $this->assertSame(
+            [
+                ['Rizal', 1, 3, 20.0, true, 'terdaftar', 400],
+                ['ABK', 4, 7, 45.71, false, 'abk', null],
+                ['Budi', 8, 10, 34.29, false, 'belum_terdaftar', null],
+            ],
+            array_map(fn (array $orang): array => [$orang['nama'], $orang['krat_mulai'], $orang['krat_selesai'], $orang['berat_kg'], $orang['manual'], $orang['status'], $orang['upah']], $detail['tim']),
+        );
+        $this->assertEquals(0, $detail['tanpa_nama_kg']);
+    }
+
+    public function test_a_note_from_another_period_cannot_be_viewed(): void
+    {
+        $juli = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $september = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+
+        Livewire::withQueryParams(['periode' => $september->id])
+            ->test(HalamanPanen::class)
+            ->call('lihat', $juli->notaPanen()->firstOrFail()->id)
+            ->assertNotFound();
+    }
+
     private function rekap(string $namaPeriode): ?array
     {
         $periode = Periode::where('nama', $namaPeriode)

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Parameter aplikasi yang bisa diubah dari dalam aplikasi, disimpan sebagai pasangan kunci dan nilai.
@@ -19,6 +21,11 @@ class Pengaturan extends Model
      * Hash password admin yang boleh membuka kunci RHPP real dan lembar bagi hasil.
      */
     public const PASSWORD_ADMIN = 'password_admin';
+
+    /**
+     * Jumlah password admin salah sebelum percobaan dikunci sementara.
+     */
+    public const BATAS_PERCOBAAN = 5;
 
     public static function nilai(string $kunci): ?string
     {
@@ -41,6 +48,31 @@ class Pengaturan extends Model
     public static function setPasswordAdmin(string $password): void
     {
         self::simpan(self::PASSWORD_ADMIN, Hash::make($password));
+    }
+
+    /**
+     * Tolak password admin yang salah sebagai kesalahan isian $kolom. Setelah lima kesalahan, percobaan
+     * berikutnya dari pengguna dan alamat IP yang sama ditolak selama satu menit agar password tidak bisa ditebak beruntun.
+     *
+     * @throws ValidationException
+     */
+    public static function pastikanPasswordAdmin(string $password, string $kolom, string $pesanSalah = 'Password admin salah.'): void
+    {
+        $kunci = 'password-admin|'.auth()->id().'|'.request()->ip();
+
+        if (RateLimiter::tooManyAttempts($kunci, self::BATAS_PERCOBAAN)) {
+            throw ValidationException::withMessages([
+                $kolom => 'Terlalu banyak percobaan password admin. Coba lagi dalam '.RateLimiter::availableIn($kunci).' detik.',
+            ]);
+        }
+
+        if (! self::cocokPasswordAdmin($password)) {
+            RateLimiter::hit($kunci);
+
+            throw ValidationException::withMessages([$kolom => $pesanSalah]);
+        }
+
+        RateLimiter::clear($kunci);
     }
 
     /**

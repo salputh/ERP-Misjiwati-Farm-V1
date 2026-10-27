@@ -1,6 +1,6 @@
 @props(['lantai', 'kelamin', 'kelompok', 'bacaSaja' => false])
 
-{{-- Tabel satu lantai untuk satu kelamin: dua sampel per line, jumlah ekor tiap titik, total line, lalu ringkasan kelompok.
+{{-- Tabel satu lantai untuk satu kelamin: dua sampel per line, jumlah ekor tiap titik (terkunci, mengikuti ekor per sampel), total line, lalu ringkasan kelompok.
      Dengan bacaSaja sampel tampil sebagai angka, bukan isian. --}}
 <table class="table table-bordered tabel-sampling mb-0">
     <thead>
@@ -39,15 +39,15 @@
                         @if ($bacaSaja)
                             <span class="nilai-ekor">@angka($baris['ekor_titik'][$urutan] ?? null)</span>
                         @else
-                            <label class="visually-hidden" for="ekor-{{ $lantai }}-{{ $kelamin }}-{{ $line }}-{{ $urutan }}">Ekor line {{ $line }} sampel {{ $urutan }}</label>
+                            {{-- Terkunci: jumlah ekor setiap titik selalu mengikuti isian "Ekor per sampel" sesi ini. --}}
                             <input
                                 id="ekor-{{ $lantai }}-{{ $kelamin }}-{{ $line }}-{{ $urutan }}"
-                                type="number"
-                                min="1"
-                                step="1"
-                                autocomplete="off"
-                                class="form-control form-control-sm input-ekor-titik @error("ekorTitik.{$lantai}.{$kelamin}.{$line}.{$urutan}") is-invalid @enderror"
-                                wire:model.blur="ekorTitik.{{ $lantai }}.{{ $kelamin }}.{{ $line }}.{{ $urutan }}"
+                                type="text"
+                                class="form-control form-control-sm input-ekor-titik"
+                                value="{{ $baris['ekor_titik'][$urutan] ?? '' }}"
+                                aria-label="Ekor line {{ $line }} sampel {{ $urutan }}, mengikuti ekor per sampel"
+                                title="Mengikuti ekor per sampel"
+                                disabled
                             >
                         @endif
                     </td>

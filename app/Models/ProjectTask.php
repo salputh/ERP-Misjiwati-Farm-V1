@@ -19,6 +19,14 @@ class ProjectTask extends Model
         return ['tanggal_selesai' => 'date'];
     }
 
+    /**
+     * Tugas belum selesai yang sudah melewati target selesainya.
+     */
+    public function terlambat(): bool
+    {
+        return $this->status !== 'completed' && (bool) $this->tanggal_selesai?->lt(today());
+    }
+
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

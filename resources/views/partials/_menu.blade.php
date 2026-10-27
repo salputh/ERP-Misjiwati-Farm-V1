@@ -36,7 +36,7 @@
                     </li>
                 @else
                     <li>
-                        <a href="{{ isset($item['rute']) ? route($item['rute'], ['farm' => $farm?->id, 'periode' => $periode?->id]) : route('modul', ['grup' => $kunciGrup, 'slug' => $slug, 'farm' => $farm?->id, 'periode' => $periode?->id]) }}" @class(['active' => isset($item['rute']) ? request()->routeIs($item['rute']) : request()->is($kunciGrup.'/'.$slug, $kunciGrup.'/'.$slug.'/*')])>
+                        <a href="{{ isset($item['rute']) ? route($item['rute'], ['farm' => $farm?->id, 'periode' => $periode?->id]) : route('modul', ['grup' => $kunciGrup, 'slug' => $slug, 'farm' => $farm?->id, 'periode' => $periode?->id]) }}" @class(['active' => isset($item['rute']) ? request()->routeIs($item['rute_aktif'] ?? $item['rute']) : request()->is($kunciGrup.'/'.$slug, $kunciGrup.'/'.$slug.'/*')])>
                             <span class="nav-icon uil {{ $item['ikon'] }}"></span>
                             <span class="menu-text">{{ $item['label'] }}</span>
                         </a>

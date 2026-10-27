@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 
 class PeriodeKandang extends Model
 {
@@ -103,6 +104,21 @@ class PeriodeKandang extends Model
     public function bagiHasil(): HasOne
     {
         return $this->hasOne(BagiHasil::class);
+    }
+
+    /**
+     * ABW hasil sesi sampling kandang ini per tanggal (Y-m-d => gram). ABW sampling menjadi ABW aktual hari itu,
+     * mendahului ABW yang diketik di recording, tanpa perlu menyalinnya ke tabel recording (FR-403).
+     *
+     * @return Collection<string, float>
+     */
+    public function abwSamplingPerTanggal(): Collection
+    {
+        $this->loadMissing('sesiSampling.titik');
+
+        return $this->sesiSampling
+            ->mapWithKeys(fn (SesiSampling $sesi): array => [$sesi->tanggal->toDateString() => $sesi->abw()])
+            ->filter(fn (?float $abw): bool => $abw !== null);
     }
 
     /**

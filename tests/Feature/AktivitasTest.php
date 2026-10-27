@@ -9,6 +9,7 @@ use App\Livewire\LaporanHarian;
 use App\Livewire\RiwayatAktivitas;
 use App\Livewire\SamplingBobot;
 use App\Models\Aktivitas;
+use App\Models\Farm;
 use App\Models\Kandang;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
@@ -105,12 +106,15 @@ class AktivitasTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $kandangDua = PeriodeKandang::whereRelation('periode', 'nama', 'Periode September 2026')->firstOrFail();
 
-        $komponen = Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id, 'tanggal' => '2026-09-15'])
-            ->test(SamplingBobot::class);
+        $komponen = Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id])
+            ->test(SamplingBobot::class)
+            ->call('tambah')
+            ->set('tanggal', '2026-09-15');
         $this->isiSampling($komponen);
+        $komponen->call('simpan')->assertHasNoErrors();
 
-        $komponen->call('simpan')->assertHasNoErrors();
-        $komponen->call('simpan')->assertHasNoErrors();
+        $sesi = $kandangDua->sesiSampling()->whereDate('tanggal', '2026-09-15')->firstOrFail();
+        $komponen->call('ubah', $sesi->id)->set('berat.bawah.campuran.A.1', 2500)->call('simpan')->assertHasNoErrors();
 
         $aktivitas = Aktivitas::orderBy('id')->get();
         $this->assertSame([JenisAktivitas::Tambah, JenisAktivitas::Ubah], $aktivitas->pluck('jenis')->all());
@@ -124,8 +128,10 @@ class AktivitasTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $kandangDua = PeriodeKandang::whereRelation('periode', 'nama', 'Periode September 2026')->firstOrFail();
 
-        Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id, 'tanggal' => '2026-09-15'])
+        Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id])
             ->test(SamplingBobot::class)
+            ->call('tambah')
+            ->set('tanggal', '2026-09-15')
             ->call('simpan')
             ->assertHasErrors();
 
@@ -250,11 +256,13 @@ class AktivitasTest extends TestCase
 
     public function test_sidebar_links_to_the_history_page(): void
     {
+        $tautan = route('aktivitas', ['farm' => Farm::query()->sole()->id]);
+
         $this->get(route('aktivitas'))
             ->assertOk()
-            ->assertSee('<a href="'.route('aktivitas').'" class="active">', false);
+            ->assertSee('<a href="'.$tautan.'" class="active">', false);
 
-        $this->get(route('dashboard'))->assertSee('<a href="'.route('aktivitas').'" class="">', false);
+        $this->get(route('dashboard'))->assertSee('<a href="'.$tautan.'" class="">', false);
     }
 
     private function formLaporan(?string $tanggal = null): Testable

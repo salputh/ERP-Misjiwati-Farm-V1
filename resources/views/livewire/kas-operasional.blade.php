@@ -1,57 +1,31 @@
 <div class="container-fluid">
     <div class="row">
-        <x-breadcrumb judul="Laporan biaya operasional {{ $kandang->nama }}" :jejak="['Keuangan', 'Kas operasional', $kandang->nama]">
-            @if ($this->periodeKandang)
-                <x-tombol ukuran="sm" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-form-kas" :disabled="$this->periode->tertutup()" wire:loading.attr="disabled" wire:target="tambah">
-                    Tambah transaksi
-                </x-tombol>
-            @endif
-        </x-breadcrumb>
+        <x-breadcrumb judul="Laporan biaya operasional {{ $kandang->nama }}" :jejak="['Keuangan', 'Kas operasional', $kandang->nama]" />
         <x-periode-tertutup :periode="$this->periode" />
 
-        @if ($this->periodeKandang)
-        <div class="col-lg-12 mb-25">
-            @if ($pesan)
-            <x-peringatan warna="success" bisaDitutup="true" class="mb-0">
-                {{ $pesan }}
-            </x-peringatan>
-            @endif
-
-            @error('transaksi_hapus')
-            <x-peringatan warna="danger" bisaDitutup="true" class="mb-0">
-                {{ $message }}
-            </x-peringatan>
-            @enderror
-        </div>
+        @if ($pesan)
+            <div class="col-12">
+                <x-peringatan warna="success" bisaDitutup="true" class="mb-25">{{ $pesan }}</x-peringatan>
+            </div>
         @endif
+        @error('transaksi_hapus')
+            <div class="col-12">
+                <x-peringatan warna="danger" bisaDitutup="true" class="mb-25">{{ $message }}</x-peringatan>
+            </div>
+        @enderror
 
         @if ($this->buku)
         {{-- Identitas laporan --}}
-        <div class="col-lg-12 mb-25">
-            <div class="card border-0">
+        <div class="col-12 mb-25">
+            <div class="card card-default card-md">
                 <div class="card-body">
-                    <dl class="recording-info mb-0">
-                        <div>
-                            <dt>Farm</dt>
-                            <dd>Misjiwati / K0242</dd>
-                        </div>
-                        <div>
-                            <dt>Kandang</dt>
-                            <dd>{{ $kandang->nama }}</dd>
-                        </div>
-                        <div>
-                            <dt>DOC masuk</dt>
-                            <dd>{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</dd>
-                        </div>
-                        <div>
-                            <dt>Masa transaksi</dt>
-                            <dd>{{ $this->buku['mulai']->translatedFormat('j F') }} s/d {{ $this->buku['selesai']->translatedFormat('j F Y') }}</dd>
-                        </div>
-                        <div>
-                            <dt>Transaksi</dt>
-                            <dd>@angka($this->buku['ringkasan']['jumlah_masuk']) dana masuk, @angka($this->buku['ringkasan']['jumlah_keluar']) pengeluaran</dd>
-                        </div>
-                    </dl>
+                    <x-info class="mb-0">
+                        <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
+                        <x-info.butir label="Kandang">{{ $kandang->nama }}</x-info.butir>
+                        <x-info.butir label="DOC masuk">{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</x-info.butir>
+                        <x-info.butir label="Masa transaksi">{{ $this->buku['mulai']->translatedFormat('j F') }} s/d {{ $this->buku['selesai']->translatedFormat('j F Y') }}</x-info.butir>
+                        <x-info.butir label="Transaksi">@angka($this->buku['ringkasan']['jumlah_masuk']) dana masuk, @angka($this->buku['ringkasan']['jumlah_keluar']) pengeluaran</x-info.butir>
+                    </x-info>
                 </div>
             </div>
         </div>
@@ -102,34 +76,13 @@
 
         <x-kas.kategori :biaya="$this->buku['biaya']" :pinjaman="$this->buku['pinjaman']" :ringkasan="$this->buku['ringkasan']" />
 
-        <x-kas.buku :tersaring="$this->tersaring" :saringan="$this->saringan" :pilihan="$this->pilihanKategori" :ringkasan="$this->buku['ringkasan']" />
+        <x-kas.buku :tersaring="$this->tersaring" :saringan="$this->saringan" :pilihan="$this->pilihanKategori" :ringkasan="$this->buku['ringkasan']" :tombol-tambah="$this->periodeKandang" :periode-tertutup="$this->periode->tertutup()" />
         @elseif (! $this->periode)
-        <div class="col-lg-12 mb-25">
-            <div class="card border-0">
-                <div class="card-body p-30">
-                    <h5 class="mb-10">Belum ada periode</h5>
-                    <p class="color-gray mb-0">Kas operasional dicatat per kandang dalam satu periode. Halaman ini terisi setelah periode pertama dibuat.</p>
-                </div>
-            </div>
-        </div>
+        <x-kosong judul="Belum ada periode">Kas operasional dicatat per kandang dalam satu periode. Halaman ini terisi setelah periode pertama dibuat.</x-kosong>
         @elseif (! $this->periodeKandang)
-        <div class="col-lg-12 mb-25">
-            <div class="card border-0">
-                <div class="card-body p-30">
-                    <h5 class="mb-10">{{ $kandang->nama }} tidak dipakai di periode ini</h5>
-                    <p class="color-gray mb-0">Periode terpilih tidak mencatat chick-in di {{ $kandang->nama }}, jadi tidak ada kas operasionalnya. Anda dapat memilih periode lain dari bar atas.</p>
-                </div>
-            </div>
-        </div>
+        <x-kosong judul="{{ $kandang->nama }} tidak dipakai di periode ini">Periode terpilih tidak mencatat chick-in di {{ $kandang->nama }}, jadi tidak ada kas operasionalnya. Anda dapat memilih periode lain dari bar atas.</x-kosong>
         @else
-        <div class="col-lg-12 mb-25">
-            <div class="card border-0">
-                <div class="card-body p-30">
-                    <h5 class="mb-10">Belum ada transaksi kas</h5>
-                    <p class="color-gray mb-0">Buku kas {{ $kandang->nama }} pada periode terpilih masih kosong. Mulai dengan mencatat dana operasional; setelah itu, pengeluaran dapat dicatat.</p>
-                </div>
-            </div>
-        </div>
+        <x-kosong judul="Belum ada transaksi kas">Buku kas {{ $kandang->nama }} pada periode terpilih masih kosong. Mulai dengan mencatat dana operasional; setelah itu, pengeluaran dapat dicatat.</x-kosong>
         @endif
     </div>
 
@@ -146,40 +99,60 @@
             submit="simpan"
         >
                 @if (! $this->bolehCatatPengeluaran)
-                    <x-peringatan warna="info" class="mb-25">
+                    <x-peringatan warna="info">
                         Catat dana operasional terlebih dahulu. Setelah setoran tersimpan, kategori pengeluaran akan tersedia.
                     </x-peringatan>
                 @endif
 
                 <div class="row">
                     <div class="col-md-6">
-                        <x-masukan
-                            id="kas-tanggal"
-                            label="Tanggal"
-                            tipe="date"
-                            wire:model="tanggal"
-                            :disabled="$this->periode->tertutup()"
-                            :kesalahan="$errors->first('tanggal')" />
-                    </div>
-                    <div class="col-md-6 mb-25">
-                        <label for="kas-kategori" class="il-gray fs-14 fw-500 mb-10">Kategori</label>
-                        <select id="kas-kategori" wire:model="kategoriTransaksi" @class(['form-control ih-medium ip-gray radius-xs b-light px-15', 'is-invalid' => $errors->has('kategoriTransaksi')]) @disabled($this->periode->tertutup())>
-                            @foreach (\App\Enums\KategoriKas::cases() as $pilihan)
-                                @if ($pilihan->masuk() || $this->bolehCatatPengeluaran)
-                                    <option value="{{ $pilihan->value }}">{{ $pilihan->label() }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                        @error('kategoriTransaksi')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        <div class="form-group mb-25">
+                            <label for="kas-tanggal" class="il-gray fs-14 fw-500 align-center mb-10">Tanggal</label>
+                            <x-pilih-tanggal id="kas-tanggal" ukuran="medium" :nilai="$tanggal" :nonaktif="$this->periode->tertutup()" :kesalahan="$errors->has('tanggal')" x-on:tanggal-dipilih="$wire.set('tanggal', $event.detail)" />
+                            @error('tanggal')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <x-masukan
+                        <div class="form-group mb-25">
+                            <label class="il-gray fs-14 fw-500 align-center mb-10">Kategori</label>
+                            <x-pilih bentuk="isian" nama="Kategori transaksi" :label="$isiKategoriBaru ? '+ Kategori baru' : ($this->kategoriTerpilih?->label() ?? 'Pilih kategori')" :kesalahan="$errors->has('kategoriTransaksi')" :nonaktif="$this->periode->tertutup()">
+                                @foreach (\App\Enums\KategoriKas::cases() as $pilihan)
+                                    @if ($pilihan->masuk() || $this->bolehCatatPengeluaran)
+                                        <button type="button" wire:click="pakaiKategori(@js($pilihan->value))" @class(['dropdown-item', 'active' => ! $isiKategoriBaru && $kategoriTransaksi === $pilihan->value])>{{ $pilihan->label() }}</button>
+                                    @endif
+                                @endforeach
+                                @if ($this->bolehCatatPengeluaran)
+                                    @foreach ($this->kategoriTambahan as $pilihan)
+                                        <button type="button" wire:click="pakaiKategori(@js($pilihan->value))" wire:key="kategori-tambahan-{{ $loop->index }}" @class(['dropdown-item', 'active' => ! $isiKategoriBaru && $kategoriTransaksi === $pilihan->value])>{{ $pilihan->label() }}</button>
+                                    @endforeach
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" wire:click="pakaiKategori(null)" @class(['dropdown-item', 'active' => $isiKategoriBaru])>+ Kategori baru</button>
+                                @endif
+                            </x-pilih>
+                            @error('kategoriTransaksi')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+                    @if ($isiKategoriBaru)
+                        <div class="col-12">
+                            <x-masukan
+                                id="kas-kategori-baru"
+                                label="Nama kategori baru"
+                                maxlength="50"
+                                placeholder="Contoh: Pupuk, Sekam, Air bersih"
+                                keterangan="Dihitung sebagai biaya operasional dan dapat dipilih lagi dari daftar kategori setelah tersimpan."
+                                wire:model="namaKategoriBaru"
+                                :disabled="$this->periode->tertutup()"
+                                :kesalahan="$errors->first('namaKategoriBaru')" />
+                        </div>
+                    @endif
+                    <div class="col-md-6">
+                        <x-masukan.ribuan properti="jumlah" teks
                             id="kas-jumlah"
                             label="Jumlah (Rp)"
-                            tipe="number"
-                            min="1"
-                            step="1"
-                            wire:model="jumlah"
+                           
+                           
+                           
+                           
                             :disabled="$this->periode->tertutup()"
                             :kesalahan="$errors->first('jumlah')" />
                     </div>
@@ -188,6 +161,8 @@
                             id="kas-uraian"
                             label="Uraian"
                             maxlength="255"
+                            :keterangan="$kategoriTransaksi === \App\Enums\KategoriKas::PinjamanMakan->value && ! $isiKategoriBaru ? 'Tulis nama ABK, mis. “Uang makan Frengky”, supaya terpotong di slip gajinya.' : null"
+                            :placeholder="$kategoriTransaksi === \App\Enums\KategoriKas::PinjamanMakan->value && ! $isiKategoriBaru ? 'Contoh: Uang makan Frengky' : null"
                             wire:model="uraian"
                             :disabled="$this->periode->tertutup()"
                             :kesalahan="$errors->first('uraian')" />
@@ -195,9 +170,7 @@
                 </div>
 
                 <x-slot:footer>
-                    <x-tombol tipe="button" warna="light" variasi="outlined" data-bs-dismiss="modal" wire:click="batalUbah">
-                        Batal
-                    </x-tombol>
+                    <x-tombol.batal wire:click="batalUbah" />
                     @if ($transaksiId)
                         <x-tombol tipe="button" data-bs-toggle="modal" data-bs-target="#konfirmasi-simpan-transaksi-kas" :disabled="$this->periode->tertutup()" wire:loading.attr="disabled" wire:target="simpan, hapus">
                             Simpan perubahan

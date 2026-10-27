@@ -7,13 +7,15 @@ use App\Models\BagiHasil;
 use App\Models\Pemodal;
 use App\Models\PenerimaBagiHasil;
 use App\Models\PeriodeKandang;
+use App\Models\PremiAbk;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
 /**
  * Isi lembar "Bagi Hasil" satu kandang dalam satu periode. Pendapatan diambil dari alokasi per kandang
  * di RHPP real, lalu dipotong berurutan: operasional pemeliharaan, entertain, zakat. Sisa akhirnya dibagi
- * ke pemodal; upah dan bonus pasar ABK dibagi ke tiap ABK.
+ * ke pemodal; upah dan bonus pasar ABK dibagi ke tiap ABK. Premi pemeliharaan ABK diambil dari tabel PremiAbk
+ * menurut total budidaya per ekor populasi.
  */
 class LembarBagiHasil
 {
@@ -79,7 +81,8 @@ class LembarBagiHasil
      *     operasional: array{nilai: int, kas: ?int, dari_kas: bool},
      *     tidak_dijumlahkan: list<array{nama: string, jumlah: int}>,
      *     abk: array{rekap: list<array<string, mixed>>, sumber: array{gaji: int, bonus_pasar: int, premi_pemeliharaan: int}, penerima: list<array{nama: string, keterangan: ?string, rata: int, premi_tetap: int, jumlah: int}>, rata: int, premi_tetap: int, total: int},
-     *     pemodal: array{penerima: list<array{nama: string, persen: float, jumlah: int}>, persen: float, total: int}
+     *     pemodal: array{penerima: list<array{nama: string, persen: float, jumlah: int}>, persen: float, total: int},
+     *     premi_abk: array{hasil_per_ekor: float, batas: ?int, intensif: ?int, premi: int}
      * }
      */
     public static function buat(PeriodeKandang $periodeKandang, ?array $rhpp, ?array $kas = null): ?array
@@ -95,6 +98,13 @@ class LembarBagiHasil
         $controller = $masukan->controller ? ' '.$masukan->controller : '';
 
         $totalBudidaya = $kolom['selisih_budidaya'] + $kolom['efisiensi'];
+        $populasi = $periodeKandang->populasiAktual();
+        $budidayaPerEkor = $populasi > 0 ? $totalBudidaya / $populasi : 0.0;
+        $barisPremi = PremiAbk::untukHasilPerEkor($budidayaPerEkor);
+        $premiPemeliharaan = (int) $barisPremi?->premi;
+        $teksPremi = $barisPremi
+            ? 'Rp '.Format::angka($budidayaPerEkor, 2).' per ekor ≥ Rp '.Format::angka($barisPremi->hasil_per_ekor).' di tabel premi ABK'
+            : 'Rp '.Format::angka($budidayaPerEkor, 2).' per ekor, di bawah batas terendah tabel premi ABK';
         $bonusPasar = $kolom['subsidi'];
         $pendapatan = $kolom['bersih'];
 
@@ -120,7 +130,7 @@ class LembarBagiHasil
         $operasionalKas = $kas['ringkasan']['biaya'] ?? null;
         $operasional = $operasionalKas ?? (int) $masukan->operasional;
 
-        $pengeluaran = $operasional + $gaji + $masukan->premi_pemeliharaan_abk + $masukan->premi_controller + $premiTetap
+        $pengeluaran = $operasional + $gaji + $premiPemeliharaan + $masukan->premi_controller + $premiTetap
             + $upahController + $bonusAbk + $bonusController + (int) $bonusPerorangan->where('dijumlahkan', true)->sum('jumlah');
 
         $sisa = $pendapatan - $pengeluaran;
@@ -130,11 +140,11 @@ class LembarBagiHasil
         $zakat = (int) round(max(0, $sisaEntertain) * $masukan->persen_zakat / 100);
         $sisaAkhir = $sisaEntertain - $zakat;
 
-        $upahAbk = $gaji + $masukan->premi_pemeliharaan_abk;
+        $upahAbk = $gaji + $premiPemeliharaan;
         $pembagianAbk = self::pembagianAbk($abk, $upahAbk + $bonusAbk);
 
         return [
-            'identitas' => ['populasi' => $periodeKandang->populasiAktual(), 'kg' => $kg, 'controller' => $masukan->controller],
+            'identitas' => ['populasi' => $populasi, 'kg' => $kg, 'controller' => $masukan->controller],
             'ringkasan' => [
                 'pendapatan' => $pendapatan,
                 'pengeluaran' => $pengeluaran,
@@ -150,14 +160,14 @@ class LembarBagiHasil
                 self::baris('Dikurangi sapronak', $kolom['sapronak'], 'alokasi sapronak RHPP real menurut tonase'),
                 self::baris('Hasil usaha budidaya', $kolom['selisih_budidaya'], 'penjualan − sapronak', tebal: true),
                 self::baris('Selisih efisiensi', $kolom['efisiensi'], $teksKg.' × Rp '.Format::angka($rhpp['rekap']['tarif_efisiensi'])),
-                self::baris('Total budidaya', $totalBudidaya, 'Rp '.Format::angka($periodeKandang->populasiAktual() > 0 ? $totalBudidaya / $periodeKandang->populasiAktual() : 0, 2).' per ekor populasi', tebal: true),
+                self::baris('Total budidaya', $totalBudidaya, 'Rp '.Format::angka($budidayaPerEkor, 2).' per ekor populasi', tebal: true),
                 self::baris('Bonus pasar', $bonusPasar, $teksKg.' × Rp '.Format::angka($kolom['subsidi_per_kg'] ?? 0, 2).' subsidi harga pasar'),
                 self::baris('Jumlah pendapatan', $pendapatan, 'total budidaya + bonus pasar', sorot: true),
             ],
             'pengeluaran' => [
                 self::baris('Operasional', $operasional, $operasionalKas !== null ? 'dari total biaya operasional di buku kas' : 'nilai terakhir yang tersimpan, buku kas belum diisi', masukan: true),
                 self::baris('Gaji ABK', $gaji, $teksKg.' × Rp '.Format::angka($masukan->tarif_gaji_abk_per_kg)),
-                self::baris('Premi pemeliharaan ABK', $masukan->premi_pemeliharaan_abk, masukan: true),
+                self::baris('Premi pemeliharaan ABK', $premiPemeliharaan, $teksPremi),
                 self::baris('Premi controller'.$controller, $masukan->premi_controller, masukan: true),
                 ...$abk->where('jumlah', '>', 0)->map(fn (PenerimaBagiHasil $satu): array => self::baris('Premi tetap '.self::namaLengkap($satu), $satu->jumlah, masukan: true)),
                 self::baris('Upah controller'.$controller, $upahController, Format::persen($masukan->persen_upah_controller).' × jumlah pendapatan + premi controller'),
@@ -190,13 +200,19 @@ class LembarBagiHasil
                     self::baris('Premi bonus pasar', $bonusAbk, Format::persen($masukan->persen_bonus_pasar_abk).' × bonus pasar'),
                     self::baris('Total pendapatan ABK', $upahAbk + $bonusAbk, sorot: true),
                 ],
-                'sumber' => ['gaji' => $gaji, 'bonus_pasar' => $bonusAbk, 'premi_pemeliharaan' => $masukan->premi_pemeliharaan_abk],
+                'sumber' => ['gaji' => $gaji, 'bonus_pasar' => $bonusAbk, 'premi_pemeliharaan' => $premiPemeliharaan],
                 'penerima' => $pembagianAbk,
                 'rata' => (int) array_sum(array_column($pembagianAbk, 'rata')),
                 'premi_tetap' => $premiTetap,
                 'total' => (int) array_sum(array_column($pembagianAbk, 'jumlah')),
             ],
             'pemodal' => self::pembagianPemodal($pemodal, $sisaAkhir),
+            'premi_abk' => [
+                'hasil_per_ekor' => $budidayaPerEkor,
+                'batas' => $barisPremi?->hasil_per_ekor,
+                'intensif' => $barisPremi?->intensif,
+                'premi' => $premiPemeliharaan,
+            ],
         ];
     }
 

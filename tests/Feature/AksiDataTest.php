@@ -97,14 +97,18 @@ class AksiDataTest extends TestCase
         $september = Periode::where('nama', 'Periode September 2026')->firstOrFail();
         $kandang = PeriodeKandang::where(['periode_id' => $september->id, 'kandang_id' => Kandang::where('nama', 'Kandang 2')->firstOrFail()->id])->firstOrFail();
 
-        // 3 Oktober sudah punya sesi tersimpan: tombol simpan membuka modal konfirmasi.
-        Livewire::withQueryParams(['periode' => $september->id, 'kandang' => $kandang->id, 'tanggal' => '2026-10-03'])
+        $sesi = $kandang->sesiSampling()->whereDate('tanggal', '2026-10-03')->firstOrFail();
+
+        // Ubah sesi tersimpan: tombol simpan membuka modal konfirmasi.
+        Livewire::withQueryParams(['periode' => $september->id, 'kandang' => $kandang->id])
             ->test(SamplingBobot::class)
+            ->call('ubah', $sesi->id)
             ->assertSeeHtml('wire:key="tombol-simpan-perubahan" data-bs-toggle="modal" data-bs-target="#konfirmasi-simpan-sampling"')
             ->assertSeeHtml('id="konfirmasi-simpan-sampling"')
             ->assertSee('Simpan perubahan sampling 3 Oktober 2026?')
             ->assertSeeHtml('wire:loading.class="lapisan-memuat--tampil"')
-            // Tanggal tanpa sesi: simpan langsung, tanpa konfirmasi.
+            // Tambah sampling baru: simpan langsung, tanpa konfirmasi.
+            ->call('tambah')
             ->set('tanggal', '2026-10-01')
             ->assertSeeHtml('wire:key="tombol-simpan-baru" wire:click="simpan"')
             ->assertDontSeeHtml('id="konfirmasi-simpan-sampling"');

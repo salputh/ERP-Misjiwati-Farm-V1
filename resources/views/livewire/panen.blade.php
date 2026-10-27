@@ -4,54 +4,30 @@
         <x-periode-tertutup :periode="$this->periode" />
 
         @if ($pesan)
-        <div class="col-lg-12">
-            <x-peringatan warna="success" class="mb-25">
-                {{ $pesan }}
-            </x-peringatan>
-        </div>
+            <div class="col-12">
+                <x-peringatan warna="success" class="mb-25">{{ $pesan }}</x-peringatan>
+            </div>
         @endif
 
-        @if ($this->periode)
-        @elseif ($this->daftarPeriode->isEmpty())
-        <div class="col-lg-12 mb-25">
-            <x-kartu tanpaHeader="true" class="border-0">
-                <h5 class="mb-10">Belum ada periode</h5>
-                <p class="color-gray mb-0">Nota panen dapat dicatat setelah periode dibuat.</p>
-            </x-kartu>
-        </div>
+        @if (! $this->periode && $this->daftarPeriode->isEmpty())
+            <x-kosong judul="Belum ada periode">Nota panen dapat dicatat setelah periode dibuat.</x-kosong>
         @endif
 
         @if ($this->rekap)
         {{-- Identitas rekap --}}
-        <div class="col-lg-12 mb-25">
-            <x-kartu tanpaHeader="true" class="border-0">
-                <dl class="recording-info mb-0">
-                    <div>
-                        <dt>Inti</dt>
-                        <dd>PT. Indojaya Agrinusa</dd>
-                    </div>
-                    <div>
-                        <dt>Farm</dt>
-                        <dd>Misjiwati / K0242</dd>
-                    </div>
-                    <div>
-                        <dt>Kandang</dt>
-                        <dd>{{ $this->periode->kandangPeriode->sortBy('kandang.nama')->pluck('kandang.nama')->join(', ', ' dan ') }}</dd>
-                    </div>
-                    <div>
-                        <dt>DOC masuk</dt>
-                        <dd>{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</dd>
-                    </div>
-                    <div>
-                        <dt>Masa panen</dt>
-                        <dd>{{ $this->rekap['mulai']->translatedFormat('j F') }} s/d {{ $this->rekap['selesai']->translatedFormat('j F Y') }}</dd>
-                    </div>
-                    <div>
-                        <dt>Nota timbang</dt>
-                        <dd>@angka($this->rekap['total']['jumlah_nota']) nota, {{ count($this->rekap['hari']) }} hari panen</dd>
-                    </div>
-                </dl>
-            </x-kartu>
+        <div class="col-12 mb-25">
+            <div class="card card-default card-md">
+                <div class="card-body">
+                    <x-info>
+                        <x-info.butir label="Inti">PT. Indojaya Agrinusa</x-info.butir>
+                        <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
+                        <x-info.butir label="Kandang">{{ $this->periode->kandangPeriode->sortBy('kandang.nama')->pluck('kandang.nama')->join(', ', ' dan ') }}</x-info.butir>
+                        <x-info.butir label="DOC masuk">{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</x-info.butir>
+                        <x-info.butir label="Masa panen">{{ $this->rekap['mulai']->translatedFormat('j F') }} s/d {{ $this->rekap['selesai']->translatedFormat('j F Y') }}</x-info.butir>
+                        <x-info.butir label="Nota timbang">@angka($this->rekap['total']['jumlah_nota']) nota, {{ count($this->rekap['hari']) }} hari panen</x-info.butir>
+                    </x-info>
+                </div>
+            </div>
         </div>
 
         {{-- Angka utama --}}
@@ -71,163 +47,185 @@
             <small>IP @angka($this->rekap['performa']['ip_terpanen']) (basis ekor terpanen)</small>
         </x-dashboard.kartu>
 
-        <x-panen.nota :hari="$this->rekap['hari']" :total="$this->rekap['total']" :periode-id="$this->periode->id" />
+        <x-panen.nota :hari="$this->rekap['hari']" :total="$this->rekap['total']" :periode-id="$this->periode->id" :bisa-diubah="! $this->periode->tertutup()" />
 
         <x-panen.performa :performa="$this->rekap['performa']" :total="$this->rekap['total']" :tanggal-doc="$this->periode->tanggal_chick_in" />
 
         <x-panen.umur :umur="$this->rekap['umur']" :total="$this->rekap['total']" :umur-rata="$this->rekap['performa']['umur_rata']" />
 
-        <div @class(['col-lg-12'])>
-            <p @class(['fs-12', 'color-gray' , 'mb-0' ])>
+        <div class="col-12 mb-25">
+            <p class="fs-13 color-light mb-0">
                 Setiap baris adalah satu nota timbang utuh; nota yang muatannya berasal dari dua kandang dicatat sebagai satu baris. Satu hari panen berjalan dari malam sampai pagi berikutnya.
             </p>
         </div>
         @elseif ($this->periode)
-        <div @class(['col-lg-12', 'mb-25' ])>
-            <div @class(['card', 'border-0' ])>
-                <div @class(['card-body', 'p-30' ])>
-                    <h5 @class(['mb-10'])>Belum ada panen di periode ini</h5>
-                    <p @class(['color-gray', 'mb-0' ])>Rekap panen muncul setelah nota timbang pertama dicatat.</p>
-                </div>
-            </div>
-        </div>
+            <x-kosong judul="Belum ada panen di periode ini">Rekap panen muncul setelah nota timbang pertama dicatat.</x-kosong>
         @endif
     </div>
 
     <x-memuat target="ubah, simpan, mintaHapus, hapus" teks="Memproses nota panen" />
 
     @if ($this->periode)
-    <div @class(['modal-basic', 'modal' , 'fade' ]) id="modal-form-nota-panen" tabindex="-1" aria-labelledby="judul-modal-form-nota-panen" aria-hidden="true" wire:ignore.self x-on:nota-panen-disimpan.window="$el.querySelector('[data-bs-dismiss=modal]').click()">
-        <div @class(['modal-dialog', 'modal-xl' , 'modal-dialog-centered' , 'modal-dialog-scrollable' ])>
-            <form @class(['modal-content', 'modal-bg-white' ]) wire:submit="simpan">
-                <div @class(['modal-header'])>
-                    <h6 @class(['modal-title']) id="judul-modal-form-nota-panen">{{ $notaId ? 'Ubah nota timbang' : 'Tambah nota timbang' }}</h6>
-                    <button type="button" @class(['close']) data-bs-dismiss="modal" aria-label="Tutup" wire:click="batalUbah">
-                        <i @class(['uil', 'uil-times' ])></i>
-                    </button>
+    <x-modal
+        id="modal-form-nota-panen"
+        :judul="$notaId ? 'Ubah nota timbang' : 'Tambah nota timbang'"
+        ukuran="xl"
+        submit="simpan"
+        aksi-tutup="batalUbah"
+        x-on:nota-panen-disimpan.window="bootstrap.Modal.getInstance($el).hide()">
+        {{-- Identitas nota --}}
+        <div class="card card-default card-sm bg-transparent card-bordered mb-25">
+            <div class="card-header">
+                <h6>Identitas nota</h6>
+            </div>
+            <div class="card-body pb-0">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group mb-25">
+                            <label for="panen-tanggal" class="il-gray fs-14 fw-500 align-center mb-10">Tanggal panen</label>
+                            <x-pilih-tanggal id="panen-tanggal" ukuran="medium" :nilai="$tanggalPanen" :kesalahan="$errors->has('tanggalPanen')" x-on:tanggal-dipilih="$wire.set('tanggalPanen', $event.detail)" />
+                            @error('tanggalPanen')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <x-masukan id="panen-btpa" label="No. BTPA" maxlength="255" placeholder="Contoh: 016978" wire:model="noBtpa" :kesalahan="$errors->first('noBtpa')" autocomplete="off" />
+                    </div>
+                    <div class="col-md-4">
+                        <x-masukan id="panen-spa" label="No. SPA" maxlength="255" placeholder="Boleh dikosongkan" wire:model="noSpa" :kesalahan="$errors->first('noSpa')" autocomplete="off" />
+                    </div>
+                    <div class="col-md-8">
+                        <x-masukan id="panen-pembeli" label="Pembeli" maxlength="255" placeholder="Contoh: Abdillah Akbar. CV" wire:model="pembeli" :kesalahan="$errors->first('pembeli')" />
+                    </div>
+                    <div class="col-md-4">
+                        <x-masukan id="panen-polisi" label="No. polisi" maxlength="255" placeholder="Contoh: BM 8653 PI" wire:model="noPolisi" :kesalahan="$errors->first('noPolisi')" autocomplete="off" />
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-tanggal"
-                                    label="Tanggal panen"
-                                    tipe="date"
-                                    wire:model="tanggalPanen"
-                                    :kesalahan="$errors->first('tanggalPanen')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-spa"
-                                    label="No. SPA"
-                                    maxlength="255"
-                                    wire:model="noSpa"
-                                    :kesalahan="$errors->first('noSpa')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-btpa"
-                                    label="No. BTPA"
-                                    maxlength="255"
-                                    wire:model="noBtpa"
-                                    :kesalahan="$errors->first('noBtpa')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-polisi"
-                                    label="No. polisi"
-                                    maxlength="255"
-                                    wire:model="noPolisi"
-                                    :kesalahan="$errors->first('noPolisi')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-pembeli"
-                                    label="Pembeli"
-                                    maxlength="255"
-                                    wire:model="pembeli"
-                                    :kesalahan="$errors->first('pembeli')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-mulai"
-                                    label="Mulai timbang"
-                                    tipe="datetime-local"
-                                    wire:model="mulai"
-                                    :kesalahan="$errors->first('mulai')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-selesai"
-                                    label="Selesai timbang"
-                                    tipe="datetime-local"
-                                    wire:model="selesai"
-                                    :kesalahan="$errors->first('selesai')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-krat"
-                                    label="Jumlah krat"
-                                    tipe="number"
-                                    min="1"
-                                    step="1"
-                                    wire:model="jumlahKrat"
-                                    :kesalahan="$errors->first('jumlahKrat')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-ekor"
-                                    label="Jumlah ekor"
-                                    tipe="number"
-                                    min="1"
-                                    step="1"
-                                    wire:model="ekor"
-                                    :kesalahan="$errors->first('ekor')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-berat"
-                                    label="Berat panen (kg)"
-                                    tipe="number"
-                                    min="0.01"
-                                    max="99999999.99"
-                                    step="0.01"
-                                    wire:model="beratKg"
-                                    :kesalahan="$errors->first('beratKg')" />
-                            </div>
-                            <div class="col-md-6">
-                                <x-masukan
-                                    id="panen-netto"
-                                    label="Netto nota (kg)"
-                                    tipe="number"
-                                    min="0"
-                                    max="99999999.99"
-                                    step="0.01"
-                                    wire:model="nettoNotaKg"
-                                    :kesalahan="$errors->first('nettoNotaKg')" />
-                            </div>
-                            <div class="col-12 mb-0">
-                                <x-masukan
-                                    id="panen-tukang-tangkap"
-                                    label="Tukang Tangkap"
-                                    keterangan="(opsional, bisa lebih dari satu)"
-                                    maxlength="2000"
-                                    wire:model.live.debounce.300ms="tukangTangkap"
-                                    :kesalahan="$errors->first('tukangTangkap')"
-                                    placeholder="Contoh: Rizal, David, Budi" />
-                                <small class="fs-12 color-gray d-block mt-n3 mb-3">Pisahkan nama dengan koma. Nama pemanen yang tidak diberi krat mulai dianggap ikut dari krat pertama.</small>
+        {{-- Waktu timbang --}}
+        <div class="card card-default card-sm bg-transparent card-bordered mb-25">
+            <div class="card-header">
+                <h6>Waktu timbang</h6>
+                <div class="card-extra fs-13 color-light tanpa-kapital">
+                    @isset($this->ringkasanForm['durasi_menit'])
+                        lama timbang @angka($this->ringkasanForm['durasi_menit']) menit
+                    @endisset
+                </div>
+            </div>
+            <div class="card-body pb-0">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-25">
+                            <label for="panen-mulai" class="il-gray fs-14 fw-500 align-center mb-10">Mulai timbang</label>
+                            <x-pilih-waktu id="panen-mulai" :nilai="$mulai" :kesalahan="$errors->has('mulai')" x-on:waktu-dipilih="$wire.set('mulai', $event.detail)" />
+                            @error('mulai')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-25">
+                            <label for="panen-selesai" class="il-gray fs-14 fw-500 align-center mb-10">Selesai timbang</label>
+                            <x-pilih-waktu id="panen-selesai" :nilai="$selesai" :kesalahan="$errors->has('selesai')" x-on:waktu-dipilih="$wire.set('selesai', $event.detail)" />
+                            @error('selesai')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                                @if ($this->rincianPemanen !== [])
-                                <div class="mt-3">
-                                    <label @class(['color-dark', 'fs-14' , 'fw-500' , 'align-center' ])>Detail pemanen <span @class(['color-gray'])>(opsional)</span></label>
-                                    <small class="fs-12 color-gray d-block mb-2">Isi hanya bila ada pemanen yang mulai di krat berikutnya atau beratnya ingin dicatat terpisah.</small>
-                                    @foreach ($this->rincianPemanen as $pemanen)
-                                    <div class="row align-items-start mb-2" wire:key="detail-pemanen-{{ $pemanen['kunci'] }}">
-                                        <div class="col-md-4">
-                                            <span class="form-control-plaintext fw-600">{{ $pemanen['nama'] }}</span>
-                                        </div>
-                                        <div class="col-md-4">
+        {{-- Hasil timbang, dengan angka turunan untuk memeriksa salah ketik --}}
+        <div class="card card-default card-sm bg-transparent card-bordered mb-25">
+            <div class="card-header">
+                <h6>Hasil timbang</h6>
+            </div>
+            <div class="card-body pb-0">
+                <div class="row">
+                    <div class="col-md-3 col-6">
+                        <x-masukan id="panen-krat" label="Jumlah krat" tipe="number" min="1" step="1" placeholder="0" wire:model.live.debounce.500ms="jumlahKrat" :kesalahan="$errors->first('jumlahKrat')" />
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <x-masukan.ribuan properti="ekor" teks langsung id="panen-ekor" label="Jumlah ekor" placeholder="0" :kesalahan="$errors->first('ekor')" />
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <x-masukan.ribuan properti="beratKg" :desimal="2" teks langsung id="panen-berat" label="Berat timbang (kg)" placeholder="0,00" :kesalahan="$errors->first('beratKg')" />
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <x-masukan.ribuan properti="nettoNotaKg" :desimal="2" teks langsung id="panen-netto" label="Netto nota (kg)" placeholder="0,00" :kesalahan="$errors->first('nettoNotaKg')" />
+                    </div>
+                </div>
+                <div class="row g-3 mb-25">
+                    <div class="col-md-3 col-6">
+                        <x-info.butir label="BW rata-rata">
+                            @isset($this->ringkasanForm['bw'])
+                                @angka($this->ringkasanForm['bw'], 3) kg
+                            @else
+                                -
+                            @endisset
+                        </x-info.butir>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <x-info.butir label="Berat per krat">
+                            @isset($this->ringkasanForm['per_krat'])
+                                @angka($this->ringkasanForm['per_krat'], 2) kg
+                            @else
+                                -
+                            @endisset
+                        </x-info.butir>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <x-info.butir label="Ekor per krat">
+                            @isset($this->ringkasanForm['ekor_per_krat'])
+                                @angka($this->ringkasanForm['ekor_per_krat'], 1)
+                            @else
+                                -
+                            @endisset
+                        </x-info.butir>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <x-info.butir label="Selisih timbang − netto">
+                            @isset($this->ringkasanForm['selisih'])
+                                <span @class(['color-danger' => $this->ringkasanForm['selisih'] != 0])>@kurung($this->ringkasanForm['selisih'], 2) kg</span>
+                            @else
+                                -
+                            @endisset
+                        </x-info.butir>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Tim tangkap --}}
+        <div class="card card-default card-sm bg-transparent card-bordered">
+            <div class="card-header">
+                <h6>Tim tangkap <span class="fs-13 color-light fw-400">(opsional)</span></h6>
+            </div>
+            <div class="card-body">
+                <x-masukan
+                    id="panen-tukang-tangkap"
+                    label="Nama tukang tangkap"
+                    keterangan="Pisahkan nama dengan koma. Tanpa krat mulai, setiap nama dihitung dari krat pertama."
+                    maxlength="2000"
+                    wire:model.live.debounce.300ms="tukangTangkap"
+                    :kesalahan="$errors->first('tukangTangkap')"
+                    placeholder="Contoh: Rizal, David, Budi" />
+
+                @if ($this->rincianPemanen !== [])
+                    <p class="fs-13 color-light mb-15">Isi krat mulai atau berat timbang hanya bila ada pemanen yang mulai di krat berikutnya, atau beratnya ditimbang terpisah. Sisa berat nota dibagi menurut jumlah krat di antara pemanen yang beratnya kosong.</p>
+                    <div class="table4 table-responsive">
+                        <table class="table tabel-laporan mb-0">
+                            <thead>
+                                <tr class="userDatatable-header">
+                                    <th><span class="userDatatable-title">Pemanen</span></th>
+                                    <th><span class="userDatatable-title">Krat mulai</span></th>
+                                    <th><span class="userDatatable-title">Berat timbang (kg)</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($this->rincianPemanen as $pemanen)
+                                    <tr wire:key="detail-pemanen-{{ $pemanen['kunci'] }}">
+                                        <td class="fw-500 color-dark align-middle">{{ $pemanen['nama'] }}</td>
+                                        <td>
+                                            <label class="visually-hidden" for="panen-krat-mulai-{{ $pemanen['kunci'] }}">Krat mulai {{ $pemanen['nama'] }}</label>
                                             <input
                                                 id="panen-krat-mulai-{{ $pemanen['kunci'] }}"
                                                 type="number"
@@ -235,47 +233,47 @@
                                                 max="{{ $jumlahKrat ?: 4294967295 }}"
                                                 step="1"
                                                 wire:model="detailPemanen.{{ $pemanen['kunci'] }}.kratMulai"
-                                                @class(['form-control ih-medium ip-gray radius-xs b-light px-15', 'is-invalid'=> $errors->has("detailPemanen.{$pemanen['kunci']}.kratMulai")])
-                                            placeholder="Krat mulai (default 1)"
+                                                @class(['form-control form-control-sm ip-gray radius-xs b-light px-15', 'is-invalid' => $errors->has("detailPemanen.{$pemanen['kunci']}.kratMulai")])
+                                                placeholder="1"
                                             >
-                                            @error("detailPemanen.{$pemanen['kunci']}.kratMulai")<div @class(['invalid-feedback', 'd-block' ])>{{ $message }}</div>@enderror
-                                        </div>
-                                        <div class="col-md-4">
+                                            @error("detailPemanen.{$pemanen['kunci']}.kratMulai")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                        </td>
+                                        <td>
+                                            <label class="visually-hidden" for="panen-berat-timbang-{{ $pemanen['kunci'] }}">Berat timbang {{ $pemanen['nama'] }}</label>
                                             <input
                                                 id="panen-berat-timbang-{{ $pemanen['kunci'] }}"
-                                                type="number"
-                                                min="0.01"
-                                                max="{{ $beratKg ?: 99999999.99 }}"
-                                                step="0.01"
-                                                wire:model="detailPemanen.{{ $pemanen['kunci'] }}.beratTimbang"
-                                                @class(['form-control ih-medium ip-gray radius-xs b-light px-15', 'is-invalid'=> $errors->has("detailPemanen.{$pemanen['kunci']}.beratTimbang")])
-                                            placeholder="Berat timbang (kg, opsional)"
+                                                type="text"
+                                                inputmode="decimal"
+                                                autocomplete="off"
+                                                x-data="isianRibuan('detailPemanen.{{ $pemanen['kunci'] }}.beratTimbang', '.', false, { desimal: 2, teks: true })"
+                                                x-on:input="format"
+                                                x-on:blur="kirim(true)"
+                                                @class(['form-control form-control-sm ip-gray radius-xs b-light px-15', 'is-invalid' => $errors->has("detailPemanen.{$pemanen['kunci']}.beratTimbang")])
+                                                placeholder="dibagi menurut krat"
                                             >
-                                            @error("detailPemanen.{$pemanen['kunci']}.beratTimbang")<div @class(['invalid-feedback', 'd-block' ])>{{ $message }}</div>@enderror
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                    @error('detailPemanen')<div @class(['invalid-feedback', 'd-block' ])>{{ $message }}</div>@enderror
-                                    <small class="fs-12 color-gray d-block mt-2">Berat aktual digunakan bila diisi. Sisa berat nota dibagi proporsional berdasarkan jumlah krat di antara pemanen yang beratnya kosong.</small>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                        @if ($errors->any())
-                        <div class="color-danger fs-14 mt-15" role="alert">Periksa kembali isian yang ditandai.</div>
-                        @endif
+                                            @error("detailPemanen.{$pemanen['kunci']}.beratTimbang")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div class="modal-footer">
-                        <x-tombol warna="light" ukuran="sm" data-bs-dismiss="modal" wire:click="batalUbah">Batal</x-tombol>
-                        <x-tombol tipe="submit" ukuran="sm" wire:loading.attr="disabled" wire:target="simpan">
-                            <span wire:loading.remove wire:target="simpan">{{ $notaId ? 'Simpan perubahan' : 'Simpan data panen' }}</span>
-                            <span wire:loading wire:target="simpan">Menyimpan...</span>
-                        </x-tombol>
-                    </div>
-            </form>
+                    @error('detailPemanen')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                @endif
+            </div>
         </div>
-    </div>
+
+        @if ($errors->any())
+            <x-peringatan warna="danger" class="mt-15 mb-0">Periksa kembali isian yang ditandai.</x-peringatan>
+        @endif
+
+        <x-slot:footer>
+            <x-tombol.batal wire:click="batalUbah" />
+            <x-tombol tipe="submit" wire:loading.attr="disabled" wire:target="simpan">{{ $notaId ? 'Simpan perubahan' : 'Simpan data panen' }}</x-tombol>
+        </x-slot:footer>
+    </x-modal>
+
+    <x-panen.modal-nota :detail="$this->notaDilihat" />
 
     <x-konfirmasi id="konfirmasi-hapus-nota-panen" judul="Hapus nota panen {{ $noBtpaDihapus }}?" aksi="hapus" tombol="Ya, hapus" warna="danger" memuat="mintaHapus, hapus">
         Nota timbang ini dihapus permanen dan angka rekap panen akan dihitung ulang.

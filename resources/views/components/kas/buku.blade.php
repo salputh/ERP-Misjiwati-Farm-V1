@@ -1,30 +1,31 @@
-@props(['tersaring', 'saringan', 'pilihan', 'ringkasan'])
+@props(['tersaring', 'saringan', 'pilihan', 'ringkasan', 'tombolTambah' => false, 'periodeTertutup' => false])
 
-{{-- Buku kas berurutan tanggal dengan subtotal per bulan. Dropdown menyaring satu kategori;
-     nomor dan saldo tiap baris tetap dari buku kas utuh. --}}
-<div class="col-lg-12 mb-25">
-    <div class="card border-0 px-25">
-        <div class="card-header px-0 border-0">
+<div class="col-12 mb-25">
+    <div class="card card-default card-md">
+        <div class="card-header">
             <h6>Buku kas</h6>
-            <div class="card-extra tanpa-kapital">
+            <div class="card-extra d-flex flex-wrap align-items-center gap-2 tanpa-kapital">
                 <x-pilih class="pilih--kanan" :label="$saringan?->label() ?? 'Semua kategori'" nama="Saring kategori">
                     <button type="button" wire:click="pilihKategori('')" wire:key="saring-semua" @class(['dropdown-item', 'active' => ! $saringan])>Semua kategori</button>
                     @foreach ($pilihan as $kategori)
-                        <button type="button" wire:click="pilihKategori('{{ $kategori->value }}')" wire:key="saring-{{ $kategori->value }}" @class(['dropdown-item', 'active' => $kategori === $saringan])>{{ $kategori->label() }}</button>
+                        <button type="button" wire:click="pilihKategori(@js($kategori->value))" wire:key="saring-{{ $kategori->value }}" @class(['dropdown-item', 'active' => $kategori->value === $saringan?->value])>{{ $kategori->label() }}</button>
                     @endforeach
                 </x-pilih>
+                @if ($tombolTambah)
+                    <x-tombol ikon="uil-plus" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-form-kas" :disabled="$periodeTertutup" wire:loading.attr="disabled" wire:target="tambah">Tambah transaksi</x-tombol>
+                @endif
             </div>
         </div>
-        <div class="card-body p-0 pb-25">
-            <div class="selling-table-wrap">
-                <div class="table-responsive">
-                    <table class="table table--default table-borderless tabel-laporan tabel-panen tabel-kas mb-0">
+
+        <div class="card-body">
+            <div class="table4 table-responsive">
+                    <table class="table tabel-laporan tabel-kas mb-0">
                         <thead>
                             <tr class="userDatatable-header">
-                                <th class="text-start"><span class="userDatatable-title">No.</span></th>
-                                <th class="text-start"><span class="userDatatable-title">Tanggal</span></th>
-                                <th class="text-start"><span class="userDatatable-title">Kategori</span></th>
-                                <th class="text-start"><span class="userDatatable-title">Uraian</span></th>
+                                <th><span class="userDatatable-title">No.</span></th>
+                                <th><span class="userDatatable-title">Tanggal</span></th>
+                                <th><span class="userDatatable-title">Kategori</span></th>
+                                <th><span class="userDatatable-title">Uraian</span></th>
                                 <th class="text-end"><span class="userDatatable-title">Masuk (Rp)</span></th>
                                 <th class="text-end"><span class="userDatatable-title">Keluar (Rp)</span></th>
                                 <th class="text-end"><span class="userDatatable-title">Saldo (Rp)</span></th>
@@ -33,33 +34,30 @@
                         </thead>
                         @foreach ($tersaring['bulan'] as $sebulan)
                             <tbody wire:key="kas-{{ $sebulan['bulan']->format('Y-m') }}">
-                                <tr class="panen-hari">
-                                    <th colspan="8" scope="colgroup" class="text-start">
-                                        {{ $sebulan['bulan']->translatedFormat('F Y') }}
-                                        <span>@angka(count($sebulan['baris'])) transaksi</span>
-                                    </th>
-                                </tr>
+                                <x-tabel.grup kolom="8" :judul="$sebulan['bulan']->translatedFormat('F Y')" :keterangan="\App\Support\Format::angka(count($sebulan['baris'])).' transaksi'" />
                                 @foreach ($sebulan['baris'] as $baris)
                                     <tr wire:key="kas-{{ $baris['nomor'] }}">
-                                        <td class="text-start">{{ $baris['nomor'] }}</td>
-                                        <td class="text-start">{{ $baris['tanggal']->translatedFormat('j M Y') }}</td>
-                                        <td class="text-start"><span class="dm-tag tag-transparented m-0 {{ $baris['kategori']->kelasTag() }}">{{ $baris['kategori']->label() }}</span></td>
+                                        <td>{{ $baris['nomor'] }}</td>
+                                        <td>{{ $baris['tanggal']->translatedFormat('j M Y') }}</td>
+                                        <td><span class="dm-tag tag-transparented m-0 {{ $baris['kategori']->kelasTag() }}">{{ $baris['kategori']->label() }}</span></td>
                                         <td class="text-start tabel-kas__uraian">{{ $baris['uraian'] }}</td>
                                         <td class="text-end color-success fw-500">@kurung($baris['masuk'])</td>
                                         <td class="text-end">@kurung($baris['keluar'])</td>
                                         <td @class(['text-end', 'color-danger' => $baris['saldo'] < 0])>@kurung($baris['saldo'])</td>
                                         <td class="text-end">
-                                            @unless ($this->periode->tertutup())
+                                            @if (in_array($baris['id'], $this->transaksiKasbon, true))
+                                                <a href="{{ route('kasbon.abk', ['periode' => $this->periode->id]) }}" class="dm-tag tag-warning tag-transparented m-0" title="Transaksi ini diubah dari halaman Kasbon ABK">Kasbon</a>
+                                            @elseif (! $this->periode->tertutup())
                                                 <x-aksi.ikon :aksi="[
                                                     ['kelas' => 'edit', 'label' => 'Ubah transaksi '.$baris['tanggal']->translatedFormat('j F Y'), 'click' => 'ubah('.$baris['id'].')', 'modal' => '#modal-form-kas'],
                                                     ['kelas' => 'remove', 'label' => 'Hapus transaksi '.$baris['tanggal']->translatedFormat('j F Y'), 'click' => 'mintaHapus('.$baris['id'].')', 'modal' => '#konfirmasi-hapus-transaksi-kas'],
                                                 ]" />
-                                            @endunless
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
-                                <tr class="panen-subtotal">
-                                    <td colspan="4" class="text-start">Subtotal {{ $sebulan['bulan']->translatedFormat('F Y') }}</td>
+                                <tr class="fw-500 color-dark">
+                                    <td colspan="4">Subtotal {{ $sebulan['bulan']->translatedFormat('F Y') }}</td>
                                     <td class="text-end">@kurung($sebulan['masuk'] ?: null)</td>
                                     <td class="text-end">@kurung($sebulan['keluar'] ?: null)</td>
                                     <td></td>
@@ -69,7 +67,7 @@
                         @endforeach
                         <tfoot>
                             <tr>
-                                <th colspan="4" class="text-start">
+                                <th colspan="4">
                                     @if ($saringan)
                                         Total {{ $saringan->label() }}, @angka($tersaring['jumlah']) transaksi
                                     @else
@@ -87,9 +85,8 @@
                             </tr>
                         </tfoot>
                     </table>
-                </div>
             </div>
-            <p class="fs-12 color-gray mt-15 mb-0">
+            <p class="fs-13 color-light mt-15 mb-0">
                 Transaksi diurutkan menurut tanggal. Saldo adalah sisa kas setelah transaksi itu; angka dalam kurung berarti pengeluaran sudah melebihi dana yang masuk.
                 @if ($saringan)
                     Nomor dan saldo tetap mengikuti buku kas utuh, bukan hanya kategori ini.

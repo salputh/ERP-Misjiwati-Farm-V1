@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Pemanen;
+use App\Support\LembarPayrollPemanen;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -39,6 +40,21 @@ class MasterPemanen extends Component
         return Pemanen::query()
             ->orderBy('id')
             ->get();
+    }
+
+    /**
+     * Id pemanen yang merupakan ABK: tetap boleh tercatat, tetapi tidak dibayar di payroll pemanen.
+     *
+     * @return list<int>
+     */
+    #[Computed]
+    public function idAbk(): array
+    {
+        return $this->daftar
+            ->filter(fn (Pemanen $pemanen): bool => LembarPayrollPemanen::abk($pemanen->nama))
+            ->pluck('id')
+            ->values()
+            ->all();
     }
 
     public function tambah(): void

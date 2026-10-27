@@ -1,46 +1,33 @@
 @props([
     'judul' => null,
     'subjudul' => null,
-    'ukuran' => 'md', // sm, md, lg
-    'bergaris' => false,
-    'bg' => 'white', // white, transparent, normal
-    'tanpaHeader' => false,
     'ekstra' => null,
+    'badan' => null,
 ])
 
-@php
-    $classes = ['card', 'card-default'];
-    $classes[] = 'card-' . $ukuran;
-    
-    if ($bg !== 'white') {
-        $classes[] = 'bg-' . $bg;
-    }
-    
-    if ($bergaris) {
-        $classes[] = 'card-bordered';
-    }
-@endphp
-
-<div {{ $attributes->merge(['class' => implode(' ', $classes)]) }}>
-    @if (!$tanpaHeader && ($judul || $subjudul || $ekstra))
+{{-- Kartu bergaya katalog template (HexaDash: card card-default card-md).
+     Kepala berisi judul h6 dan subjudul seperti halaman Settings template; aksi di kanan lewat slot "ekstra".
+     "badan" menambah kelas pada card-body, misalnya "p-0" untuk tabel yang menempel ke tepi kartu. --}}
+<div {{ $attributes->class(['card card-default card-md']) }}>
+    @if ($judul || $ekstra)
         <div class="card-header">
             <div>
                 @if ($judul)
                     <h6>{{ $judul }}</h6>
                 @endif
                 @if ($subjudul)
-                    <span class="fs-12 color-gray">{{ $subjudul }}</span>
+                    <span class="d-block fs-13 color-light fw-400 tanpa-kapital">{{ $subjudul }}</span>
                 @endif
             </div>
             @if ($ekstra)
-                <div class="card-extra">
+                <div {{ $ekstra->attributes->class(['card-extra']) }}>
                     {{ $ekstra }}
                 </div>
             @endif
         </div>
     @endif
 
-    <div class="card-body">
+    <div @class(['card-body', $badan])>
         {{ $slot }}
     </div>
 </div>

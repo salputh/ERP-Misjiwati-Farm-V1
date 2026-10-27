@@ -1,7 +1,7 @@
 @props(['nilai', 'label', 'ikon', 'warna' => 'primary', 'lebar' => 'col-xxl-6 col-sm-6'])
 
 {{-- Kartu ringkasan (HexaDash demo one: overview card). Slot berisi keterangan di bawah angka. --}}
-<div class="{{ $lebar }} mb-25">
+<div {{ $attributes->class([$lebar, 'mb-25']) }}>
     <div class="ap-po-details ap-po-details--2 p-25 radius-xl d-flex justify-content-between h-100">
         <div class="overview-content w-100 d-flex flex-column justify-content-between">
             <div class="ap-po-details-content d-flex flex-wrap justify-content-between">

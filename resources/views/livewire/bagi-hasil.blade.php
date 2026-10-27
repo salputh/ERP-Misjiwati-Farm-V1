@@ -2,21 +2,14 @@
     <div class="row" id="halaman-bagi-hasil">
         <x-breadcrumb judul="Bagi hasil {{ $kandang->nama }}" :jejak="['Keuangan', 'Bagi hasil', $kandang->nama]">
             @if ($this->periode && $this->lembar)
-                <a
+                <x-tombol.kepala warna="white" ikon="uil uil-file-download" data-lewati-ekspor :href="route('bagi.hasil.export.pdf', ['kandang' => $kandang->id, 'periode' => $this->periode->id])">Ekspor PDF</x-tombol.kepala>
+                <x-tombol.kepala
                     data-lewati-ekspor
-                    class="btn btn-sm btn-outline-primary btn-squared"
-                    href="{{ route('bagi.hasil.export.pdf', ['kandang' => $kandang->id, 'periode' => $this->periode->id]) }}">
-                    <i class="uil uil-file-pdf"></i> Ekspor PDF
-                </a>
-                <button
-                    type="button"
-                    data-lewati-ekspor
-                    class="btn btn-sm btn-primary btn-squared mx-3"
-                    x-data="eksporHalaman('#halaman-bagi-hasil', @js($this->namaBerkasGambar))"
+                    x-data="eksporHalaman('#halaman-bagi-hasil', {{ \Illuminate\Support\Js::from($this->namaBerkasGambar) }})"
                     x-on:click="simpan()"
                     x-bind:disabled="sibuk"
-                    x-text="sibuk ? 'Menyiapkan gambar...' : 'Ekspor PNG'">
-                </button>
+                    x-text="sibuk ? 'Menyiapkan gambar...' : 'Ekspor PNG'"
+                >Ekspor PNG</x-tombol.kepala>
             @endif
         </x-breadcrumb>
         @if ($kandang->nama === 'Kandang 2')
@@ -24,7 +17,7 @@
         @endif
 
         @if ($this->bagiHasilTerkunci)
-            <div class="col-lg-12 mb-25">
+            <div class="col-12 mb-25">
                 <x-peringatan warna="secondary" judul="Bagi hasil {{ $kandang->nama }} dikunci" class="mb-0">
                     Pengaturan bagi hasil tidak dapat diubah selama terkunci. Buka kuncinya dari halaman Periode bila perlu diperbaiki.
                 </x-peringatan>
@@ -32,19 +25,19 @@
         @endif
 
         @if ($pesan)
-            <div class="col-lg-12 mb-25">
+            <div class="col-12 mb-25">
                 <x-peringatan warna="success" bisaDitutup="true">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
         @if ($kandang->nama === 'Kandang 2' && $this->periodeKandang?->bagiHasil && ! $this->periode?->tertutup() && ! $this->bagiHasilTerkunci)
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0 px-25">
-                    <div class="card-header px-0 border-0">
+            <div class="col-12 mb-25">
+                <div class="card card-default card-md">
+                    <div class="card-header">
                         <h6>Pengaturan bagi hasil Kandang 2</h6>
-                        <div class="card-extra fs-12 color-gray">Simpan perubahan untuk menghitung ulang pembagian.</div>
+                        <div class="card-extra fs-13 color-light tanpa-kapital">Simpan perubahan untuk menghitung ulang pembagian.</div>
                     </div>
-                    <div class="card-body px-0">
+                    <div class="card-body">
                         @error('pemodal')
                             <x-peringatan warna="danger" class="mb-20">{{ $message }}</x-peringatan>
                         @enderror
@@ -56,16 +49,16 @@
                             <h6 class="mb-15">Pengeluaran dan tarif</h6>
                             <div class="row">
                                 <div class="col-md-4">
-                                    <x-masukan
+                                    <x-masukan.ribuan properti="masukan.operasional" teks
                                         id="bagi-hasil-operasional"
-                                        tipe="number"
-                                        min="0"
-                                        step="1"
+                                       
+                                       
+                                       
                                         label="Operasional kandang (Rp)"
                                         readonly
-                                        wire:model="masukan.operasional"
+                                       
                                         keterangan="Dikunci: diambil otomatis dari total biaya operasional di halaman kas operasional, tidak termasuk pinjaman makan dan pinjaman karyawan." />
-                                    <span class="fs-12 color-gray d-block mt-5">
+                                    <span class="fs-12 color-light d-block mt-5">
                                         Sumber:
                                         <a href="{{ route('kas.operasional', ['kandang' => $kandang->id, 'periode' => $this->periode?->id]) }}">
                                             Kas operasional {{ $kandang->nama }}
@@ -76,13 +69,13 @@
                                     <x-masukan id="bagi-hasil-tarif-abk" tipe="number" min="0" step="1" label="Tarif gaji ABK per kg (Rp)" wire:model="masukan.tarif_gaji_abk_per_kg" :kesalahan="$errors->first('masukan.tarif_gaji_abk_per_kg')" />
                                 </div>
                                 <div class="col-md-4">
-                                    <x-masukan id="bagi-hasil-premi-pemeliharaan" tipe="number" min="0" step="1" label="Premi pemeliharaan ABK (Rp)" wire:model="masukan.premi_pemeliharaan_abk" :kesalahan="$errors->first('masukan.premi_pemeliharaan_abk')" />
+                                    <x-bagi-hasil.premi-abk id="bagi-hasil-premi-pemeliharaan" :premi="$this->lembar['premi_abk'] ?? null" />
                                 </div>
                                 <div class="col-md-4">
                                     <x-masukan id="bagi-hasil-controller" label="Nama controller" wire:model="masukan.controller" maxlength="150" :kesalahan="$errors->first('masukan.controller')" />
                                 </div>
                                 <div class="col-md-4">
-                                    <x-masukan id="bagi-hasil-premi-controller" tipe="number" min="0" step="1" label="Premi controller (Rp)" wire:model="masukan.premi_controller" :kesalahan="$errors->first('masukan.premi_controller')" />
+                                    <x-masukan.ribuan properti="masukan.premi_controller" teks id="bagi-hasil-premi-controller" label="Premi controller (Rp)" :kesalahan="$errors->first('masukan.premi_controller')" />
                                 </div>
                                 <div class="col-md-4">
                                     <x-masukan id="bagi-hasil-persen-controller" tipe="number" min="0" max="100" step="0.01" label="Upah controller (% pendapatan)" wire:model="masukan.persen_upah_controller" :kesalahan="$errors->first('masukan.persen_upah_controller')" />
@@ -112,7 +105,7 @@
                                         <x-masukan :id="'bagi-hasil-abk-keterangan-'.$indeks" label="Keterangan" wire:model="abk.{{ $indeks }}.keterangan" :kesalahan="$errors->first('abk.'.$indeks.'.keterangan')" />
                                     </div>
                                     <div class="col-md-3">
-                                        <x-masukan :id="'bagi-hasil-abk-premi-'.$indeks" tipe="number" min="0" step="1" label="Premi tetap (Rp)" wire:model="abk.{{ $indeks }}.jumlah" :kesalahan="$errors->first('abk.'.$indeks.'.jumlah')" />
+                                        <x-masukan.ribuan properti="abk.{{ $indeks }}.jumlah" teks :id="'bagi-hasil-abk-premi-'.$indeks" label="Premi tetap (Rp)" :kesalahan="$errors->first('abk.'.$indeks.'.jumlah')" />
                                     </div>
                                     <div class="col-md-1 pt-md-35 text-end">
                                         <x-aksi.ikon :aksi="[
@@ -133,7 +126,7 @@
                                         <x-masukan :id="'bagi-hasil-entertain-nama-'.$indeks" label="Nama penerima" wire:model="entertain.{{ $indeks }}.nama" :kesalahan="$errors->first('entertain.'.$indeks.'.nama')" />
                                     </div>
                                     <div class="col-md-5">
-                                        <x-masukan :id="'bagi-hasil-entertain-jumlah-'.$indeks" tipe="number" min="0" step="1" label="Jumlah (Rp)" wire:model="entertain.{{ $indeks }}.jumlah" :kesalahan="$errors->first('entertain.'.$indeks.'.jumlah')" />
+                                        <x-masukan.ribuan properti="entertain.{{ $indeks }}.jumlah" teks :id="'bagi-hasil-entertain-jumlah-'.$indeks" label="Jumlah (Rp)" :kesalahan="$errors->first('entertain.'.$indeks.'.jumlah')" />
                                     </div>
                                     <div class="col-md-2 pt-md-35 text-end">
                                         <x-aksi.ikon :aksi="[
@@ -180,23 +173,23 @@
 
         @if ($this->lembar)
             {{-- Identitas lembar --}}
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
+            <div class="col-12 mb-25">
+                <div class="card card-default card-md">
                     <div class="card-body kartu-identitas">
-                        <dl class="recording-info mb-0">
-                            <div><dt>Inti</dt><dd>PT. Indojaya Agrinusa</dd></div>
-                            <div><dt>Farm</dt><dd>Misjiwati / K0242</dd></div>
-                            <div><dt>Kandang</dt><dd>{{ $kandang->nama }}</dd></div>
-                            <div><dt>Populasi</dt><dd>@angka($this->lembar['identitas']['populasi']) ekor</dd></div>
-                            <div><dt>Kg terjual</dt><dd>@angka($this->lembar['identitas']['kg'], 2) kg</dd></div>
+                        <x-info class="mb-0">
+                            <x-info.butir label="Inti">PT. Indojaya Agrinusa</x-info.butir>
+                            <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
+                            <x-info.butir label="Kandang">{{ $kandang->nama }}</x-info.butir>
+                            <x-info.butir label="Populasi">@angka($this->lembar['identitas']['populasi']) ekor</x-info.butir>
+                            <x-info.butir label="Kg terjual">@angka($this->lembar['identitas']['kg'], 2) kg</x-info.butir>
                             @isset($this->lembar['identitas']['controller'])
-                                <div><dt>Controller</dt><dd>{{ $this->lembar['identitas']['controller'] }}</dd></div>
+                                <x-info.butir label="Controller">{{ $this->lembar['identitas']['controller'] }}</x-info.butir>
                             @endisset
-                        </dl>
+                        </x-info>
 
                         <div class="aksi-kunci">
                             @if ($this->bagiHasilTerkunci)
-                                <span class="dm-tag tag-primary m-0">Terkunci</span>
+                                <span class="dm-tag tag-primary tag-transparented m-0">Terkunci</span>
                             @elseif (! $this->periode?->tertutup())
                                 <x-tombol ukuran="sm" variasi="outlined" wire:click="bukaModalKunci" data-bs-toggle="modal" data-bs-target="#modal-kunci-bagi-hasil" wire:loading.attr="disabled" wire:target="bukaModalKunci, kunciBagiHasil">
                                     Kunci bagi hasil
@@ -271,41 +264,13 @@
 
             <x-bagi-hasil.abk :abk="$this->lembar['abk']" />
         @elseif (! $this->periode)
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">Belum ada periode</h5>
-                        <p class="color-gray mb-0">Bagi hasil dihitung per kandang dalam satu periode. Halaman ini terisi setelah periode pertama dibuat.</p>
-                    </div>
-                </div>
-            </div>
+            <x-kosong judul="Belum ada periode">Bagi hasil dihitung per kandang dalam satu periode. Halaman ini terisi setelah periode pertama dibuat.</x-kosong>
         @elseif (! $this->periodeKandang)
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">{{ $kandang->nama }} tidak dipakai di periode ini</h5>
-                        <p class="color-gray mb-0">Periode terpilih tidak mencatat chick-in di {{ $kandang->nama }}, jadi tidak ada bagi hasilnya. Anda dapat memilih periode lain dari bar atas.</p>
-                    </div>
-                </div>
-            </div>
+            <x-kosong judul="{{ $kandang->nama }} tidak dipakai di periode ini">Periode terpilih tidak mencatat chick-in di {{ $kandang->nama }}, jadi tidak ada bagi hasilnya. Anda dapat memilih periode lain dari bar atas.</x-kosong>
         @elseif (! $this->rhpp)
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">RHPP real belum dicatat</h5>
-                        <p class="color-gray mb-0">Pendapatan bagi hasil diambil dari RHPP real. Halaman ini terisi setelah dokumen RHPP dari inti untuk periode terpilih dicatat.</p>
-                    </div>
-                </div>
-            </div>
+            <x-kosong judul="RHPP real belum dicatat">Pendapatan bagi hasil diambil dari RHPP real. Halaman ini terisi setelah dokumen RHPP dari inti untuk periode terpilih dicatat.</x-kosong>
         @else
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">Bagi hasil belum diisi</h5>
-                        <p class="color-gray mb-0">Biaya operasional, tarif, dan daftar penerima bagi hasil {{ $kandang->nama }} untuk periode terpilih belum dicatat.</p>
-                    </div>
-                </div>
-            </div>
+            <x-kosong judul="Bagi hasil belum diisi">Biaya operasional, tarif, dan daftar penerima bagi hasil {{ $kandang->nama }} untuk periode terpilih belum dicatat.</x-kosong>
         @endif
     </div>
 
@@ -314,7 +279,7 @@
         judul="Kunci bagi hasil {{ $kandang->nama }}"
         submit="kunciBagiHasil"
         x-on:tutup-modal-kunci-bagi-hasil.window="bootstrap.Modal.getInstance($el).hide()">
-        <p class="fs-12 color-gray">
+        <p class="fs-13 color-light">
             @if ($this->sandiAdminTeratur)
                 Lembar bagi hasil {{ $kandang->nama }} akan dikunci sehingga tidak dapat diubah. Masukkan password admin untuk mengunci.
             @else

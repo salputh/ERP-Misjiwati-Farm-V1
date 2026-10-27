@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use App\Enums\KategoriKas;
 use App\Models\PeriodeKandang;
+use App\Models\PotonganKasbon;
 use App\Models\SlipGaji;
 use Illuminate\Support\Collection;
 
@@ -14,7 +16,7 @@ use Illuminate\Support\Collection;
 class LembarPayroll
 {
     /**
-     * Pakai relasi slipGaji.penerimaBagiHasil, bagiHasil.penerima, dan kandang yang sudah di-load.
+     * Pakai relasi slipGaji.penerimaBagiHasil, slipGaji.potonganKasbon.kasbon.potongan, bagiHasil.penerima, dan kandang yang sudah di-load.
      * $rhpp adalah hasil LembarRhpp::real() periode itu. Mengembalikan null bila belum ada slip gaji.
      *
      * @param  Collection<int, PeriodeKandang>  $kandangPeriode
@@ -33,7 +35,8 @@ class LembarPayroll
             ->values()
             ->map(function (PeriodeKandang $satu) use ($rhpp): array {
                 $bagiHasil = LembarBagiHasil::buat($satu, $rhpp);
-                $slip = $satu->slipGaji->map(fn (SlipGaji $slip): array => self::slip($slip, $satu->kandang->nama, $bagiHasil))->values();
+                $uangMakan = self::uangMakanDariKas($satu);
+                $slip = $satu->slipGaji->map(fn (SlipGaji $slip): array => self::slip($slip, $satu->kandang->nama, $bagiHasil, $uangMakan[$slip->id] ?? null))->values();
 
                 return ['id' => $satu->id, 'nama' => $satu->kandang->nama, 'slip' => $slip->all(), 'total' => self::total($slip)];
             });
@@ -53,9 +56,10 @@ class LembarPayroll
 
     /**
      * @param  array<string, mixed>|null  $bagiHasil  lembar bagi hasil kandangnya
+     * @param  ?array{jumlah: int, transaksi: int}  $uangMakanKas  uang makan atas nama orang ini di kas kandangnya
      * @return array{id: int, karyawan_id: ?int, nama: string, jabatan: string, kandang: string, hari_kerja: int, pendapatan: list<array{label: string, jumlah: int, rumus: ?string}>, potongan: list<array{label: string, jumlah: int, rumus: ?string}>, total_pendapatan: int, total_potongan: int, bersih: int}
      */
-    private static function slip(SlipGaji $slip, string $kandang, ?array $bagiHasil): array
+    private static function slip(SlipGaji $slip, string $kandang, ?array $bagiHasil, ?array $uangMakanKas = null): array
     {
         $penerima = $slip->penerimaBagiHasil;
         $jumlahAbk = $bagiHasil['ringkasan']['jumlah_abk'] ?? 0;
@@ -78,8 +82,11 @@ class LembarPayroll
         ])->reject(fn (array $baris): bool => $baris['opsional'] && $baris['jumlah'] === 0)->map(fn (array $baris): array => collect($baris)->except('opsional')->all())->values();
 
         $potongan = collect([
-            self::baris('Uang makan', $slip->uang_makan, self::rumusUangMakan($slip)),
+            $uangMakanKas !== null
+                ? self::baris('Uang makan', $uangMakanKas['jumlah'], 'dari kas: '.Format::angka($uangMakanKas['transaksi']).' transaksi Pinjaman Makan')
+                : self::baris('Uang makan', $slip->uang_makan, self::rumusUangMakan($slip)),
             self::baris('Pinjaman ABK', $slip->pinjaman),
+            ...$slip->potonganKasbon->sortBy('id')->map(fn (PotonganKasbon $potongan): array => self::barisKasbon($potongan))->all(),
             self::baris('Potongan lain', $slip->potongan_lain, $slip->keterangan_potongan_lain),
         ])->map(fn (array $baris): array => collect($baris)->except('opsional')->all());
 
@@ -99,6 +106,77 @@ class LembarPayroll
             'total_potongan' => $totalPotongan,
             'bersih' => $totalPendapatan - $totalPotongan,
         ];
+    }
+
+    /**
+     * Cicilan kasbon di slip: urutan potongannya dan sisa kasbon setelah slip ini. Urutan mengikuti potongan yang
+     * tidak nol, dihitung dari potongan yang dibuat lebih dulu.
+     *
+     * @return array{label: string, jumlah: int, rumus: ?string, opsional: bool}
+     */
+    private static function barisKasbon(PotonganKasbon $potongan): array
+    {
+        $kasbon = $potongan->kasbon;
+        $sampaiSlipIni = $kasbon->potongan->where('id', '<=', $potongan->id);
+        $sisa = max(0, $kasbon->jumlah - (int) $sampaiSlipIni->sum('jumlah'));
+        $ke = $sampaiSlipIni->where('jumlah', '>', 0)->count();
+        $keterangan = $potongan->jumlah > 0
+            ? 'potongan '.Format::angka($ke).' dari '.Format::angka(max($ke, $kasbon->jumlah_potongan)).', '
+            : '';
+
+        return self::baris(
+            'Kasbon '.$kasbon->keperluan,
+            $potongan->jumlah,
+            $keterangan.($sisa > 0 ? 'sisa Rp '.Format::angka($sisa) : 'lunas'),
+        );
+    }
+
+    /**
+     * Uang makan tiap slip dari kas operasional kandangnya: transaksi Pinjaman Makan yang uraiannya menyebut nama
+     * orang itu (nama di slip atau nama lengkap karyawannya, sebagai kata utuh). Transaksi yang menyebut beberapa
+     * nama dibagi rata ke nama-nama itu; transaksi tanpa nama tidak dipotong ke siapa pun. Slip yang tidak punya
+     * satu pun transaksi atas namanya tidak ada di hasil, sehingga angka tersimpannya (data lama) tetap dipakai.
+     *
+     * @return array<int, array{jumlah: int, transaksi: int}> kuncinya id slip
+     */
+    public static function uangMakanDariKas(PeriodeKandang $periodeKandang): array
+    {
+        $periodeKandang->loadMissing(['transaksiKas', 'slipGaji.karyawan']);
+
+        $pola = $periodeKandang->slipGaji->mapWithKeys(fn (SlipGaji $slip): array => [
+            $slip->id => collect([$slip->nama, $slip->karyawan?->nama])
+                ->filter()
+                ->unique(fn (string $nama): string => mb_strtolower($nama))
+                ->map(fn (string $nama): string => '/(?<![\pL\pN])'.preg_quote(mb_strtolower(trim($nama)), '/').'(?![\pL\pN])/u')
+                ->all(),
+        ]);
+
+        $hasil = [];
+        foreach ($periodeKandang->transaksiKas as $transaksi) {
+            if ($transaksi->kategori !== KategoriKas::PinjamanMakan) {
+                continue;
+            }
+
+            $uraian = mb_strtolower($transaksi->uraian);
+            $penerima = $pola
+                ->filter(fn (array $daftar): bool => collect($daftar)->contains(fn (string $satu): bool => preg_match($satu, $uraian) === 1))
+                ->keys()
+                ->values();
+            if ($penerima->isEmpty()) {
+                continue;
+            }
+
+            // Dibagi rata; sisa pembulatan rupiah diberikan ke nama pertama.
+            $bagian = intdiv($transaksi->jumlah, $penerima->count());
+            $sisa = $transaksi->jumlah - $bagian * $penerima->count();
+            foreach ($penerima as $urutan => $slipId) {
+                $hasil[$slipId] ??= ['jumlah' => 0, 'transaksi' => 0];
+                $hasil[$slipId]['jumlah'] += $bagian + ($urutan === 0 ? $sisa : 0);
+                $hasil[$slipId]['transaksi']++;
+            }
+        }
+
+        return $hasil;
     }
 
     /**

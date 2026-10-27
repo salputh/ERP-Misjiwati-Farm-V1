@@ -6,13 +6,13 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 2.5cm;
+            margin: 1cm;
         }
 
         body {
             color: #0a0a0a;
             font-family: DejaVu Sans, sans-serif;
-            font-size: 6pt;
+            font-size: 8pt;
             line-height: 1.35;
         }
 
@@ -25,14 +25,14 @@
 
         .sub {
             color: #747474;
-            font-size: 7pt;
+            font-size: 8pt;
             line-height: 1.45;
             margin: 0 0 7px;
         }
 
         .info {
             border-collapse: collapse;
-            font-size: 7pt;
+            font-size: 8pt;
             line-height: 1.4;
             margin-bottom: 8px;
             width: 100%;
@@ -56,7 +56,7 @@
         .lembar th.judul-tabel {
             background: #f3edf9;
             color: #282336;
-            font-size: 7.5pt;
+            font-size: 8.5pt;
             font-weight: bold;
             line-height: 1.35;
             padding: 3px 5px;
@@ -73,7 +73,7 @@
 
         .lembar th {
             color: #747474;
-            font-size: 6.5pt;
+            font-size: 8pt;
             font-weight: normal;
             text-align: left;
         }
@@ -85,7 +85,7 @@
 
         .lembar td.keterangan {
             color: #747474;
-            font-size: 6.5pt;
+            font-size: 8pt;
         }
 
         .lembar tr.tebal td {
@@ -103,7 +103,7 @@
 
         .jumlah {
             border-collapse: collapse;
-            font-size: 7.5pt;
+            font-size: 8.5pt;
             line-height: 1.35;
             margin-top: 8px;
             page-break-inside: avoid;
@@ -128,7 +128,7 @@
 
         .kaki {
             color: #747474;
-            font-size: 6.5pt;
+            font-size: 8pt;
             line-height: 1.45;
             margin-top: 8px;
         }

@@ -19,33 +19,54 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+/**
+ * Sampling bobot per kandang (M4). Kandang dipilih di halaman; riwayat sesinya punya aksi Lihat, Ubah, dan Hapus.
+ * Form di modal hanya untuk satu tujuan: "Tambah sampling" membuat sesi baru pada tanggal yang belum punya sesi,
+ * "Ubah" mengganti sampel sesi tersimpan dengan kandang dan tanggal yang terkunci. ABW sesi menjadi ABW aktual
+ * recording harian tanggal itu (dibaca LembarRecording), tanpa menulis baris recording.
+ */
 #[Title('Sampling bobot')]
 class SamplingBobot extends Component
 {
     use MemilihPeriode;
 
+    /** Catatan baris recording yang dulu dibuat otomatis oleh sampling, sebelum ABW dibaca langsung dari sesi. */
+    private const CATATAN_RECORDING_OTOMATIS = 'ABW dari sampling bobot; kematian dan afkir belum dicatat.';
+
     #[Url(as: 'kandang')]
     public ?int $periodeKandangId = null;
 
-    #[Url(as: 'tanggal')]
+    /** Tanggal sesi di form (Y-m-d). Hanya dapat dipilih saat menambah; saat mengubah, tanggal sesi dikunci. */
     public string $tanggal = '';
 
     public bool $denganSexing = false;
 
     /**
-     * Ekor per sampel tiap kelamin, dipakai sebagai isi awal setiap titik.
+     * Ekor per sampel tiap kelamin: satu angka untuk semua titik kelamin itu dalam sesi (T10).
      *
      * @var array<string, int|string>
      */
     public array $ekor = [];
 
+    /** Ekor per sampel dikunci: isiannya tidak dapat diubah sampai kuncinya dibuka. */
+    public bool $ekorTerkunci = false;
+
     /**
-     * Jumlah ekor tiap titik: [lantai][kelamin][line][urutan].
-     * Tiap titik boleh berbeda, sesuai jumlah ayam yang ditimbang saat itu.
+     * Ekor per sampel saat dikunci, dipakai mengembalikan nilai bila ada perubahan yang terkirim selama terkunci.
+     *
+     * @var array<string, int|string>
+     */
+    #[Locked]
+    public array $ekorSaatDikunci = [];
+
+    /**
+     * Jumlah ekor tiap titik: [lantai][kelamin][line][urutan]. Tidak diisi sendiri; selalu disamakan dengan
+     * ekor per sampel kelaminnya supaya setiap titik ditimbang dengan jumlah ekor yang sama.
      *
      * @var array<string, array<string, array<string, array<int, int|string|null>>>>
      */
@@ -58,12 +79,19 @@ class SamplingBobot extends Component
      */
     public array $berat = [];
 
+    /** Sesi yang sedang diubah di form; null berarti form menambah sesi baru. */
+    #[Locked]
     public ?int $sesiId = null;
 
     /**
      * Sesi riwayat yang hasilnya sedang ditampilkan di modal.
      */
     public ?int $sesiDilihatId = null;
+
+    #[Locked]
+    public ?int $sesiHapusId = null;
+
+    public string $labelHapus = '';
 
     public ?string $pesan = null;
 
@@ -73,13 +101,12 @@ class SamplingBobot extends Component
             return;
         }
 
-        $this->periodeKandangId = $this->kandangAwal()?->id ?? $this->terpilih->id;
-        unset($this->terpilih);
-        if (! $this->tanggalSah($this->tanggal)) {
-            $this->tanggal = $this->tanggalAwal()->format('Y-m-d');
+        if (! $this->daftarKandang->contains('id', $this->periodeKandangId)) {
+            $this->periodeKandangId = $this->kandangAwal()?->id ?? $this->terpilih->id;
+            unset($this->terpilih);
         }
 
-        $this->muatSesi();
+        $this->kosongkanForm();
     }
 
     /**
@@ -119,9 +146,23 @@ class SamplingBobot extends Component
     #[Computed]
     public function umur(): int
     {
-        return $this->terpilih
-            ? (int) $this->terpilih->tanggalChickInEfektif()->diffInDays(Carbon::parse($this->tanggal), false)
-            : $this->periode->umurPada(Carbon::parse($this->tanggal));
+        return $this->umurPada($this->tanggal);
+    }
+
+    /**
+     * Rentang tanggal sampling kandang terpilih: hari chick-in kandang itu sampai umur terakhir tabel standar.
+     *
+     * @return array{min: string, maks: string}
+     */
+    #[Computed]
+    public function batasTanggal(): array
+    {
+        $chickIn = $this->terpilih?->tanggalChickInEfektif() ?? $this->periode->tanggal_chick_in;
+
+        return [
+            'min' => $chickIn->format('Y-m-d'),
+            'maks' => $chickIn->copy()->addDays($this->umurMaksimal)->format('Y-m-d'),
+        ];
     }
 
     /**
@@ -150,7 +191,7 @@ class SamplingBobot extends Component
         foreach ($this->daftarKandang as $kandang) {
             $sesi = $kandang->sesiSampling->sortByDesc('tanggal')->first();
             $tanggalSesi = $sesi?->tanggal;
-            $umur = (int) $kandang->tanggalChickInEfektif()->diffInDays($tanggalSesi ?? Carbon::parse($this->tanggal), false);
+            $umur = (int) $kandang->tanggalChickInEfektif()->diffInDays($tanggalSesi ?? today(), false);
             $pakan = $this->hitungPakan($kandang, $umur, $sesi?->abw());
 
             $berat = (float) ($sesi?->titik->sum('berat_gram') ?? 0);
@@ -161,6 +202,7 @@ class SamplingBobot extends Component
 
             $baris[] = [
                 'periode_kandang_id' => $kandang->id,
+                'sesi_id' => $sesi?->id,
                 'kandang' => $kandang->kandang->nama,
                 'tanggal' => $tanggalSesi,
                 'umur' => $umur,
@@ -265,56 +307,120 @@ class SamplingBobot extends Component
         return $this->terpilih?->sesiSampling->sortByDesc('tanggal')->values() ?? collect();
     }
 
-    public function updatedPeriodeKandangId(): void
-    {
-        unset($this->terpilih);
-        $this->muatSesi();
-    }
-
-    public function updatedTanggal(): void
-    {
-        if (! $this->tanggalSah($this->tanggal)) {
-            $this->tanggal = $this->tanggalAwal()->format('Y-m-d');
-        }
-
-        unset($this->umur, $this->labelTanggal);
-        $this->muatSesi();
-    }
-
     /**
-     * Jumlah ekor per sampel berlaku untuk semua titik alike, jadi mengubahnya
-     * menulis ulang jumlah ekor setiap titik kelamin itu.
+     * Pilih kandang yang riwayatnya ditampilkan dan yang akan ditambah sampling-nya.
      */
-    public function updatedEkor(mixed $nilai, string $kelamin): void
+    public function pilihKandang(int $periodeKandangId): void
     {
-        if (! is_numeric($nilai)) {
+        if (! $this->daftarKandang->contains('id', $periodeKandangId)) {
             return;
         }
 
-        foreach (config('sampling.lantai') as $lantai => $info) {
-            foreach ($info['line'] as $line) {
-                for ($urutan = 1; $urutan <= config('sampling.sampel_per_line'); $urutan++) {
-                    $this->ekorTitik[$lantai][$kelamin][$line][$urutan] = (int) $nilai;
-                }
-            }
-        }
-    }
-
-    public function pilihJenis(bool $denganSexing): void
-    {
-        $this->denganSexing = $denganSexing;
-        $this->isiEkorTitikKosong();
+        $this->periodeKandangId = $periodeKandangId;
+        $this->pesan = null;
+        $this->sesiDilihatId = null;
+        unset($this->terpilih, $this->riwayat, $this->batasTanggal, $this->umur, $this->gabunganKandang);
+        $this->kosongkanForm();
     }
 
     /**
-     * Buka form sampling untuk satu kandang pada tanggal sesinya, dipakai dari ringkasan kandangs.
+     * Siapkan form untuk sampling baru kandang terpilih.
      */
-    public function bukaSesi(int $periodeKandangId, string $tanggal): void
+    public function tambah(): void
     {
-        $this->periodeKandangId = $periodeKandangId;
-        $this->tanggal = $tanggal;
-        unset($this->terpilih, $this->umur, $this->labelTanggal);
-        $this->muatSesi();
+        $this->pesan = null;
+        $this->kosongkanForm();
+    }
+
+    /**
+     * Isi form dari sesi tersimpan kandang terpilih; kandang dan tanggalnya dikunci.
+     */
+    public function ubah(int $sesiId): void
+    {
+        $sesi = $this->riwayat->firstWhere('id', $sesiId) ?? abort(404);
+
+        $this->resetValidation();
+        $this->pesan = null;
+        $this->sesiId = $sesi->id;
+        $this->tanggal = $sesi->tanggal->format('Y-m-d');
+        $this->denganSexing = $sesi->dengan_sexing;
+        $this->ekor = array_merge(config('sampling.ekor_per_sampel'), $sesi->ekorPerSampel());
+        $this->berat = $sesi->isianBerat();
+        $this->ekorTitik = [];
+        $this->samakanEkorTitik();
+        // Sesi tersimpan dibuka dengan ekor per sampel terkunci, supaya angkanya tidak berubah tanpa sengaja.
+        $this->ekorTerkunci = true;
+        $this->ekorSaatDikunci = $this->ekor;
+        unset($this->umur, $this->labelTanggal);
+    }
+
+    public function batal(): void
+    {
+        $this->kosongkanForm();
+    }
+
+    /**
+     * Tanggal hanya dapat diganti saat menambah. Isian sampel tidak dibuang; jenis sampling menyesuaikan umur
+     * selama belum ada berat yang diisi.
+     */
+    public function updatedTanggal(): void
+    {
+        $this->resetErrorBag('tanggal');
+        if ($this->sesiId !== null) {
+            $this->tanggal = $this->riwayat->firstWhere('id', $this->sesiId)?->tanggal->format('Y-m-d') ?? $this->tanggal;
+
+            return;
+        }
+
+        unset($this->umur, $this->labelTanggal);
+        $this->periksaTanggalBaru();
+
+        if ($this->beratKosong()) {
+            $this->denganSexing = $this->umur >= config('sampling.umur_mulai_sexing');
+            $this->samakanEkorTitik();
+        }
+    }
+
+    /**
+     * Ekor per sampel berlaku untuk semua titik, jadi mengubahnya menulis ulang jumlah ekor setiap titik kelamin itu.
+     * Selama terkunci, nilai yang terkirim dikembalikan ke nilai saat dikunci.
+     */
+    public function updatedEkor(): void
+    {
+        if ($this->ekorTerkunci) {
+            $this->ekor = $this->ekorSaatDikunci;
+        }
+
+        $this->samakanEkorTitik();
+    }
+
+    /**
+     * Kunci ekor per sampel setelah angkanya benar. Angka yang kosong atau tidak sah tidak dapat dikunci.
+     */
+    public function kunciEkor(): void
+    {
+        $this->resetErrorBag(array_keys($this->aturanEkor()));
+        $this->validate($this->aturanEkor(), $this->pesanEkor());
+
+        $this->ekorTerkunci = true;
+        $this->ekorSaatDikunci = $this->ekor;
+        $this->samakanEkorTitik();
+    }
+
+    public function bukaKunciEkor(): void
+    {
+        $this->ekorTerkunci = false;
+        $this->ekorSaatDikunci = [];
+    }
+
+    /**
+     * Mengganti jenis sampling mengganti kelamin yang diisi, jadi kunci ekor per sampel dibuka lagi.
+     */
+    public function pilihJenis(bool $denganSexing): void
+    {
+        $this->denganSexing = $denganSexing;
+        $this->bukaKunciEkor();
+        $this->samakanEkorTitik();
     }
 
     /**
@@ -325,24 +431,37 @@ class SamplingBobot extends Component
         $this->sesiDilihatId = $this->riwayat->firstWhere('id', $sesiId)?->id;
     }
 
+    /**
+     * Dari ringkasan: pilih kandang itu dan tampilkan sesi terakhirnya di modal hasil.
+     */
+    public function lihatTerakhir(int $periodeKandangId): void
+    {
+        $this->pilihKandang($periodeKandangId);
+        $this->sesiDilihatId = $this->riwayat->first()?->id;
+    }
+
     public function simpan(): void
     {
         $this->pastikanPeriodeDapatDiubah();
+        $sesiLama = $this->sesiId !== null ? ($this->riwayat->firstWhere('id', $this->sesiId) ?? abort(404)) : null;
+
+        if (! $sesiLama && ! $this->periksaTanggalBaru()) {
+            return;
+        }
+
         $this->validate($this->aturan(), [
+            ...$this->pesanEkor(),
             'berat.*.*.*.*.required' => 'Isi semua berat sampel.',
             'berat.*.*.*.*.integer' => 'Berat harus angka bulat (gram).',
             'berat.*.*.*.*.min' => 'Berat harus lebih dari 0.',
-            'ekorTitik.*.*.*.*.required' => 'Isi jumlah ekor setiap titik.',
-            'ekorTitik.*.*.*.*.integer' => 'Jumlah ekor harus angka bulat.',
-            'ekorTitik.*.*.*.*.min' => 'Jumlah ekor harus lebih dari 0.',
         ]);
+        // Titik selalu memakai ekor per sampel, apa pun yang terkirim untuk titik itu.
+        $this->samakanEkorTitik();
 
         $kelaminAktif = HasilSampling::kelamin($this->denganSexing);
 
-        $sesi = DB::transaction(function () use ($kelaminAktif): SesiSampling {
-            // Satu sesi per kandang per tanggal; dicari dengan whereDate karena kolom tanggal tersimpan sebagai datetime.
-            $sesi = SesiSampling::where('periode_kandang_id', $this->terpilih->id)->whereDate('tanggal', $this->tanggal)->first()
-                ?? new SesiSampling(['periode_kandang_id' => $this->terpilih->id, 'tanggal' => $this->tanggal]);
+        $sesi = DB::transaction(function () use ($kelaminAktif, $sesiLama): SesiSampling {
+            $sesi = $sesiLama ?? new SesiSampling(['periode_kandang_id' => $this->terpilih->id, 'tanggal' => $this->tanggal]);
             $sesi->fill(['umur' => $this->umur, 'dengan_sexing' => $this->denganSexing])->save();
 
             $sesi->titik()->delete();
@@ -364,7 +483,7 @@ class SamplingBobot extends Component
             }
 
             Aktivitas::catat(
-                $sesi->wasRecentlyCreated ? JenisAktivitas::Tambah : JenisAktivitas::Ubah,
+                $sesiLama ? JenisAktivitas::Ubah : JenisAktivitas::Tambah,
                 ModulAktivitas::SamplingBobot,
                 'Sampling bobot '.$this->labelTanggal,
                 "{$this->terpilih->kandang->nama}, {$this->periode->nama}",
@@ -373,15 +492,56 @@ class SamplingBobot extends Component
             return $sesi;
         });
 
-        $abw = $sesi->abw();
-        if ($abw !== null) {
-            $this->isiRecording((float) $abw);
-        }
+        $abw = $sesi->load('titik')->abw();
+        $this->pesan = 'Sampling '.$this->terpilih->kandang->nama.' '.$this->labelTanggal.($sesiLama ? ' diperbarui.' : ' tersimpan.')
+            .($abw !== null ? ' ABW '.Format::angka($abw, 1).' g menjadi ABW aktual recording harian tanggal itu.' : '');
+        $this->dispatch('tutup-modal-sampling');
+        $this->segarkan();
+        $this->kosongkanForm();
+    }
 
-        $this->sesiId = $sesi->id;
-        $this->pesan = 'Sampling '.Carbon::parse($this->tanggal)->translatedFormat('j F Y').' tersimpan.'
-            .($abw !== null ? ' ABW '.Format::angka($abw, 1).' g masuk ke recording harian.' : '');
-        unset($this->daftarKandang, $this->terpilih, $this->riwayat, $this->gabunganKandang);
+    public function mintaHapus(int $sesiId): void
+    {
+        $sesi = $this->riwayat->firstWhere('id', $sesiId) ?? abort(404);
+
+        $this->pesan = null;
+        $this->sesiHapusId = $sesi->id;
+        $this->labelHapus = $this->terpilih->kandang->nama.' '.$sesi->tanggal->translatedFormat('j F Y').' (usia '.$sesi->umur.' hari)';
+    }
+
+    /**
+     * Hapus satu sesi beserta sampelnya. Baris recording yang dulu dibuat otomatis oleh sampling pada tanggal itu,
+     * dan belum diisi kematian atau afkir, ikut dihapus.
+     */
+    public function hapus(): void
+    {
+        $this->pastikanPeriodeDapatDiubah();
+        $sesi = $this->riwayat->firstWhere('id', $this->sesiHapusId) ?? abort(404);
+        $label = $this->labelHapus;
+
+        DB::transaction(function () use ($sesi): void {
+            Recording::query()
+                ->where('periode_kandang_id', $sesi->periode_kandang_id)
+                ->whereDate('tanggal', $sesi->tanggal)
+                ->where('catatan', self::CATATAN_RECORDING_OTOMATIS)
+                ->where('mati', 0)
+                ->where('afkir', 0)
+                ->delete();
+
+            Aktivitas::catat(
+                JenisAktivitas::Hapus,
+                ModulAktivitas::SamplingBobot,
+                'Sampling bobot '.$sesi->tanggal->translatedFormat('j F Y'),
+                "{$this->terpilih->kandang->nama}, {$this->periode->nama}",
+            );
+            $sesi->delete();
+        });
+
+        $this->sesiHapusId = null;
+        $this->labelHapus = '';
+        $this->sesiDilihatId = null;
+        $this->pesan = 'Sampling '.$label.' dihapus.';
+        $this->segarkan();
     }
 
     public function render(): View
@@ -390,20 +550,75 @@ class SamplingBobot extends Component
     }
 
     /**
-     * Isi form dari sesi tersimpan pada tanggal terpilih, atau kosongkan dan pilih jenis sampling sesuai umur.
+     * Form kosong untuk sampling baru kandang terpilih: tanggal disarankan, jenis sampling mengikuti umur.
      */
-    private function muatSesi(): void
+    private function kosongkanForm(): void
     {
         $this->resetValidation();
-        $this->pesan = null;
-        $sesi = $this->terpilih?->sesiSampling->first(fn (SesiSampling $sesi): bool => $sesi->tanggal->format('Y-m-d') === $this->tanggal);
+        $this->sesiId = null;
+        $this->tanggal = $this->tanggalSaranBaru();
+        unset($this->umur, $this->labelTanggal);
+        $this->denganSexing = $this->umur >= config('sampling.umur_mulai_sexing');
+        $this->ekor = config('sampling.ekor_per_sampel');
+        $this->ekorTerkunci = false;
+        $this->ekorSaatDikunci = [];
+        $this->berat = [];
+        $this->ekorTitik = [];
+        $this->samakanEkorTitik();
+    }
 
-        $this->sesiId = $sesi?->id;
-        $this->denganSexing = $sesi ? $sesi->dengan_sexing : $this->umur >= config('sampling.umur_mulai_sexing');
-        $this->ekor = array_merge(config('sampling.ekor_per_sampel'), $sesi?->ekorPerSampel() ?? []);
-        $this->berat = $sesi?->isianBerat() ?? [];
-        $this->ekorTitik = $sesi?->isianEkor() ?? [];
-        $this->isiEkorTitikKosong();
+    /**
+     * Tanggal sampling baru harus berada di rentang kandang dan belum punya sesi. Pesan kesalahannya
+     * menunjuk ke riwayat, supaya sesi yang sudah ada diubah dari sana dan tidak tertimpa diam-diam.
+     */
+    private function periksaTanggalBaru(): bool
+    {
+        if (! $this->tanggalSah($this->tanggal)) {
+            $this->addError('tanggal', 'Pilih tanggal antara '.Carbon::parse($this->batasTanggal['min'])->translatedFormat('j F Y').' dan '.Carbon::parse($this->batasTanggal['maks'])->translatedFormat('j F Y').'.');
+
+            return false;
+        }
+
+        if ($this->riwayat->contains(fn (SesiSampling $sesi): bool => $sesi->tanggal->format('Y-m-d') === $this->tanggal)) {
+            $this->addError('tanggal', $this->terpilih->kandang->nama.' sudah punya sampling '.$this->labelTanggal.'. Ubah sesi itu dari Riwayat sampling.');
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function beratKosong(): bool
+    {
+        return collect($this->berat)->flatten()->filter(fn (mixed $nilai): bool => filled($nilai))->isEmpty();
+    }
+
+    private function segarkan(): void
+    {
+        unset($this->daftarKandang, $this->terpilih, $this->riwayat, $this->gabunganKandang, $this->dilihat);
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function aturanEkor(): array
+    {
+        return collect(HasilSampling::kelamin($this->denganSexing))
+            ->mapWithKeys(fn (string $kelamin): array => ["ekor.{$kelamin}" => ['required', 'integer', 'min:1', 'max:500']])
+            ->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function pesanEkor(): array
+    {
+        return [
+            'ekor.*.required' => 'Isi ekor per sampel.',
+            'ekor.*.integer' => 'Ekor per sampel harus angka bulat.',
+            'ekor.*.min' => 'Ekor per sampel harus lebih dari 0.',
+            'ekor.*.max' => 'Ekor per sampel paling banyak 500.',
+        ];
     }
 
     /**
@@ -411,14 +626,12 @@ class SamplingBobot extends Component
      */
     private function aturan(): array
     {
-        $aturan = [];
+        $aturan = $this->aturanEkor();
         foreach (HasilSampling::kelamin($this->denganSexing) as $kelamin) {
-            $aturan["ekor.{$kelamin}"] = ['required', 'integer', 'min:1', 'max:500'];
             foreach (config('sampling.lantai') as $lantai => $info) {
                 foreach ($info['line'] as $line) {
                     for ($urutan = 1; $urutan <= config('sampling.sampel_per_line'); $urutan++) {
                         $aturan["berat.{$lantai}.{$kelamin}.{$line}.{$urutan}"] = ['required', 'integer', 'min:1', 'max:1000000'];
-                        $aturan["ekorTitik.{$lantai}.{$kelamin}.{$line}.{$urutan}"] = ['required', 'integer', 'min:1', 'max:500'];
                     }
                 }
             }
@@ -529,48 +742,33 @@ class SamplingBobot extends Component
     }
 
     /**
-     * Isi jumlah ekor titik yang belum ada, memakai nilai bawaan tiap kelamin.
+     * Samakan jumlah ekor setiap titik dengan ekor per sampel kelaminnya. Ekor per sampel yang kosong atau tidak
+     * sah membuat titik ikut kosong, sehingga ABW tidak dihitung dari angka lama.
      */
-    private function isiEkorTitikKosong(): void
+    private function samakanEkorTitik(): void
     {
         foreach (HasilSampling::kelamin($this->denganSexing) as $kelamin) {
-            $bawaan = (int) ($this->ekor[$kelamin] ?? config("sampling.ekor_per_sampel.{$kelamin}") ?? 0);
+            $nilai = $this->ekor[$kelamin] ?? null;
+            $ekor = is_numeric($nilai) && (int) $nilai > 0 ? (int) $nilai : null;
             foreach (config('sampling.lantai') as $lantai => $info) {
                 foreach ($info['line'] as $line) {
                     for ($urutan = 1; $urutan <= config('sampling.sampel_per_line'); $urutan++) {
-                        if (! isset($this->ekorTitik[$lantai][$kelamin][$line][$urutan])) {
-                            $this->ekorTitik[$lantai][$kelamin][$line][$urutan] = $bawaan;
-                        }
+                        $this->ekorTitik[$lantai][$kelamin][$line][$urutan] = $ekor;
                     }
                 }
             }
         }
     }
 
-    /**
-     * ABW hasil sampling mengisi ABW aktual di recording harian, jadi tidak perlu disalin manual.
-     */
-    private function isiRecording(float $abw): void
+    private function umurPada(string $tanggal): int
     {
-        $rekaman = Recording::where('periode_kandang_id', $this->terpilih->id)
-            ->whereDate('tanggal', $this->tanggal)
-            ->first();
-
-        if (! $rekaman) {
-            Recording::create([
-                'periode_kandang_id' => $this->terpilih->id,
-                'tanggal' => $this->tanggal,
-                'umur' => $this->umur,
-                'mati' => 0,
-                'afkir' => 0,
-                'bobot_rata_gram' => round($abw, 1),
-                'catatan' => 'ABW dari sampling bobot; kematian dan afkir belum dicatat.',
-            ]);
-
-            return;
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
+            return 0;
         }
 
-        $rekaman->fill(['bobot_rata_gram' => round($abw, 1)])->save();
+        return $this->terpilih
+            ? (int) $this->terpilih->tanggalChickInEfektif()->diffInDays(Carbon::parse($tanggal), false)
+            : $this->periode->umurPada(Carbon::parse($tanggal));
     }
 
     private function tanggalSah(string $tanggal): bool
@@ -579,24 +777,31 @@ class SamplingBobot extends Component
             return false;
         }
 
-        $umur = $this->terpilih
-            ? (int) $this->terpilih->tanggalChickInEfektif()->diffInDays(Carbon::parse($tanggal), false)
-            : $this->periode->umurPada(Carbon::parse($tanggal));
+        $umur = $this->umurPada($tanggal);
 
         return $umur >= 0 && $umur <= $this->standar()->umurMaksimal();
     }
 
     /**
-     * Hari ini bila masih di dalam periode, selain itu sesi sampling terakhir atau hari pertama.
+     * Saran tanggal sampling baru: hari ini bila masih di rentang kandang dan belum ada sesi, selain itu sehari
+     * setelah sesi terakhir (dibatasi umur maksimal), atau sehari setelah chick-in.
      */
-    private function tanggalAwal(): Carbon
+    private function tanggalSaranBaru(): string
     {
-        if ($this->tanggalSah(today()->format('Y-m-d'))) {
-            return today();
+        if (! $this->periode) {
+            return '';
         }
 
-        return $this->terpilih?->sesiSampling->last()?->tanggal
-            ?? $this->terpilih?->tanggalChickInEfektif()->copy()->addDay()
-            ?? $this->periode->tanggal_chick_in->copy()->addDay();
+        $sudahAda = fn (string $tanggal): bool => $this->riwayat->contains(fn (SesiSampling $sesi): bool => $sesi->tanggal->format('Y-m-d') === $tanggal);
+        $hariIni = today()->format('Y-m-d');
+        if ($this->tanggalSah($hariIni) && ! $sudahAda($hariIni)) {
+            return $hariIni;
+        }
+
+        $chickIn = $this->terpilih?->tanggalChickInEfektif() ?? $this->periode->tanggal_chick_in;
+        $terakhir = $this->riwayat->first()?->tanggal;
+        $saran = ($terakhir ?? $chickIn)->copy()->addDay()->format('Y-m-d');
+
+        return $this->tanggalSah($saran) ? $saran : $chickIn->copy()->addDay()->format('Y-m-d');
     }
 }

@@ -1,49 +1,19 @@
 @props(['ringkasan'])
 
-@php
-    use App\Support\Format;
-@endphp
-
-{{-- Empat kartu angka ringkas: apa yang masuk, terpakai, tersisa, dan berapa hari pemberian. --}}
-<div class="row g-3 mb-25">
-    <div class="col-6 col-xl-3">
-        <div class="pakan-angka">
-            <span class="pakan-angka__label">Pakan masuk</span>
-            <strong class="pakan-angka__nilai">{{ Format::ringkasKurung($ringkasan['masuk']) }} <small>zak</small></strong>
-            <span class="pakan-angka__keterangan">{{ Format::ringkasKurung($ringkasan['masuk_kg']) }} kg</span>
-        </div>
-    </div>
-    <div class="col-6 col-xl-3">
-        <div class="pakan-angka">
-            <span class="pakan-angka__label">Terpakai</span>
-            <strong class="pakan-angka__nilai">{{ Format::ringkasKurung($ringkasan['terpakai']) }} <small>zak</small></strong>
-            <span class="pakan-angka__keterangan">{{ Format::ringkasKurung($ringkasan['terpakai_kg']) }} kg</span>
-        </div>
-    </div>
-    <div class="col-6 col-xl-3">
-        <div @class(['pakan-angka', 'pakan-angka--sisa', 'pakan-angka--minus' => $ringkasan['sisa'] !== null && $ringkasan['sisa'] < 0])>
-            <span class="pakan-angka__label">Sisa di gudang</span>
-            <strong class="pakan-angka__nilai">
-                @isset($ringkasan['sisa'])
-                    {{ Format::ringkasKurung($ringkasan['sisa']) }} <small>zak</small>
-                @else
-                    - <small>belum bisa dihitung</small>
-                @endisset
-            </strong>
-            <span class="pakan-angka__keterangan">
-                @isset($ringkasan['sisa_kg'])
-                    {{ Format::ringkasKurung($ringkasan['sisa_kg']) }} kg
-                @else
-                    jenis pakannya belum dicatat
-                @endisset
-            </span>
-        </div>
-    </div>
-    <div class="col-6 col-xl-3">
-        <div class="pakan-angka">
-            <span class="pakan-angka__label">Pemberian</span>
-            <strong class="pakan-angka__nilai">{{ Format::ringkasKurung($ringkasan['hari']) }} <small>hari</small></strong>
-            <span class="pakan-angka__keterangan">{{ Format::ringkasKurung($ringkasan['catatan']) }} catatan pemberian</span>
-        </div>
-    </div>
-</div>
+{{-- Empat kartu ringkasan (HexaDash demo one: overview card): pakan masuk, terpakai, sisa di gudang, dan hari pemberian. --}}
+<x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::ringkasKurung($ringkasan['masuk']).' zak'" label="Pakan masuk" ikon="uil-import" warna="primary">
+    <small>{{ \App\Support\Format::ringkasKurung($ringkasan['masuk_kg']) }} kg</small>
+</x-dashboard.kartu>
+<x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::ringkasKurung($ringkasan['terpakai']).' zak'" label="Terpakai" ikon="uil-export" warna="info">
+    <small>{{ \App\Support\Format::ringkasKurung($ringkasan['terpakai_kg']) }} kg</small>
+</x-dashboard.kartu>
+<x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="isset($ringkasan['sisa']) ? \App\Support\Format::ringkasKurung($ringkasan['sisa']).' zak' : '-'" label="Sisa di gudang" ikon="uil-box" :warna="($ringkasan['sisa'] ?? 0) < 0 ? 'danger' : 'success'">
+    @isset($ringkasan['sisa_kg'])
+        <small>{{ \App\Support\Format::ringkasKurung($ringkasan['sisa_kg']) }} kg</small>
+    @else
+        <small>Belum bisa dihitung: jenis pakannya belum dicatat</small>
+    @endisset
+</x-dashboard.kartu>
+<x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::ringkasKurung($ringkasan['hari']).' hari'" label="Pemberian" ikon="uil-calendar-alt" warna="warning">
+    <small>{{ \App\Support\Format::ringkasKurung($ringkasan['catatan']) }} catatan pemberian</small>
+</x-dashboard.kartu>

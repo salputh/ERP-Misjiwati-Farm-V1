@@ -1,57 +1,48 @@
+<div class="crm">
 <div class="container-fluid">
     <div class="row">
         <x-breadcrumb judul="Laporan harian pemeliharaan ayam broiler" :jejak="['Produksi', 'Laporan harian']" />
         <x-periode-tertutup :periode="$this->periode" />
 
         @isset($pesan)
-            <div class="col-lg-12">
-                <div class="alert alert-success mb-25" role="status">
-                    <div class="alert-content">
-                        <p>{{ $pesan }}</p>
-                    </div>
-                </div>
+            <div class="col-12">
+                <x-peringatan warna="success" class="mb-25">{{ $pesan }}</x-peringatan>
             </div>
         @endisset
 
         @if ($this->laporan)
             {{-- Identitas laporan --}}
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-header border-0">
-                        <div class="card-extra">
-                            <label class="d-flex align-items-center gap-2 mb-0 fs-14 color-gray">
-                                Tanggal laporan
-                                <x-pilih-tanggal
-                                    :nilai="$this->laporan['tanggal']->format('Y-m-d')"
-                                    :min="$this->periode->tanggal_chick_in->format('Y-m-d')"
-                                    :maks="$this->tanggalTerakhir->format('Y-m-d')"
-                                    x-on:tanggal-dipilih="window.location = '{{ route('laporan.harian', ['periode' => $this->periode->id]) }}&tanggal=' + $event.detail"
-                                />
-                            </label>
-                        </div>
+            <div class="col-12 mb-25">
+                <div class="card card-default card-md">
+                    <div class="card-header flex-wrap gap-2">
+                        <label class="d-flex align-items-center gap-2 mb-0 fs-14 fw-400 color-gray tanpa-kapital">
+                            Tanggal laporan
+                            <x-pilih-tanggal
+                                :nilai="$this->laporan['tanggal']->format('Y-m-d')"
+                                :min="$this->periode->tanggal_chick_in->format('Y-m-d')"
+                                :maks="$this->tanggalTerakhir->format('Y-m-d')"
+                                x-on:tanggal-dipilih="window.location = '{{ route('laporan.harian', ['periode' => $this->periode->id]) }}&tanggal=' + $event.detail"
+                            />
+                        </label>
                         {{-- Tombol PNG melukis laporan ini dari data-lembar (Alpine eksporLaporan) --}}
-                        <div class="card-extra gap-2 flex-row flex-wrap justify-content-center" x-data="eksporLaporan" data-lembar="{{ json_encode($this->lembar) }}">
-                            <button type="button" class="btn btn-outline-light btn-sm btn-squared tanpa-kapital" x-on:click="simpan">
-                                <i class="uil uil-image-download"></i> Simpan PNG
-                            </button>
-                            <button type="button" class="btn btn-outline-light btn-sm btn-squared tanpa-kapital" x-on:click="salin">
-                                <i class="uil uil-copy"></i> <span x-text="labelSalin" aria-live="polite">Salin PNG</span>
-                            </button>
+                        <div class="card-extra d-flex flex-wrap gap-2 mt-0" x-data="eksporLaporan" data-lembar="{{ json_encode($this->lembar) }}">
+                            <x-tombol warna="light" variasi="outlined" ikon="uil-image-download" x-on:click="simpan">Simpan PNG</x-tombol>
+                            <x-tombol warna="light" variasi="outlined" ikon="uil-copy" x-on:click="salin"><b class="fw-500" x-text="labelSalin" aria-live="polite">Salin PNG</b></x-tombol>
                             @unless ($this->periode->tertutup())
-                                <a href="{{ route('laporan.harian.form', ['periode' => $this->periode->id, 'tanggal' => $this->laporan['tanggal']->format('Y-m-d')]) }}" class="btn btn-outline-primary btn-sm btn-squared tanpa-kapital">Ubah laporan ini</a>
-                                <button type="button" class="btn btn-primary btn-sm btn-squared tanpa-kapital" data-bs-toggle="modal" data-bs-target="#modal-form-laporan-harian">Tambah laporan</button>
+                                <a href="{{ route('laporan.harian.form', ['periode' => $this->periode->id, 'tanggal' => $this->laporan['tanggal']->format('Y-m-d')]) }}" class="btn btn-outline-primary color-primary btn-sm btn-squared">Ubah laporan ini</a>
+                                <x-tombol data-bs-toggle="modal" data-bs-target="#modal-form-laporan-harian">Tambah laporan</x-tombol>
                             @endunless
                         </div>
                     </div>
-                    <div class="card-body pt-0">
-                        <dl class="recording-info mb-0">
-                            <div><dt>Peternak</dt><dd>Misjiwati</dd></div>
-                            <div><dt>Kandang</dt><dd>{{ collect($this->laporan['kandang'])->pluck('nama')->join(', ') }}</dd></div>
-                            <div><dt>Jumlah ayam</dt><dd>@angka($this->laporan['populasi']) ekor</dd></div>
-                            <div><dt>Tanggal laporan</dt><dd>{{ $this->laporan['tanggal']->translatedFormat('l, j F Y') }}</dd></div>
-                            <div><dt>Usia</dt><dd>{{ $this->laporan['umur'] }} hari</dd></div>
-                            <div><dt>Data terakhir</dt><dd>{{ $this->tanggalTerakhir->translatedFormat('j F Y') }}</dd></div>
-                        </dl>
+                    <div class="card-body">
+                        <x-info>
+                            <x-info.butir label="Peternak">Misjiwati</x-info.butir>
+                            <x-info.butir label="Kandang">{{ collect($this->laporan['kandang'])->pluck('nama')->join(', ') }}</x-info.butir>
+                            <x-info.butir label="Jumlah ayam">@angka($this->laporan['populasi']) ekor</x-info.butir>
+                            <x-info.butir label="Tanggal laporan">{{ $this->laporan['tanggal']->translatedFormat('l, j F Y') }}</x-info.butir>
+                            <x-info.butir label="Usia">{{ $this->laporan['umur'] }} hari</x-info.butir>
+                            <x-info.butir label="Data terakhir">{{ $this->tanggalTerakhir->translatedFormat('j F Y') }}</x-info.butir>
+                        </x-info>
                     </div>
                 </div>
             </div>
@@ -89,8 +80,9 @@
                         <h6>Pakan masuk</h6>
                     </div>
                     <div class="card-body p-0">
+                        <div class="selling-table-wrap">
                         <div class="table-responsive">
-                            <table class="table table--default table-borderless tabel-laporan tabel-laporan--garis">
+                            <table class="table table--default table-borderless tabel-laporan">
                                 <thead>
                                     <tr>
                                         <th>Tanggal</th>
@@ -107,7 +99,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="color-gray">Belum ada pakan masuk yang dicatat sampai tanggal ini.</td>
+                                            <td colspan="3" class="color-light">Belum ada pakan masuk yang dicatat sampai tanggal ini.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -118,6 +110,7 @@
                                     </tr>
                                 </tfoot>
                             </table>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -135,6 +128,7 @@
                         </div>
                     </div>
                     <div class="card-body p-0">
+                        <div class="selling-table-wrap">
                         <div class="table-responsive">
                             <table class="table table--default table-borderless tabel-laporan">
                                 <thead>
@@ -167,10 +161,10 @@
                                                         <div class="progress flex-grow-1" role="progressbar" aria-label="Pemakaian {{ $stok['jenis'] }}" aria-valuenow="{{ round($stok['persen_terpakai']) }}" aria-valuemin="0" aria-valuemax="100">
                                                             <div class="progress-bar bg-primary" style="width: {{ $stok['persen_terpakai'] }}%"></div>
                                                         </div>
-                                                        <span class="fs-12 color-gray">@angka($stok['persen_terpakai'])%</span>
+                                                        <span class="fs-12 color-light">@angka($stok['persen_terpakai'])%</span>
                                                     </div>
                                                 @else
-                                                    <span class="fs-12 color-gray">Stok tidak dihitung</span>
+                                                    <span class="fs-12 color-light">Stok tidak dihitung</span>
                                                 @endisset
                                             </td>
                                         </tr>
@@ -194,6 +188,7 @@
                                 </tfoot>
                             </table>
                         </div>
+                        </div>
                     </div>
                 </div>
 
@@ -203,8 +198,9 @@
                         <h6>Mortalitas dan performa</h6>
                     </div>
                     <div class="card-body p-0">
+                        <div class="selling-table-wrap">
                         <div class="table-responsive">
-                            <table class="table table--default table-borderless tabel-laporan tabel-laporan--rapat">
+                            <table class="table table--default table-borderless tabel-laporan text-nowrap">
                                 <thead>
                                     <tr>
                                         <th>Kandang</th>
@@ -220,12 +216,12 @@
                                         <tr>
                                             <td>
                                                 <strong>{{ $kandang['nama'] }}</strong>
-                                                <span class="d-block fs-12 color-gray">@angka($kandang['populasi']) ekor chick-in</span>
+                                                <span class="d-block fs-12 color-light">@angka($kandang['populasi']) ekor chick-in</span>
                                             </td>
                                             <td class="text-end">@angka($kandang['mati_hari_ini'])</td>
                                             <td class="text-end">
                                                 @angka($kandang['mati_kumulatif'])
-                                                <span class="d-block fs-12 color-gray">@angka($kandang['mortalitas'], 2)%</span>
+                                                <span class="d-block fs-12 color-light">@angka($kandang['mortalitas'], 2)%</span>
                                             </td>
                                             <td class="text-end">@angka($kandang['sisa'])</td>
                                             <td class="text-end">
@@ -239,7 +235,7 @@
                                             <td class="text-end">
                                                 @angka($kandang['fcr'], 3)
                                                 @isset($kandang['fcr_standar'])
-                                                    <span class="d-block fs-12 color-gray">standar @angka($kandang['fcr_standar'], 3)</span>
+                                                    <span class="d-block fs-12 color-light">standar @angka($kandang['fcr_standar'], 3)</span>
                                                 @endisset
                                             </td>
                                         </tr>
@@ -259,22 +255,22 @@
                                 @endif
                             </table>
                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             @if ($this->laporan['catatan'])
-                <div class="col-lg-12 mb-25">
-                    <div class="card border-0">
-                        <div class="card-body p-25">
-                            <h6 class="mb-10">Catatan recording</h6>
-                            <ul class="mb-0 ps-3">
+                <div class="col-12 mb-25">
+                    <x-kartu judul="Catatan recording">
+                        <div class="list-box">
+                            <ul>
                                 @foreach ($this->laporan['catatan'] as $catatan)
-                                    <li>{{ $catatan['kandang'] }}, {{ $catatan['tanggal']->translatedFormat('j F Y') }}: {{ $catatan['catatan'] }}</li>
+                                    <li class="list-box__item"><span class="fw-500 color-dark">{{ $catatan['kandang'] }}, {{ $catatan['tanggal']->translatedFormat('j F Y') }}:</span> {{ $catatan['catatan'] }}</li>
                                 @endforeach
                             </ul>
                         </div>
-                    </div>
+                    </x-kartu>
                 </div>
             @endif
 
@@ -292,26 +288,24 @@
 
             <x-memuat target="hapus, hapusTerpilih" teks="Menghapus laporan harian" />
 
-            <div class="col-lg-12">
-                <p class="fs-12 color-gray mb-0">
+            <div class="col-12 mb-25">
+                <p class="fs-13 color-light mb-0">
                     Konversi pakan ke kg memakai berat per zak pada master tiap jenis pakan; pemberian tanpa jenis memakai standar @angka(config('standar.kg_per_zak')) kg/zak. FCR dihitung dari pakan kumulatif per ekor dibagi ABW timbang terakhir.
                 </p>
             </div>
         @else
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">Belum ada data untuk dilaporkan</h5>
-                        <p @class(['color-gray', 'mb-20' => $this->periode, 'mb-0' => ! $this->periode])>Laporan harian muncul setelah periode dibuat dan pakan atau recording pertamanya dicatat.</p>
-                        @if ($this->periode)
-                            <button type="button" class="btn btn-primary btn-default btn-squared" data-bs-toggle="modal" data-bs-target="#modal-form-laporan-harian">Tambah laporan</button>
-                        @endif
-                    </div>
-                </div>
-            </div>
+            <x-kosong judul="Belum ada data untuk dilaporkan">
+                Laporan harian muncul setelah periode dibuat dan pakan atau recording pertamanya dicatat.
+                @if ($this->periode)
+                    <x-slot:aksi>
+                        <x-tombol data-bs-toggle="modal" data-bs-target="#modal-form-laporan-harian">Tambah laporan</x-tombol>
+                    </x-slot:aksi>
+                @endif
+            </x-kosong>
         @endif
     </div>
     @if ($this->periode)
         @livewire(\App\Livewire\FormLaporanHarianModal::class, ['periodeId' => $this->periode->id], key('form-laporan-harian-modal-'.$this->periode->id))
     @endif
+</div>
 </div>

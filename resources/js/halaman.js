@@ -34,6 +34,12 @@ export async function tangkapHalaman(selector, pilihan = {}) {
         // Tombol ekspor tidak perlu ikut dalam gambar.
         onclone: (salinan) => {
             salinan.querySelectorAll('[data-lewati-ekspor]').forEach((elemen) => elemen.remove());
+            // Isi kartu yang sedang dilipat tetap ikut, supaya datanya tidak hilang dari hasil ekspor.
+            salinan.querySelectorAll('[data-ekspor-buka]').forEach((elemen) => {
+                elemen.style.removeProperty('display');
+                elemen.style.removeProperty('height');
+                elemen.style.removeProperty('opacity');
+            });
             // Bilah atas melayang di atas isi, jadi disembunyikan supaya tidak menutupi gambar.
             salinan.querySelectorAll('.header-top').forEach((elemen) => (elemen.style.display = 'none'));
         },
@@ -56,4 +62,19 @@ export async function unduhPng(kanvas, nama) {
     tautan.click();
     tautan.remove();
     setTimeout(() => URL.revokeObjectURL(tautan.href), 10000);
+}
+
+/**
+ * Unduh kanvas sebagai PDF satu halaman seukuran gambarnya, supaya tampilannya sama dengan PNG tanpa terpotong.
+ * jsPDF dimuat saat dibutuhkan saja agar tidak membebani halaman lain.
+ */
+export async function unduhPdf(kanvas, nama) {
+    const { jsPDF } = await import('jspdf');
+    // Kanvas digambar dua kali lipat (scale 2), jadi ukuran halaman dibagi dua agar setara dengan ukuran layar.
+    const lebar = kanvas.width / 2;
+    const tinggi = kanvas.height / 2;
+    const pdf = new jsPDF({ orientation: lebar > tinggi ? 'landscape' : 'portrait', unit: 'px', format: [lebar, tinggi], hotfixes: ['px_scaling'] });
+
+    pdf.addImage(kanvas, 'PNG', 0, 0, lebar, tinggi, undefined, 'FAST');
+    pdf.save(`${nama}.pdf`);
 }

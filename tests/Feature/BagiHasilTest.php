@@ -8,6 +8,7 @@ use App\Models\PenerimaBagiHasil;
 use App\Models\Pengaturan;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
+use App\Models\PremiAbk;
 use App\Support\BukuKas;
 use App\Support\LembarBagiHasil;
 use App\Support\LembarRhpp;
@@ -357,7 +358,9 @@ class BagiHasilTest extends TestCase
         $periodeKandang = $this->periodeKandang('Kandang 1');
         $periodeKandang->bagiHasil->delete();
 
-        $bagiHasil = BagiHasil::factory()->for($periodeKandang)->create(['operasional' => 150_000_000, 'premi_pemeliharaan_abk' => 2]);
+        // Kandang 1 menghasilkan Rp 4.970 per ekor; baris tabel ini membuat premi pemeliharaan ABK-nya Rp 2.
+        PremiAbk::factory()->create(['hasil_per_ekor' => 4_000, 'premi' => 2]);
+        $bagiHasil = BagiHasil::factory()->for($periodeKandang)->create(['operasional' => 150_000_000]);
         PenerimaBagiHasil::factory()->for($bagiHasil)->count(3)->sequence(['nama' => 'A', 'urutan' => 1], ['nama' => 'B', 'urutan' => 2], ['nama' => 'C', 'urutan' => 3])->create();
         PenerimaBagiHasil::factory()->for($bagiHasil)->pemodal(60)->create(['nama' => 'X', 'urutan' => 4]);
         PenerimaBagiHasil::factory()->for($bagiHasil)->pemodal(40)->create(['nama' => 'Y', 'urutan' => 5]);
@@ -372,6 +375,24 @@ class BagiHasilTest extends TestCase
         // 28.880.758 dibagi tiga menyisakan Rp 1, yang diberikan ke ABK pertama.
         $this->assertSame(['A' => 9_626_920, 'B' => 9_626_919, 'C' => 9_626_919], array_column($lembar['abk']['penerima'], 'jumlah', 'nama'));
         $this->assertSame(28_880_758, $lembar['abk']['total']);
+    }
+
+    public function test_maintenance_premium_follows_the_premi_abk_table(): void
+    {
+        // Kandang 2: total budidaya Rp 5.679,45 per ekor, mencapai baris Rp 5.500 tetapi belum Rp 6.000.
+        $this->assertSame(['hasil_per_ekor' => 5_679.45, 'batas' => 5_500, 'intensif' => 50, 'premi' => 1_050_000], $this->lembar('Kandang 2')['premi_abk']);
+
+        PremiAbk::where('hasil_per_ekor', 5_500)->update(['premi' => 1_200_000]);
+        $lembar = $this->lembar('Kandang 2');
+        $this->assertSame(1_200_000, $lembar['abk']['sumber']['premi_pemeliharaan']);
+        $this->assertSame(1_200_000, collect($lembar['pengeluaran'])->firstWhere('label', 'Premi pemeliharaan ABK')['jumlah']);
+
+        PremiAbk::where('hasil_per_ekor', 5_500)->delete();
+        $this->assertSame(['batas' => null, 'premi' => 0], collect($this->lembar('Kandang 2')['premi_abk'])->only(['batas', 'premi'])->all());
+
+        $this->get(route('bagi.hasil', ['kandang' => $this->kandang('Kandang 2'), 'periode' => $this->periodeKandang('Kandang 2')->periode_id]))
+            ->assertOk()
+            ->assertSee('di bawah batas terendah tabel premi ABK');
     }
 
     public function test_sheet_needs_both_inputs_and_real_rhpp(): void
@@ -427,9 +448,11 @@ class BagiHasilTest extends TestCase
 
     public function test_page_explains_what_is_missing(): void
     {
-        $this->get($this->alamat('Kandang 1', 'Periode September 2026'))
+        Kandang::create(['farm_id' => $this->kandang('Kandang 1')->farm_id, 'nama' => 'Kandang 3', 'kapasitas' => 10000]);
+
+        $this->get($this->alamat('Kandang 3', 'Periode September 2026'))
             ->assertOk()
-            ->assertSee('Kandang 1 tidak dipakai di periode ini');
+            ->assertSee('Kandang 3 tidak dipakai di periode ini');
 
         $this->get($this->alamat('Kandang 2', 'Periode September 2026'))
             ->assertOk()

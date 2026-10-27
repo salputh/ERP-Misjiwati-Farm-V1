@@ -40,7 +40,6 @@ class BagiHasil extends Component
      *     controller: string,
      *     operasional: string,
      *     tarif_gaji_abk_per_kg: string,
-     *     premi_pemeliharaan_abk: string,
      *     premi_controller: string,
      *     persen_upah_controller: string,
      *     persen_bonus_pasar_abk: string,
@@ -119,10 +118,8 @@ class BagiHasil extends Component
             'sandiAdminUlang.same' => 'Pengulangan password tidak sama.',
         ]);
 
-        if (! $sandiBaru && ! Pengaturan::cocokPasswordAdmin($this->sandiAdmin)) {
-            throw ValidationException::withMessages([
-                'sandiAdmin' => 'Password admin salah.',
-            ]);
+        if (! $sandiBaru) {
+            Pengaturan::pastikanPasswordAdmin($this->sandiAdmin, 'sandiAdmin');
         }
 
         DB::transaction(function () use ($bagiHasil, $periodeKandang, $sandiBaru): void {
@@ -265,7 +262,6 @@ class BagiHasil extends Component
         $data = $this->validate([
             'masukan.controller' => ['nullable', 'string', 'max:150'],
             'masukan.tarif_gaji_abk_per_kg' => ['required', 'integer', 'min:0', 'max:'.PHP_INT_MAX],
-            'masukan.premi_pemeliharaan_abk' => ['required', 'integer', 'min:0', 'max:'.PHP_INT_MAX],
             'masukan.premi_controller' => ['required', 'integer', 'min:0', 'max:'.PHP_INT_MAX],
             'masukan.persen_upah_controller' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:100'],
             'masukan.persen_bonus_pasar_abk' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:100'],
@@ -314,7 +310,6 @@ class BagiHasil extends Component
                 'controller' => $data['masukan']['controller'] ?: null,
                 'operasional' => $this->operasional,
                 'tarif_gaji_abk_per_kg' => $data['masukan']['tarif_gaji_abk_per_kg'],
-                'premi_pemeliharaan_abk' => $data['masukan']['premi_pemeliharaan_abk'],
                 'premi_controller' => $data['masukan']['premi_controller'],
                 'persen_upah_controller' => $data['masukan']['persen_upah_controller'],
                 'persen_bonus_pasar_abk' => $data['masukan']['persen_bonus_pasar_abk'],
@@ -435,7 +430,6 @@ class BagiHasil extends Component
             'controller' => (string) ($masukan->controller ?? ''),
             'operasional' => (string) $this->operasional,
             'tarif_gaji_abk_per_kg' => (string) $masukan->tarif_gaji_abk_per_kg,
-            'premi_pemeliharaan_abk' => (string) $masukan->premi_pemeliharaan_abk,
             'premi_controller' => (string) $masukan->premi_controller,
             'persen_upah_controller' => (string) $masukan->persen_upah_controller,
             'persen_bonus_pasar_abk' => (string) $masukan->persen_bonus_pasar_abk,
