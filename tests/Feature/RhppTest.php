@@ -446,6 +446,34 @@ class RhppTest extends TestCase
         $this->assertDatabaseHas('rhpp_reals', ['periode_id' => $periode->id, 'status' => 'sementara']);
     }
 
+    public function test_admin_password_is_locked_after_five_wrong_attempts(): void
+    {
+        $this->petakanPakanJuli();
+        $periode = $this->periode('Periode Juli 2026');
+        $periode->update(['status' => 'aktif']);
+        Pengaturan::setPasswordAdmin('rahasia123');
+        $periode->rhppReal->update(['status' => RhppReal::DIKUNCI]);
+
+        for ($percobaan = 0; $percobaan < Pengaturan::BATAS_PERCOBAAN; $percobaan++) {
+            Livewire::withQueryParams(['periode' => $periode->id, 'tab' => 'real'])
+                ->test(Rhpp::class)
+                ->call('bukaModalBukaKunciRhpp')
+                ->set('sandiAdmin', 'tebakan-'.$percobaan)
+                ->call('bukaKunciRhpp')
+                ->assertHasErrors(['sandiAdmin']);
+        }
+
+        Livewire::withQueryParams(['periode' => $periode->id, 'tab' => 'real'])
+            ->test(Rhpp::class)
+            ->call('bukaModalBukaKunciRhpp')
+            ->set('sandiAdmin', 'rahasia123')
+            ->call('bukaKunciRhpp')
+            ->assertHasErrors(['sandiAdmin'])
+            ->assertSee('Terlalu banyak percobaan password admin.');
+
+        $this->assertDatabaseHas('rhpp_reals', ['periode_id' => $periode->id, 'status' => 'dikunci']);
+    }
+
     public function test_admin_password_can_be_changed_with_the_old_password(): void
     {
         Pengaturan::setPasswordAdmin('rahasia123');

@@ -118,10 +118,8 @@ class BagiHasil extends Component
             'sandiAdminUlang.same' => 'Pengulangan password tidak sama.',
         ]);
 
-        if (! $sandiBaru && ! Pengaturan::cocokPasswordAdmin($this->sandiAdmin)) {
-            throw ValidationException::withMessages([
-                'sandiAdmin' => 'Password admin salah.',
-            ]);
+        if (! $sandiBaru) {
+            Pengaturan::pastikanPasswordAdmin($this->sandiAdmin, 'sandiAdmin');
         }
 
         DB::transaction(function () use ($bagiHasil, $periodeKandang, $sandiBaru): void {

@@ -571,10 +571,8 @@ class Rhpp extends Component
             'sandiAdminUlang.same' => 'Pengulangan password tidak sama.',
         ]);
 
-        if (! $sandiBaru && ! Pengaturan::cocokPasswordAdmin($this->sandiAdmin)) {
-            throw ValidationException::withMessages([
-                'sandiAdmin' => 'Password admin salah.',
-            ]);
+        if (! $sandiBaru) {
+            Pengaturan::pastikanPasswordAdmin($this->sandiAdmin, 'sandiAdmin');
         }
 
         DB::transaction(function () use ($dokumen, $periode, $sandiBaru): void {
@@ -618,11 +616,7 @@ class Rhpp extends Component
             'sandiAdmin.required' => 'Password admin wajib diisi.',
         ]);
 
-        if (! Pengaturan::cocokPasswordAdmin($this->sandiAdmin)) {
-            throw ValidationException::withMessages([
-                'sandiAdmin' => 'Password admin salah.',
-            ]);
-        }
+        Pengaturan::pastikanPasswordAdmin($this->sandiAdmin, 'sandiAdmin');
 
         DB::transaction(function () use ($dokumen, $periode): void {
             $dokumen->update(['status' => RhppReal::SEMENTARA]);
@@ -664,10 +658,8 @@ class Rhpp extends Component
             'sandiAdminLama.required' => 'Password lama wajib diisi.',
         ]);
 
-        if ($sandiAda && ! Pengaturan::cocokPasswordAdmin($this->sandiAdminLama)) {
-            throw ValidationException::withMessages([
-                'sandiAdminLama' => 'Password lama salah.',
-            ]);
+        if ($sandiAda) {
+            Pengaturan::pastikanPasswordAdmin($this->sandiAdminLama, 'sandiAdminLama', 'Password lama salah.');
         }
 
         Pengaturan::setPasswordAdmin($this->sandiAdmin);
