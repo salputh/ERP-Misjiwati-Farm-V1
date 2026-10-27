@@ -7,6 +7,7 @@ use Database\Factories\SlipGajiFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Slip gaji satu orang di satu kandang untuk satu periode: pendapatan dan potongan yang dicatat per orang.
@@ -37,5 +38,13 @@ class SlipGaji extends Model
     public function penerimaBagiHasil(): BelongsTo
     {
         return $this->belongsTo(PenerimaBagiHasil::class);
+    }
+
+    /**
+     * Cicilan kasbon yang dipotong di slip ini.
+     */
+    public function potonganKasbon(): HasMany
+    {
+        return $this->hasMany(PotonganKasbon::class);
     }
 }

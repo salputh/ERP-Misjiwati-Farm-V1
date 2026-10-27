@@ -2,11 +2,18 @@
 
 namespace App\Support;
 
+use App\Models\StandarStrainHarian;
+
 /**
- * Standar pemeliharaan per umur untuk satu strain, dibaca dari config/standar.php.
+ * Standar pemeliharaan per umur untuk satu strain, dibaca dari tabel standar_strain_harians (Master data > Standar strain).
  */
 class Standar
 {
+    /**
+     * @var array<string, array<int, float>>
+     */
+    private array $tabelStrain = [];
+
     public function __construct(private string $strain, private float $beratDoc) {}
 
     /**
@@ -64,11 +71,15 @@ class Standar
     }
 
     /**
-     * @return array<int, int|float>
+     * @return array<int, float>
      */
     private function tabel(string $jenis): array
     {
-        return config("standar.strain.{$this->strain}.{$jenis}", []);
+        return $this->tabelStrain[$jenis] ??= StandarStrainHarian::query()
+            ->whereHas('strain', fn ($query) => $query->where('nama', $this->strain))
+            ->orderBy('umur')
+            ->pluck($jenis, 'umur')
+            ->all();
     }
 
     private function nilai(string $jenis, int $umur): ?float

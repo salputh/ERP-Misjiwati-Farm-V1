@@ -60,7 +60,12 @@ class IsianLaporanHarian
                     'kematian' => $rekaman->isEmpty() ? null : (int) $rekaman->sum(fn (Recording $satu): int => $satu->mati + $satu->afkir),
                     'pakan_terpakai' => (float) $pemberian->get($tanggal, collect())->sum('zak'),
                     'pakan_masuk' => (float) $masuk->get($tanggal, collect())->sum('zak'),
-                    'abw' => $rekaman->whereNotNull('bobot_rata_gram')->avg('bobot_rata_gram'),
+                    // ABW tiap kandang: hasil sampling tanggal itu bila ada, selain itu ABW di recording.
+                    'abw' => $periode->kandangPeriode
+                        ->map(fn (PeriodeKandang $satu): ?float => $satu->abwSamplingPerTanggal()->get($tanggal)
+                            ?? $rekaman->firstWhere('periode_kandang_id', $satu->id)?->bobot_rata_gram)
+                        ->filter(fn (?float $abw): bool => $abw !== null)
+                        ->avg(),
                 ];
             })
             ->all();

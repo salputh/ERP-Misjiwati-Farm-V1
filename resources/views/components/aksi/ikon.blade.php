@@ -12,27 +12,19 @@
       href   - tautan, untuk aksi yang membuka halaman lain
       modal  - id modal yang dibuka
 --}}
-<ul class="orderDatatable_actions mb-0 d-flex flex-wrap ms-auto">
+<ul {{ $attributes->class(['orderDatatable_actions mb-0 d-flex flex-wrap justify-content-end']) }}>
     @foreach ($aksi as $satu)
-        @php
-            $kelas = $satu['kelas'] ?? 'edit';
-            $ikon = $satu['ikon'] ?? match ($kelas) {
-                'remove' => 'uil-trash-alt',
-                'view' => 'uil-eye',
-                default => 'uil-edit',
-            };
-        @endphp
         <li>
             <a
                 href="{{ $satu['href'] ?? '#' }}"
                 role="button"
-                class="{{ $kelas }}"
+                class="{{ $satu['kelas'] ?? 'edit' }}"
                 title="{{ $satu['label'] }}"
                 aria-label="{{ $satu['label'] }}"
-                @isset($satu['click']) wire:click.prevent="{!! $satu['click'] !!}" @endif
-                @isset($satu['modal']) data-bs-toggle="modal" data-bs-target="{{ $satu['modal'] }}" @endif
+                @isset($satu['click']) wire:click.prevent="{!! $satu['click'] !!}" @endisset
+                @isset($satu['modal']) data-bs-toggle="modal" data-bs-target="{{ $satu['modal'] }}" @endisset
             >
-                <i class="uil {{ $ikon }}" aria-hidden="true"></i>
+                <i class="uil {{ $satu['ikon'] ?? ['remove' => 'uil-trash-alt', 'view' => 'uil-eye'][$satu['kelas'] ?? 'edit'] ?? 'uil-edit' }}" aria-hidden="true"></i>
             </a>
         </li>
     @endforeach

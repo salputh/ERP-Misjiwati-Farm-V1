@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Periode extends Model
 {
+    /** Status periode yang sudah ditutup: datanya tidak dapat diubah lagi. */
+    public const STATUS_TERTUTUP = ['tutup_rhpp', 'selesai'];
+
     protected $guarded = [];
 
     public function scopePrioritaskanAktif(Builder $query): Builder
@@ -23,7 +26,54 @@ class Periode extends Model
 
     public function tertutup(): bool
     {
-        return $this->status === 'tutup_rhpp' || $this->status === 'selesai';
+        return in_array($this->status, self::STATUS_TERTUTUP, true);
+    }
+
+    /**
+     * Periode sedang berjalan (status lama "aktif" disamakan dengan "berjalan").
+     */
+    public function berjalan(): bool
+    {
+        return in_array($this->status, ['berjalan', 'aktif'], true);
+    }
+
+    /**
+     * Label status untuk tampilan; status lama "aktif" dan "selesai" ditampilkan dengan nama barunya.
+     */
+    public function labelStatus(): string
+    {
+        return match ($this->status) {
+            'persiapan' => 'Persiapan',
+            'berjalan', 'aktif' => 'Berjalan',
+            'panen' => 'Panen',
+            'tutup_rhpp', 'selesai' => 'Tutup RHPP',
+            default => (string) $this->status,
+        };
+    }
+
+    /**
+     * Total DOC dari jumlah agregat withSum (populasi awal + bonus DOC), untuk daftar periode tanpa memuat kandangnya.
+     */
+    public function docChickInTerjumlah(): int
+    {
+        return (int) $this->kandang_periode_sum_populasi_awal + (int) $this->kandang_periode_sum_bonus_doc_ekor;
+    }
+
+    /**
+     * Berat DOC periode untuk tampilan: satu angka bila semua kandang sama, "Bervariasi" bila berbeda, "-" bila belum ada.
+     */
+    public function beratDocTampil(): string
+    {
+        $berat = $this->kandangPeriode
+            ->map(fn (PeriodeKandang $satu): int => $satu->beratDocGramEfektif())
+            ->filter()
+            ->unique();
+
+        return match ($berat->count()) {
+            0 => '-',
+            1 => $berat->first().' gram',
+            default => 'Bervariasi',
+        };
     }
 
     protected function casts(): array

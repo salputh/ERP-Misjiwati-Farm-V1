@@ -2,19 +2,19 @@
 
 {{-- Riwayat dana operasional yang masuk ke kas kandang, dengan jumlah kumulatifnya. --}}
 <div class="col-12 mb-25">
-    <div class="card border-0 px-25 h-100">
-        <div class="card-header px-0 border-0">
+    <div class="card card-default card-md h-100">
+        <div class="card-header">
             <h6>Riwayat dana operasional</h6>
-            <div class="card-extra fs-14 color-gray tanpa-kapital">@angka(count($dana)) kali setoran</div>
+            <div class="card-extra fs-13 color-light tanpa-kapital">@angka(count($dana)) kali setoran</div>
         </div>
-        <div class="card-body p-0 pb-25">
-            <div class="table-responsive">
-                <table class="table table--default table-borderless tabel-laporan tabel-laporan--garis tabel-laporan--rapat mb-0">
+        <div class="card-body">
+            <div class="table4 table-responsive">
+                <table class="table tabel-laporan text-nowrap mb-0">
                     <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th class="text-end">Jumlah (Rp)</th>
-                            <th class="text-end">Kumulatif (Rp)</th>
+                        <tr class="userDatatable-header">
+                            <th><span class="userDatatable-title">Tanggal</span></th>
+                            <th class="text-end"><span class="userDatatable-title">Jumlah (Rp)</span></th>
+                            <th class="text-end"><span class="userDatatable-title">Kumulatif (Rp)</span></th>
                         </tr>
                     </thead>
                     <tbody>

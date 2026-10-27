@@ -22,9 +22,9 @@ class BukuKas
      *     selesai: CarbonInterface,
      *     ringkasan: array{masuk: int, keluar: int, selisih: int, pinjaman: int, biaya: int, jumlah_masuk: int, jumlah_keluar: int, jumlah_pinjaman: int, jumlah_biaya: int, jumlah_kategori: int},
      *     dana: list<array{tanggal: CarbonInterface, uraian: string, jumlah: int, saldo: int}>,
-     *     biaya: list<array{kategori: KategoriKas, transaksi: int, jumlah: int, persen: float}>,
-     *     pinjaman: list<array{kategori: KategoriKas, transaksi: int, jumlah: int, persen: float}>,
-     *     transaksi: list<array{id: int, nomor: int, tanggal: CarbonInterface, kategori: KategoriKas, uraian: string, masuk: ?int, keluar: ?int, saldo: int}>
+     *     biaya: list<array{kategori: KategoriKas|KategoriKasTambahan, transaksi: int, jumlah: int, persen: float}>,
+     *     pinjaman: list<array{kategori: KategoriKas|KategoriKasTambahan, transaksi: int, jumlah: int, persen: float}>,
+     *     transaksi: list<array{id: int, nomor: int, tanggal: CarbonInterface, kategori: KategoriKas|KategoriKasTambahan, uraian: string, masuk: ?int, keluar: ?int, saldo: int}>
      * }
      */
     public static function buat(PeriodeKandang $periodeKandang): ?array
@@ -66,13 +66,13 @@ class BukuKas
      * Buku kas yang disaring ke satu kategori (atau seluruhnya), dikelompokkan per bulan dengan subtotalnya.
      * Nomor dan saldo tiap baris tetap dari buku kas utuh.
      *
-     * @param  list<array{id: int, nomor: int, tanggal: CarbonInterface, kategori: KategoriKas, uraian: string, masuk: ?int, keluar: ?int, saldo: int}>  $transaksi
+     * @param  list<array{id: int, nomor: int, tanggal: CarbonInterface, kategori: KategoriKas|KategoriKasTambahan, uraian: string, masuk: ?int, keluar: ?int, saldo: int}>  $transaksi
      * @return array{bulan: list<array{bulan: CarbonInterface, baris: list<array<string, mixed>>, masuk: int, keluar: int}>, jumlah: int, masuk: int, keluar: int}
      */
-    public static function saring(array $transaksi, ?KategoriKas $kategori = null): array
+    public static function saring(array $transaksi, KategoriKas|KategoriKasTambahan|null $kategori = null): array
     {
         $baris = collect($transaksi)
-            ->when($kategori, fn (Collection $semua): Collection => $semua->where('kategori', $kategori));
+            ->when($kategori, fn (Collection $semua): Collection => $semua->filter(fn (array $satu): bool => $satu['kategori']->value === $kategori->value));
 
         return [
             'bulan' => $baris
@@ -115,7 +115,7 @@ class BukuKas
      * Pengeluaran per kategori, dari yang terbesar. Persen dihitung terhadap seluruh pengeluaran.
      *
      * @param  Collection<int, TransaksiKas>  $keluar
-     * @return Collection<int, array{kategori: KategoriKas, transaksi: int, jumlah: int, persen: float, pinjaman: bool}>
+     * @return Collection<int, array{kategori: KategoriKas|KategoriKasTambahan, transaksi: int, jumlah: int, persen: float, pinjaman: bool}>
      */
     private static function kategori(Collection $keluar): Collection
     {
@@ -135,8 +135,8 @@ class BukuKas
     }
 
     /**
-     * @param  Collection<int, array{kategori: KategoriKas, transaksi: int, jumlah: int, persen: float, pinjaman: bool}>  $kategori
-     * @return list<array{kategori: KategoriKas, transaksi: int, jumlah: int, persen: float}>
+     * @param  Collection<int, array{kategori: KategoriKas|KategoriKasTambahan, transaksi: int, jumlah: int, persen: float, pinjaman: bool}>  $kategori
+     * @return list<array{kategori: KategoriKas|KategoriKasTambahan, transaksi: int, jumlah: int, persen: float}>
      */
     private static function tanpaPenanda(Collection $kategori): array
     {
@@ -147,7 +147,7 @@ class BukuKas
      * Buku kas berurutan tanggal. Saldo adalah sisa kas setelah transaksi itu; negatif berarti dana kurang.
      *
      * @param  Collection<int, TransaksiKas>  $transaksi
-     * @return list<array{id: int, nomor: int, tanggal: CarbonInterface, kategori: KategoriKas, uraian: string, masuk: ?int, keluar: ?int, saldo: int}>
+     * @return list<array{id: int, nomor: int, tanggal: CarbonInterface, kategori: KategoriKas|KategoriKasTambahan, uraian: string, masuk: ?int, keluar: ?int, saldo: int}>
      */
     private static function transaksi(Collection $transaksi): array
     {

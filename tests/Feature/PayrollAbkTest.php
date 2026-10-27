@@ -2,12 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Enums\JenisAktivitas;
+use App\Enums\KategoriKas;
+use App\Enums\ModulAktivitas;
+use App\Enums\PeranBagiHasil;
 use App\Livewire\PayrollAbk;
+use App\Models\Aktivitas;
+use App\Models\BagiHasil;
 use App\Models\Kandang;
+use App\Models\Karyawan;
 use App\Models\PenerimaBagiHasil;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
+use App\Models\PremiAbk;
 use App\Models\SlipGaji;
+use App\Models\TransaksiKas;
 use App\Support\LembarPayroll;
 use App\Support\LembarRhpp;
 use Database\Seeders\BagiHasilSeeder;
@@ -110,7 +119,8 @@ class PayrollAbkTest extends TestCase
     public function test_slip_follows_changes_in_the_profit_sharing_inputs(): void
     {
         $periodeKandang = $this->periodeKandang('Kandang 1');
-        $periodeKandang->bagiHasil->update(['premi_pemeliharaan_abk' => 400_000]);
+        // Kandang 1 menghasilkan Rp 4.970 per ekor; baris tabel ini membuat premi pemeliharaan ABK-nya Rp 400.000.
+        PremiAbk::factory()->create(['hasil_per_ekor' => 4_000, 'premi' => 400_000]);
         PenerimaBagiHasil::where(['bagi_hasil_id' => $periodeKandang->bagiHasil->id, 'nama' => 'Wahyu'])->update(['jumlah' => 250_000, 'keterangan' => 'ketua ABK']);
 
         $wahyu = array_column($this->slip('Wahyu')['pendapatan'], 'jumlah', 'label');
@@ -190,14 +200,131 @@ class PayrollAbkTest extends TestCase
             ->assertDontSee('Mustofa');
     }
 
-    public function test_page_explains_when_a_period_has_no_slips(): void
+    public function test_page_offers_to_create_slips_when_a_period_has_none(): void
     {
-        $september = Periode::where('nama', 'Periode September 2026')->firstOrFail();
-
-        $this->get(route('payroll.abk', ['periode' => $september->id]))
+        $this->get(route('payroll.abk', ['periode' => $this->september()->id]))
             ->assertOk()
-            ->assertSee('Belum ada slip gaji di periode ini')
+            ->assertSee('Belum ada slip gaji di periode ini');
+
+        $this->bagiHasilSeptemberKandangDua();
+
+        $this->get(route('payroll.abk', ['periode' => $this->september()->id]))
+            ->assertOk()
+            ->assertSee('Slip gaji Kandang 2 belum dibuat')
+            ->assertSee('4 ABK di lembar bagi hasil: Frengky, Igo, Utama dan Rafi')
+            ->assertSee('Buat slip Kandang 2')
+            ->assertDontSee('Belum ada slip gaji di periode ini')
             ->assertDontSee('Rekap payroll');
+    }
+
+    public function test_abk_slips_are_created_from_profit_sharing_with_loans_from_the_cash_book(): void
+    {
+        $periodeKandang = $this->bagiHasilSeptemberKandangDua();
+        $halaman = Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
+            ->test(PayrollAbk::class)
+            ->call('buatSlip', $periodeKandang->id)
+            ->assertSet('pesan', 'Slip gaji 4 ABK Kandang 2 dibuat. Lengkapi hari kerja dan komponen lain lewat tombol ubah di tiap slip.')
+            ->assertDontSee('Slip gaji Kandang 2 belum dibuat')
+            ->assertSee('Rekap payroll');
+
+        $slip = $periodeKandang->slipGaji()->orderBy('urutan')->get();
+        $this->assertSame(['Frengky', 'Igo', 'Utama', 'Rafi'], $slip->pluck('nama')->all());
+        $this->assertSame($periodeKandang->bagiHasil->penerimaBerperan(PeranBagiHasil::Abk)->pluck('id')->all(), $slip->pluck('penerima_bagi_hasil_id')->all());
+        $this->assertSame(Karyawan::whereIn('nama', ['Frengky', 'Igo', 'Utama', 'Rafi'])->orderBy('id')->pluck('id')->all(), $slip->pluck('karyawan_id')->all());
+        // Enam "Pinjaman frengky" di kas operasional Kandang 2 September.
+        $this->assertSame([1_330_000, 0, 0, 0], $slip->pluck('pinjaman')->all());
+
+        $halaman->call('buatSlip', $periodeKandang->id)->assertSet('pesan', 'Semua ABK Kandang 2 sudah punya slip gaji.');
+        $this->assertSame(4, $periodeKandang->slipGaji()->count());
+        $this->assertSame(1, Aktivitas::where(['modul' => ModulAktivitas::PayrollAbk, 'jenis' => JenisAktivitas::Tambah])->count());
+    }
+
+    public function test_slip_components_can_be_updated_and_the_slip_deleted(): void
+    {
+        $periodeKandang = $this->bagiHasilSeptemberKandangDua();
+        $halaman = Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
+            ->test(PayrollAbk::class)
+            ->call('buatSlip', $periodeKandang->id);
+        $igo = $periodeKandang->slipGaji()->where('nama', 'Igo')->sole();
+
+        $halaman->call('ubah', $igo->id)
+            ->assertSet('isian.hari_kerja', '0')
+            ->set('isian.hari_kerja', '56')
+            ->set('isian.premi_panen', '500000')
+            ->set('isian.potongan_lain', '200000')
+            ->set('isian.keterangan_potongan_lain', ' HP ')
+            ->call('simpan')
+            ->assertHasNoErrors()
+            ->assertSet('pesan', 'Slip gaji Igo diperbarui.');
+
+        $this->assertDatabaseHas('slip_gajis', ['id' => $igo->id, 'hari_kerja' => 56, 'premi_panen' => 500_000, 'uang_makan' => 0, 'potongan_lain' => 200_000, 'keterangan_potongan_lain' => 'HP']);
+
+        $halaman->call('ubah', $igo->id)->set('isian.potongan_lain', '-1')->call('simpan')->assertHasErrors('isian.potongan_lain');
+
+        $halaman->call('mintaHapus', $igo->id)
+            ->call('hapus')
+            ->assertSet('pesan', 'Slip gaji Igo dihapus.')
+            ->assertSee('Slip gaji Kandang 2 belum dibuat');
+        $this->assertDatabaseMissing('slip_gajis', ['id' => $igo->id]);
+        $this->assertSame(
+            [JenisAktivitas::Tambah, JenisAktivitas::Ubah, JenisAktivitas::Hapus],
+            Aktivitas::where('modul', ModulAktivitas::PayrollAbk)->orderBy('id')->pluck('jenis')->all(),
+        );
+    }
+
+    public function test_meal_money_comes_from_named_meal_loans_in_the_cash_book(): void
+    {
+        $periodeKandang = $this->bagiHasilSeptemberKandangDua();
+        foreach ([
+            ['Uang makan Frengky', 300_000],
+            ['uang makan frengky minggu 2', 200_000],
+            ['Uang makan Igo dan Utama', 401],
+            ['Pinjaman Makan', 1_000_000],
+        ] as [$uraian, $jumlah]) {
+            TransaksiKas::factory()->for($periodeKandang)->keluar(KategoriKas::PinjamanMakan, $jumlah)->create(['uraian' => $uraian, 'tanggal' => '2026-09-20']);
+        }
+        // Bukan Pinjaman Makan: tidak dihitung sebagai uang makan walau menyebut nama.
+        TransaksiKas::factory()->for($periodeKandang)->keluar(KategoriKas::MakanMinum, 50_000)->create(['uraian' => 'Kopi Rafi', 'tanggal' => '2026-09-20']);
+
+        $halaman = Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
+            ->test(PayrollAbk::class)
+            ->call('buatSlip', $periodeKandang->id);
+
+        $uangMakan = collect($this->lembarSeptember()['kandang'][0]['slip'])
+            ->mapWithKeys(fn (array $slip): array => [$slip['nama'] => collect($slip['potongan'])->firstWhere('label', 'Uang makan')])
+            ->map(fn (array $baris): array => [$baris['jumlah'], $baris['rumus']])
+            ->all();
+
+        $this->assertSame([
+            'Frengky' => [500_000, 'dari kas: 2 transaksi Pinjaman Makan'],
+            'Igo' => [201, 'dari kas: 1 transaksi Pinjaman Makan'],
+            'Utama' => [200, 'dari kas: 1 transaksi Pinjaman Makan'],
+            'Rafi' => [0, null],
+        ], $uangMakan);
+
+        // Di form ubah, uang makan hanya ditampilkan; tidak ada isiannya.
+        $frengky = $periodeKandang->slipGaji()->where('nama', 'Frengky')->sole();
+        $halaman->call('ubah', $frengky->id)
+            ->assertSet('uangMakanSlip', ['jumlah' => 500_000, 'transaksi' => 2, 'dari_kas' => true])
+            ->assertSee('Dari kas operasional: 2 transaksi Pinjaman Makan atas nama Frengky.')
+            ->assertDontSeeHtml("isianRibuan('isian.uang_makan'");
+    }
+
+    public function test_slips_without_named_meal_loans_keep_their_saved_meal_money(): void
+    {
+        // Slip Juli tersimpan dengan uang makan Rp 1.960.000; kas Juli hanya punya "Pinjaman Makan" tanpa nama.
+        $this->assertSame(1_960_000, collect($this->slip('Igo')['potongan'])->firstWhere('label', 'Uang makan')['jumlah']);
+    }
+
+    public function test_slips_of_a_closed_period_cannot_be_changed(): void
+    {
+        $wahyu = SlipGaji::where('nama', 'Wahyu')->sole();
+        $halaman = Livewire::withQueryParams(['periode' => $this->periode()->id])
+            ->test(PayrollAbk::class)
+            ->assertDontSeeHtml('data-bs-target="#modal-slip"');
+
+        $halaman->call('ubah', $wahyu->id)->set('isian.premi_panen', '1')->call('simpan')->assertForbidden();
+        $this->assertSame(500_000, $wahyu->fresh()->premi_panen);
     }
 
     /**
@@ -228,9 +355,42 @@ class PayrollAbkTest extends TestCase
         return collect($slip)->mapWithKeys(fn (array $satu): array => [$satu['nama'] => [$satu['total_pendapatan'], $satu['total_potongan'], $satu['bersih']]])->all();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    private function lembarSeptember(): array
+    {
+        $periode = $this->september()->load(LembarRhpp::RELASI);
+        $kandangPeriode = $periode->kandangPeriode()->has('slipGaji')->with(['kandang', 'slipGaji.penerimaBagiHasil', 'bagiHasil.penerima'])->get();
+
+        return LembarPayroll::buat($kandangPeriode, LembarRhpp::real($periode));
+    }
+
     private function periode(): Periode
     {
         return Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+    }
+
+    private function september(): Periode
+    {
+        return Periode::where('nama', 'Periode September 2026')->firstOrFail();
+    }
+
+    /**
+     * Lembar bagi hasil Kandang 2 September dengan empat ABK, seperti yang diisi di halaman Bagi hasil.
+     */
+    private function bagiHasilSeptemberKandangDua(): PeriodeKandang
+    {
+        $periodeKandang = PeriodeKandang::where(['periode_id' => $this->september()->id, 'kandang_id' => Kandang::where('nama', 'Kandang 2')->firstOrFail()->id])->firstOrFail();
+        $bagiHasil = BagiHasil::factory()->for($periodeKandang)->create();
+        PenerimaBagiHasil::factory()->for($bagiHasil)->count(4)->sequence(
+            ['nama' => 'Frengky', 'urutan' => 1, 'jumlah' => 500_000, 'keterangan' => 'ketua ABK'],
+            ['nama' => 'Igo', 'urutan' => 2],
+            ['nama' => 'Utama', 'urutan' => 3],
+            ['nama' => 'Rafi', 'urutan' => 4],
+        )->create();
+
+        return $periodeKandang->load('bagiHasil.penerima');
     }
 
     private function periodeKandang(string $kandang): PeriodeKandang

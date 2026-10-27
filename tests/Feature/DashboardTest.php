@@ -6,8 +6,14 @@ use App\Enums\StatusBobot;
 use App\Livewire\Dashboard;
 use App\Models\NotaPanen;
 use App\Models\Periode;
+use App\Models\RhppReal;
+use App\Models\SesiSampling;
+use App\Models\TitikSampling;
+use App\Support\Format;
+use App\Support\LembarRhpp;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -134,6 +140,95 @@ class DashboardTest extends TestCase
     public function test_unknown_module_returns_not_found(): void
     {
         $this->get('/keuangan/tidak-ada')->assertNotFound();
+    }
+
+    public function test_age_and_working_days_count_from_doc_chick_in(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $periode = Periode::where('nama', 'Periode September 2026')->firstOrFail();
+        $periode->notaPanen()->delete();
+        $this->travelTo($periode->tanggal_chick_in->copy()->addDays(20)->setTime(9, 0));
+
+        $dashboard = Livewire::withQueryParams(['periode' => $periode->id])->test(Dashboard::class);
+        $waktu = $dashboard->instance()->waktu;
+
+        $this->assertSame([20, 21, false, false], [$waktu['umur'], $waktu['hari_kerja'], $waktu['umur_selesai'], $waktu['kerja_selesai']]);
+        $dashboard->assertSee('Umur ayam')->assertSee('Total hari kerja');
+    }
+
+    public function test_age_and_working_days_stop_at_the_last_harvest_of_a_closed_period(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $periode = $this->periodeJuli();
+        $panenTerakhir = $periode->notaPanen()->max('tanggal_panen');
+        $umurPanen = $periode->umurPada(Carbon::parse($panenTerakhir));
+
+        $waktu = Livewire::withQueryParams(['periode' => $periode->id])->test(Dashboard::class)->instance()->waktu;
+
+        $this->assertSame([$umurPanen, $umurPanen + 1, true, true], [$waktu['umur'], $waktu['hari_kerja'], $waktu['umur_selesai'], $waktu['kerja_selesai']]);
+    }
+
+    public function test_bird_summary_switches_to_real_rhpp_figures_once_the_document_is_locked(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $periode = $this->periodeJuli();
+
+        Livewire::withQueryParams(['periode' => $periode->id])->test(Dashboard::class)
+            ->assertSet('real', null)
+            ->assertSee('FCR sementara')
+            ->assertDontSee('(RHPP real)');
+
+        $periode->rhppReal->update(['status' => RhppReal::DIKUNCI]);
+        $kinerja = LembarRhpp::real($periode->fresh())['kinerja'];
+
+        $dashboard = Livewire::withQueryParams(['periode' => $periode->id])->test(Dashboard::class)
+            ->assertSee('Ayam hidup (RHPP real)')
+            ->assertSee('FCR (RHPP real)')
+            ->assertDontSee('FCR sementara');
+        $real = $dashboard->instance()->real;
+
+        $this->assertSame($kinerja['ekor'], $real['ekor']);
+        $this->assertSame($kinerja['deplesi']['aktual'], $real['deplesi']);
+        $this->assertSame($kinerja['fcr']['aktual'], $real['fcr']);
+        $this->assertEqualsWithDelta($kinerja['bw'] * 1000, $real['bw_gram'], 0.001);
+        $dashboard->assertSee(Format::angka($real['fcr'], 3));
+    }
+
+    public function test_weight_chart_adds_male_and_female_lines_from_sexing_samples(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $periode = $this->periodeJuli();
+        [$pertama, $kedua] = $periode->kandangPeriode()->with('kandang')->get()->sortBy('kandang.nama')->values()->all();
+
+        // Kandang pertama: 20 ekor jantan 30 kg dan 20 ekor betina 26 kg pada umur 21.
+        $sesi = SesiSampling::factory()->denganSexing()->create(['periode_kandang_id' => $pertama->id, 'tanggal' => $periode->tanggal_chick_in->copy()->addDays(21), 'umur' => 21]);
+        TitikSampling::factory()->create(['sesi_sampling_id' => $sesi->id, 'kelamin' => 'jantan', 'berat_gram' => 30000, 'ekor' => 20]);
+        TitikSampling::factory()->create(['sesi_sampling_id' => $sesi->id, 'kelamin' => 'betina', 'berat_gram' => 26000, 'ekor' => 20]);
+        // Kandang kedua: 20 ekor jantan 34 kg pada hari yang sama; sesi tanpa sexing tidak ikut.
+        $sesi = SesiSampling::factory()->denganSexing()->create(['periode_kandang_id' => $kedua->id, 'tanggal' => $periode->tanggal_chick_in->copy()->addDays(21), 'umur' => 21]);
+        TitikSampling::factory()->create(['sesi_sampling_id' => $sesi->id, 'kelamin' => 'jantan', 'berat_gram' => 34000, 'ekor' => 20]);
+        $campuran = SesiSampling::factory()->create(['periode_kandang_id' => $kedua->id, 'tanggal' => $periode->tanggal_chick_in->copy()->addDays(14), 'umur' => 14]);
+        TitikSampling::factory()->create(['sesi_sampling_id' => $campuran->id, 'kelamin' => 'campuran', 'berat_gram' => 10000, 'ekor' => 20]);
+
+        $bobot = Livewire::withQueryParams(['periode' => $periode->id])->test(Dashboard::class)->instance()->grafik['bobot'];
+        $kodePertama = 'kandang-'.trim(str_ireplace('kandang', '', $pertama->kandang->nama));
+
+        $this->assertSame([1500.0, 1300.0], [$bobot[$kodePertama]['sexing']['jantan'][21], $bobot[$kodePertama]['sexing']['betina'][21]]);
+        // Gabungan ditimbang ekor sampel: (30.000 + 34.000) / 40 ekor.
+        $this->assertSame(1600.0, $bobot['semua']['sexing']['jantan'][21]);
+        $this->assertSame(1300.0, $bobot['semua']['sexing']['betina'][21]);
+        $this->assertNull($bobot['semua']['sexing']['jantan'][14]);
+        $this->assertCount(43, $bobot['semua']['sexing']['jantan']);
+    }
+
+    public function test_weight_chart_has_no_sexing_lines_without_sexing_samples(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        SesiSampling::query()->update(['dengan_sexing' => false]);
+
+        $bobot = Livewire::withQueryParams(['periode' => $this->periodeJuli()->id])->test(Dashboard::class)->instance()->grafik['bobot'];
+
+        $this->assertNull($bobot['semua']['sexing']);
     }
 
     private function periodeJuli(): Periode

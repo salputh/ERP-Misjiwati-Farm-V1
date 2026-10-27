@@ -2,20 +2,22 @@
 
 namespace App\Livewire;
 
-use App\Models\Karyawan;
+use App\Livewire\Concerns\MengelolaProject;
 use App\Models\Project;
-use App\Models\ProjectTask;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Collection as SupportCollection;
-use Illuminate\Validation\Rule;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Title('Project')]
 class Projects extends Component
 {
+    use MengelolaProject;
+    use WithPagination;
+
     public const STATUS = [
         'planned' => 'Direncanakan',
         'in_progress' => 'Berjalan',
@@ -29,45 +31,33 @@ class Projects extends Component
         'completed' => 'Selesai',
     ];
 
+    /** Pilihan jumlah project per halaman, seperti "20/page" pada halaman Project template. */
+    public const PER_HALAMAN = [12, 24, 48];
+
     public string $cari = '';
 
     public string $filterStatus = 'all';
 
     public string $filterKategori = 'all';
 
-    public ?int $projectId = null;
+    /** Tampilan daftar: grid (kartu) atau list (tabel). */
+    #[Url(as: 'tampilan')]
+    public string $tampilan = 'grid';
 
-    public string $nama = '';
-
-    public string $kategori = '';
-
-    public string $deskripsi = '';
-
-    public string $status = 'planned';
-
-    public string $tanggalMulai = '';
-
-    public string $tanggalSelesai = '';
-
-    /** @var list<int|string> */
-    public array $anggotaTerpilih = [];
-
-    public ?int $projectTugasId = null;
-
-    public string $namaTugas = '';
-
-    public string $statusTugas = 'pending';
-
-    public ?string $tanggalTugas = null;
-
-    public ?int $karyawanTugasId = null;
+    public int $perHalaman = 12;
 
     public ?int $hapusProjectId = null;
 
-    public string $pesan = '';
+    /**
+     * Pesan dari halaman detail, misalnya setelah project dihapus lalu dialihkan ke sini.
+     */
+    public function mount(): void
+    {
+        $this->pesan = (string) session('pesan-project', '');
+    }
 
     #[Computed]
-    public function projects(): Collection
+    public function projects(): LengthAwarePaginator
     {
         return Project::query()
             ->with('anggota')
@@ -82,135 +72,34 @@ class Projects extends Component
             ->when(in_array($this->filterStatus, ['planned', 'in_progress', 'on_hold', 'completed'], true), fn ($query) => $query->where('status', $this->filterStatus))
             ->orderByRaw("CASE status WHEN 'in_progress' THEN 0 WHEN 'planned' THEN 1 WHEN 'on_hold' THEN 2 ELSE 3 END")
             ->orderBy('tanggal_selesai')
-            ->get();
+            ->paginate($this->perHalaman);
     }
 
+    /**
+     * Jumlah project berjalan untuk kepala halaman ("12 Running projects" di template).
+     */
     #[Computed]
-    public function karyawan(): Collection
+    public function jumlahBerjalan(): int
     {
-        return Karyawan::query()->orderBy('nama')->get();
+        return Project::query()->where('status', 'in_progress')->count();
     }
 
-    #[Computed]
-    public function kategoriProyek(): SupportCollection
+    public function updated(string $properti): void
     {
-        return Project::query()->select('kategori')->distinct()->orderBy('kategori')->pluck('kategori');
+        if (in_array($properti, ['cari', 'filterStatus', 'filterKategori', 'perHalaman'], true)) {
+            $this->resetPage();
+        }
     }
 
-    #[Computed]
-    public function statistik(): array
+    public function pilihTampilan(string $tampilan): void
     {
-        return [
-            'total' => Project::query()->count(),
-            'berjalan' => Project::query()->where('status', 'in_progress')->count(),
-            'selesai' => Project::query()->where('status', 'completed')->count(),
-            'terlambat' => Project::query()->whereNotIn('status', ['completed', 'on_hold'])->whereDate('tanggal_selesai', '<', today())->count(),
-            'anggota' => Karyawan::query()->count(),
-            'tugas_aktif' => ProjectTask::query()->whereIn('status', ['pending', 'in_progress'])->count(),
-            'tugas_selesai' => ProjectTask::query()->where('status', 'completed')->count(),
-        ];
+        $this->tampilan = $tampilan === 'list' ? 'list' : 'grid';
     }
 
-    #[Computed]
-    public function projectAktif(): ?Project
+    public function pilihPerHalaman(int $jumlah): void
     {
-        return $this->projectTugasId
-            ? Project::query()->with(['anggota', 'tugas.karyawan'])->find($this->projectTugasId)
-            : null;
-    }
-
-    public function tambah(): void
-    {
-        $this->resetForm();
-    }
-
-    public function ubah(int $projectId): void
-    {
-        $project = Project::query()->with('anggota')->findOrFail($projectId);
-
-        $this->projectId = $project->id;
-        $this->nama = $project->nama;
-        $this->kategori = $project->kategori;
-        $this->deskripsi = $project->deskripsi ?? '';
-        $this->status = $project->status;
-        $this->tanggalMulai = $project->tanggal_mulai?->format('Y-m-d') ?? '';
-        $this->tanggalSelesai = $project->tanggal_selesai?->format('Y-m-d') ?? '';
-        $this->anggotaTerpilih = $project->anggota->modelKeys();
-        $this->resetValidation();
-    }
-
-    public function simpan(): void
-    {
-        $data = $this->validate([
-            'nama' => ['required', 'string', 'max:180'],
-            'kategori' => ['required', 'string', 'max:80'],
-            'deskripsi' => ['nullable', 'string', 'max:3000'],
-            'status' => ['required', Rule::in(array_keys(self::STATUS))],
-            'tanggalMulai' => ['nullable', 'date'],
-            'tanggalSelesai' => array_filter(['nullable', 'date', filled($this->tanggalMulai) ? 'after_or_equal:tanggalMulai' : null]),
-            'anggotaTerpilih' => ['array'],
-            'anggotaTerpilih.*' => ['integer', 'distinct', 'exists:karyawans,id'],
-        ], [
-            'tanggalSelesai.after_or_equal' => 'Tanggal selesai harus sama atau setelah tanggal mulai.',
-        ]);
-
-        $project = $this->projectId ? Project::query()->findOrFail($this->projectId) : new Project;
-        $project->fill([
-            'nama' => trim($data['nama']),
-            'kategori' => trim($data['kategori']),
-            'deskripsi' => filled($data['deskripsi']) ? trim($data['deskripsi']) : null,
-            'status' => $data['status'],
-            'tanggal_mulai' => $data['tanggalMulai'] ?: null,
-            'tanggal_selesai' => $data['tanggalSelesai'] ?: null,
-        ])->save();
-        $project->anggota()->sync($data['anggotaTerpilih'] ?? []);
-
-        $this->pesan = $this->projectId ? 'Project diperbarui.' : 'Project ditambahkan.';
-        $this->resetForm();
-        $this->dispatch('tutup-modal-project');
-        unset($this->projects, $this->kategoriProyek, $this->statistik);
-    }
-
-    public function bukaTugas(int $projectId): void
-    {
-        Project::query()->findOrFail($projectId);
-        $this->projectTugasId = $projectId;
-        $this->resetTaskForm();
-        unset($this->projectAktif);
-    }
-
-    public function simpanTugas(): void
-    {
-        $project = Project::query()->findOrFail($this->projectTugasId);
-        $data = $this->validate([
-            'namaTugas' => ['required', 'string', 'max:180'],
-            'statusTugas' => ['required', Rule::in(array_keys(self::STATUS_TUGAS))],
-            'tanggalTugas' => ['nullable', 'date'],
-            'karyawanTugasId' => [
-                'nullable',
-                'integer',
-                Rule::exists('karyawan_project', 'karyawan_id')->where('project_id', $project->id),
-            ],
-        ]);
-
-        $project->tugas()->create([
-            'nama' => trim($data['namaTugas']),
-            'status' => $data['statusTugas'],
-            'tanggal_selesai' => $data['tanggalTugas'] ?: null,
-            'karyawan_id' => $data['karyawanTugasId'],
-        ]);
-
-        $this->pesan = 'Tugas ditambahkan.';
-        $this->resetTaskForm();
-        unset($this->projectAktif, $this->projects, $this->statistik);
-    }
-
-    public function ubahStatusTugas(int $taskId): void
-    {
-        $task = ProjectTask::query()->where('project_id', $this->projectTugasId)->findOrFail($taskId);
-        $task->status = $task->status === 'completed' ? 'pending' : 'completed';
-        $task->save();
-        unset($this->projectAktif, $this->projects, $this->statistik);
+        $this->perHalaman = in_array($jumlah, self::PER_HALAMAN, true) ? $jumlah : self::PER_HALAMAN[0];
+        $this->resetPage();
     }
 
     public function mintaHapusProject(int $projectId): void
@@ -223,47 +112,20 @@ class Projects extends Component
         Project::query()->findOrFail($this->hapusProjectId)->delete();
         $this->hapusProjectId = null;
         $this->pesan = 'Project dihapus.';
-        unset($this->projects, $this->kategoriProyek, $this->statistik);
-    }
-
-    public function hapusTugas(int $taskId): void
-    {
-        ProjectTask::query()->where('project_id', $this->projectTugasId)->findOrFail($taskId)->delete();
-        $this->pesan = 'Tugas dihapus.';
-        unset($this->projectAktif, $this->projects, $this->statistik);
+        unset($this->projects, $this->kategoriProyek, $this->jumlahBerjalan);
     }
 
     /**
-     * Tugas yang akan dihapus setelah konfirmasi.
+     * Nama project yang akan dihapus, untuk pesan konfirmasi.
      */
-    public ?int $hapusTugasId = null;
-
-    public function mintaHapusTugas(int $taskId): void
+    public function namaProjectHapus(): string
     {
-        $this->hapusTugasId = $taskId;
+        return $this->hapusProjectId ? (string) Project::query()->find($this->hapusProjectId)?->nama : '';
     }
 
-    public function konfirmasiHapusTugas(): void
+    public function paginationView(): string
     {
-        if ($this->hapusTugasId === null) {
-            return;
-        }
-
-        $taskId = $this->hapusTugasId;
-        $this->hapusTugasId = null;
-        $this->hapusTugas($taskId);
-    }
-
-    /**
-     * Nama tugas yang akan dihapus, untuk pesan konfirmasi.
-     */
-    public function namaTugasHapus(): string
-    {
-        if ($this->hapusTugasId === null) {
-            return '';
-        }
-
-        return (string) (ProjectTask::query()->find($this->hapusTugasId)?->nama ?? '');
+        return 'vendor.pagination.hexadash';
     }
 
     public function render(): View
@@ -271,17 +133,8 @@ class Projects extends Component
         return view('livewire.projects');
     }
 
-    private function resetForm(): void
+    protected function setelahProjectDisimpan(): void
     {
-        $this->reset('projectId', 'nama', 'kategori', 'deskripsi', 'tanggalMulai', 'tanggalSelesai', 'anggotaTerpilih');
-        $this->status = 'planned';
-        $this->resetValidation();
-    }
-
-    private function resetTaskForm(): void
-    {
-        $this->reset('namaTugas', 'tanggalTugas', 'karyawanTugasId');
-        $this->statusTugas = 'pending';
-        $this->resetValidation(['namaTugas', 'tanggalTugas', 'karyawanTugasId', 'statusTugas']);
+        unset($this->projects, $this->jumlahBerjalan);
     }
 }

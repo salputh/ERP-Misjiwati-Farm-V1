@@ -1,62 +1,24 @@
 @props([
     'warna' => 'primary',
-    'ukuran' => 'default',
+    'ukuran' => 'sm', // xs, sm, default, md, lg
     'tipe' => 'button',
-    'bentuk' => 'squared',
-    'variasi' => null, // outlined, transparent, shadow
+    'variasi' => null, // outlined, transparent
     'blok' => false,
     'ikon' => null,
-    'posisiIkon' => 'kiri', // kiri, kanan
 ])
 
-@php
-    $classes = ['btn'];
-
-    // Warna & Variasi, mengikuti katalog template (HexaDash):
-    // tombol outline memakai btn-outline-{warna} bersama color-{warna},
-    // tombol transparent memakai btn-transparent-{warna}.
-    if ($variasi === 'outlined') {
-        $classes[] = 'btn-outline-' . $warna;
-        $classes[] = 'color-' . $warna;
-    } elseif ($variasi === 'transparent') {
-        $classes[] = 'btn-transparent-' . $warna;
-    } else {
-        $classes[] = 'btn-' . $warna;
-    }
-
-    // Ukuran
-    if ($ukuran !== 'default') {
-        $classes[] = 'btn-' . $ukuran;
-    } else {
-        $classes[] = 'btn-default';
-    }
-
-    // Bentuk
-    if ($bentuk === 'squared') {
-        $classes[] = 'btn-squared';
-    } elseif ($bentuk === 'rounded') {
-        $classes[] = 'btn-rounded';
-    }
-
-    // Shadow
-    if ($variasi === 'shadow') {
-        $classes[] = 'btn-shadow-' . $warna;
-    }
-
-    // Block
-    if ($blok) {
-        $classes[] = 'btn-block';
-    }
-@endphp
-
-<button type="{{ $tipe }}" {{ $attributes->merge(['class' => implode(' ', $classes)]) }}>
-    @if ($ikon && $posisiIkon === 'kiri')
-        <i class="uil {{ $ikon }} @if($slot->isNotEmpty()) me-2 @endif"></i>
+{{-- Tombol bergaya katalog template (HexaDash: Button). Bentuk selalu squared seperti contoh template;
+     outline memakai btn-outline-{warna} bersama color-{warna}, light color memakai btn-transparent-{warna}. --}}
+<button type="{{ $tipe }}" {{ $attributes->class([
+    'btn btn-squared',
+    'btn-'.$warna => $variasi === null,
+    'btn-outline-'.$warna.' color-'.$warna => $variasi === 'outlined',
+    'btn-transparent-'.$warna => $variasi === 'transparent',
+    'btn-'.$ukuran,
+    'btn-block' => $blok,
+]) }}>
+    @if ($ikon)
+        <i class="uil {{ $ikon }}" aria-hidden="true"></i>
     @endif
-
     {{ $slot }}
-
-    @if ($ikon && $posisiIkon === 'kanan')
-        <i class="uil {{ $ikon }} @if($slot->isNotEmpty()) ms-2 @endif"></i>
-    @endif
 </button>

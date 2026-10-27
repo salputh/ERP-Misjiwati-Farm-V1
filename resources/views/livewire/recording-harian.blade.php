@@ -3,48 +3,42 @@
         <x-breadcrumb judul="Recording harian pemeliharaan ayam broiler" :jejak="['Produksi', 'Recording harian']" />
 
         @if ($this->terpilih)
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-header border-0">
-                        <div class="card-extra d-flex align-items-center flex-wrap gap-2">
-                            <div class="dropdown action-btn">
-                                <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownExportRecording" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="la la-download"></i> Export
+            <div class="col-12 mb-25">
+                <div class="card card-default card-md">
+                    <div class="card-header">
+                        <ul class="card-tab-links nav-tabs nav" role="tablist">
+                            @foreach ($this->daftarKandang as $pilihan)
+                                <li>
+                                    <a
+                                        href="{{ route('recording.harian', ['periode' => $this->periode->id, 'kandang' => $pilihan->id]) }}"
+                                        role="tab"
+                                        wire:click.prevent="pilihKandang({{ $pilihan->id }})"
+                                        @class(['active' => $pilihan->is($this->terpilih)])
+                                        aria-selected="{{ $pilihan->is($this->terpilih) ? 'true' : 'false' }}"
+                                    >{{ $pilihan->kandang->nama }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <div class="card-extra">
+                            <div class="dropdown dropdown-click">
+                                <button class="btn btn-primary btn-sm btn-squared" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="las la-download" aria-hidden="true"></i>Export<i class="las la-angle-down ms-2 me-0" aria-hidden="true"></i>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportRecording">
-                                    <span class="dropdown-item">Export With</span>
-                                    <div class="dropdown-divider"></div>
-                                    <a href="{{ route('recording.harian.export', ['periodeKandang' => $this->terpilih->id, 'format' => 'pdf']) }}" class="dropdown-item">
-                                        <i class="la la-file-pdf"></i> PDF
-                                    </a>
-                                    <a href="{{ route('recording.harian.export', ['periodeKandang' => $this->terpilih->id, 'format' => 'xlsx']) }}" class="dropdown-item">
-                                        <i class="la la-file-excel"></i> Excel (XLSX)
-                                    </a>
+                                <div class="dropdown-default dropdown-menu dropdown-menu-end">
+                                    <a href="{{ route('recording.harian.export', ['periodeKandang' => $this->terpilih->id, 'format' => 'pdf']) }}" class="dropdown-item">PDF</a>
+                                    <a href="{{ route('recording.harian.export', ['periodeKandang' => $this->terpilih->id, 'format' => 'xlsx']) }}" class="dropdown-item">Excel (XLSX)</a>
                                 </div>
                             </div>
-                            <ul class="card-tab-links nav-tabs nav" role="tablist">
-                                @foreach ($this->daftarKandang as $pilihan)
-                                    <li>
-                                        <a
-                                            href="{{ route('recording.harian', ['periode' => $this->periode->id, 'kandang' => $pilihan->id]) }}"
-                                            role="tab"
-                                            wire:click.prevent="pilihKandang({{ $pilihan->id }})"
-                                            @class(['active' => $pilihan->is($this->terpilih)])
-                                            aria-selected="{{ $pilihan->is($this->terpilih) ? 'true' : 'false' }}"
-                                        >{{ $pilihan->kandang->nama }}</a>
-                                    </li>
-                                @endforeach
-                            </ul>
                         </div>
                     </div>
 
-                    <div class="card-body pt-0">
-                        <dl class="recording-info">
-                            <div><dt>Peternak</dt><dd>Misjiwati</dd></div>
-                            <div><dt>Populasi</dt><dd>@angka($this->terpilih->populasi_awal) ekor</dd></div>
-                            <div><dt>Tanggal chick-in</dt><dd>{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</dd></div>
-                            <div><dt>Berat DOC</dt><dd>@angka($this->periode->berat_doc_gram) g</dd></div>
-                        </dl>
+                    <div class="card-body">
+                        <x-info class="mb-25">
+                            <x-info.butir label="Peternak">Misjiwati</x-info.butir>
+                            <x-info.butir label="Populasi">@angka($this->terpilih->populasi_awal) ekor</x-info.butir>
+                            <x-info.butir label="Tanggal chick-in">{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</x-info.butir>
+                            <x-info.butir label="Berat DOC">@angka($this->periode->berat_doc_gram) g</x-info.butir>
+                        </x-info>
 
                         <div class="recording-gulung" tabindex="0" role="region" aria-label="Tabel recording harian {{ $this->terpilih->kandang->nama }}, bisa digulir">
                             <table class="table table-bordered tabel-recording mb-0">
@@ -159,7 +153,7 @@
                             </table>
                         </div>
 
-                        <p class="fs-12 color-gray mt-15 mb-0">
+                        <p class="fs-13 color-light mt-15 mb-0">
                             Angka <span class="recording-masukan">ungu</span> diisi dari catatan harian (mati, afkir, pakan, ABW); kolom lain dihitung otomatis.
                             Angka dalam kurung berarti negatif. Konversi kg pakan memakai berat per zak pada master tiap jenis pakan.
                         </p>
@@ -167,14 +161,7 @@
                 </div>
             </div>
         @else
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">Belum ada kandang untuk direkam</h5>
-                        <p class="color-gray mb-0">Lembar recording muncul setelah periode dibuat dan kandangnya diisi populasi awal.</p>
-                    </div>
-                </div>
-            </div>
+            <x-kosong judul="Belum ada kandang untuk direkam">Lembar recording muncul setelah periode dibuat dan kandangnya diisi populasi awal.</x-kosong>
         @endif
     </div>
 

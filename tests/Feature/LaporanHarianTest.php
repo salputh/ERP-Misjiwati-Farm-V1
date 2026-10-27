@@ -90,7 +90,8 @@ class LaporanHarianTest extends TestCase
         $this->assertSame([124.0, 17.0, 17.0, 107.0], $this->stok($opname['SB-11']));
         $this->assertArrayNotHasKey('SB-12', $opname->all());
         $this->assertSame(0, $laporan['total']['mati_kumulatif']);
-        $this->assertNull($laporan['total']['abw']);
+        // ABW terakhir sampai tanggal laporan: sampling 12 September (usia 1), dibaca langsung dari sesi sampling.
+        $this->assertEqualsWithDelta(71.67, $laporan['total']['abw'], 0.01);
         $this->assertSame([], $laporan['catatan']);
     }
 

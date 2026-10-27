@@ -21,6 +21,16 @@ class Kandang extends Model
         return $this->hasMany(Karyawan::class);
     }
 
+    /**
+     * Nama karyawan kandang beserta jabatannya dalam satu baris, mis. "Wahyu (ABK), Rohim (Joker)".
+     */
+    public function daftarKaryawanTeks(): string
+    {
+        return $this->karyawan
+            ->map(fn (Karyawan $karyawan): string => $karyawan->nama.' ('.$karyawan->jabatan->label().')')
+            ->join(', ');
+    }
+
     public function periodeKandang(): HasMany
     {
         return $this->hasMany(PeriodeKandang::class);

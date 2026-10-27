@@ -24,6 +24,17 @@ class Karyawan extends Model
         return ['jabatan' => Jabatan::class];
     }
 
+    /**
+     * Inisial dua kata pertama nama untuk avatar, mis. "Wahyu ABK" menjadi "WA".
+     */
+    public function inisial(): string
+    {
+        return collect(explode(' ', $this->nama))
+            ->take(2)
+            ->map(fn (string $kata): string => mb_strtoupper(mb_substr($kata, 0, 1)))
+            ->implode('');
+    }
+
     public function kandang(): BelongsTo
     {
         return $this->belongsTo(Kandang::class);
@@ -32,5 +43,10 @@ class Karyawan extends Model
     public function slipGaji(): HasMany
     {
         return $this->hasMany(SlipGaji::class);
+    }
+
+    public function kasbon(): HasMany
+    {
+        return $this->hasMany(Kasbon::class);
     }
 }

@@ -2,17 +2,37 @@
 
 namespace App\Livewire;
 
+use App\Enums\JenisAktivitas;
+use App\Enums\ModulAktivitas;
 use App\Livewire\Concerns\MemilihPeriode;
-use App\Models\Pemanen;
+use App\Models\Aktivitas;
+use App\Models\PembayaranPemanen;
+use App\Support\Format;
+use App\Support\LembarPayrollPemanen;
+use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
+/**
+ * Upah pemanen satu periode dari nota panen, dengan status sudah atau belum dibayar per pemanen. Status dibayar
+ * menyimpan nominal upah saat itu, sehingga perubahan upah sesudahnya (nota baru atau tarif berubah) terlihat.
+ */
 #[Title('Payroll pemanen')]
 class PayrollPemanen extends Component
 {
     use MemilihPeriode;
+
+    public ?string $pesan = null;
+
+    #[Locked]
+    public ?int $batalBayarId = null;
+
+    public string $namaBatalBayar = '';
 
     /**
      * @return array{
@@ -20,213 +40,174 @@ class PayrollPemanen extends Component
      *     berat_total: float,
      *     berat_teralokasi: float,
      *     berat_nama_belum_terdaftar: float,
+     *     berat_abk: float,
      *     berat_tanpa_nama: float,
      *     total_upah: int,
-     *     pemanen: list<array{nama: string, jumlah_nota: int, berat_kg: float, upah_per_kg: int, total_upah: int}>,
-     *     nama_belum_terdaftar: list<array{nama: string, berat_kg: float}>
+     *     pemanen: list<array{id: int, nama: string, jumlah_nota: int, berat_kg: float, upah_per_kg: int, total_upah: int}>,
+     *     nama_belum_terdaftar: list<array{nama: string, berat_kg: float}>,
+     *     abk: list<array{nama: string, berat_kg: float}>
      * }|null
      */
     #[Computed]
     public function lembar(): ?array
     {
-        if (! $this->periode) {
+        return $this->periode ? LembarPayrollPemanen::buat($this->periode) : null;
+    }
+
+    /**
+     * Bahan tampilan halaman: porsi tonase tiap pemanen, rata-rata upah, dan pembagian tonase menurut status
+     * pembayarannya. Tonase dihitung per nama, jadi nota lama yang mencatat beberapa nama ikut dihitung untuk
+     * setiap nama; karena itu porsinya diukur terhadap jumlah tonase upah, bukan terhadap berat panen.
+     *
+     * @return array{
+     *     pemanen: list<array{id: int, nama: string, inisial: string, jumlah_nota: int, berat_kg: float, upah_per_kg: int, total_upah: int, porsi: float, dibayar: ?array{jumlah: int, pada: CarbonInterface, berubah: bool}}>,
+     *     rata_upah: ?float,
+     *     sudah_dibayar: int,
+     *     belum_dibayar: int,
+     *     jumlah_dibayar: int,
+     *     alokasi: list<array{label: string, keterangan: string, berat_kg: float, persen: float, warna: string}>,
+     *     tonase_upah: float
+     * }|null
+     */
+    #[Computed]
+    public function tampilan(): ?array
+    {
+        $lembar = $this->lembar;
+        if (! $lembar) {
             return null;
         }
 
-        $notas = $this->periode->notaPanen()->with('pemanenKrat')->orderBy('mulai')->get();
-        if ($notas->isEmpty()) {
-            return null;
-        }
+        $teralokasi = $lembar['berat_teralokasi'];
+        $alokasi = collect([
+            ['label' => 'Masuk payroll pemanen', 'keterangan' => 'Dihitung ke upah pemanen terdaftar', 'berat_kg' => $teralokasi, 'warna' => 'success'],
+            ['label' => 'Dipanen ABK', 'keterangan' => 'Tidak dibayar di payroll pemanen', 'berat_kg' => $lembar['berat_abk'], 'warna' => 'info'],
+            ['label' => 'Nama belum terdaftar', 'keterangan' => 'Daftarkan di Master Data agar dibayar', 'berat_kg' => $lembar['berat_nama_belum_terdaftar'], 'warna' => 'warning'],
+            ['label' => 'Belum teralokasi', 'keterangan' => 'Nota tanpa nama pemanen atau krat mulai', 'berat_kg' => $lembar['berat_tanpa_nama'], 'warna' => 'danger'],
+        ]);
+        $tonaseUpah = (float) $alokasi->sum('berat_kg');
+        $pembayaran = $this->pembayaran;
+        $pemanen = collect($lembar['pemanen'])->map(function (array $orang) use ($teralokasi, $pembayaran): array {
+            $bayar = $pembayaran->get($orang['id']);
 
-        $pemanen = Pemanen::query()->orderBy('nama')->get();
-        $pemanenMenurutNama = $pemanen->keyBy(fn (Pemanen $orang): string => mb_strtolower(trim($orang->nama)));
-        $beratPerPemanen = [];
-        $beratNamaBelumTerdaftar = [];
-        $beratTanpaNama = 0;
-        $beratTotal = 0;
-
-        foreach ($notas as $nota) {
-            $beratNota = (int) round((float) $nota->berat_kg * 100);
-            $beratTotal += $beratNota;
-
-            if ($nota->pemanenKrat->isNotEmpty()) {
-                $totalKrat = (int) $nota->jumlah_krat;
-                if ($totalKrat < 1) {
-                    $beratTanpaNama += $beratNota;
-
-                    continue;
-                }
-
-                $daftarPemanen = $nota->pemanenKrat->sortBy('krat_mulai')->values();
-                $adaBeratTimbangManual = $daftarPemanen->contains(
-                    fn ($pemanenNota): bool => $pemanenNota->berat_timbang_kg !== null,
-                );
-                $rentangPemanen = [];
-                $beratManualTotal = 0;
-                $kratTanpaBeratTotal = 0;
-                $grupMenurutKratMulai = $daftarPemanen->groupBy('krat_mulai')->sortKeys()->values();
-
-                foreach ($grupMenurutKratMulai as $index => $grupPemanen) {
-                    $kratMulai = (int) $grupPemanen->first()->krat_mulai;
-                    $kratSelesai = min(
-                        $index + 1 < $grupMenurutKratMulai->count()
-                            ? (int) $grupMenurutKratMulai[$index + 1]->first()->krat_mulai - 1
-                            : $totalKrat,
-                        $totalKrat,
-                    );
-
-                    if ($kratMulai < 1 || $kratMulai > $totalKrat || $kratSelesai < $kratMulai) {
-                        continue;
-                    }
-
-                    foreach ($grupPemanen as $pemanenNota) {
-                        $beratManual = $pemanenNota->berat_timbang_kg === null
-                            ? null
-                            : (int) round((float) $pemanenNota->berat_timbang_kg * 100);
-                        $rentangPemanen[] = [
-                            'pemanen' => $pemanenNota,
-                            'krat_mulai' => $kratMulai,
-                            'krat_selesai' => $kratSelesai,
-                            'berat_manual' => $beratManual,
-                        ];
-
-                        if ($beratManual !== null) {
-                            $beratManualTotal += $beratManual;
-                        } else {
-                            $kratTanpaBeratTotal += $kratSelesai - $kratMulai + 1;
-                        }
-                    }
-                }
-
-                $beratDialokasikan = 0;
-                $beratPerNamaDiNota = [];
-                $kratTanpaBeratTerkumulasi = 0;
-                $beratSisaUntukPemanenTanpaBerat = max(0, $beratNota - $beratManualTotal);
-
-                foreach ($rentangPemanen as $rentang) {
-                    $pemanenNota = $rentang['pemanen'];
-                    $kratMulai = $rentang['krat_mulai'];
-                    $kratSelesai = $rentang['krat_selesai'];
-                    if ($rentang['berat_manual'] !== null) {
-                        $beratPemanen = $rentang['berat_manual'];
-                    } elseif ($adaBeratTimbangManual && $kratTanpaBeratTotal > 0) {
-                        $kratTanpaBeratTerkumulasi += $kratSelesai - $kratMulai + 1;
-                        $sampai = (int) round(
-                            $beratSisaUntukPemanenTanpaBerat * $kratTanpaBeratTerkumulasi / $kratTanpaBeratTotal,
-                        );
-                        $sebelum = (int) round(
-                            $beratSisaUntukPemanenTanpaBerat
-                            * ($kratTanpaBeratTerkumulasi - ($kratSelesai - $kratMulai + 1))
-                            / $kratTanpaBeratTotal,
-                        );
-                        $beratPemanen = $sampai - $sebelum;
-                    } else {
-                        $sebelum = (int) round($beratNota * ($kratMulai - 1) / $totalKrat);
-                        $sampai = (int) round($beratNota * $kratSelesai / $totalKrat);
-                        $beratPemanen = $sampai - $sebelum;
-                    }
-
-                    $nama = trim((string) $pemanenNota->nama);
-
-                    if ($nama === '') {
-                        continue;
-                    }
-
-                    $beratDialokasikan += $beratPemanen;
-                    $namaKunci = mb_strtolower($nama);
-                    $beratPerNamaDiNota[$namaKunci] ??= ['nama' => $nama, 'berat' => 0];
-                    $beratPerNamaDiNota[$namaKunci]['berat'] += $beratPemanen;
-                }
-
-                $beratTanpaNama += $beratNota - $beratDialokasikan;
-
-                foreach ($beratPerNamaDiNota as $orang) {
-                    $pemanenTerdaftar = $pemanenMenurutNama->get(mb_strtolower($orang['nama']));
-
-                    if ($pemanenTerdaftar) {
-                        $beratPerPemanen[$pemanenTerdaftar->id] ??= [
-                            'nama' => $pemanenTerdaftar->nama,
-                            'jumlah_nota' => 0,
-                            'berat' => 0,
-                            'upah_per_kg' => (int) $pemanenTerdaftar->upah_per_kg,
-                        ];
-                        $beratPerPemanen[$pemanenTerdaftar->id]['jumlah_nota']++;
-                        $beratPerPemanen[$pemanenTerdaftar->id]['berat'] += $orang['berat'];
-
-                        continue;
-                    }
-
-                    $namaKunci = mb_strtolower($orang['nama']);
-                    $beratNamaBelumTerdaftar[$namaKunci] ??= ['nama' => $orang['nama'], 'berat' => 0];
-                    $beratNamaBelumTerdaftar[$namaKunci]['berat'] += $orang['berat'];
-                }
-
-                continue;
-            }
-
-            $namaTim = collect(preg_split('/[,;\r\n]+/u', $nota->tukang_tangkap ?? '', -1, PREG_SPLIT_NO_EMPTY))
-                ->map(fn (string $nama): string => trim($nama))
-                ->filter()
-                ->unique(fn (string $nama): string => mb_strtolower($nama))
-                ->values();
-
-            if ($namaTim->isEmpty()) {
-                $beratTanpaNama += $beratNota;
-
-                continue;
-            }
-
-            foreach ($namaTim as $nama) {
-                $pemanenTerdaftar = $pemanenMenurutNama->get(mb_strtolower($nama));
-
-                if ($pemanenTerdaftar) {
-                    $beratPerPemanen[$pemanenTerdaftar->id] ??= [
-                        'nama' => $pemanenTerdaftar->nama,
-                        'jumlah_nota' => 0,
-                        'berat' => 0,
-                        'upah_per_kg' => (int) $pemanenTerdaftar->upah_per_kg,
-                    ];
-                    $beratPerPemanen[$pemanenTerdaftar->id]['jumlah_nota']++;
-                    $beratPerPemanen[$pemanenTerdaftar->id]['berat'] += $beratNota;
-
-                    continue;
-                }
-
-                $namaKunci = mb_strtolower($nama);
-                $beratNamaBelumTerdaftar[$namaKunci] ??= ['nama' => $nama, 'berat' => 0];
-                $beratNamaBelumTerdaftar[$namaKunci]['berat'] += $beratNota;
-            }
-        }
-
-        $barisPemanen = collect($beratPerPemanen)
-            ->map(fn (array $orang): array => [
-                'nama' => $orang['nama'],
-                'jumlah_nota' => $orang['jumlah_nota'],
-                'berat_kg' => $orang['berat'] / 100,
-                'upah_per_kg' => $orang['upah_per_kg'],
-                'total_upah' => (int) round($orang['berat'] * $orang['upah_per_kg'] / 100),
-            ])
-            ->sortBy('nama')
-            ->values();
+            return [
+                ...$orang,
+                'inisial' => self::inisial($orang['nama']),
+                'porsi' => $teralokasi > 0 ? $orang['berat_kg'] / $teralokasi * 100 : 0.0,
+                'dibayar' => $bayar ? [
+                    'jumlah' => $bayar->jumlah,
+                    'pada' => $bayar->dibayar_pada,
+                    'berubah' => $bayar->jumlah !== $orang['total_upah'],
+                ] : null,
+            ];
+        });
+        $sudah = $pemanen->filter(fn (array $orang): bool => $orang['dibayar'] !== null);
 
         return [
-            'jumlah_nota' => $notas->count(),
-            'berat_total' => $beratTotal / 100,
-            'berat_teralokasi' => (float) $barisPemanen->sum('berat_kg'),
-            'berat_nama_belum_terdaftar' => array_sum(array_column($beratNamaBelumTerdaftar, 'berat')) / 100,
-            'berat_tanpa_nama' => $beratTanpaNama / 100,
-            'total_upah' => (int) $barisPemanen->sum('total_upah'),
-            'pemanen' => $barisPemanen->all(),
-            'nama_belum_terdaftar' => collect($beratNamaBelumTerdaftar)
-                ->map(fn (array $orang): array => ['nama' => $orang['nama'], 'berat_kg' => $orang['berat'] / 100])
-                ->sortBy('nama')
-                ->values()
+            'pemanen' => $pemanen->all(),
+            'rata_upah' => $lembar['pemanen'] !== [] ? $lembar['total_upah'] / count($lembar['pemanen']) : null,
+            'sudah_dibayar' => (int) $sudah->sum(fn (array $orang): int => $orang['dibayar']['jumlah']),
+            'belum_dibayar' => (int) $pemanen->whereNull('dibayar')->sum('total_upah'),
+            'jumlah_dibayar' => $sudah->count(),
+            'alokasi' => $alokasi
+                ->map(fn (array $baris): array => [...$baris, 'persen' => $tonaseUpah > 0 ? $baris['berat_kg'] / $tonaseUpah * 100 : 0.0])
                 ->all(),
+            'tonase_upah' => $tonaseUpah,
         ];
+    }
+
+    /**
+     * Catatan pembayaran periode terpilih, kuncinya pemanen_id.
+     *
+     * @return Collection<int, PembayaranPemanen>
+     */
+    #[Computed]
+    public function pembayaran(): Collection
+    {
+        return $this->periode
+            ? PembayaranPemanen::query()->where('periode_id', $this->periode->id)->whereNotNull('pemanen_id')->get()->keyBy('pemanen_id')
+            : collect();
+    }
+
+    /**
+     * Tandai upah seorang pemanen sudah dibayar, dengan nominal upahnya saat ini.
+     */
+    public function tandaiDibayar(int $pemanenId): void
+    {
+        $this->pastikanPeriodeDapatDiubah();
+        $orang = collect($this->lembar['pemanen'] ?? [])->firstWhere('id', $pemanenId) ?? abort(404);
+        $this->pesan = null;
+
+        if ($this->pembayaran->has($pemanenId)) {
+            return;
+        }
+
+        DB::transaction(function () use ($orang): void {
+            PembayaranPemanen::create([
+                'periode_id' => $this->periode->id,
+                'pemanen_id' => $orang['id'],
+                'nama' => $orang['nama'],
+                'jumlah' => $orang['total_upah'],
+                'dibayar_pada' => now(),
+            ]);
+            Aktivitas::catat(
+                JenisAktivitas::Tambah,
+                ModulAktivitas::PayrollPemanen,
+                'Pembayaran upah '.$orang['nama'],
+                'Rp '.Format::angka($orang['total_upah']).', '.$this->periode->nama,
+            );
+        });
+
+        $this->pesan = 'Upah '.$orang['nama'].' Rp '.Format::angka($orang['total_upah']).' ditandai sudah dibayar.';
+        unset($this->pembayaran, $this->tampilan);
+    }
+
+    public function mintaBatalBayar(int $pemanenId): void
+    {
+        $bayar = $this->pembayaran->get($pemanenId) ?? abort(404);
+
+        $this->pesan = null;
+        $this->batalBayarId = $pemanenId;
+        $this->namaBatalBayar = $bayar->nama.' (Rp '.Format::angka($bayar->jumlah).')';
+    }
+
+    /**
+     * Kembalikan status pemanen menjadi belum dibayar; catatan pembayarannya dihapus.
+     */
+    public function batalBayar(): void
+    {
+        $this->pastikanPeriodeDapatDiubah();
+        $bayar = $this->pembayaran->get($this->batalBayarId) ?? abort(404);
+
+        DB::transaction(function () use ($bayar): void {
+            Aktivitas::catat(
+                JenisAktivitas::Hapus,
+                ModulAktivitas::PayrollPemanen,
+                'Pembayaran upah '.$bayar->nama,
+                'Rp '.Format::angka($bayar->jumlah).', '.$this->periode->nama,
+            );
+            $bayar->delete();
+        });
+
+        $this->pesan = 'Upah '.$bayar->nama.' dikembalikan menjadi belum dibayar.';
+        $this->batalBayarId = null;
+        $this->namaBatalBayar = '';
+        unset($this->pembayaran, $this->tampilan);
     }
 
     public function render(): View
     {
         return view('livewire.payroll-pemanen');
+    }
+
+    /**
+     * Inisial dua kata pertama nama untuk avatar, mis. "Rifi ABK" menjadi "RA".
+     */
+    private static function inisial(string $nama): string
+    {
+        return collect(preg_split('/\s+/u', trim($nama)) ?: [])
+            ->filter()
+            ->take(2)
+            ->map(fn (string $kata): string => mb_strtoupper(mb_substr($kata, 0, 1)))
+            ->implode('');
     }
 }

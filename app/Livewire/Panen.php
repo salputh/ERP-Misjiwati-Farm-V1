@@ -7,6 +7,7 @@ use App\Enums\ModulAktivitas;
 use App\Livewire\Concerns\MemilihPeriode;
 use App\Models\Aktivitas;
 use App\Models\NotaPanen as ModelNotaPanen;
+use App\Support\DetailNotaPanen;
 use App\Support\RekapPanen;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -32,6 +33,10 @@ class Panen extends Component
 
     #[Locked]
     public ?string $noBtpaDihapus = null;
+
+    /** Nota yang seluruh isinya sedang ditampilkan di modal detail. */
+    #[Locked]
+    public ?int $notaDilihatId = null;
 
     public string $tanggalPanen = '';
 
@@ -104,6 +109,32 @@ class Panen extends Component
     }
 
     /**
+     * Angka turunan yang tampil langsung di form saat timbangan diisi, untuk memeriksa salah ketik sebelum disimpan.
+     *
+     * @return array{bw: ?float, per_krat: ?float, ekor_per_krat: ?float, selisih: ?float, durasi_menit: ?int}
+     */
+    #[Computed]
+    public function ringkasanForm(): array
+    {
+        $angka = fn (string $nilai): ?float => is_numeric($nilai) && (float) $nilai > 0 ? (float) $nilai : null;
+        $krat = $angka($this->jumlahKrat);
+        $ekor = $angka($this->ekor);
+        $berat = $angka($this->beratKg);
+        $netto = is_numeric($this->nettoNotaKg) ? (float) $this->nettoNotaKg : null;
+        $waktu = fn (string $nilai): ?Carbon => preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $nilai) ? Carbon::createFromFormat('Y-m-d\TH:i', $nilai) : null;
+        $mulai = $waktu($this->mulai);
+        $selesai = $waktu($this->selesai);
+
+        return [
+            'bw' => $berat && $ekor ? $berat / $ekor : null,
+            'per_krat' => $berat && $krat ? $berat / $krat : null,
+            'ekor_per_krat' => $ekor && $krat ? $ekor / $krat : null,
+            'selisih' => $berat !== null && $netto !== null ? round($berat - $netto, 2) : null,
+            'durasi_menit' => $mulai && $selesai && $selesai->gte($mulai) ? (int) $mulai->diffInMinutes($selesai) : null,
+        ];
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     #[Computed]
@@ -112,6 +143,38 @@ class Panen extends Component
         return $this->periode
             ? RekapPanen::buat($this->periode->loadMissing(['notaPanen', 'kandangPeriode.kandang', 'kandangPeriode.recordings', 'kandangPeriode.pemberianPakan']))
             : null;
+    }
+
+    /**
+     * Tampilkan seluruh isi satu nota timbang (satu trip mobil) di modal detail; form tidak berubah.
+     */
+    public function lihat(int $id): void
+    {
+        $this->notaDilihatId = $this->notaUntukPeriode($id)->id;
+        unset($this->notaDilihat);
+    }
+
+    /**
+     * Isi modal detail nota: identitas, waktu, timbangan, harga, dan tim tangkap.
+     *
+     * @return array<string, mixed>|null
+     */
+    #[Computed]
+    public function notaDilihat(): ?array
+    {
+        if ($this->notaDilihatId === null || ! $this->periode) {
+            return null;
+        }
+
+        $nota = $this->periode->notaPanen()->with(['pemanenKrat', 'periode.hargaKontrak'])->find($this->notaDilihatId);
+        if (! $nota) {
+            return null;
+        }
+
+        $hari = collect($this->rekap['hari'] ?? [])
+            ->first(fn (array $sesi): bool => collect($sesi['nota'])->contains('id', $nota->id))['nomor'] ?? null;
+
+        return DetailNotaPanen::buat($nota, $hari);
     }
 
     public function ubah(int $id): void

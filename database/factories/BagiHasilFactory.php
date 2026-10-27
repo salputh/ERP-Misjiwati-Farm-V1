@@ -21,7 +21,6 @@ class BagiHasilFactory extends Factory
             'controller' => fake()->firstName(),
             'operasional' => fake()->numberBetween(40_000, 80_000) * 1000,
             'tarif_gaji_abk_per_kg' => 500,
-            'premi_pemeliharaan_abk' => 0,
             'premi_controller' => 0,
             'persen_upah_controller' => 3,
             'persen_bonus_pasar_abk' => 30,

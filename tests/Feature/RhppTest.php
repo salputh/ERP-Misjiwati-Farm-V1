@@ -45,7 +45,7 @@ class RhppTest extends TestCase
         $this->assertNull(LembarRhpp::hargaKontrak($bracket, null));
     }
 
-    public function test_simulation_uses_period_doc_count_master_feed_prices_and_operational_ovk(): void
+    public function test_simulation_uses_period_doc_count_master_feed_prices_and_ovk_from_the_inti_document(): void
     {
         $this->petakanPakanJuli();
         $simulasi = LembarRhpp::simulasi($this->periode('Periode Juli 2026'));
@@ -64,10 +64,10 @@ class RhppTest extends TestCase
         $biaya = $simulasi['biaya'];
         $this->assertSame([45000, 9415, 423675000], [$biaya['doc'], $biaya['harga_doc'], $biaya['biaya_doc']]);
         $this->assertSame([1540.0, 506750, 780395000], [$biaya['pakan_zak'], (int) round($biaya['harga_pakan']), $biaya['biaya_pakan']]);
-        $this->assertSame([4550000, 1208620000], [$biaya['biaya_ovk'], $biaya['total']]);
+        $this->assertSame([3297000, 1207367000], [$biaya['biaya_ovk'], $biaya['total']]);
 
         $hasil = $simulasi['hasil'];
-        $this->assertSame([1718070111, 1208620000, 509450111, 20753512, 0, 530203623], [
+        $this->assertSame([1718070111, 1207367000, 510703111, 20753512, 0, 531456623], [
             $hasil['penjualan'],
             $hasil['sapronak'],
             $hasil['laba_kotor'],
@@ -92,7 +92,7 @@ class RhppTest extends TestCase
 
         $biaya = LembarRhpp::simulasi($periode)['biaya'];
 
-        $this->assertSame([45000, 9415, 423675000, 1208620000], [
+        $this->assertSame([45000, 9415, 423675000, 1207367000], [
             $biaya['doc'],
             $biaya['harga_doc'],
             $biaya['biaya_doc'],
@@ -179,16 +179,16 @@ class RhppTest extends TestCase
         $this->assertDatabaseHas('rhpp_simulasis', [
             'periode_id' => $periode->id,
             'biaya_pakan' => 780395000,
-            'biaya_ovk' => 4550000,
+            'biaya_ovk' => 3297000,
             'tarif_efisiensi_per_kg' => 300,
             'insentif' => 0,
         ]);
 
         $simulasi = LembarRhpp::simulasi($periode->fresh()->load(LembarRhpp::RELASI));
-        $this->assertSame(1208620000, $simulasi['biaya']['total']);
+        $this->assertSame(1207367000, $simulasi['biaya']['total']);
         $this->assertSame(300, $simulasi['hasil']['tarif_efisiensi_per_kg']);
         $this->assertSame(23946360, $simulasi['hasil']['selisih_efisiensi']);
-        $this->assertSame(533396471, $simulasi['hasil']['laba']);
+        $this->assertSame(534649471, $simulasi['hasil']['laba']);
         $this->assertTrue($simulasi['kandang']['cocok']);
     }
 
@@ -210,7 +210,7 @@ class RhppTest extends TestCase
             'periode_id' => $periode->id,
             'harga_doc' => 9415,
             'biaya_pakan' => 780395000,
-            'biaya_ovk' => 4550000,
+            'biaya_ovk' => 3297000,
             'tarif_efisiensi_per_kg' => 260,
             'insentif' => 0,
         ]);
@@ -236,6 +236,23 @@ class RhppTest extends TestCase
             ->set('tarifEfisiensiPerKg', '-1')
             ->call('simpanSimulasi')
             ->assertHasErrors(['tarifEfisiensiPerKg' => 'min']);
+    }
+
+    public function test_export_captures_the_page_without_the_summary_cards(): void
+    {
+        $this->petakanPakanJuli();
+        $periode = $this->periode('Periode Juli 2026');
+
+        $halaman = $this->get(route('rhpp', ['periode' => $periode->id, 'tab' => 'simulasi']))
+            ->assertOk()
+            ->assertSee('id="halaman-rhpp"', false)
+            ->assertSee("eksporHalaman('#halaman-rhpp', 'rhpp-simulasi-periode-juli-2026')", false)
+            ->assertSee('Ekspor PDF')
+            ->assertSee('Ekspor PNG');
+
+        // Keempat kartu ringkasan di atas tab ditandai agar dilewati saat halaman dipotret; kartu rincian tetap ikut.
+        $this->assertSame(4, substr_count($halaman->getContent(), 'class="col-xxl-3 col-sm-6 mb-25" data-lewati-ekspor="data-lewati-ekspor"'));
+        $halaman->assertSee('Ringkasan panen dan performa');
     }
 
     public function test_unclassified_feed_does_not_produce_a_fake_simulation_cost(): void
@@ -466,9 +483,9 @@ class RhppTest extends TestCase
         $this->assertSame([
             $dataProduksi['doc_total'],
             $dataProduksi['pakan_total'],
-            $dataProduksi['ovk_total'],
+            3297000,
         ], array_column($real['sapronak']['baris'], 'total'));
-        $this->assertSame(1208620000, $real['sapronak']['total']);
+        $this->assertSame(1207367000, $real['sapronak']['total']);
 
         $kinerja = $real['kinerja'];
         $this->assertSame([44078, 79821.2, 1760821618], [$kinerja['ekor'], $kinerja['berat'], $kinerja['total_panen']]);
@@ -479,13 +496,13 @@ class RhppTest extends TestCase
 
         $this->assertSame([
             'total_panen' => 1760821618,
-            'sapronak' => 1208620000,
-            'selisih_budidaya' => 552201618,
+            'sapronak' => 1207367000,
+            'selisih_budidaya' => 553454618,
             'efisiensi' => 20753512,
             'tarif_efisiensi' => 260,
             'subsidi' => 100730134,
             'lain' => 121483646,
-            'bersih' => 673685264,
+            'bersih' => 674938264,
         ], $real['rekap']);
 
         $satuan = $real['satuan'];
@@ -493,7 +510,7 @@ class RhppTest extends TestCase
             fn (float $nilai): string => number_format($nilai, 2, ',', '.'),
             [$satuan['subsidi_per_kg'], $satuan['subsidi_per_ekor'], $satuan['subsidi_prestasi_per_kg']],
         ));
-        $this->assertSame([572955130, 45000], [$satuan['budidaya_efisiensi'], $satuan['doc']]);
+        $this->assertSame([574208130, 45000], [$satuan['budidaya_efisiensi'], $satuan['doc']]);
 
         $trip = collect($real['trip'])->keyBy('no_btpa');
         $utama = $trip['15882'];
@@ -519,6 +536,7 @@ class RhppTest extends TestCase
             ->test(Rhpp::class)
             ->assertSee('Input RHPP real dari dokumen inti')
             ->set('masukanReal.ppl', 'Heri Pranata')
+            ->set('masukanReal.ovk_total', '3500000')
             ->set('hargaPanenReal.'.$nota->id, '23000')
             ->call('simpanReal')
             ->assertHasNoErrors()
@@ -533,7 +551,7 @@ class RhppTest extends TestCase
             'doc_total' => $dataProduksi['doc_total'],
             'pakan_kg' => $dataProduksi['pakan_kg'],
             'pakan_total' => $dataProduksi['pakan_total'],
-            'ovk_total' => $dataProduksi['ovk_total'],
+            'ovk_total' => 3500000,
             'fcr_aktual' => $dataProduksi['fcr_aktual'],
             'fcr_standar' => $dataProduksi['fcr_standar'],
             'deplesi_persen' => $dataProduksi['deplesi_persen'],
@@ -559,16 +577,11 @@ class RhppTest extends TestCase
         $periode->increment('rekap_pakan_zak', 1);
         $kandangPeriode->recordings()->firstOrFail()->increment('mati', 100);
         $periode->increment('rekap_deplesi_ekor', 100);
-        TransaksiKas::factory()
-            ->for($kandangPeriode)
-            ->keluar(KategoriKas::ObatAyam, 100000)
-            ->create(['tanggal' => '2026-07-20']);
 
         $dataSesudah = LembarRhpp::dataProduksiReal($periode->fresh());
 
         $this->assertSame($dataSebelum['pakan_kg'] + 50, $dataSesudah['pakan_kg']);
         $this->assertSame($dataSebelum['pakan_total'] + 506750, $dataSesudah['pakan_total']);
-        $this->assertSame($dataSebelum['ovk_total'] + 100000, $dataSesudah['ovk_total']);
         $this->assertGreaterThan($dataSebelum['deplesi_persen'], $dataSesudah['deplesi_persen']);
 
         Livewire::withQueryParams(['periode' => $periode->id, 'tab' => 'real'])
@@ -580,9 +593,23 @@ class RhppTest extends TestCase
             'periode_id' => $periode->id,
             'pakan_kg' => $dataSesudah['pakan_kg'],
             'pakan_total' => $dataSesudah['pakan_total'],
-            'ovk_total' => $dataSesudah['ovk_total'],
             'deplesi_persen' => $dataSesudah['deplesi_persen'],
         ]);
+    }
+
+    public function test_chicken_medicine_cash_stays_out_of_rhpp_ovk(): void
+    {
+        $this->petakanPakanJuli();
+        $periode = $this->periode('Periode Juli 2026');
+
+        TransaksiKas::factory()
+            ->for($periode->kandangPeriode->firstOrFail())
+            ->keluar(KategoriKas::ObatAyam, 100000)
+            ->create(['tanggal' => '2026-07-20']);
+        $periode = $periode->fresh();
+
+        $this->assertSame(3297000, LembarRhpp::sapronakSimulasi($periode)['ovk']['total']);
+        $this->assertSame(3297000, LembarRhpp::real($periode)['dokumen']->ovk_total);
     }
 
     public function test_real_rhpp_warns_and_blocks_saving_when_production_sources_are_incomplete(): void
@@ -703,14 +730,14 @@ class RhppTest extends TestCase
             ->assertSee('Harga kontrak periode ini')
             ->assertDontSee('No. kontrak')
             ->assertSee('1.718.070.111')
-            ->assertSee('530.203.623')
+            ->assertSee('531.456.623')
             ->assertSee('Selisih Efisiensi')
             ->assertSee('Subsidi Nilai Pasar')
             ->assertDontSee('Rekapitulasi pendapatan')
             ->call('pilihTab', 'sapronak')
             ->assertSet('tab', 'sapronak')
             ->assertSee('Perhitungan otomatis biaya sapronak')
-            ->assertSee('1.208.620.000')
+            ->assertSee('1.207.367.000')
             ->assertDontSee('1.540.176.000');
     }
 
@@ -730,7 +757,8 @@ class RhppTest extends TestCase
             ->assertSee('Pendapatan dan sapronak mengikuti simulasi RHPP periode ini')
             ->assertSeeHtml("x-data=\"isianRibuan('masukanBagiHasil.operasional', ',', true)\"")
             ->assertSeeHtml("x-data=\"isianRibuan('masukanBagiHasil.tarif_gaji_abk_per_kg', ',', true)\"")
-            ->assertSeeHtml("x-data=\"isianRibuan('masukanBagiHasil.premi_pemeliharaan_abk', ',', true)\"")
+            ->assertDontSeeHtml("isianRibuan('masukanBagiHasil.premi_pemeliharaan_abk'")
+            ->assertSee('Master data, Premi ABK')
             ->assertSeeHtml("x-data=\"isianRibuan('masukanBagiHasil.premi_controller', ',', true)\"")
             ->assertSeeHtml("x-data=\"isianRibuan('abkSimulasi.0.jumlah', ',', true)\"")
             ->assertSeeHtml("x-data=\"isianRibuan('entertainSimulasi.0.jumlah', ',', true)\"")

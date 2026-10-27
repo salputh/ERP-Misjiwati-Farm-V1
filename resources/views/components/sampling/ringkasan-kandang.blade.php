@@ -2,30 +2,31 @@
 
 {{-- Ringkasan sampling seluruh kandangs dalam periode, memakai sesi terbaru tiap kandangs:
      jumlah titik, ekor, ABW tertimbang, dan pakan standar terhadap aktual. --}}
-<table class="table table--default table-borderless tabel-laporan tabel-laporan--garis mb-0">
+<div class="table-responsive">
+<table class="table mb-0">
     <thead>
-        <tr>
-            <th>Kandang</th>
-            <th class="text-end">Sesi terakhir</th>
-            <th class="text-end">Usia</th>
-            <th class="text-end">Titik</th>
-            <th class="text-end">Ekor</th>
-            <th class="text-end">ABW</th>
-            <th class="text-end">Standar (zak)</th>
-            <th class="text-end">Aktual (zak)</th>
+        <tr class="userDatatable-header">
+            <th><span class="userDatatable-title">Kandang</span></th>
+            <th class="text-end"><span class="userDatatable-title">Sesi terakhir</span></th>
+            <th class="text-end"><span class="userDatatable-title">Usia</span></th>
+            <th class="text-end"><span class="userDatatable-title">Titik</span></th>
+            <th class="text-end"><span class="userDatatable-title">Ekor</span></th>
+            <th class="text-end"><span class="userDatatable-title">ABW</span></th>
+            <th class="text-end"><span class="userDatatable-title">Standar (zak)</span></th>
+            <th class="text-end"><span class="userDatatable-title">Aktual (zak)</span></th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach ($gabungan['kandang'] as $baris)
             <tr wire:key="ringkasan-kandang-{{ $baris['periode_kandang_id'] }}">
-                <td>
+                <td class="fw-500 color-dark">
                     {{ $baris['kandang'] }}
                     @if ($baris['terpilih'])
-                        <span class="dm-tag tag-transparented m-0 tag-primary">dipilih</span>
+                        <span class="dm-tag tag-transparented tag-primary my-0 ms-1">dipilih</span>
                     @endif
                     @unless ($baris['ada_sesi'])
-                        <span class="d-block fs-12 color-gray">belum ada sampling</span>
+                        <span class="d-block fs-12 color-light">belum ada sampling</span>
                     @endunless
                 </td>
                 <td class="text-end">
@@ -44,7 +45,7 @@
                 <td class="text-end">
                     @if ($baris['ada_sesi'])
                         <x-aksi.ikon :aksi="[
-                            ['kelas' => 'view', 'label' => 'Buka sampling '.$baris['kandang'].' '.$baris['tanggal']->translatedFormat('j F Y'), 'click' => 'bukaSesi('.$baris['periode_kandang_id'].', \''.$baris['tanggal']->format('Y-m-d').'\')'],
+                            ['kelas' => 'view', 'label' => 'Lihat sampling terakhir '.$baris['kandang'].' '.$baris['tanggal']->translatedFormat('j F Y'), 'click' => 'lihatTerakhir('.$baris['periode_kandang_id'].')', 'modal' => '#modal-riwayat-sampling'],
                         ]" />
                     @endif
                 </td>
@@ -53,7 +54,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th colspan="4">Gabungan</th>
+            <th colspan="3">Gabungan</th>
             <th class="text-end">{{ $gabungan['total']['titik'] }}</th>
             <th class="text-end">@angka($gabungan['total']['ekor'])</th>
             <th class="text-end">@angka($gabungan['total']['abw']) g</th>
@@ -61,3 +62,4 @@
         </tr>
     </tfoot>
 </table>
+</div>

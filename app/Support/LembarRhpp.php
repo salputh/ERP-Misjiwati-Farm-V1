@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Enums\KategoriKas;
 use App\Models\HargaDoc;
 use App\Models\HargaKontrak;
 use App\Models\NotaPanen;
@@ -134,7 +133,8 @@ class LembarRhpp
     }
 
     /**
-     * Biaya simulasi dari DOC per periode, konsumsi pakan per jenis, master harga, dan transaksi obat ayam.
+     * Biaya simulasi dari DOC per periode, konsumsi pakan per jenis, master harga, dan OVK dokumen RHPP inti.
+     * Transaksi kas Obat Ayam tidak ikut di sini; pembelian itu tetap biaya operasional kas kandang.
      *
      * @return array{
      *     doc: array{jumlah: int, harga: float, total: int, baris: list<array<string, mixed>>},
@@ -151,7 +151,7 @@ class LembarRhpp
         $periode->loadMissing([
             'kandangPeriode.kandang',
             'kandangPeriode.pemberianPakan.jenisPakan',
-            'kandangPeriode.transaksiKas',
+            'rhppReal',
         ]);
 
         $hargaDocMaster = HargaDoc::query()->findOrFail(HargaDoc::GLOBAL_ID);
@@ -159,6 +159,7 @@ class LembarRhpp
         $pakanBaris = [];
         $ovkBaris = [];
         $perKandang = [];
+        $namaKandang = [];
         $kekurangan = [];
         $jumlahDoc = 0;
         $biayaDoc = 0;
@@ -174,6 +175,7 @@ class LembarRhpp
             $totalDoc = $doc * $hargaDoc;
             $jumlahDoc += $doc;
             $biayaDoc += $totalDoc;
+            $namaKandang[$periodeKandang->id] = $periodeKandang->kandang->nama;
             $docBaris[] = [
                 'kandang' => $periodeKandang->kandang->nama,
                 'jumlah' => $doc,
@@ -240,15 +242,6 @@ class LembarRhpp
                 $pakanKandangLengkap = false;
             }
 
-            $totalOvkKandang = (int) $periodeKandang->transaksiKas
-                ->where('kategori', KategoriKas::ObatAyam)
-                ->sum('jumlah');
-            $biayaOvk += $totalOvkKandang;
-            $ovkBaris[] = [
-                'kandang' => $periodeKandang->kandang->nama,
-                'total' => $totalOvkKandang,
-            ];
-
             $perKandang[$periodeKandang->id] = [
                 'doc' => $doc,
                 'harga_doc' => $hargaDoc,
@@ -256,7 +249,18 @@ class LembarRhpp
                 'pakan_kg' => $kgKandang,
                 'biaya_doc' => $totalDoc,
                 'biaya_pakan' => $pakanKandangLengkap ? $biayaPakanKandang : null,
-                'biaya_ovk' => $totalOvkKandang,
+                'biaya_ovk' => 0,
+            ];
+        }
+
+        $biayaOvk = (int) ($periode->rhppReal?->ovk_total ?? 0);
+        $bobotOvk = array_values(array_map(fn (array $satu): int => $satu['doc'], $perKandang));
+        $alokasiOvk = array_sum($bobotOvk) > 0 ? self::bagiNilai($biayaOvk, $bobotOvk) : [];
+        foreach (array_keys($perKandang) as $indeks => $periodeKandangId) {
+            $perKandang[$periodeKandangId]['biaya_ovk'] = $alokasiOvk[$indeks] ?? 0;
+            $ovkBaris[] = [
+                'kandang' => $namaKandang[$periodeKandangId],
+                'total' => $alokasiOvk[$indeks] ?? 0,
             ];
         }
 
@@ -307,7 +311,6 @@ class LembarRhpp
      *     doc_total: int,
      *     pakan_kg: float,
      *     pakan_total: ?int,
-     *     ovk_total: int,
      *     fcr_aktual: ?float,
      *     fcr_standar: ?float,
      *     deplesi_persen: ?float,
@@ -323,7 +326,7 @@ class LembarRhpp
             'kandangPeriode.kandang',
             'kandangPeriode.recordings',
             'kandangPeriode.pemberianPakan.jenisPakan',
-            'kandangPeriode.transaksiKas',
+            'rhppReal',
             'notaPanen',
         ]);
 
@@ -357,7 +360,6 @@ class LembarRhpp
             'doc_total' => $sapronak['doc']['total'] - self::nilaiKlaimDoc($sapronak['per_kandang'], $docDiklaim),
             'pakan_kg' => round($sapronak['pakan']['kg'], 2),
             'pakan_total' => $sapronak['pakan']['total'],
-            'ovk_total' => $sapronak['ovk']['total'],
             'fcr_aktual' => isset($performa['fcr']) ? round($performa['fcr'], 3) : null,
             'fcr_standar' => $fcrStandar !== null ? round($fcrStandar, 3) : null,
             'deplesi_persen' => isset($performa['deplesi_persen']) ? round($performa['deplesi_persen'], 2) : null,
@@ -786,7 +788,10 @@ class LembarRhpp
         ];
     }
 
-    private static function nilaiPanen(float $berat, int $harga): int
+    /**
+     * Nilai rupiah berat panen pada harga per kg, dihitung dalam seperseratus kg lalu dibulatkan setengah ke atas.
+     */
+    public static function nilaiPanen(float $berat, int $harga): int
     {
         $beratDalamPerseratusKg = (int) round($berat * 100);
 

@@ -4,6 +4,8 @@
             <x-breadcrumb judul="Master data" :jejak="['Master data']" />
 
             <livewire:master-harga-doc wire:key="master-harga-doc" />
+            <livewire:master-tarif-periode wire:key="master-tarif-periode" />
+            <livewire:master-premi-abk wire:key="master-premi-abk" />
             <livewire:master-jenis-pakan wire:key="master-jenis-pakan" />
             <livewire:master-harga-kontrak wire:key="master-harga-kontrak" />
             <livewire:master-pemodal wire:key="master-pemodal" />

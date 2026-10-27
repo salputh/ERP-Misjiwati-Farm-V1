@@ -1,48 +1,53 @@
-@php($tabsRhpp = ['simulasi' => 'Simulasi', 'bagi-hasil' => 'Bagi Hasil Simulasi', 'real' => 'Real', 'sapronak' => 'Sapronak'])
 <div class="container-fluid">
-    <div class="row">
-        {{-- Pemilih tab memakai tombol dropdown katalog template (Button with dropdown menu), di sebelah breadcrumb. --}}
+    <div class="row" id="halaman-rhpp">
+        {{-- Ekspor memotret halaman apa adanya; kartu ringkasan di atas tiap tab ditandai data-lewati-ekspor sehingga tidak ikut. --}}
         <x-breadcrumb judul="Rekapitulasi hasil pemeliharaan peternak" :jejak="['Keuangan', 'RHPP']">
             @if ($this->periode)
-                <div class="dropdown dropdown-click rhpp-tab">
-                    <div class="btn-group">
-                        <a class="btn btn-outline-secondary color-secondary btn-sm" href="{{ route('rhpp', ['periode' => $this->periode->id, 'tab' => $tab]) }}" aria-current="page">{{ $tabsRhpp[$tab] ?? 'RHPP' }}</a>
-                        <button type="button" class="btn btn-outline-secondary color-secondary btn-sm dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Pilih tab RHPP">
-                            <img class="svg" src="{{ asset('assets/img/svg/chevron-down.svg') }}" alt="chevron-down">
-                        </button>
-                        <div class="dropdown-default dropdown-menu">
-                            @foreach ($tabsRhpp as $kunci => $label)
-                                <a
-                                    class="dropdown-item @if ($tab === $kunci) active @endif"
-                                    href="{{ route('rhpp', ['periode' => $this->periode->id, 'tab' => $kunci]) }}"
-                                    wire:click.prevent="pilihTab('{{ $kunci }}')"
-                                    wire:target="pilihTab"
-                                    @if ($tab === $kunci) aria-current="page" @endif
-                                >{{ $label }}</a>
-                            @endforeach
-                        </div>
-                    </div>
+                <div class="d-flex gap-2" data-lewati-ekspor x-data="eksporHalaman('#halaman-rhpp', {{ \Illuminate\Support\Js::from($this->namaBerkasEkspor) }})">
+                    <x-tombol.kepala warna="white" ikon="uil uil-file-download" x-on:click="simpanPdf()" x-bind:disabled="sibuk">Ekspor PDF</x-tombol.kepala>
+                    <x-tombol.kepala warna="white" ikon="uil uil-image-download" x-on:click="simpan()" x-bind:disabled="sibuk">Ekspor PNG</x-tombol.kepala>
                 </div>
             @endif
         </x-breadcrumb>
         <x-periode-tertutup :periode="$this->periode" />
 
         @if ($pesan)
-            <div class="col-lg-12 mb-25">
-                <x-peringatan warna="secondary" class="mb-25">{{ $pesan }}</x-peringatan>
+            <div class="col-12">
+                <x-peringatan warna="success" class="mb-25">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
         @if ($this->periode)
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body pb-25">
-                        <dl class="recording-info">
-                            <div><dt>Inti</dt><dd>PT. Indojaya Agrinusa</dd></div>
-                            <div><dt>Farm</dt><dd>Misjiwati / K0242</dd></div>
-                            <div><dt>Kandang</dt><dd>{{ $this->periode->kandangPeriode->sortBy('kandang.nama')->pluck('kandang.nama')->join(', ', ' dan ') }}</dd></div>
-                            <div><dt>DOC masuk</dt><dd>{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</dd></div>
-                        </dl>
+            {{-- Tab lembar RHPP (HexaDash: Project, project-tap) --}}
+            <div class="col-12">
+                <div class="project-top-wrapper project-top-progress d-flex justify-content-between flex-wrap mt-n10 mb-15">
+                    <div class="project-tap global-shadow my-10">
+                        <ul class="nav px-1" role="tablist" aria-label="Lembar RHPP">
+                            @foreach (['simulasi' => 'Simulasi', 'bagi-hasil' => 'Bagi Hasil Simulasi', 'real' => 'Real', 'sapronak' => 'Sapronak'] as $kunci => $label)
+                                <li class="nav-item">
+                                    <a
+                                        href="{{ route('rhpp', ['periode' => $this->periode->id, 'tab' => $kunci]) }}"
+                                        role="tab"
+                                        @class(['nav-link', 'active' => $tab === $kunci])
+                                        aria-selected="{{ $tab === $kunci ? 'true' : 'false' }}"
+                                        wire:click.prevent="pilihTab('{{ $kunci }}')"
+                                    >{{ $label }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mb-25">
+                <div class="card card-default card-md">
+                    <div class="card-body">
+                        <x-info>
+                            <x-info.butir label="Inti">PT. Indojaya Agrinusa</x-info.butir>
+                            <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
+                            <x-info.butir label="Kandang">{{ $this->periode->kandangPeriode->sortBy('kandang.nama')->pluck('kandang.nama')->join(', ', ' dan ') }}</x-info.butir>
+                            <x-info.butir label="DOC masuk">{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</x-info.butir>
+                        </x-info>
                     </div>
                 </div>
             </div>
@@ -55,14 +60,7 @@
                         :terkunci="$this->periode->tertutup()"
                     />
                 @else
-                    <div class="col-lg-12 mb-25">
-                        <div class="card border-0">
-                            <div class="card-body p-30">
-                                <h5 class="mb-10">Belum ada panen di periode ini</h5>
-                                <p class="color-gray mb-0">Simulasi penjualan dan hasil usaha muncul setelah nota panen dicatat. Biaya sapronak tetap dapat diperiksa di tab Sapronak.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <x-kosong judul="Belum ada panen di periode ini">Simulasi penjualan dan hasil usaha muncul setelah nota panen dicatat. Biaya sapronak tetap dapat diperiksa di tab Sapronak.</x-kosong>
                 @endif
             @elseif ($tab === 'bagi-hasil')
                 @if ($this->periodeKandangKedua)
@@ -75,17 +73,11 @@
                         :proyeksi="$this->proyeksiBagiHasilSimulasi"
                         :hasil="$hasilSimulasiBagiHasil"
                         :sumber-asumsi="$sumberAsumsiBagiHasil"
+                        :tarif-dari-master="$tarifDariMaster"
                         :siap-simulasi="(bool) ($this->simulasi['hasil'] ?? false)"
                     />
                 @else
-                    <div class="col-lg-12 mb-25">
-                        <div class="card border-0">
-                            <div class="card-body p-30">
-                                <h5 class="mb-10">Kandang 2 tidak ada di periode ini</h5>
-                                <p class="color-gray mb-0">Simulasi bagi hasil tersedia untuk periode yang memiliki Kandang 2.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <x-kosong judul="Kandang 2 tidak ada di periode ini">Simulasi bagi hasil tersedia untuk periode yang memiliki Kandang 2.</x-kosong>
                 @endif
             @elseif ($tab === 'real')
                 @if ($this->real)
@@ -98,14 +90,7 @@
                         :terkunci="$this->rhppTerkunci"
                     />
                 @else
-                    <div class="col-lg-12 mb-25">
-                        <div class="card border-0">
-                            <div class="card-body p-30">
-                                <h5 class="mb-10">RHPP real belum dicatat</h5>
-                                <p class="color-gray mb-0">Tab ini terisi setelah dokumen RHPP dari inti untuk periode ini dicatat.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <x-kosong judul="RHPP real belum dicatat">Tab ini terisi setelah dokumen RHPP dari inti untuk periode ini dicatat.</x-kosong>
                     @unless ($this->periode->tertutup())
                         <x-rhpp.real
                             :lembar="null"
@@ -119,24 +104,10 @@
             @elseif ($this->sapronak)
                 <x-rhpp.sapronak :simulasi="$this->sapronak" :real="$this->real" />
             @else
-                <div class="col-lg-12 mb-25">
-                    <div class="card border-0">
-                        <div class="card-body p-30">
-                            <h5 class="mb-10">Biaya sapronak belum tersedia</h5>
-                            <p class="color-gray mb-0">Lengkapi populasi, harga DOC, catatan pakan, dan harga pakan agar biaya dapat dihitung.</p>
-                        </div>
-                    </div>
-                </div>
+                <x-kosong judul="Biaya sapronak belum tersedia">Lengkapi populasi, harga DOC, catatan pakan, dan harga pakan agar biaya dapat dihitung.</x-kosong>
             @endif
         @else
-            <div class="col-lg-12 mb-25">
-                <div class="card border-0">
-                    <div class="card-body p-30">
-                        <h5 class="mb-10">Belum ada panen di periode ini</h5>
-                        <p class="color-gray mb-0">RHPP dihitung dari nota timbang panen. Halaman ini terisi setelah nota pertama dicatat.</p>
-                    </div>
-                </div>
-            </div>
+            <x-kosong judul="Belum ada panen di periode ini">RHPP dihitung dari nota timbang panen. Halaman ini terisi setelah nota pertama dicatat.</x-kosong>
         @endif
     </div>
 
@@ -154,17 +125,17 @@
         } }}">
         
             @if ($modeKunci === 'buka')
-                <p class="fs-12 color-gray">Masukkan password admin untuk membuka kembali dokumen RHPP real periode ini.</p>
+                <p class="fs-13 color-light">Masukkan password admin untuk membuka kembali dokumen RHPP real periode ini.</p>
                 <x-masukan id="rhpp-sandi-buka" label="Password admin" tipe="password" wire:model="sandiAdmin" :kesalahan="$errors->first('sandiAdmin')" />
             @elseif ($modeKunci === 'ganti')
-                <p class="fs-12 color-gray">Password admin dipakai membuka kunci RHPP real. Simpan baik-baik: tanpa password ini dokumen yang dikunci tidak dapat dibuka dari aplikasi.</p>
+                <p class="fs-13 color-light">Password admin dipakai membuka kunci RHPP real. Simpan baik-baik: tanpa password ini dokumen yang dikunci tidak dapat dibuka dari aplikasi.</p>
                 @if ($this->sandiRhppTeratur)
                     <x-masukan id="rhpp-sandi-lama" label="Password lama" tipe="password" wire:model="sandiAdminLama" :kesalahan="$errors->first('sandiAdminLama')" />
                 @endif
                 <x-masukan id="rhpp-sandi-baru" label="Password baru" tipe="password" wire:model="sandiAdmin" :kesalahan="$errors->first('sandiAdmin')" />
                 <x-masukan id="rhpp-sandi-baru-ulang" label="Ulangi password baru" tipe="password" wire:model="sandiAdminUlang" :kesalahan="$errors->first('sandiAdminUlang')" />
             @else
-                <p class="fs-12 color-gray">
+                <p class="fs-13 color-light">
                     @if ($this->sandiRhppTeratur)
                         Dokumen RHPP real akan dikunci sehingga tidak dapat diubah. Masukkan password admin untuk mengunci.
                     @else
@@ -177,7 +148,7 @@
                 @endunless
             @endif
             <x-slot:footer>
-                <x-tombol tipe="button" warna="light" variasi="outlined" data-bs-dismiss="modal">Batal</x-tombol>
+                <x-tombol.batal />
                 @if ($modeKunci === 'kunci')
                     <x-tombol tipe="button" variasi="outlined" wire:click="bukaModalGantiPassword">Ganti password admin</x-tombol>
                 @endif
@@ -191,5 +162,6 @@
             </x-slot:footer>
         </x-modal>
 
-    <x-memuat target="pilihTab, simpanSimulasi, kunciRhpp, bukaKunciRhpp" teks="Memproses RHPP" cepat />
+    <x-memuat target="pilihTab" teks="Memuat lembar RHPP" cepat />
+    <x-memuat target="simpanSimulasi, simpanReal, kunciRhpp, bukaKunciRhpp, ubahPasswordAdmin" teks="Memproses RHPP" />
 </div>

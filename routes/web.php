@@ -8,15 +8,19 @@ use App\Livewire\BagiHasil;
 use App\Livewire\Dashboard;
 use App\Livewire\DataKaryawan;
 use App\Livewire\FormLaporanHarian;
+use App\Livewire\KasbonAbk;
 use App\Livewire\KasOperasional;
+use App\Livewire\Kohe;
 use App\Livewire\LaporanHarian;
 use App\Livewire\LogPemberianPakan;
 use App\Livewire\ManajemenPeriode;
 use App\Livewire\MasterData;
+use App\Livewire\MasterStandarStrain;
 use App\Livewire\Modul;
 use App\Livewire\Panen;
 use App\Livewire\PayrollAbk;
 use App\Livewire\PayrollPemanen;
+use App\Livewire\ProjectDetail;
 use App\Livewire\Projects;
 use App\Livewire\RecordingHarian;
 use App\Livewire\Rhpp;
@@ -30,6 +34,7 @@ Route::get('/dashboard', Dashboard::class)->name('dashboard');
 Route::get('/aktivitas', RiwayatAktivitas::class)->name('aktivitas');
 Route::get('/periode', ManajemenPeriode::class)->name('periode.index');
 Route::get('/project', Projects::class)->name('project.index');
+Route::get('/project/{project}', ProjectDetail::class)->whereNumber('project')->name('project.show');
 Route::get('/produksi/recording-harian', RecordingHarian::class)->name('recording.harian');
 Route::get('/produksi/recording-harian/{periodeKandang}/export/{format}', RecordingHarianExportController::class)
     ->whereIn('format', ['pdf', 'xlsx'])
@@ -43,6 +48,7 @@ Route::get('/produksi/panen/{periode}/export/{hari?}', PanenExportController::cl
     ->whereNumber('periode')
     ->whereNumber('hari')
     ->name('panen.export');
+Route::get('/produksi/kohe', Kohe::class)->name('kohe');
 Route::get('/keuangan/rhpp', Rhpp::class)->name('rhpp');
 // Kas operasional dan bagi hasil dibuka per kandang; tanpa kandang diarahkan ke kandang pertama.
 Route::get('/keuangan/kas-operasional', fn () => to_route('kas.operasional', Kandang::orderBy('nama')->firstOrFail()));
@@ -53,11 +59,14 @@ Route::get('/keuangan/bagi-hasil/{kandang}/{periode}/export/pdf', BagiHasilExpor
     ->whereNumber('periode')
     ->name('bagi.hasil.export.pdf');
 Route::get('/keuangan/payroll-abk', PayrollAbk::class)->name('payroll.abk');
+Route::get('/keuangan/kasbon-abk', KasbonAbk::class)->name('kasbon.abk');
 Route::get('/keuangan/payroll-pemanen', PayrollPemanen::class)->name('payroll.pemanen');
 Route::get('/master', MasterData::class)->name('master-data');
 Route::get('/master/jenis-pakan', fn () => to_route('master-data'))->name('jenis-pakan');
 Route::get('/master/harga-kontrak', fn () => to_route('master-data', request()->only('periode')))->name('harga-kontrak');
 Route::get('/master/pemodal', fn () => to_route('master-data'))->name('pemodal');
+Route::get('/master/standar-strain', MasterStandarStrain::class)->name('standar-strain');
+Route::get('/master/tarif-periode', fn () => to_route('master-data'))->name('tarif-periode');
 Route::get('/master/karyawan', DataKaryawan::class)->name('karyawan');
 
 // Katalog halaman contoh template, hanya di lingkungan pengembangan.

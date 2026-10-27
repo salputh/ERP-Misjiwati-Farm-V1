@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-outlined btn-sm" data-bs-dismiss="modal">Batal</button>
+                <x-tombol.batal />
                 <button
                     type="button"
                     class="btn btn-{{ $warna }} btn-sm"

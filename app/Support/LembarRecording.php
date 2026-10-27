@@ -11,12 +11,13 @@ use App\Models\Recording;
  * persentase pakan terhadap BW, FCR, dan saldo ayam, masing-masing aktual terhadap standar.
  *
  * Yang dicatat per hari hanya mati, afkir, dan ABW (recordings) serta pakan dalam zak
- * (pemberian pakan); sisanya dihitung di sini.
+ * (pemberian pakan); sisanya dihitung di sini. ABW hari yang punya sesi sampling diambil dari sampling itu,
+ * mendahului ABW yang diketik di recording.
  */
 class LembarRecording
 {
     /**
-     * Pakai relasi periode, recordings, dan pemberianPakan yang sudah di-load.
+     * Pakai relasi periode, recordings, pemberianPakan, dan sesiSampling.titik yang sudah di-load.
      *
      * @return list<array<string, mixed>> Satu baris per umur, dari hari 1 sampai umur terakhir standar.
      */
@@ -31,6 +32,7 @@ class LembarRecording
         $populasi = $periodeKandang->populasiAktual();
         $gramPerZakStandar = config('standar.kg_per_zak') * 1000;
         $catatan = $periodeKandang->recordings->keyBy('umur');
+        $abwSampling = $periodeKandang->abwSamplingPerTanggal();
         $pemberianPerUmur = $periodeKandang->pemberianPakan->groupBy('umur');
         $zakPerUmur = $pemberianPerUmur->map->sum('zak');
         $gramPakanPerUmur = $pemberianPerUmur->map(
@@ -57,6 +59,7 @@ class LembarRecording
             /** @var Recording|null $rekam */
             $rekam = $catatan->get($umur);
             $adaPakan = $zakPerUmur->has($umur);
+            $abwSamplingHariIni = $abwSampling->get($tanggalChickIn->copy()->addDays($umur)->toDateString());
 
             $pakanStandar = $standar->pakanGram($umur);
             $pakanStandarKumulatif += $pakanStandar;
@@ -71,7 +74,7 @@ class LembarRecording
             $hasil = [
                 'tanggal' => $tanggalChickIn->copy()->addDays($umur),
                 'umur' => $umur,
-                'terisi' => $rekam || $adaPakan,
+                'terisi' => $rekam || $adaPakan || $abwSamplingHariIni !== null,
                 'mati' => $rekam?->mati,
                 'afkir' => $rekam?->afkir,
                 'deplesi_kumulatif' => $deplesiKumulatif,
@@ -110,7 +113,7 @@ class LembarRecording
                     'selisih_pakan_gram' => $pakanKumulatif - $pakanStandarKumulatif,
                 ];
 
-                $abw = $rekam?->bobot_rata_gram;
+                $abw = $abwSamplingHariIni ?? $rekam?->bobot_rata_gram;
                 if ($abw !== null) {
                     $hasil += [
                         'abw' => $abw,

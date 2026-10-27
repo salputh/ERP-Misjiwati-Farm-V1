@@ -105,12 +105,15 @@ class AktivitasTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $kandangDua = PeriodeKandang::whereRelation('periode', 'nama', 'Periode September 2026')->firstOrFail();
 
-        $komponen = Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id, 'tanggal' => '2026-09-15'])
-            ->test(SamplingBobot::class);
+        $komponen = Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id])
+            ->test(SamplingBobot::class)
+            ->call('tambah')
+            ->set('tanggal', '2026-09-15');
         $this->isiSampling($komponen);
+        $komponen->call('simpan')->assertHasNoErrors();
 
-        $komponen->call('simpan')->assertHasNoErrors();
-        $komponen->call('simpan')->assertHasNoErrors();
+        $sesi = $kandangDua->sesiSampling()->whereDate('tanggal', '2026-09-15')->firstOrFail();
+        $komponen->call('ubah', $sesi->id)->set('berat.bawah.campuran.A.1', 2500)->call('simpan')->assertHasNoErrors();
 
         $aktivitas = Aktivitas::orderBy('id')->get();
         $this->assertSame([JenisAktivitas::Tambah, JenisAktivitas::Ubah], $aktivitas->pluck('jenis')->all());
@@ -124,8 +127,10 @@ class AktivitasTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $kandangDua = PeriodeKandang::whereRelation('periode', 'nama', 'Periode September 2026')->firstOrFail();
 
-        Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id, 'tanggal' => '2026-09-15'])
+        Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id])
             ->test(SamplingBobot::class)
+            ->call('tambah')
+            ->set('tanggal', '2026-09-15')
             ->call('simpan')
             ->assertHasErrors();
 

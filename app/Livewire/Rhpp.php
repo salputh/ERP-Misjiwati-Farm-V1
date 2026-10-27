@@ -15,6 +15,7 @@ use App\Models\Periode;
 use App\Models\PeriodeKandang;
 use App\Models\RhppReal;
 use App\Models\RhppSimulasi;
+use App\Models\TarifPeriode;
 use App\Support\BukuKas;
 use App\Support\Format;
 use App\Support\LembarBagiHasil;
@@ -22,6 +23,7 @@ use App\Support\LembarRhpp;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -49,6 +51,11 @@ class Rhpp extends Component
     public ?string $pesan = null;
 
     public ?string $sumberAsumsiBagiHasil = null;
+
+    /**
+     * Tarif simulasi bagi hasil diambil dari Master data > Tarif periode.
+     */
+    public bool $tarifDariMaster = false;
 
     /** @var array<string, string> */
     public array $masukanBagiHasil = [];
@@ -251,7 +258,6 @@ class Rhpp extends Component
             'masukanBagiHasil.controller' => ['nullable', 'string', 'max:150'],
             'masukanBagiHasil.operasional' => ['required', 'integer', 'min:0', 'max:'.PHP_INT_MAX],
             'masukanBagiHasil.tarif_gaji_abk_per_kg' => ['required', 'integer', 'min:0', 'max:'.PHP_INT_MAX],
-            'masukanBagiHasil.premi_pemeliharaan_abk' => ['required', 'integer', 'min:0', 'max:'.PHP_INT_MAX],
             'masukanBagiHasil.premi_controller' => ['required', 'integer', 'min:0', 'max:'.PHP_INT_MAX],
             'masukanBagiHasil.persen_upah_controller' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:100'],
             'masukanBagiHasil.persen_bonus_pasar_abk' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:100'],
@@ -442,6 +448,15 @@ class Rhpp extends Component
         unset($this->real);
         $this->muatFormReal();
         $this->pesan = 'Input RHPP real '.$periode->nama.' tersimpan.';
+    }
+
+    /**
+     * Nama berkas ekspor tanpa ekstensi, sesuai tab yang sedang dibuka.
+     */
+    #[Computed]
+    public function namaBerkasEkspor(): string
+    {
+        return Str::slug('rhpp-'.$this->tab.'-'.($this->periode?->nama ?? 'tanpa-periode'));
     }
 
     /**
@@ -838,11 +853,14 @@ class Rhpp extends Component
             $this->entertainSimulasi = [];
             $this->pemodalSimulasi = [];
             $this->sumberAsumsiBagiHasil = null;
+            $this->tarifDariMaster = false;
 
             return;
         }
 
         $masukan = $periodeKandang->bagiHasil;
+        // Tarif dari lembar bagi hasil periode ini; tanpa lembar, dari tarif periode di Master data.
+        $this->tarifDariMaster = $masukan === null;
         $this->sumberAsumsiBagiHasil = null;
         if (! $masukan) {
             $masukan = BagiHasil::query()
@@ -853,16 +871,13 @@ class Rhpp extends Component
             $this->sumberAsumsiBagiHasil = $masukan?->periodeKandang?->periode?->nama;
         }
 
+        $sumberTarif = $this->tarifDariMaster ? TarifPeriode::global() : $masukan;
         $this->masukanBagiHasil = [
             'controller' => (string) ($masukan?->controller ?? ''),
             'operasional' => (string) (BukuKas::buat($periodeKandang)['ringkasan']['biaya'] ?? 0),
-            'tarif_gaji_abk_per_kg' => (string) ($masukan?->tarif_gaji_abk_per_kg ?? 500),
-            'premi_pemeliharaan_abk' => (string) ($masukan?->premi_pemeliharaan_abk ?? 0),
-            'premi_controller' => (string) ($masukan?->premi_controller ?? 0),
-            'persen_upah_controller' => (string) ($masukan?->persen_upah_controller ?? 3),
-            'persen_bonus_pasar_abk' => (string) ($masukan?->persen_bonus_pasar_abk ?? 30),
-            'persen_bonus_pasar_controller' => (string) ($masukan?->persen_bonus_pasar_controller ?? 10),
-            'persen_zakat' => (string) ($masukan?->persen_zakat ?? 2.5),
+            ...collect(TarifPeriode::KOLOM)
+                ->mapWithKeys(fn (string $kolom): array => [$kolom => (string) $sumberTarif->{$kolom}])
+                ->all(),
         ];
         $this->abkSimulasi = $masukan
             ? $masukan->penerimaBerperan(PeranBagiHasil::Abk)

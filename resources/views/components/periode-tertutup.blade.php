@@ -1,7 +1,5 @@
 @if ($periode?->tertutup())
-    <div class="col-12 mb-25">
-        <div class="alert alert-info mb-0" role="status">
-            Periode ini sudah tutup RHPP. Data dapat dilihat, tetapi tidak dapat diubah.
-        </div>
+    <div class="col-12">
+        <x-peringatan warna="info" class="mb-25">Periode ini sudah tutup RHPP. Data dapat dilihat, tetapi tidak dapat diubah.</x-peringatan>
     </div>
 @endif

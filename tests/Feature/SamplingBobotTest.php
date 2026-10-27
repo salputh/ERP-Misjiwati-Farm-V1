@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Enums\JenisAktivitas;
+use App\Enums\ModulAktivitas;
 use App\Livewire\SamplingBobot;
+use App\Models\Aktivitas;
 use App\Models\Periode;
 use App\Models\PeriodeKandang;
 use App\Models\Recording;
 use App\Models\SesiSampling;
+use App\Support\LembarRecording;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -31,7 +35,7 @@ class SamplingBobotTest extends TestCase
      */
     public function test_sampling_without_sexing_matches_the_original_sheet(): void
     {
-        $hasil = $this->komponen('2026-09-12')->instance()->hasil;
+        $hasil = $this->ubahSesi('2026-09-12')->instance()->hasil;
 
         $this->assertSame(['campuran'], $hasil['kelamin']);
         $this->assertSame(17100.0, $hasil['lantai']['bawah']['campuran']['subtotal']);
@@ -56,7 +60,7 @@ class SamplingBobotTest extends TestCase
      */
     public function test_sampling_with_sexing_matches_the_original_sheet(): void
     {
-        $komponen = $this->komponen('2026-10-03')->instance();
+        $komponen = $this->ubahSesi('2026-10-03')->instance();
         $hasil = $komponen->hasil;
 
         $this->assertSame(['jantan', 'betina'], $hasil['kelamin']);
@@ -88,7 +92,7 @@ class SamplingBobotTest extends TestCase
 
     public function test_sampling_type_follows_age_and_can_be_switched(): void
     {
-        $this->komponen('2026-09-23')
+        $this->tambahPada('2026-09-23')
             ->assertSet('denganSexing', false)
             ->assertSee('Ekor per sampel')
             ->set('tanggal', '2026-09-24')
@@ -101,27 +105,24 @@ class SamplingBobotTest extends TestCase
 
     public function test_saving_a_new_session_stores_every_sample_and_shows_it_in_history(): void
     {
-        $komponen = $this->komponen('2026-09-15')->assertSet('sesiId', null)->assertSet('denganSexing', false);
+        $komponen = $this->tambahPada('2026-09-15')->assertSet('sesiId', null)->assertSet('denganSexing', false);
+        $this->isiCampuran($komponen, 2400, 2600);
 
-        foreach (config('sampling.lantai') as $lantai => $info) {
-            foreach ($info['line'] as $line) {
-                $komponen->set("berat.{$lantai}.campuran.{$line}.1", 2400)->set("berat.{$lantai}.campuran.{$line}.2", 2600);
-            }
-        }
-
-        $komponen->call('simpan')->assertHasNoErrors()->assertSee('Sampling 15 September 2026 tersimpan.');
+        $komponen->call('simpan')->assertHasNoErrors()->assertSee('Sampling Kandang 2 15 September 2026 tersimpan.');
 
         $sesi = SesiSampling::whereDate('tanggal', '2026-09-15')->with('titik')->firstOrFail();
         $this->assertSame(4, $sesi->umur);
         $this->assertFalse($sesi->dengan_sexing);
         $this->assertCount(24, $sesi->titik);
         $this->assertSame(125.0, $sesi->abw());
-        $komponen->assertSet('sesiId', $sesi->id)->assertSee('usia 4 hari');
+        // Form kembali kosong untuk sampling berikutnya; sesi baru tampil di riwayat.
+        $komponen->assertSet('sesiId', null)->assertSet('berat', [])->assertSee('usia 4 hari');
+        $this->assertSame(1, Aktivitas::where(['modul' => ModulAktivitas::SamplingBobot, 'jenis' => JenisAktivitas::Tambah])->count());
     }
 
     public function test_incomplete_samples_are_not_saved(): void
     {
-        $this->komponen('2026-09-15')
+        $this->tambahPada('2026-09-15')
             ->set('berat.bawah.campuran.A.1', 2400)
             ->call('simpan')
             ->assertHasErrors(['berat.bawah.campuran.A.2', 'berat.atas.campuran.O.2'])
@@ -132,7 +133,7 @@ class SamplingBobotTest extends TestCase
 
     public function test_switching_an_existing_session_to_sexing_replaces_its_samples(): void
     {
-        $komponen = $this->komponen('2026-09-12')->call('pilihJenis', true);
+        $komponen = $this->ubahSesi('2026-09-12')->call('pilihJenis', true);
 
         foreach (config('sampling.lantai') as $lantai => $info) {
             foreach (['jantan', 'betina'] as $kelamin) {
@@ -142,7 +143,7 @@ class SamplingBobotTest extends TestCase
             }
         }
 
-        $komponen->call('simpan')->assertHasNoErrors();
+        $komponen->call('simpan')->assertHasNoErrors()->assertSee('Sampling Kandang 2 12 September 2026 diperbarui.');
 
         $sesi = SesiSampling::whereDate('tanggal', '2026-09-12')->with('titik')->firstOrFail();
         $this->assertTrue($sesi->dengan_sexing);
@@ -154,7 +155,7 @@ class SamplingBobotTest extends TestCase
     {
         $sesi = SesiSampling::whereDate('tanggal', '2026-10-03')->firstOrFail();
 
-        $komponen = $this->komponen('2026-09-20')
+        $komponen = $this->komponen()
             ->assertDontSee('14.500')
             ->call('buka', $sesi->id)
             ->assertSet('sesiDilihatId', $sesi->id)
@@ -174,7 +175,7 @@ class SamplingBobotTest extends TestCase
     {
         $sesi = SesiSampling::whereDate('tanggal', '2026-10-03')->firstOrFail();
 
-        $komponen = $this->komponen('2026-09-20')
+        $komponen = $this->komponen()
             ->assertDontSee('Simpan PNG')
             ->call('buka', $sesi->id)
             ->assertSee('Simpan PNG')
@@ -194,7 +195,7 @@ class SamplingBobotTest extends TestCase
     {
         $sesi = SesiSampling::whereDate('tanggal', '2026-10-03')->firstOrFail();
 
-        $this->komponen('2026-09-20')
+        $this->tambahPada('2026-09-20')
             ->set('berat.bawah.campuran.A.1', 2400)
             ->call('buka', $sesi->id)
             ->assertSet('tanggal', '2026-09-20')
@@ -209,7 +210,7 @@ class SamplingBobotTest extends TestCase
         $kandangLain = PeriodeKandang::whereRelation('periode', 'nama', 'Periode Juli 2026')->firstOrFail();
         $sesiLain = SesiSampling::factory()->create(['periode_kandang_id' => $kandangLain->id, 'tanggal' => '2026-07-20', 'umur' => 9]);
 
-        $komponen = $this->komponen('2026-09-20')->call('buka', $sesiLain->id)->assertSet('sesiDilihatId', null);
+        $komponen = $this->komponen()->call('buka', $sesiLain->id)->assertSet('sesiDilihatId', null);
 
         $this->assertNull($komponen->instance()->dilihat);
     }
@@ -233,38 +234,75 @@ class SamplingBobotTest extends TestCase
             ->assertSee('Ringkasan sampling')
             ->assertSee('Kandang 1')
             ->assertSee('Kandang 2')
-            ->assertSeeInOrder(['Ringkasan sampling', 'Sesi terakhir', 'Kandang 2 ·']);
+            ->assertSeeInOrder(['Tambah sampling Kandang 2', 'Ringkasan sampling', 'Sesi terakhir', 'Riwayat sampling']);
     }
 
     /**
-     * Jumlah ekor tiap titik boleh berbeda, jadi ABW dihitung dari ekor yang benar-benar ditimbang.
+     * Jumlah ekor setiap titik terkunci pada ekor per sampel sesi (T10), jadi tidak ada titik yang berbeda.
      */
-    public function test_head_count_per_point_is_stored_and_used_for_the_average(): void
+    public function test_every_point_uses_the_head_count_per_sample(): void
     {
-        $komponen = $this->komponen('2026-09-15')->assertSet('sesiId', null);
+        $komponen = $this->tambahPada('2026-09-15')
+            ->set('ekor.campuran', 16)
+            ->assertSeeHtml('title="Mengikuti ekor per sampel"')
+            ->assertDontSeeHtml('wire:model.blur="ekorTitik.');
+        $this->isiCampuran($komponen, 1600, 1600);
 
-        foreach (config('sampling.lantai') as $lantai => $info) {
-            foreach ($info['line'] as $line) {
-                $komponen->set("berat.{$lantai}.campuran.{$line}.1", 1000)
-                    ->set("berat.{$lantai}.campuran.{$line}.2", 1000)
-                    ->set("ekorTitik.{$lantai}.campuran.{$line}.1", 20)
-                    ->set("ekorTitik.{$lantai}.campuran.{$line}.2", 10);
-            }
-        }
-
-        $komponen->call('simpan')->assertHasNoErrors();
+        // Nilai titik yang dikirim sendiri tetap diganti ekor per sampel saat disimpan.
+        $komponen->set('ekorTitik.bawah.campuran.A.1', 5)->call('simpan')->assertHasNoErrors();
 
         $sesi = SesiSampling::whereDate('tanggal', '2026-09-15')->with('titik')->firstOrFail();
-        $this->assertCount(24, $sesi->titik);
-        $this->assertSame([10, 20], $sesi->titik->pluck('ekor')->unique()->sort()->values()->all());
-        $this->assertSame(360, $sesi->titik->sum('ekor'));
-        $this->assertSame(24000, $sesi->titik->sum('berat_gram'));
-        $this->assertEqualsWithDelta(66.6667, $sesi->abw(), 0.001);
+        $this->assertSame([16], $sesi->titik->pluck('ekor')->unique()->values()->all());
+        $this->assertSame(384, $sesi->titik->sum('ekor'));
+        $this->assertSame(100.0, $sesi->abw());
+    }
+
+    public function test_head_count_per_sample_can_be_locked_and_unlocked(): void
+    {
+        $komponen = $this->tambahPada('2026-09-15')
+            ->assertSet('ekorTerkunci', false)
+            ->set('ekor.campuran', 16)
+            ->call('kunciEkor')
+            ->assertHasNoErrors()
+            ->assertSet('ekorTerkunci', true)
+            ->assertSeeHtml('aria-label="Buka kunci ekor per sampel"');
+
+        // Selama terkunci, perubahan yang terkirim dikembalikan.
+        $komponen->set('ekor.campuran', 30)->assertSet('ekor.campuran', 16);
+        $this->assertSame(16, $komponen->instance()->ekorTitik['atas']['campuran']['O'][2]);
+
+        $komponen->call('bukaKunciEkor')
+            ->assertSet('ekorTerkunci', false)
+            ->set('ekor.campuran', 30)
+            ->assertSet('ekor.campuran', 30);
+    }
+
+    public function test_an_empty_head_count_cannot_be_locked_and_a_saved_session_opens_locked(): void
+    {
+        $this->tambahPada('2026-09-15')
+            ->set('ekor.campuran', '')
+            ->call('kunciEkor')
+            ->assertHasErrors(['ekor.campuran' => 'required'])
+            ->assertSet('ekorTerkunci', false);
+
+        $this->ubahSesi('2026-09-12')
+            ->assertSet('ekorTerkunci', true)
+            ->call('pilihJenis', true)
+            ->assertSet('ekorTerkunci', false);
+    }
+
+    public function test_head_count_per_sample_is_required(): void
+    {
+        $komponen = $this->tambahPada('2026-09-15')->set('ekor.campuran', '');
+        $this->isiCampuran($komponen, 1600, 1600);
+
+        $komponen->call('simpan')->assertHasErrors(['ekor.campuran' => 'required']);
+        $this->assertDatabaseMissing('sesi_samplings', ['umur' => 4]);
     }
 
     public function test_the_default_head_count_applies_to_every_point(): void
     {
-        $komponen = $this->komponen('2026-09-15')->set('ekor.campuran', 16);
+        $komponen = $this->tambahPada('2026-09-15')->set('ekor.campuran', 16);
         $titik = $komponen->instance()->ekorTitik;
 
         $this->assertSame(16, $titik['bawah']['campuran']['A'][1]);
@@ -272,28 +310,23 @@ class SamplingBobotTest extends TestCase
     }
 
     /**
-     * ABW hasil sampling langsung mengisi ABW aktual di recording harian.
+     * ABW sesi menjadi ABW aktual recording harian tanggal itu tanpa membuat baris recording (FR-403).
      */
-    public function test_saving_a_session_fills_the_body_weight_into_the_daily_recording(): void
+    public function test_a_saved_session_becomes_the_recording_body_weight_without_creating_a_recording(): void
     {
-        $komponen = $this->komponen('2026-09-15');
+        $jumlahRecording = Recording::count();
+        $komponen = $this->tambahPada('2026-09-15');
+        $this->isiCampuran($komponen, 2400, 2600);
 
-        foreach (config('sampling.lantai') as $lantai => $info) {
-            foreach ($info['line'] as $line) {
-                $komponen->set("berat.{$lantai}.campuran.{$line}.1", 2400)->set("berat.{$lantai}.campuran.{$line}.2", 2600);
-            }
-        }
+        $komponen->call('simpan')->assertHasNoErrors()->assertSee('ABW 125,0 g menjadi ABW aktual recording harian tanggal itu.');
 
-        $komponen->call('simpan')->assertHasNoErrors()->assertSee('ABW 125,0 g masuk ke recording harian');
-
-        $rekaman = Recording::whereDate('tanggal', '2026-09-15')->firstOrFail();
-        $this->assertSame(4, $rekaman->umur);
-        $this->assertSame(125.0, $rekaman->bobot_rata_gram);
+        $this->assertSame($jumlahRecording, Recording::count());
+        $this->assertSame(125.0, $this->abwRecording(4));
     }
 
-    public function test_saving_a_session_replaces_the_body_weight_already_in_the_recording(): void
+    public function test_the_session_body_weight_takes_precedence_over_the_typed_recording_value(): void
     {
-        $komponen = $this->komponen('2026-10-02')->assertSet('sesiId', null);
+        $komponen = $this->tambahPada('2026-10-02')->assertSet('sesiId', null);
 
         foreach (config('sampling.lantai') as $lantai => $info) {
             foreach (['jantan', 'betina'] as $kelamin) {
@@ -305,9 +338,76 @@ class SamplingBobotTest extends TestCase
 
         $komponen->call('simpan')->assertHasNoErrors();
 
-        $rekaman = Recording::whereDate('tanggal', '2026-10-02')->firstOrFail();
-        $this->assertSame(21, $rekaman->umur);
-        $this->assertSame(71.0, $rekaman->bobot_rata_gram);
+        $this->assertSame(71.0, $this->abwRecording(21));
+    }
+
+    /**
+     * Tanggal yang sudah punya sesi tidak dapat dipakai untuk sampling baru; sesi itu tidak tertimpa diam-diam.
+     */
+    public function test_adding_a_session_on_a_date_that_already_has_one_is_refused(): void
+    {
+        $sesi = SesiSampling::whereDate('tanggal', '2026-09-12')->with('titik')->firstOrFail();
+        $komponen = $this->tambahPada('2026-09-12')
+            ->assertHasErrors('tanggal')
+            ->assertSee('Kandang 2 sudah punya sampling 12 September 2026');
+        $this->isiCampuran($komponen, 2400, 2600);
+
+        $komponen->call('simpan')->assertHasErrors('tanggal');
+
+        $this->assertSame($sesi->abw(), $sesi->fresh('titik')->abw());
+        $this->assertSame(0, Aktivitas::where('modul', ModulAktivitas::SamplingBobot)->count());
+    }
+
+    public function test_editing_a_session_keeps_its_date(): void
+    {
+        $sesi = SesiSampling::whereDate('tanggal', '2026-09-12')->firstOrFail();
+
+        $this->ubahSesi('2026-09-12')
+            ->assertSet('sesiId', $sesi->id)
+            ->set('tanggal', '2026-09-15')
+            ->assertSet('tanggal', '2026-09-12')
+            ->assertDontSeeHtml('id="sampling-tanggal"');
+    }
+
+    public function test_a_session_can_be_deleted_with_the_recording_it_created_automatically(): void
+    {
+        $sesi = SesiSampling::whereDate('tanggal', '2026-09-12')->firstOrFail();
+        $otomatis = Recording::create([
+            'periode_kandang_id' => $sesi->periode_kandang_id,
+            'tanggal' => '2026-09-12',
+            'umur' => 1,
+            'mati' => 0,
+            'afkir' => 0,
+            'bobot_rata_gram' => 71.7,
+            'catatan' => 'ABW dari sampling bobot; kematian dan afkir belum dicatat.',
+        ]);
+
+        $this->komponen()
+            ->call('mintaHapus', $sesi->id)
+            ->assertSet('labelHapus', 'Kandang 2 12 September 2026 (usia 1 hari)')
+            ->call('hapus')
+            ->assertHasNoErrors()
+            ->assertSee('Sampling Kandang 2 12 September 2026 (usia 1 hari) dihapus.');
+
+        $this->assertModelMissing($sesi);
+        $this->assertModelMissing($otomatis);
+        $this->assertSame(1, Aktivitas::where(['modul' => ModulAktivitas::SamplingBobot, 'jenis' => JenisAktivitas::Hapus])->count());
+    }
+
+    public function test_sessions_of_a_closed_period_cannot_be_deleted(): void
+    {
+        $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
+        $kandang = $periode->kandangPeriode()->firstOrFail();
+        $sesi = SesiSampling::factory()->create(['periode_kandang_id' => $kandang->id, 'tanggal' => '2026-07-20', 'umur' => 5]);
+
+        Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->id])
+            ->test(SamplingBobot::class)
+            ->assertDontSeeHtml('data-bs-target="#modal-form-sampling"')
+            ->call('mintaHapus', $sesi->id)
+            ->call('hapus')
+            ->assertForbidden();
+
+        $this->assertModelExists($sesi);
     }
 
     /**
@@ -315,13 +415,8 @@ class SamplingBobotTest extends TestCase
      */
     public function test_daily_gain_is_normalized_when_the_previous_session_is_more_than_a_day_old(): void
     {
-        $komponen = $this->komponen('2026-09-15');
-
-        foreach (config('sampling.lantai') as $lantai => $info) {
-            foreach ($info['line'] as $line) {
-                $komponen->set("berat.{$lantai}.campuran.{$line}.1", 2400)->set("berat.{$lantai}.campuran.{$line}.2", 2600);
-            }
-        }
+        $komponen = $this->tambahPada('2026-09-15');
+        $this->isiCampuran($komponen, 2400, 2600);
 
         $hasil = $komponen->instance()->hasil;
 
@@ -359,7 +454,7 @@ class SamplingBobotTest extends TestCase
             ]);
         }
 
-        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id, 'tanggal' => '2026-07-20'])
+        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id])
             ->test(SamplingBobot::class);
 
         $gabungan = $komponen->instance()->gabunganKandang;
@@ -412,7 +507,7 @@ class SamplingBobotTest extends TestCase
             'ekor' => 20,
         ]);
 
-        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id, 'tanggal' => '2026-07-20'])
+        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id])
             ->test(SamplingBobot::class);
 
         $gabungan = $komponen->instance()->gabunganKandang;
@@ -426,9 +521,9 @@ class SamplingBobotTest extends TestCase
     }
 
     /**
-     * Tombol Buka pada ringkasan memuatkan sesi terakhir kandangs itu ke form.
+     * Ikon Lihat pada ringkasan memilih kandang itu dan menampilkan sesi terakhirnya, tanpa menyentuh form.
      */
-    public function test_the_summary_opens_the_latest_session_of_a_house(): void
+    public function test_the_summary_shows_the_latest_session_of_a_house(): void
     {
         $periode = Periode::where('nama', 'Periode Juli 2026')->firstOrFail();
         $kandang = $periode->kandangPeriode()->get();
@@ -448,20 +543,62 @@ class SamplingBobotTest extends TestCase
             'ekor' => 20,
         ]);
 
-        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id, 'tanggal' => '2026-07-10'])
+        $komponen = Livewire::withQueryParams(['periode' => $periode->id, 'kandang' => $kandang->first()->id])
             ->test(SamplingBobot::class)
-            ->call('bukaSesi', $kandang->last()->id, '2026-07-20');
+            ->call('lihatTerakhir', $kandang->last()->id);
 
         $komponen->assertSet('periodeKandangId', $kandang->last()->id);
-        $komponen->assertSet('tanggal', '2026-07-20');
-        $komponen->assertSet('sesiId', $sesi->id);
+        $komponen->assertSet('sesiDilihatId', $sesi->id);
+        $komponen->assertSet('sesiId', null);
     }
 
-    private function komponen(string $tanggal): Testable
+    /**
+     * Halaman sampling dengan Kandang 2 September terpilih.
+     */
+    private function komponen(): Testable
     {
         $kandangDua = PeriodeKandang::whereRelation('periode', 'nama', 'Periode September 2026')->firstOrFail();
 
-        return Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id, 'tanggal' => $tanggal])
+        return Livewire::withQueryParams(['periode' => $kandangDua->periode_id, 'kandang' => $kandangDua->id])
             ->test(SamplingBobot::class);
+    }
+
+    /**
+     * Tombol "Tambah sampling", lalu tanggal dipilih di form.
+     */
+    private function tambahPada(string $tanggal): Testable
+    {
+        return $this->komponen()->call('tambah')->set('tanggal', $tanggal);
+    }
+
+    /**
+     * Ikon Ubah pada riwayat untuk sesi tanggal itu.
+     */
+    private function ubahSesi(string $tanggal): Testable
+    {
+        $sesi = SesiSampling::whereDate('tanggal', $tanggal)
+            ->whereRelation('periodeKandang.periode', 'nama', 'Periode September 2026')
+            ->firstOrFail();
+
+        return $this->komponen()->call('ubah', $sesi->id);
+    }
+
+    private function isiCampuran(Testable $komponen, int $sampelSatu, int $sampelDua): void
+    {
+        foreach (config('sampling.lantai') as $lantai => $info) {
+            foreach ($info['line'] as $line) {
+                $komponen->set("berat.{$lantai}.campuran.{$line}.1", $sampelSatu)->set("berat.{$lantai}.campuran.{$line}.2", $sampelDua);
+            }
+        }
+    }
+
+    /**
+     * ABW aktual di lembar recording Kandang 2 September pada umur itu.
+     */
+    private function abwRecording(int $umur): ?float
+    {
+        $kandangDua = PeriodeKandang::whereRelation('periode', 'nama', 'Periode September 2026')->firstOrFail();
+
+        return collect(LembarRecording::baris($kandangDua))->firstWhere('umur', $umur)['abw'] ?? null;
     }
 }

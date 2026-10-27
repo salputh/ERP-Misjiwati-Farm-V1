@@ -11,8 +11,10 @@ use App\Models\Kandang;
 use App\Models\PeriodeKandang;
 use App\Models\TransaksiKas;
 use App\Support\BukuKas;
+use App\Support\KategoriKasTambahan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -40,6 +42,11 @@ class KasOperasional extends Component
 
     public string $kategoriTransaksi = KategoriKas::DanaOperasional->value;
 
+    /** True bila pengguna memilih "Kategori baru" dan mengetik namanya sendiri. */
+    public bool $isiKategoriBaru = false;
+
+    public string $namaKategoriBaru = '';
+
     public string $uraian = '';
 
     public string $jumlah = '';
@@ -61,7 +68,18 @@ class KasOperasional extends Component
 
     public function pilihKategori(string $kategori): void
     {
-        $this->kategori = KategoriKas::tryFrom($kategori)?->value ?? '';
+        $this->kategori = $this->kategoriDariNilai($kategori)?->value ?? '';
+    }
+
+    /**
+     * Pilihan kategori di form transaksi. Null berarti "Kategori baru": isian nama kategori ditampilkan.
+     */
+    public function pakaiKategori(?string $kategori): void
+    {
+        $this->resetValidation(['kategoriTransaksi', 'namaKategoriBaru']);
+        $this->isiKategoriBaru = $kategori === null;
+        $this->kategoriTransaksi = $kategori ?? '';
+        $this->namaKategoriBaru = '';
     }
 
     public function tambah(): void
@@ -93,22 +111,48 @@ class KasOperasional extends Component
     }
 
     #[Computed]
-    public function saringan(): ?KategoriKas
+    public function saringan(): KategoriKas|KategoriKasTambahan|null
     {
-        return KategoriKas::tryFrom($this->kategori);
+        return $this->kategoriDariNilai($this->kategori);
     }
 
     /**
-     * Kategori yang punya transaksi di buku kas ini, untuk pilihan saringan.
+     * Kategori tambahan yang sudah pernah dipakai di farm ini, untuk pilihan di form transaksi.
      *
-     * @return list<KategoriKas>
+     * @return list<KategoriKasTambahan>
+     */
+    #[Computed]
+    public function kategoriTambahan(): array
+    {
+        return $this->farm ? KategoriKasTambahan::untukFarm($this->farm) : [];
+    }
+
+    #[Computed]
+    public function kategoriTerpilih(): KategoriKas|KategoriKasTambahan|null
+    {
+        return $this->kategoriDariNilai($this->kategoriTransaksi);
+    }
+
+    /**
+     * Kategori yang punya transaksi di buku kas ini, untuk pilihan saringan: kategori baku dulu, lalu kategori tambahan.
+     *
+     * @return list<KategoriKas|KategoriKasTambahan>
      */
     #[Computed]
     public function pilihanKategori(): array
     {
         $terpakai = collect($this->buku['transaksi'] ?? [])->pluck('kategori');
+        $nilaiTerpakai = $terpakai->pluck('value');
 
-        return array_values(array_filter(KategoriKas::cases(), fn (KategoriKas $kategori): bool => $terpakai->contains($kategori)));
+        return [
+            ...array_filter(KategoriKas::cases(), fn (KategoriKas $kategori): bool => $nilaiTerpakai->contains($kategori->value)),
+            ...$terpakai
+                ->whereInstanceOf(KategoriKasTambahan::class)
+                ->unique(fn (KategoriKasTambahan $kategori): string => $kategori->value)
+                ->sortBy(fn (KategoriKasTambahan $kategori): string => $kategori->value)
+                ->values()
+                ->all(),
+        ];
     }
 
     /**
@@ -143,6 +187,8 @@ class KasOperasional extends Component
         $this->transaksiId = $transaksi->id;
         $this->tanggal = $transaksi->tanggal->toDateString();
         $this->kategoriTransaksi = $transaksi->kategori->value;
+        $this->isiKategoriBaru = false;
+        $this->namaKategoriBaru = '';
         $this->uraian = $transaksi->uraian;
         $this->jumlah = (string) $transaksi->jumlah;
 
@@ -157,9 +203,15 @@ class KasOperasional extends Component
     public function simpan(): void
     {
         $this->pastikanPeriodeDapatDiubah();
+        $this->namaKategoriBaru = KategoriKasTambahan::rapikan($this->namaKategoriBaru);
         $data = $this->validate([
             'tanggal' => ['required', 'date'],
-            'kategoriTransaksi' => ['required', 'string', 'in:'.implode(',', array_column(KategoriKas::cases(), 'value'))],
+            'kategoriTransaksi' => $this->isiKategoriBaru ? [] : [
+                'required',
+                'string',
+                Rule::in([...array_column(KategoriKas::cases(), 'value'), ...array_column($this->kategoriTambahan, 'value')]),
+            ],
+            'namaKategoriBaru' => $this->isiKategoriBaru ? ['required', 'string', 'max:50', 'regex:/^[\pL\pN .,&()\/+-]+$/u'] : [],
             'uraian' => ['required', 'string', 'max:255'],
             'jumlah' => ['required', 'integer', 'min:1', 'max:'.PHP_INT_MAX],
         ], [
@@ -167,6 +219,9 @@ class KasOperasional extends Component
             'tanggal.date' => 'Tanggal transaksi tidak valid.',
             'kategoriTransaksi.required' => 'Kategori transaksi wajib dipilih.',
             'kategoriTransaksi.in' => 'Kategori transaksi tidak valid.',
+            'namaKategoriBaru.required' => 'Nama kategori baru wajib diisi.',
+            'namaKategoriBaru.max' => 'Nama kategori maksimal 50 karakter.',
+            'namaKategoriBaru.regex' => 'Nama kategori hanya boleh berisi huruf, angka, spasi, dan tanda . , & ( ) / + -',
             'uraian.required' => 'Uraian transaksi wajib diisi.',
             'uraian.max' => 'Uraian transaksi maksimal 255 karakter.',
             'jumlah.required' => 'Jumlah transaksi wajib diisi.',
@@ -175,16 +230,25 @@ class KasOperasional extends Component
             'jumlah.max' => 'Jumlah transaksi terlalu besar.',
         ]);
 
+        $kategori = $this->isiKategoriBaru
+            ? KategoriKasTambahan::dariNama($data['namaKategoriBaru'], $this->kategoriTambahan)
+            : $this->kategoriDariNilai($data['kategoriTransaksi']);
+
+        if ($this->isiKategoriBaru && $kategori->masuk()) {
+            throw ValidationException::withMessages([
+                'namaKategoriBaru' => 'Kategori baru hanya untuk pengeluaran. Pilih Dana Operasional dari daftar untuk mencatat uang masuk.',
+            ]);
+        }
+
         $periodeKandang = $this->periodeKandang ?? abort(404);
         $tanggal = Carbon::parse($data['tanggal']);
         $rincian = "{$this->kandang->nama}, {$this->periode->nama}";
 
-        $baru = DB::transaction(function () use ($data, $periodeKandang, $tanggal, $rincian): bool {
+        $baru = DB::transaction(function () use ($data, $kategori, $periodeKandang, $tanggal, $rincian): bool {
             $periodeKandang = PeriodeKandang::query()->lockForUpdate()->findOrFail($periodeKandang->id);
             $transaksi = $this->transaksiId
-                ? $periodeKandang->transaksiKas()->whereKey($this->transaksiId)->firstOrFail()
+                ? $periodeKandang->transaksiKas()->whereDoesntHave('kasbon')->whereKey($this->transaksiId)->firstOrFail()
                 : null;
-            $kategori = KategoriKas::from($data['kategoriTransaksi']);
             $danaTersedia = $periodeKandang->transaksiKas()
                 ->where('kategori', KategoriKas::DanaOperasional->value)
                 ->when($transaksi, fn ($query) => $query->where('id', '!=', $transaksi->id))
@@ -192,7 +256,7 @@ class KasOperasional extends Component
 
             if (! $kategori->masuk() && ! $danaTersedia) {
                 throw ValidationException::withMessages([
-                    'kategoriTransaksi' => 'Masukkan dana operasional terlebih dahulu sebelum mencatat pengeluaran.',
+                    $this->isiKategoriBaru ? 'namaKategoriBaru' : 'kategoriTransaksi' => 'Masukkan dana operasional terlebih dahulu sebelum mencatat pengeluaran.',
                 ]);
             }
 
@@ -200,7 +264,7 @@ class KasOperasional extends Component
             $transaksi ??= new TransaksiKas(['periode_kandang_id' => $periodeKandang->id]);
             $transaksi->fill([
                 'tanggal' => $data['tanggal'],
-                'kategori' => $data['kategoriTransaksi'],
+                'kategori' => $kategori,
                 'uraian' => $data['uraian'],
                 'jumlah' => (int) $data['jumlah'],
             ])->save();
@@ -238,7 +302,7 @@ class KasOperasional extends Component
 
         $tanggal = DB::transaction(function () use ($id, $periodeKandang, $rincian): Carbon {
             $periodeKandang = PeriodeKandang::query()->lockForUpdate()->findOrFail($periodeKandang->id);
-            $transaksi = $periodeKandang->transaksiKas()->whereKey($id)->firstOrFail();
+            $transaksi = $periodeKandang->transaksiKas()->whereDoesntHave('kasbon')->whereKey($id)->firstOrFail();
 
             if ($transaksi->kategori->masuk()) {
                 $jumlahDanaLain = $periodeKandang->transaksiKas()
@@ -279,12 +343,37 @@ class KasOperasional extends Component
         return view('livewire.kas-operasional')->title('Kas operasional '.$this->kandang->nama);
     }
 
+    /**
+     * Transaksi kas kandang periode ini yang dapat diubah dari buku kas. Transaksi milik kasbon ABK
+     * hanya diubah dari halaman Kasbon ABK supaya jumlahnya tetap sama dengan kasbonnya.
+     */
     private function transaksiUntukPeriode(int $id): TransaksiKas
     {
         return ($this->periodeKandang ?? abort(404))
             ->transaksiKas()
+            ->whereDoesntHave('kasbon')
             ->whereKey($id)
             ->firstOrFail();
+    }
+
+    /**
+     * Id transaksi buku kas ini yang dicatat dari halaman Kasbon ABK.
+     *
+     * @return list<int>
+     */
+    #[Computed]
+    public function transaksiKasbon(): array
+    {
+        return $this->periodeKandang?->transaksiKas()->has('kasbon')->pluck('id')->all() ?? [];
+    }
+
+    /**
+     * Kategori baku atau kategori tambahan farm ini untuk sebuah nilai; null bila tidak dikenal.
+     */
+    private function kategoriDariNilai(string $nilai): KategoriKas|KategoriKasTambahan|null
+    {
+        return KategoriKas::tryFrom($nilai)
+            ?? collect($this->kategoriTambahan)->first(fn (KategoriKasTambahan $kategori): bool => $kategori->value === $nilai);
     }
 
     private function bersihkanForm(): void
@@ -293,6 +382,8 @@ class KasOperasional extends Component
         $this->transaksiId = null;
         $this->tanggal = now()->toDateString();
         $this->kategoriTransaksi = KategoriKas::DanaOperasional->value;
+        $this->isiKategoriBaru = false;
+        $this->namaKategoriBaru = '';
         $this->uraian = '';
         $this->jumlah = '';
 
@@ -301,6 +392,6 @@ class KasOperasional extends Component
 
     private function segarkanBuku(): void
     {
-        unset($this->periodeKandang, $this->buku, $this->saringan, $this->pilihanKategori, $this->tersaring, $this->bolehCatatPengeluaran);
+        unset($this->periodeKandang, $this->transaksiKasbon, $this->buku, $this->saringan, $this->kategoriTambahan, $this->kategoriTerpilih, $this->pilihanKategori, $this->tersaring, $this->bolehCatatPengeluaran);
     }
 }
