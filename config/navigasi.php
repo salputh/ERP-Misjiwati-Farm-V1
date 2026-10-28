@@ -53,4 +53,11 @@ return [
             'karyawan' => ['ikon' => 'uil-users-alt', 'label' => 'Karyawan', 'isi' => 'ABK, controller, kandang'],
         ],
     ],
+    'pengaturan' => [
+        'label' => 'Pengaturan',
+        'fase' => null,
+        'item' => [
+            'akun' => ['ikon' => 'uil-user-circle', 'label' => 'Akun pengguna', 'isi' => 'Akun untuk masuk ke ERP dan siapa yang sedang masuk', 'rute' => 'akun'],
+        ],
+    ],
 ];

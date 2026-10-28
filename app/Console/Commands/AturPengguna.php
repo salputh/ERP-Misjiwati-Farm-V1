@@ -16,11 +16,6 @@ use Illuminate\Support\Facades\Validator;
 #[Description('Buat pengguna baru atau ganti password pengguna yang sudah ada')]
 class AturPengguna extends Command
 {
-    /**
-     * Panjang password minimal.
-     */
-    public const PANJANG_MINIMAL = 12;
-
     public function handle(): int
     {
         $email = mb_strtolower(trim($this->argument('email')));
@@ -38,14 +33,14 @@ class AturPengguna extends Command
         }
 
         $nama = $pengguna?->name ?? ($this->option('nama') ?: $this->ask('Nama pengguna'));
-        $password = (string) $this->secret('Password baru (minimal '.self::PANJANG_MINIMAL.' karakter)');
+        $password = (string) $this->secret('Password baru (minimal '.User::PANJANG_PASSWORD_MINIMAL.' karakter)');
 
         $validasi = Validator::make(
             ['nama' => $nama, 'password' => $password, 'password_confirmation' => (string) $this->secret('Ulangi password')],
-            ['nama' => ['required', 'string', 'max:255'], 'password' => ['required', 'string', 'min:'.self::PANJANG_MINIMAL, 'confirmed']],
+            ['nama' => ['required', 'string', 'max:255'], 'password' => ['required', 'string', 'min:'.User::PANJANG_PASSWORD_MINIMAL, 'confirmed']],
             [
                 'nama.required' => 'Nama wajib diisi.',
-                'password.min' => 'Password minimal '.self::PANJANG_MINIMAL.' karakter.',
+                'password.min' => 'Password minimal '.User::PANJANG_PASSWORD_MINIMAL.' karakter.',
                 'password.confirmed' => 'Pengulangan password tidak sama.',
             ],
         );
