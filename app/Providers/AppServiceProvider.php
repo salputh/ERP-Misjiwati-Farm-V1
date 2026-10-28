@@ -4,9 +4,12 @@ namespace App\Providers;
 
 use App\Models\Farm;
 use App\Models\Periode;
+use App\Models\User;
 use App\Support\Notifikasi;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -48,6 +51,13 @@ class AppServiceProvider extends ServiceProvider
             $notifikasi = Notifikasi::untukPeriode($periodeTerpilih);
 
             $view->with(compact('daftarFarm', 'farm', 'daftarPeriode', 'periodeTerpilih', 'notifikasi'));
+        });
+
+        // Waktu masuk terakhir tiap akun, termasuk masuk otomatis lewat "ingat saya"; updated_at akun tidak ikut berubah.
+        Event::listen(Login::class, function (Login $masuk): void {
+            if ($masuk->user instanceof User) {
+                User::withoutTimestamps(fn () => $masuk->user->forceFill(['terakhir_masuk_at' => now()])->saveQuietly());
+            }
         });
 
         // @kurung($nilai, 3): sama, tetapi nilai negatif ditulis dalam kurung dan null dikosongkan.

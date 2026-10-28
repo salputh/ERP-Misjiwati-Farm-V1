@@ -25,6 +25,7 @@ enum ModulAktivitas: string
     case Karyawan = 'karyawan';
     case StandarStrain = 'standar-strain';
     case MasterData = 'master-data';
+    case Akun = 'akun';
 
     /**
      * Modul yang dikelola di halaman lain dan tidak punya item sendiri di sidebar.

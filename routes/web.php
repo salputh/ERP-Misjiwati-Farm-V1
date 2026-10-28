@@ -6,6 +6,7 @@ use App\Http\Controllers\PanenExportController;
 use App\Http\Controllers\RecordingHarianExportController;
 use App\Http\Controllers\TemplateController;
 use App\Livewire\BagiHasil;
+use App\Livewire\DaftarAkun;
 use App\Livewire\Dashboard;
 use App\Livewire\DataKaryawan;
 use App\Livewire\FormLaporanHarian;
@@ -78,6 +79,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/master/standar-strain', MasterStandarStrain::class)->name('standar-strain');
     Route::get('/master/tarif-periode', fn () => to_route('master-data'))->name('tarif-periode');
     Route::get('/master/karyawan', DataKaryawan::class)->name('karyawan');
+    Route::get('/pengaturan/akun', DaftarAkun::class)->name('akun');
 
     // Katalog halaman contoh template, hanya di lingkungan pengembangan.
     if (app()->environment('local', 'testing')) {
