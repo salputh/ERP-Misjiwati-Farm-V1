@@ -20,7 +20,7 @@ class DaftarKaryawan
      * @return ?array{
      *     total: int,
      *     rincian: string,
-     *     kandang: list<array{nama: string, jumlah: int, rincian: string, karyawan: list<array{id: int, nama: string, jabatan: Jabatan, keterangan: ?string, slip: ?array{id: int, hari_kerja: int, bersih: int}}>}>
+     *     kandang: list<array{nama: string, jumlah: int, rincian: string, karyawan: list<array{id: int, nama: string, jabatan: Jabatan, keterangan: ?string, gaji_bawaan: ?string, slip: ?array{id: int, hari_kerja: int, bersih: int}}>}>
      * }
      */
     public static function buat(Collection $karyawan, ?array $payroll): ?array
@@ -51,6 +51,7 @@ class DaftarKaryawan
                         'nama' => $satu->nama,
                         'jabatan' => $satu->jabatan,
                         'keterangan' => $satu->keterangan,
+                        'gaji_bawaan' => $satu->gajiBawaan(),
                         'slip' => $slip->has($satu->id)
                             ? ['id' => $slip[$satu->id]['id'], 'hari_kerja' => $slip[$satu->id]['hari_kerja'], 'bersih' => $slip[$satu->id]['bersih']]
                             : null,

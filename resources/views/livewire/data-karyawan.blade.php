@@ -78,6 +78,21 @@
             <div class="col-12">
                 <x-masukan id="karyawan-keterangan" label="Keterangan" maxlength="255" wire:model="keterangan" :kesalahan="$errors->first('keterangan')" placeholder="Contoh: ketua ABK" keterangan="Boleh dikosongkan." autocomplete="off" />
             </div>
+            <div class="col-12">
+                <h6 class="fs-14 fw-500 mb-15">Nilai bawaan slip gaji</h6>
+            </div>
+            <div class="col-md-4">
+                <x-masukan.ribuan id="karyawan-gaji-pokok" properti="gajiPokok" teks label="Gaji pokok (Rp)" :kesalahan="$errors->first('gajiPokok')" wire:key="karyawan-gaji-pokok-{{ $karyawanId ?? 'baru' }}" />
+            </div>
+            <div class="col-md-4">
+                <x-masukan id="karyawan-hari-kerja" tipe="number" min="0" max="366" step="1" label="Hari kerja" wire:model="hariKerja" :kesalahan="$errors->first('hariKerja')" placeholder="Contoh: 30" />
+            </div>
+            <div class="col-md-4">
+                <x-masukan id="karyawan-tanggal-gajian" tipe="number" min="1" max="31" step="1" label="Tanggal gajian" wire:model="tanggalGajian" :kesalahan="$errors->first('tanggalGajian')" placeholder="Contoh: 25" />
+            </div>
+            <div class="col-12">
+                <small class="d-block mb-25 fs-13 color-light">Terisi otomatis di slip gaji baru karyawan ini dan boleh diubah per slip. Gaji pokok tidak dipakai ABK yang ikut bagi hasil. Kosongkan bila tidak ada nilai bawaan.</small>
+            </div>
         </div>
 
         <x-slot:footer>
@@ -92,7 +107,7 @@
 
     @if ($karyawanId)
         <x-konfirmasi id="konfirmasi-simpan-karyawan" judul="Simpan perubahan karyawan?" aksi="simpan" tombol="Ya, simpan perubahan">
-            Nama, jabatan, kandang, atau keterangan karyawan ini akan diperbarui. Slip gaji yang sudah dibuat tidak ikut berubah.
+            Nama, jabatan, kandang, keterangan, atau nilai bawaan slip gaji karyawan ini akan diperbarui. Slip gaji yang sudah dibuat tidak ikut berubah.
         </x-konfirmasi>
     @endif
 

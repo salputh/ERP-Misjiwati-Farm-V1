@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use App\Enums\Jabatan;
 use App\Enums\KategoriKas;
+use App\Models\Pengaturan;
 use App\Models\PeriodeKandang;
 use App\Models\PotonganKasbon;
 use App\Models\SlipGaji;
@@ -17,7 +19,8 @@ class LembarPayroll
 {
     /**
      * Pakai relasi slipGaji.penerimaBagiHasil, slipGaji.potonganKasbon.kasbon.potongan, bagiHasil.penerima, dan kandang yang sudah di-load.
-     * $rhpp adalah hasil LembarRhpp::real() periode itu. Mengembalikan null bila belum ada slip gaji.
+     * $rhpp adalah hasil LembarRhpp::real() periode itu; uang makan bawaan ABK baru dipotong setelah RHPP itu keluar.
+     * Mengembalikan null bila belum ada slip gaji.
      *
      * @param  Collection<int, PeriodeKandang>  $kandangPeriode
      * @param  array<string, mixed>|null  $rhpp
@@ -29,14 +32,15 @@ class LembarPayroll
      */
     public static function buat(Collection $kandangPeriode, ?array $rhpp): ?array
     {
+        $uangMakanBawaan = self::uangMakanBawaanPeriode($rhpp);
         $kandang = $kandangPeriode
             ->filter(fn (PeriodeKandang $satu): bool => $satu->slipGaji->isNotEmpty())
             ->sortBy('kandang.nama')
             ->values()
-            ->map(function (PeriodeKandang $satu) use ($rhpp): array {
+            ->map(function (PeriodeKandang $satu) use ($rhpp, $uangMakanBawaan): array {
                 $bagiHasil = LembarBagiHasil::buat($satu, $rhpp);
                 $uangMakan = self::uangMakanDariKas($satu);
-                $slip = $satu->slipGaji->map(fn (SlipGaji $slip): array => self::slip($slip, $satu->kandang->nama, $bagiHasil, $uangMakan[$slip->id] ?? null))->values();
+                $slip = $satu->slipGaji->map(fn (SlipGaji $slip): array => self::slip($slip, $satu->kandang->nama, $bagiHasil, $uangMakan[$slip->id] ?? null, $uangMakanBawaan))->values();
 
                 return ['id' => $satu->id, 'nama' => $satu->kandang->nama, 'slip' => $slip->all(), 'total' => self::total($slip)];
             });
@@ -57,10 +61,12 @@ class LembarPayroll
     /**
      * @param  array<string, mixed>|null  $bagiHasil  lembar bagi hasil kandangnya
      * @param  ?array{jumlah: int, transaksi: int}  $uangMakanKas  uang makan atas nama orang ini di kas kandangnya
+     * @param  ?array{per_hari: int, hari: int, total: int}  $uangMakanBawaan  uang makan bawaan ABK; null bila RHPP periode ini belum keluar
      * @return array{id: int, karyawan_id: ?int, nama: string, jabatan: string, kandang: string, hari_kerja: int, pendapatan: list<array{label: string, jumlah: int, rumus: ?string}>, potongan: list<array{label: string, jumlah: int, rumus: ?string}>, total_pendapatan: int, total_potongan: int, bersih: int}
      */
-    private static function slip(SlipGaji $slip, string $kandang, ?array $bagiHasil, ?array $uangMakanKas = null): array
+    private static function slip(SlipGaji $slip, string $kandang, ?array $bagiHasil, ?array $uangMakanKas = null, ?array $uangMakanBawaan = null): array
     {
+        $bawaan = $uangMakanKas === null ? self::uangMakanBawaan($slip, $uangMakanBawaan) : null;
         $penerima = $slip->penerimaBagiHasil;
         $jumlahAbk = $bagiHasil['ringkasan']['jumlah_abk'] ?? 0;
         $ikutBagiHasil = $penerima && $bagiHasil && $jumlahAbk > 0;
@@ -82,9 +88,11 @@ class LembarPayroll
         ])->reject(fn (array $baris): bool => $baris['opsional'] && $baris['jumlah'] === 0)->map(fn (array $baris): array => collect($baris)->except('opsional')->all())->values();
 
         $potongan = collect([
-            $uangMakanKas !== null
-                ? self::baris('Uang makan', $uangMakanKas['jumlah'], 'dari kas: '.Format::angka($uangMakanKas['transaksi']).' transaksi Pinjaman Makan')
-                : self::baris('Uang makan', $slip->uang_makan, self::rumusUangMakan($slip)),
+            match (true) {
+                $uangMakanKas !== null => self::baris('Uang makan', $uangMakanKas['jumlah'], 'dari kas: '.Format::angka($uangMakanKas['transaksi']).' transaksi Pinjaman Makan'),
+                $bawaan !== null => self::baris('Uang makan', $bawaan['jumlah'], $bawaan['rumus']),
+                default => self::baris('Uang makan', $slip->uang_makan, self::rumusUangMakan($slip)),
+            },
             self::baris('Pinjaman ABK', $slip->pinjaman),
             ...$slip->potonganKasbon->sortBy('id')->map(fn (PotonganKasbon $potongan): array => self::barisKasbon($potongan))->all(),
             self::baris('Potongan lain', $slip->potongan_lain, $slip->keterangan_potongan_lain),
@@ -177,6 +185,36 @@ class LembarPayroll
         }
 
         return $hasil;
+    }
+
+    /**
+     * Uang makan bawaan dari Master data, berlaku untuk periode yang RHPP real-nya sudah keluar; null bila belum.
+     *
+     * @param  array<string, mixed>|null  $rhpp  hasil LembarRhpp::real() periode itu
+     * @return ?array{per_hari: int, hari: int, total: int}
+     */
+    public static function uangMakanBawaanPeriode(?array $rhpp): ?array
+    {
+        return $rhpp === null ? null : Pengaturan::uangMakan();
+    }
+
+    /**
+     * Uang makan bawaan untuk satu slip: hanya ABK, dan hanya bila slip belum punya angka uang makan sendiri.
+     * Pemanggil mendahulukan transaksi Pinjaman Makan di kas, jadi hasil ini dipakai bila kas tidak punya transaksi atas nama orang itu.
+     *
+     * @param  ?array{per_hari: int, hari: int, total: int}  $bawaan  hasil uangMakanBawaanPeriode()
+     * @return ?array{jumlah: int, rumus: string}
+     */
+    public static function uangMakanBawaan(SlipGaji $slip, ?array $bawaan): ?array
+    {
+        if ($bawaan === null || $bawaan['total'] === 0 || $slip->jabatan !== Jabatan::Abk || $slip->uang_makan > 0) {
+            return null;
+        }
+
+        return [
+            'jumlah' => $bawaan['total'],
+            'rumus' => Format::angka($bawaan['hari']).' hari × Rp '.Format::angka($bawaan['per_hari']).', bawaan master data',
+        ];
     }
 
     /**

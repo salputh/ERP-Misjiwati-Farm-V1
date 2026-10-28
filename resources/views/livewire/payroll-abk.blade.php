@@ -11,12 +11,12 @@
         @if ($this->periode && ! $this->periode->tertutup())
             @foreach ($this->kandangBelumAdaSlip as $belum)
                 <div class="col-12 mb-25" wire:key="belum-ada-slip-{{ $belum['periode_kandang']->id }}">
-                    <x-kartu :judul="'Slip gaji '.$belum['periode_kandang']->kandang->nama.' belum dibuat'" :subjudul="$belum['abk']->count().' ABK di lembar bagi hasil: '.$belum['abk']->pluck('nama')->join(', ', ' dan ')">
+                    <x-kartu :judul="'Slip gaji '.$belum['periode_kandang']->kandang->nama.' belum dibuat'" :subjudul="$belum['orang']">
                         <x-slot:ekstra>
                             <x-tombol ikon="uil-plus" wire:click="buatSlip({{ $belum['periode_kandang']->id }})" wire:loading.attr="disabled" wire:target="buatSlip">Buat slip {{ $belum['periode_kandang']->kandang->nama }}</x-tombol>
                         </x-slot:ekstra>
                         <p class="fs-14 color-light mb-0">
-                            Pendapatan bagi hasil, bonus pasar, dan premi diambil otomatis dari bagi hasil kandangnya. Pinjaman terisi dari pinjaman atas nama ABK di kas operasional. Cicilan kasbon tidak dipotong otomatis; potong lewat tombol Potong di halaman Kasbon ABK setelah disepakati dengan ABK. Uang makan diambil dari transaksi Pinjaman Makan atas nama tiap ABK di kas operasional. Hari kerja, premi panen, premi geomembran, penghasilan kotoran, dan potongan lain diisi lewat tombol ubah di tiap slip.
+                            Pendapatan bagi hasil, bonus pasar, dan premi diambil otomatis dari bagi hasil kandangnya. Pinjaman terisi dari pinjaman atas nama ABK di kas operasional. Cicilan kasbon tidak dipotong otomatis; potong lewat tombol Potong di halaman Kasbon ABK setelah disepakati dengan ABK. Uang makan diambil dari transaksi Pinjaman Makan atas nama tiap ABK di kas operasional; tanpa transaksi itu ABK dipotong uang makan bawaan master data setelah RHPP keluar. Hari kerja dan gaji pokok joker terisi dari data karyawan. Premi panen, premi geomembran, penghasilan kotoran, dan potongan lain diisi lewat tombol ubah di tiap slip.
                         </p>
                     </x-kartu>
                 </div>
@@ -159,6 +159,8 @@
                         <small class="d-block mt-1 fs-13 color-light">
                             @if ($uangMakanSlip['dari_kas'] ?? false)
                                 Dari kas operasional: @angka($uangMakanSlip['transaksi']) transaksi Pinjaman Makan atas nama {{ $namaSlip }}.
+                            @elseif (isset($uangMakanSlip['bawaan']))
+                                {{ $uangMakanSlip['bawaan'] }}. Dipotong karena RHPP periode ini sudah keluar; Pinjaman Makan atas nama {{ $namaSlip }} di kas operasional akan menggantikannya.
                             @else
                                 Belum ada Pinjaman Makan atas nama {{ $namaSlip }} di kas operasional; catat dengan uraian yang menyebut namanya.
                             @endif
