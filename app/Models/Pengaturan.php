@@ -27,6 +27,37 @@ class Pengaturan extends Model
      */
     public const BATAS_PERCOBAAN = 5;
 
+    /**
+     * Uang makan bawaan ABK: tarif per hari (Rp) dan jumlah hari. Nilai bawaan dipakai selama belum pernah diubah
+     * di Master data, sehingga produksi tidak perlu seeder.
+     */
+    public const UANG_MAKAN_PER_HARI = 'uang_makan_per_hari';
+
+    public const UANG_MAKAN_HARI = 'uang_makan_hari';
+
+    public const UANG_MAKAN_PER_HARI_BAWAAN = 35_000;
+
+    public const UANG_MAKAN_HARI_BAWAAN = 55;
+
+    /**
+     * Uang makan bawaan satu ABK: tarif per hari, jumlah hari, dan totalnya (tarif × hari).
+     *
+     * @return array{per_hari: int, hari: int, total: int}
+     */
+    public static function uangMakan(): array
+    {
+        $perHari = (int) (self::nilai(self::UANG_MAKAN_PER_HARI) ?? self::UANG_MAKAN_PER_HARI_BAWAAN);
+        $hari = (int) (self::nilai(self::UANG_MAKAN_HARI) ?? self::UANG_MAKAN_HARI_BAWAAN);
+
+        return ['per_hari' => $perHari, 'hari' => $hari, 'total' => $perHari * $hari];
+    }
+
+    public static function setUangMakan(int $perHari, int $hari): void
+    {
+        self::simpan(self::UANG_MAKAN_PER_HARI, (string) $perHari);
+        self::simpan(self::UANG_MAKAN_HARI, (string) $hari);
+    }
+
     public static function nilai(string $kunci): ?string
     {
         return self::query()->where('kunci', $kunci)->value('nilai');

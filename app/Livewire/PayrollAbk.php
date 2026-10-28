@@ -258,9 +258,15 @@ class PayrollAbk extends Component
             'keterangan_potongan_lain' => (string) $slip->keterangan_potongan_lain,
         ];
         $uangMakanKas = LembarPayroll::uangMakanDariKas($slip->periodeKandang)[$slip->id] ?? null;
-        $this->uangMakanSlip = $uangMakanKas
-            ? [...$uangMakanKas, 'dari_kas' => true]
-            : ['jumlah' => (int) $slip->uang_makan, 'transaksi' => 0, 'dari_kas' => false];
+        $bawaan = LembarPayroll::uangMakanBawaan(
+            $slip,
+            LembarPayroll::uangMakanBawaanPeriode(LembarRhpp::real($this->periode->loadMissing(LembarRhpp::RELASI))),
+        );
+        $this->uangMakanSlip = match (true) {
+            $uangMakanKas !== null => [...$uangMakanKas, 'dari_kas' => true],
+            $bawaan !== null => ['jumlah' => $bawaan['jumlah'], 'transaksi' => 0, 'dari_kas' => false, 'bawaan' => $bawaan['rumus']],
+            default => ['jumlah' => (int) $slip->uang_makan, 'transaksi' => 0, 'dari_kas' => false],
+        };
         $this->isianKasbon = $slip->potonganKasbon->mapWithKeys(fn (PotonganKasbon $potongan): array => [$potongan->id => (string) $potongan->jumlah])->all();
         $this->kasbonSlip = $slip->potonganKasbon->mapWithKeys(function (PotonganKasbon $potongan): array {
             $kasbon = $potongan->kasbon;
