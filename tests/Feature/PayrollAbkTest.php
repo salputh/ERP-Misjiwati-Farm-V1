@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Jabatan;
 use App\Enums\JenisAktivitas;
 use App\Enums\KategoriKas;
 use App\Enums\ModulAktivitas;
@@ -211,7 +212,7 @@ class PayrollAbkTest extends TestCase
         $this->get(route('payroll.abk', ['periode' => $this->september()->id]))
             ->assertOk()
             ->assertSee('Slip gaji Kandang 2 belum dibuat')
-            ->assertSee('4 ABK di lembar bagi hasil: Frengky, Igo, Utama dan Rafi')
+            ->assertSee('4 ABK di lembar bagi hasil: Frengky, Igo, Utama dan Rafi; 1 joker: Rohim')
             ->assertSee('Buat slip Kandang 2')
             ->assertDontSee('Belum ada slip gaji di periode ini')
             ->assertDontSee('Rekap payroll');
@@ -223,20 +224,58 @@ class PayrollAbkTest extends TestCase
         $halaman = Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
             ->test(PayrollAbk::class)
             ->call('buatSlip', $periodeKandang->id)
-            ->assertSet('pesan', 'Slip gaji 4 ABK Kandang 2 dibuat. Lengkapi hari kerja dan komponen lain lewat tombol ubah di tiap slip.')
+            ->assertSet('pesan', 'Slip gaji 5 orang Kandang 2 dibuat. Hari kerja dan gaji pokok terisi dari data karyawan; lengkapi komponen lain lewat tombol ubah di tiap slip.')
             ->assertDontSee('Slip gaji Kandang 2 belum dibuat')
             ->assertSee('Rekap payroll');
 
         $slip = $periodeKandang->slipGaji()->orderBy('urutan')->get();
-        $this->assertSame(['Frengky', 'Igo', 'Utama', 'Rafi'], $slip->pluck('nama')->all());
-        $this->assertSame($periodeKandang->bagiHasil->penerimaBerperan(PeranBagiHasil::Abk)->pluck('id')->all(), $slip->pluck('penerima_bagi_hasil_id')->all());
-        $this->assertSame(Karyawan::whereIn('nama', ['Frengky', 'Igo', 'Utama', 'Rafi'])->orderBy('id')->pluck('id')->all(), $slip->pluck('karyawan_id')->all());
+        $this->assertSame(['Frengky', 'Igo', 'Utama', 'Rafi', 'Rohim'], $slip->pluck('nama')->all());
+        $this->assertSame([...$periodeKandang->bagiHasil->penerimaBerperan(PeranBagiHasil::Abk)->pluck('id')->all(), null], $slip->pluck('penerima_bagi_hasil_id')->all());
+        $this->assertSame(Karyawan::whereIn('nama', ['Frengky', 'Igo', 'Utama', 'Rafi', 'Rohim'])->orderBy('id')->pluck('id')->all(), $slip->pluck('karyawan_id')->all());
         // Enam "Pinjaman frengky" di kas operasional Kandang 2 September.
-        $this->assertSame([1_330_000, 0, 0, 0], $slip->pluck('pinjaman')->all());
+        $this->assertSame(1_330_000, $slip->firstWhere('nama', 'Frengky')->pinjaman);
+        $this->assertSame([0, 0], $slip->whereIn('nama', ['Igo', 'Utama'])->pluck('pinjaman')->all());
 
-        $halaman->call('buatSlip', $periodeKandang->id)->assertSet('pesan', 'Semua ABK Kandang 2 sudah punya slip gaji.');
-        $this->assertSame(4, $periodeKandang->slipGaji()->count());
+        $halaman->call('buatSlip', $periodeKandang->id)->assertSet('pesan', 'Semua ABK dan joker Kandang 2 sudah punya slip gaji.');
+        $this->assertSame(5, $periodeKandang->slipGaji()->count());
         $this->assertSame(1, Aktivitas::where(['modul' => ModulAktivitas::PayrollAbk, 'jenis' => JenisAktivitas::Tambah])->count());
+    }
+
+    public function test_new_slips_take_hours_and_base_salary_from_the_employee_defaults(): void
+    {
+        $periodeKandang = $this->bagiHasilSeptemberKandangDua();
+        // Rohim (joker) sudah diberi nilai bawaan oleh seeder; ABK diberi hari kerja saja, gaji pokoknya tidak dipakai.
+        Karyawan::where('nama', 'Igo')->update(['hari_kerja' => 28, 'gaji_pokok' => 1_000_000]);
+
+        Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
+            ->test(PayrollAbk::class)
+            ->call('buatSlip', $periodeKandang->id);
+
+        $rohim = $periodeKandang->slipGaji()->where('nama', 'Rohim')->sole();
+        $this->assertSame(Jabatan::Joker, $rohim->jabatan);
+        $this->assertNull($rohim->penerima_bagi_hasil_id);
+        $this->assertSame(30, $rohim->hari_kerja);
+        $this->assertSame(2_000_000, $rohim->gaji_pokok);
+
+        $igo = $periodeKandang->slipGaji()->where('nama', 'Igo')->sole();
+        $this->assertSame(28, $igo->hari_kerja);
+        $this->assertSame(0, $igo->gaji_pokok);
+        $this->assertSame(0, $periodeKandang->slipGaji()->where('nama', 'Rafi')->sole()->hari_kerja);
+
+        $this->assertSame('4 ABK, 1 Joker, '.$this->september()->nama, Aktivitas::where('modul', ModulAktivitas::PayrollAbk)->sole()->rincian);
+    }
+
+    public function test_a_joker_without_defaults_still_gets_an_empty_slip(): void
+    {
+        $periodeKandang = $this->bagiHasilSeptemberKandangDua();
+        Karyawan::where('nama', 'Rohim')->update(['hari_kerja' => null, 'gaji_pokok' => null, 'tanggal_gajian' => null]);
+
+        Livewire::withQueryParams(['periode' => $periodeKandang->periode_id])
+            ->test(PayrollAbk::class)
+            ->call('buatSlip', $periodeKandang->id);
+
+        $rohim = $periodeKandang->slipGaji()->where('nama', 'Rohim')->sole();
+        $this->assertSame([0, 0], [$rohim->hari_kerja, $rohim->gaji_pokok]);
     }
 
     public function test_slip_components_can_be_updated_and_the_slip_deleted(): void
@@ -300,6 +339,7 @@ class PayrollAbkTest extends TestCase
             'Igo' => [201, 'dari kas: 1 transaksi Pinjaman Makan'],
             'Utama' => [200, 'dari kas: 1 transaksi Pinjaman Makan'],
             'Rafi' => [0, null],
+            'Rohim' => [0, null],
         ], $uangMakan);
 
         // Di form ubah, uang makan hanya ditampilkan; tidak ada isiannya.

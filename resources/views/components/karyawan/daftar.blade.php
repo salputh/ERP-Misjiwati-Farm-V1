@@ -23,6 +23,7 @@
                             <th><span class="userDatatable-title">Nama</span></th>
                             <th><span class="userDatatable-title">Jabatan</span></th>
                             <th class="d-none d-md-table-cell"><span class="userDatatable-title">Keterangan</span></th>
+                            <th class="d-none d-lg-table-cell"><span class="userDatatable-title">Gaji bawaan</span></th>
                             @isset($periodeSlip)
                                 <th class="text-end d-none d-md-table-cell"><span class="userDatatable-title">Hari kerja</span></th>
                                 <th class="text-end"><span class="userDatatable-title">Bersih diterima (Rp)</span></th>
@@ -32,13 +33,14 @@
                     </thead>
                     @foreach ($daftar['kandang'] as $kandang)
                         <tbody wire:key="kandang-{{ $kandang['nama'] }}">
-                            <x-tabel.grup kolom="7" :judul="$kandang['nama']" :keterangan="$kandang['rincian']" />
+                            <x-tabel.grup kolom="8" :judul="$kandang['nama']" :keterangan="$kandang['rincian']" />
                             @foreach ($kandang['karyawan'] as $karyawan)
                                 <tr wire:key="karyawan-{{ $karyawan['id'] }}">
                                     <td><div class="userDatatable-content">{{ $loop->iteration }}</div></td>
                                     <td><div class="userDatatable-content fw-500">{{ $karyawan['nama'] }}</div></td>
                                     <td><span class="dm-tag tag-transparented m-0 {{ $karyawan['jabatan']->kelasTag() }}">{{ $karyawan['jabatan']->label() }}</span></td>
                                     <td class="d-none d-md-table-cell"><div class="userDatatable-content">{{ $karyawan['keterangan'] ?? '-' }}</div></td>
+                                    <td class="d-none d-lg-table-cell"><div class="userDatatable-content">{{ $karyawan['gaji_bawaan'] ?? '-' }}</div></td>
                                     @isset($periodeSlip)
                                         @isset($karyawan['slip'])
                                             <td class="text-end d-none d-md-table-cell"><div class="userDatatable-content">@angka($karyawan['slip']['hari_kerja'])</div></td>

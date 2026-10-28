@@ -83,6 +83,66 @@ class DataKaryawanTest extends TestCase
         $this->assertSame([10, '8 ABK, 2 Joker'], [$daftar['total'], $daftar['rincian']]);
     }
 
+    public function test_rohim_is_seeded_with_his_default_salary_and_it_shows_in_the_list(): void
+    {
+        $rohim = Karyawan::where('nama', 'Rohim')->sole();
+
+        $this->assertSame([2_000_000, 30, 25], [$rohim->gaji_pokok, $rohim->hari_kerja, $rohim->tanggal_gajian]);
+        $this->assertSame('Rp 2.000.000, 30 hari, gajian tgl 25', $rohim->gajiBawaan());
+        $this->assertNull(Karyawan::where('nama', 'Wahyu')->sole()->gajiBawaan());
+
+        $this->get(route('karyawan'))->assertOk()->assertSee('Gaji bawaan')->assertSee('Rp 2.000.000, 30 hari, gajian tgl 25');
+    }
+
+    public function test_default_salary_can_be_saved_changed_and_cleared_from_the_form(): void
+    {
+        $joker = Karyawan::factory()->joker()->create(['nama' => 'Baru', 'kandang_id' => Kandang::where('nama', 'Kandang 1')->value('id')]);
+
+        Livewire::test(DataKaryawanPage::class)
+            ->call('ubah', $joker->id)
+            ->assertSet('gajiPokok', '')
+            ->set('gajiPokok', '2500000')
+            ->set('hariKerja', '26')
+            ->set('tanggalGajian', '5')
+            ->call('simpan')
+            ->assertHasNoErrors();
+
+        $this->assertSame([2_500_000, 26, 5], [$joker->fresh()->gaji_pokok, $joker->fresh()->hari_kerja, $joker->fresh()->tanggal_gajian]);
+
+        Livewire::test(DataKaryawanPage::class)
+            ->call('ubah', $joker->id)
+            ->assertSet('gajiPokok', '2500000')
+            ->assertSet('tanggalGajian', '5')
+            ->set('gajiPokok', '')
+            ->set('hariKerja', '')
+            ->set('tanggalGajian', '')
+            ->call('simpan')
+            ->assertHasNoErrors();
+
+        $this->assertNull($joker->fresh()->gajiBawaan());
+    }
+
+    public function test_default_salary_rejects_values_that_make_no_sense(): void
+    {
+        $rohim = Karyawan::where('nama', 'Rohim')->sole();
+
+        Livewire::test(DataKaryawanPage::class)
+            ->call('ubah', $rohim->id)
+            ->set('gajiPokok', '-1')
+            ->set('hariKerja', '400')
+            ->set('tanggalGajian', '32')
+            ->call('simpan')
+            ->assertHasErrors(['gajiPokok' => 'min', 'hariKerja' => 'max', 'tanggalGajian' => 'max'])
+            ->set('gajiPokok', 'dua juta')
+            ->set('hariKerja', '0')
+            ->set('tanggalGajian', '0')
+            ->call('simpan')
+            ->assertHasErrors(['gajiPokok' => 'integer', 'tanggalGajian' => 'min'])
+            ->assertHasNoErrors('hariKerja');
+
+        $this->assertSame([2_000_000, 30, 25], [$rohim->fresh()->gaji_pokok, $rohim->fresh()->hari_kerja, $rohim->fresh()->tanggal_gajian]);
+    }
+
     public function test_seeding_twice_does_not_duplicate_employees(): void
     {
         $this->seed([KaryawanSeeder::class, PayrollSeeder::class]);

@@ -43,6 +43,12 @@ class DataKaryawan extends Component
 
     public string $keterangan = '';
 
+    public string $gajiPokok = '';
+
+    public string $hariKerja = '';
+
+    public string $tanggalGajian = '';
+
     public ?string $pesan = null;
 
     #[Locked]
@@ -120,6 +126,9 @@ class DataKaryawan extends Component
         $this->jabatan = $karyawan->jabatan->value;
         $this->kandangId = $karyawan->kandang_id;
         $this->keterangan = $karyawan->keterangan ?? '';
+        $this->gajiPokok = (string) $karyawan->gaji_pokok;
+        $this->hariKerja = (string) $karyawan->hari_kerja;
+        $this->tanggalGajian = (string) $karyawan->tanggal_gajian;
     }
 
     public function batal(): void
@@ -131,6 +140,9 @@ class DataKaryawan extends Component
     {
         $this->nama = trim($this->nama);
         $this->keterangan = trim($this->keterangan);
+        $this->gajiPokok = trim($this->gajiPokok);
+        $this->hariKerja = trim($this->hariKerja);
+        $this->tanggalGajian = trim($this->tanggalGajian);
         $data = $this->validate([
             'nama' => [
                 'required',
@@ -141,6 +153,9 @@ class DataKaryawan extends Component
             'jabatan' => ['required', Rule::enum(Jabatan::class)],
             'kandangId' => ['nullable', 'integer', Rule::exists('kandangs', 'id')->where('farm_id', $this->farm?->id)],
             'keterangan' => ['nullable', 'string', 'max:255'],
+            'gajiPokok' => ['nullable', 'integer', 'min:0', 'max:999999999999'],
+            'hariKerja' => ['nullable', 'integer', 'min:0', 'max:366'],
+            'tanggalGajian' => ['nullable', 'integer', 'min:1', 'max:31'],
         ], [
             'nama.required' => 'Nama karyawan wajib diisi.',
             'nama.max' => 'Nama karyawan maksimal 150 karakter.',
@@ -149,6 +164,15 @@ class DataKaryawan extends Component
             'jabatan.enum' => 'Jabatan tidak dikenal.',
             'kandangId.exists' => 'Kandang tidak ditemukan di farm ini.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
+            'gajiPokok.integer' => 'Gaji pokok harus berupa angka bulat.',
+            'gajiPokok.min' => 'Gaji pokok tidak boleh negatif.',
+            'gajiPokok.max' => 'Gaji pokok terlalu besar.',
+            'hariKerja.integer' => 'Hari kerja harus berupa angka bulat.',
+            'hariKerja.min' => 'Hari kerja tidak boleh negatif.',
+            'hariKerja.max' => 'Hari kerja maksimal 366 hari.',
+            'tanggalGajian.integer' => 'Tanggal gajian harus berupa angka bulat.',
+            'tanggalGajian.min' => 'Tanggal gajian antara 1 dan 31.',
+            'tanggalGajian.max' => 'Tanggal gajian antara 1 dan 31.',
         ]);
 
         $mengubah = $this->karyawanId !== null;
@@ -160,6 +184,9 @@ class DataKaryawan extends Component
                 'jabatan' => $data['jabatan'],
                 'kandang_id' => $data['kandangId'],
                 'keterangan' => filled($data['keterangan']) ? $data['keterangan'] : null,
+                'gaji_pokok' => filled($data['gajiPokok']) ? (int) $data['gajiPokok'] : null,
+                'hari_kerja' => filled($data['hariKerja']) ? (int) $data['hariKerja'] : null,
+                'tanggal_gajian' => filled($data['tanggalGajian']) ? (int) $data['tanggalGajian'] : null,
             ]);
 
             if ($mengubah && ! $karyawan->isDirty()) {
@@ -235,5 +262,8 @@ class DataKaryawan extends Component
         $this->jabatan = Jabatan::Abk->value;
         $this->kandangId = null;
         $this->keterangan = '';
+        $this->gajiPokok = '';
+        $this->hariKerja = '';
+        $this->tanggalGajian = '';
     }
 }

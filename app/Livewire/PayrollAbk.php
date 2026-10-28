@@ -140,9 +140,9 @@ class PayrollAbk extends Component
     }
 
     /**
-     * Kandang periode ini yang punya ABK di lembar bagi hasil tetapi belum punya slip gaji.
+     * Kandang periode ini yang punya ABK di lembar bagi hasil atau joker yang belum punya slip gaji.
      *
-     * @return list<array{periode_kandang: PeriodeKandang, abk: SupportCollection<int, PenerimaBagiHasil>}>
+     * @return list<array{periode_kandang: PeriodeKandang, abk: SupportCollection<int, PenerimaBagiHasil>, joker: SupportCollection<int, Karyawan>, orang: string}>
      */
     #[Computed]
     public function kandangBelumAdaSlip(): array
@@ -155,15 +155,29 @@ class PayrollAbk extends Component
             ->with(['kandang', 'slipGaji', 'bagiHasil.penerima'])
             ->get()
             ->sortBy('kandang.nama')
-            ->map(fn (PeriodeKandang $satu): array => ['periode_kandang' => $satu, 'abk' => self::abkTanpaSlip($satu)])
-            ->filter(fn (array $satu): bool => $satu['abk']->isNotEmpty())
+            ->map(function (PeriodeKandang $satu): array {
+                $abk = self::abkTanpaSlip($satu);
+                $joker = self::jokerTanpaSlip($satu);
+
+                return [
+                    'periode_kandang' => $satu,
+                    'abk' => $abk,
+                    'joker' => $joker,
+                    'orang' => collect([
+                        $abk->isNotEmpty() ? $abk->count().' ABK di lembar bagi hasil: '.$abk->pluck('nama')->join(', ', ' dan ') : null,
+                        $joker->isNotEmpty() ? $joker->count().' joker: '.$joker->pluck('nama')->join(', ', ' dan ') : null,
+                    ])->filter()->join('; '),
+                ];
+            })
+            ->filter(fn (array $satu): bool => $satu['abk']->isNotEmpty() || $satu['joker']->isNotEmpty())
             ->values()
             ->all();
     }
 
     /**
-     * Buat slip untuk setiap ABK bagi hasil kandang ini yang belum punya slip. Pinjaman terisi dari
-     * pinjaman karyawan/ABK atas namanya di kas operasional; komponen lain diisi lewat form ubah.
+     * Buat slip untuk setiap ABK bagi hasil dan joker kandang ini yang belum punya slip. Hari kerja dan gaji pokok
+     * diambil dari nilai bawaan di data karyawan (0 bila belum diisi). Pinjaman terisi dari pinjaman karyawan/ABK
+     * atas namanya di kas operasional; komponen lain diisi lewat form ubah.
      */
     public function buatSlip(int $periodeKandangId): void
     {
@@ -176,36 +190,54 @@ class PayrollAbk extends Component
 
         $jumlah = DB::transaction(function () use ($periodeKandang): int {
             $abk = self::abkTanpaSlip($periodeKandang);
+            $joker = self::jokerTanpaSlip($periodeKandang);
             $urutan = (int) $periodeKandang->slipGaji->max('urutan');
 
             foreach ($abk as $penerima) {
+                $karyawan = self::karyawanUntuk($periodeKandang, $penerima->nama);
+
                 SlipGaji::create([
                     'periode_kandang_id' => $periodeKandang->id,
                     'penerima_bagi_hasil_id' => $penerima->id,
-                    'karyawan_id' => self::karyawanUntuk($periodeKandang, $penerima->nama),
+                    'karyawan_id' => $karyawan?->id,
                     'nama' => $penerima->nama,
                     'jabatan' => Jabatan::Abk,
-                    'hari_kerja' => 0,
+                    'hari_kerja' => $karyawan?->hari_kerja ?? 0,
                     'pinjaman' => self::pinjamanDariKas($periodeKandang, $penerima->nama),
                     'urutan' => ++$urutan,
                 ]);
             }
 
-            if ($abk->isNotEmpty()) {
+            foreach ($joker as $karyawan) {
+                SlipGaji::create([
+                    'periode_kandang_id' => $periodeKandang->id,
+                    'karyawan_id' => $karyawan->id,
+                    'nama' => $karyawan->nama,
+                    'jabatan' => Jabatan::Joker,
+                    'hari_kerja' => $karyawan->hari_kerja ?? 0,
+                    'gaji_pokok' => $karyawan->gaji_pokok ?? 0,
+                    'pinjaman' => self::pinjamanDariKas($periodeKandang, $karyawan->nama),
+                    'urutan' => ++$urutan,
+                ]);
+            }
+
+            $jumlah = $abk->count() + $joker->count();
+
+            if ($jumlah > 0) {
                 Aktivitas::catat(
                     JenisAktivitas::Tambah,
                     ModulAktivitas::PayrollAbk,
                     'Slip gaji '.$periodeKandang->kandang->nama,
-                    $abk->count().' ABK, '.$this->periode->nama,
+                    self::hitungOrang($abk->count(), $joker->count()).', '.$this->periode->nama,
                 );
             }
 
-            return $abk->count();
+            return $jumlah;
         });
 
         $this->pesan = $jumlah > 0
-            ? "Slip gaji {$jumlah} ABK {$periodeKandang->kandang->nama} dibuat. Lengkapi hari kerja dan komponen lain lewat tombol ubah di tiap slip."
-            : "Semua ABK {$periodeKandang->kandang->nama} sudah punya slip gaji.";
+            ? "Slip gaji {$jumlah} orang {$periodeKandang->kandang->nama} dibuat. Hari kerja dan gaji pokok terisi dari data karyawan; lengkapi komponen lain lewat tombol ubah di tiap slip."
+            : "Semua ABK dan joker {$periodeKandang->kandang->nama} sudah punya slip gaji.";
         $this->periodeKandangId = $periodeKandang->id;
         $this->segarkan();
     }
@@ -366,6 +398,39 @@ class PayrollAbk extends Component
     }
 
     /**
+     * Joker kandang ini yang belum punya slip (dicocokkan dengan karyawan atau namanya). Joker tidak ikut bagi hasil,
+     * jadi slipnya berasal dari data karyawan, tetapi baru ditawarkan setelah kandang punya lembar bagi hasil,
+     * seperti slip ABK: slip dibuat setelah panen selesai dan bagi hasil dihitung.
+     *
+     * @return SupportCollection<int, Karyawan>
+     */
+    private static function jokerTanpaSlip(PeriodeKandang $periodeKandang): SupportCollection
+    {
+        if (! $periodeKandang->bagiHasil) {
+            return collect();
+        }
+
+        $karyawanBerslip = $periodeKandang->slipGaji->pluck('karyawan_id')->filter();
+        $namaBerslip = $periodeKandang->slipGaji->pluck('nama')->map(fn (string $nama): string => mb_strtolower($nama));
+
+        return Karyawan::query()
+            ->where('kandang_id', $periodeKandang->kandang_id)
+            ->where('jabatan', Jabatan::Joker)
+            ->orderBy('id')
+            ->get()
+            ->reject(fn (Karyawan $satu): bool => $karyawanBerslip->contains($satu->id) || $namaBerslip->contains(mb_strtolower($satu->nama)))
+            ->values();
+    }
+
+    /**
+     * "3 ABK", "1 Joker", atau "3 ABK, 1 Joker".
+     */
+    private static function hitungOrang(int $abk, int $joker): string
+    {
+        return collect([$abk > 0 ? "{$abk} ABK" : null, $joker > 0 ? "{$joker} Joker" : null])->filter()->join(', ');
+    }
+
+    /**
      * Jumlah pinjaman karyawan dan pinjaman ABK di kas operasional kandang ini yang uraiannya memuat nama orang itu.
      * Transaksi milik kasbon tidak dihitung di sini; kasbon dipotong bertahap lewat potongan kasbon.
      */
@@ -384,18 +449,18 @@ class PayrollAbk extends Component
      * Karyawan kandang ini untuk nama di lembar bagi hasil: nama yang sama persis, atau satu-satunya karyawan
      * kandang ini yang namanya mengandung nama itu sebagai kata utuh (mis. "Frengky" untuk "Frengky Marpaung").
      */
-    private static function karyawanUntuk(PeriodeKandang $periodeKandang, string $nama): ?int
+    private static function karyawanUntuk(PeriodeKandang $periodeKandang, string $nama): ?Karyawan
     {
-        $karyawan = Karyawan::query()->where('kandang_id', $periodeKandang->kandang_id)->get(['id', 'nama']);
+        $karyawan = Karyawan::query()->where('kandang_id', $periodeKandang->kandang_id)->get();
         $sama = $karyawan->first(fn (Karyawan $satu): bool => mb_strtolower($satu->nama) === mb_strtolower($nama));
         if ($sama) {
-            return $sama->id;
+            return $sama;
         }
 
         $pola = '/\b'.preg_quote(mb_strtolower($nama), '/').'\b/u';
         $mirip = $karyawan->filter(fn (Karyawan $satu): bool => preg_match($pola, mb_strtolower($satu->nama)) === 1);
 
-        return $mirip->count() === 1 ? $mirip->first()->id : null;
+        return $mirip->count() === 1 ? $mirip->first() : null;
     }
 
     private function segarkan(): void
