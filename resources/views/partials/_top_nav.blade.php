@@ -96,12 +96,18 @@
                                 </div>
                             </div>
                             <div class="nav-author__options">
+                                @unless(config('app.demo_mode'))
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
                                     <button type="submit" class="nav-author__signout border-0 w-100">
                                         <img src="{{ asset('assets/img/svg/log-out.svg') }}" alt="" class="svg"> Keluar
                                     </button>
                                 </form>
+                                @else
+                                <div class="px-3 py-2 text-muted" style="font-size:13px;">
+                                    <img src="{{ asset('assets/img/svg/log-out.svg') }}" alt="" class="svg opacity-50"> Versi Demo
+                                </div>
+                                @endunless
                             </div>
                         </div>
                     </div>

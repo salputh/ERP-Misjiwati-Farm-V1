@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\AutoLoginDemo;
+use App\Http\Middleware\DemoMode;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Demo mode: pengunjung langsung masuk sebagai user demo.
+        $middleware->web(append: [
+            AutoLoginDemo::class,
+            DemoMode::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

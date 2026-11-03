@@ -30,3 +30,10 @@ Thumbs.db
 /template-hexadash
 /*.pdf
 /WORKFLOW.md
+
+# Demo local files - jangan commit
+.env.demo
+/database/database-demo.sqlite
+/DEMO-SETUP.md
+/DEMO-CHECKLIST.md
+/DEMO-RINGKASAN.md
