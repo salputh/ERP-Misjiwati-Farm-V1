@@ -20,6 +20,10 @@ class DemoSeeder extends Seeder
      */
     public function run(): void
     {
+        if (! config('app.demo_mode') || app()->environment('production')) {
+            throw new \RuntimeException('DemoSeeder hanya boleh dijalankan dengan DEMO_MODE=true di lingkungan demo.');
+        }
+
         // Buat akun demo
         User::create([
             'name' => 'Demo User',
@@ -38,10 +42,10 @@ class DemoSeeder extends Seeder
             ]);
         }
 
-        // Jalankan seeder data yang sudah ada (data dari dokumen contoh, sudah aman)
-        // CATATAN: Seeder ini akan dimodifikasi untuk menggunakan nama fiktif
+        // Data dasar dilengkapi dan identitasnya diganti oleh seeder demo.
         $this->call([
             DatabaseSeeder::class,
+            DemoDataLengkapSeeder::class,
         ]);
 
         $this->command->info('✓ Data demo berhasil dibuat');

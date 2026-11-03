@@ -30,10 +30,10 @@ class AutoLoginDemo
             $email = config('app.demo_credentials.username', 'demo@misjiwatifarm.tech');
             $user = User::where('email', $email)->first();
 
-            if ($user) {
-                Auth::login($user, remember: true);
-                $request->session()->regenerate();
-            }
+            abort_unless($user, 503, 'Data demo sedang disiapkan.');
+
+            Auth::login($user);
+            $request->session()->regenerate();
         }
 
         // Jika ada yang mencoba akses /masuk atau root /, redirect ke dashboard

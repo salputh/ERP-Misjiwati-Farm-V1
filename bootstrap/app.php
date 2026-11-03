@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AutoLoginDemo;
 use App\Http\Middleware\DemoMode;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             AutoLoginDemo::class,
             DemoMode::class,
         ]);
+        $middleware->prependToPriorityList(
+            before: AuthenticatesRequests::class,
+            prepend: AutoLoginDemo::class,
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

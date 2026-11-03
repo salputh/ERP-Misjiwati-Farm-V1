@@ -17,6 +17,14 @@
         </div>
 
         <div class="contents">
+            @if(config('app.demo_mode'))
+                <div class="alert alert-info mb-3" role="status">
+                    <strong>Versi Demo</strong> — Data contoh untuk eksplorasi fitur.
+                    @if(config('app.demo_readonly'))
+                        Mode hanya lihat: filter dan unduhan tersedia; perubahan data dinonaktifkan.
+                    @endif
+                </div>
+            @endif
             {{ $slot }}
         </div>
 

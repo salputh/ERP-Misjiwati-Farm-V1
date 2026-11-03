@@ -9,35 +9,26 @@ use Symfony\Component\HttpFoundation\Response;
 class DemoMode
 {
     /**
-     * Daftar route yang boleh diakses di demo mode (read-only).
+     * Aksi Livewire yang hanya mengubah tampilan atau membaca data.
      *
      * @var array<string>
      */
-    private const ALLOWED_ROUTES = [
-        'dashboard',
-        'aktivitas',
-        'periode.index',
-        'project.index',
-        'project.show',
-        'recording.harian',
-        'recording.harian.export',
-        'laporan.harian',
-        'pakan.log',
-        'sampling.bobot',
-        'panen.rekap',
-        'panen.export',
-        'rhpp.index',
-        'kas.operasional',
-        'bagi-hasil.index',
-        'bagi-hasil.export',
-        'payroll.abk',
-        'payroll.pemanen',
-        'kasbon.abk',
-        'master.data',
-        'kohe.stok',
-        'standar-strain.index',
-        'modul.index',
-        'akun.index',
+    private const READ_ACTIONS = [
+        '$refresh',
+        'pilihKandang',
+        'pilihTab',
+        'pilihKategori',
+        'pakaiKategori',
+        'pilihJenis',
+        'pilihModul',
+        'muatLagi',
+        'pilihTampilan',
+        'pilihPerHalaman',
+        'lihat',
+        'setPage',
+        'gotoPage',
+        'nextPage',
+        'previousPage',
     ];
 
     /**
@@ -52,26 +43,47 @@ class DemoMode
             return $next($request);
         }
 
-        // Tambahkan header untuk identifikasi demo
-        $response = $next($request);
-
-        if ($response instanceof Response) {
-            $response->headers->set('X-Demo-Mode', 'true');
-        }
-
-        // Jika readonly mode aktif, blokir semua method selain GET dan HEAD
-        if (config('app.demo_readonly', false) && ! $request->isMethodSafe()) {
+        if (config('app.demo_readonly', false) && ! $request->isMethodSafe() && ! $this->isReadOnlyLivewireRequest($request)) {
             // Jika Livewire request, kembalikan response khusus
             if ($request->hasHeader('X-Livewire')) {
                 return response()->json([
                     'error' => 'Mode demo: Fitur ini dinonaktifkan untuk menjaga data demo tetap konsisten.',
-                ], 403);
+                ], 403)->header('X-Demo-Mode', 'true');
             }
 
             // Untuk request biasa, redirect dengan pesan
-            return redirect()->back()->with('error', 'Mode demo: Fitur ini dinonaktifkan untuk menjaga data demo tetap konsisten.');
+            return redirect()->back()->with('error', 'Mode demo: Fitur ini dinonaktifkan untuk menjaga data demo tetap konsisten.')->header('X-Demo-Mode', 'true');
         }
 
+        $response = $next($request);
+        $response->headers->set('X-Demo-Mode', 'true');
+
         return $response;
+    }
+
+    private function isReadOnlyLivewireRequest(Request $request): bool
+    {
+        if (! $request->isMethod('POST') || ! $request->routeIs('*livewire.update')) {
+            return false;
+        }
+
+        $components = $request->input('components');
+        if (! is_array($components) || $components === []) {
+            return false;
+        }
+
+        foreach ($components as $component) {
+            if (! is_array($component) || ! isset($component['calls']) || ! is_array($component['calls'])) {
+                return false;
+            }
+
+            foreach ($component['calls'] as $call) {
+                if (! is_array($call) || ! in_array($call['method'] ?? null, self::READ_ACTIONS, true)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

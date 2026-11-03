@@ -21,6 +21,7 @@ use App\Models\Periode;
 use App\Models\PeriodeKandang;
 use App\Models\PotonganKasbon;
 use App\Models\Recording;
+use App\Models\RhppReal;
 use App\Models\SesiSampling;
 use App\Models\SlipGaji;
 use App\Models\TitikSampling;
@@ -58,7 +59,7 @@ class DemoDataLengkapSeeder extends Seeder
         $kandang2 = Kandang::query()->where('nama', 'Kandang 2')->firstOrFail();
 
         // Periode yang akan diisi (Periode Juli 2026 - ID 1)
-        $periode = Periode::find(1);
+        $periode = Periode::query()->where('nama', 'Periode Juli 2026')->firstOrFail();
         $periodeKandang1 = PeriodeKandang::query()
             ->where('periode_id', $periode->id)
             ->where('kandang_id', $kandang1->id)
@@ -108,6 +109,12 @@ class DemoDataLengkapSeeder extends Seeder
         $this->command->info('🌾 Membuat data kohe...');
         $this->buatKohe($farm, $kandang1, $kandang2, $periode->tanggal_chick_in);
 
+        Periode::query()->update(['inti' => 'PT Contoh Inti Sejahtera', 'ppl' => 'PPL Demo']);
+        RhppReal::query()->update(['ppl' => 'PPL Demo']);
+        foreach (TransaksiKas::all() as $transaksi) {
+            $transaksi->update(['uraian' => 'Transaksi demo: '.$transaksi->kategori->label()]);
+        }
+
         // 11. Kas Operasional (sudah ada dari DatabaseSeeder)
         $this->command->info('💵 Kas operasional sudah ada dari seeder sebelumnya');
 
@@ -139,8 +146,8 @@ class DemoDataLengkapSeeder extends Seeder
         Pemanen::whereIn('nama', $pemanenLama)->delete();
 
         // Hapus recording duplikat (sudah ada dari DatabaseSeeder)
-        Recording::query()->delete();
-        SesiSampling::query()->delete();
+        Recording::query()->whereHas('periodeKandang.periode', fn ($query) => $query->where('nama', 'Periode Juli 2026'))->delete();
+        SesiSampling::query()->whereHas('periodeKandang.periode', fn ($query) => $query->where('nama', 'Periode Juli 2026'))->delete();
 
         // Pastikan populasi awal sesuai permintaan demo: KD1 20.000, KD2 26.000
         PeriodeKandang::query()->where('kandang_id', 1)->update(['populasi_awal' => 20000]);
@@ -351,12 +358,15 @@ class DemoDataLengkapSeeder extends Seeder
     private function lengkapiPanen(Periode $periode, array $pemanen): void
     {
         // Panen sudah ada dari PanenSeeder, pastikan pemanennya update
-        $notaPanen = NotaPanen::where('periode_id', $periode->id)->get();
+        $notaPanen = NotaPanen::query()->orderBy('id')->get();
 
         foreach ($notaPanen as $nota) {
             // Update pembeli jadi nama fiktif
             $pembeliFiktif = ['CV Pembeli Sejahtera', 'CV Mitra Unggas', 'PT Ayam Jaya', 'CV Broiler Utama'];
             $nota->pembeli = $pembeliFiktif[array_rand($pembeliFiktif)];
+            $nota->no_spa = 'SPA-DEMO-'.$nota->id;
+            $nota->no_btpa = 'BTPA-DEMO-'.$nota->id;
+            $nota->no_polisi = 'DEMO '.str_pad((string) $nota->id, 4, '0', STR_PAD_LEFT);
             $nota->save();
 
             // Update pemanen dengan nama fiktif (jika belum ada)
