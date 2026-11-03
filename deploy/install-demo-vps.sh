@@ -89,5 +89,6 @@ fi
 rm -f "$PREVIOUS_CONFIG"
 systemctl reload nginx
 
-curl --fail --silent --show-error --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/up" > /dev/null
+curl --fail --silent --show-error --retry 5 --retry-all-errors --retry-delay 1 \
+    --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/up" > /dev/null
 echo "Demo aktif: https://$DOMAIN"
