@@ -31,7 +31,7 @@
                                 href="{{ request()->fullUrlWithQuery(['periode' => $pilihan->id]) }}"
                                 @class(['dropdown-item', 'active' => $pilihan->is($periodeTerpilih)])
                                 @if ($pilihan->is($periodeTerpilih)) aria-current="true" @endif>
-                                {{ $pilihan->nama }} · {{ ucfirst($pilihan->status) }}
+                                {{ $pilihan->nama }} · {{ $pilihan->labelStatus() }}
                             </a>
                         @endforeach
                     </x-pilih>

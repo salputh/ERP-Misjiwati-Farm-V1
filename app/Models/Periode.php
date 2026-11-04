@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -128,6 +129,25 @@ class Periode extends Model
     /**
      * Umur ayam pada suatu tanggal: 0 di hari chick-in.
      */
+    /**
+     * Tanggal acuan "hari ini" untuk umur ayam. Pada mode demo data berhenti di recording terakhir,
+     * jadi umur tidak ikut bertambah mengikuti kalender dan tetap cocok dengan data yang ada.
+     */
+    public function tanggalAcuan(): CarbonInterface
+    {
+        if (config('app.demo_mode')) {
+            $terakhir = Recording::query()
+                ->whereIn('periode_kandang_id', $this->kandangPeriode()->select('id'))
+                ->max('tanggal');
+
+            if ($terakhir) {
+                return Carbon::parse($terakhir)->startOfDay();
+            }
+        }
+
+        return today();
+    }
+
     public function umurPada(CarbonInterface $tanggal): int
     {
         return (int) $this->tanggal_chick_in->diffInDays($tanggal->copy()->startOfDay());
