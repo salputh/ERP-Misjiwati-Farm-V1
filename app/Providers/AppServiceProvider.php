@@ -38,7 +38,11 @@ class AppServiceProvider extends ServiceProvider
                 ? $periode->kandangPeriode()->with('kandang')->get()->pluck('kandang')->sortBy('nama')->values()
                 : collect();
 
-            $view->with(compact('farm', 'periode', 'kandangMenu'));
+            $daftarFarm = Farm::query()->orderBy('nama')->get();
+            $daftarPeriode = $farm?->periodes()->prioritaskanAktif()->get() ?? collect();
+            $periodeTerpilih = $periode;
+
+            $view->with(compact('farm', 'periode', 'kandangMenu', 'daftarFarm', 'daftarPeriode', 'periodeTerpilih'));
         });
 
         View::composer('partials._top_nav', function ($view): void {

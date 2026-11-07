@@ -32,6 +32,13 @@ body::after { display: none; }
 
 .header-periode .btn:first-child { max-width: min(230px, 38vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* Pilihan farm dan periode: di top bar untuk desktop, di sidebar untuk ponsel. */
+.basalt-topbar-pilih { gap: 0.5rem; align-items: center; min-width: 0; }
+.basalt-topbar-pilih .header-periode { min-width: 0; }
+.basalt-mainmenu-pilih { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0 1rem 0.75rem; }
+.basalt-mainmenu-pilih .header-periode { flex: 1 1 100%; min-width: 0; }
+.basalt-mainmenu-pilih .header-periode .btn:first-child { display: block; width: 100%; max-width: 100%; text-align: left; }
+
 .tanpa-kapital { text-transform: none; }
 
 /* ===== Tabel template (tabel-data, Basic Usage) ===== */
@@ -435,3 +442,50 @@ body::after { display: none; }
 .db-table a:not(.btn):not(.dropdown-item) { text-decoration: none; color: var(--basalt-copy); font-weight: 600; }
 .db-table a:not(.btn):not(.dropdown-item):hover,
 .db-table a:not(.btn):not(.dropdown-item):focus-visible { text-decoration: underline; }
+
+/* ===== Ponsel: judul, jejak halaman, dan padding lebih ringkas agar isi halaman lebih lega ===== */
+@media (max-width: 575.98px) {
+    .basalt-pagehead { margin-bottom: 1rem; gap: 0.5rem 1rem; }
+    .basalt-pagehead-title { font-size: 1.25rem; line-height: 1.3; }
+    .basalt-pagehead .breadcrumb { font-size: 0.75rem; margin-bottom: 0.25rem !important; }
+    .db-card-body { padding: 1rem 0.75rem; }
+    .db-card-head { margin-bottom: 0.875rem; }
+    .db-card-body.db-card-body-table { padding-left: 0; padding-right: 0; }
+    .db-card-body-table > .db-card-head,
+    .db-card-body-table > .db-card-foot { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .db-table > :not(caption) > * > :first-child { padding-left: 0.75rem; }
+    .db-table > :not(caption) > * > :last-child { padding-right: 0.75rem; }
+    .db-card-title { font-size: 1rem; }
+}
+
+/* ===== Ponsel: tombol dan kartu angka lebih kecil ===== */
+@media (max-width: 575.98px) {
+    .btn { --bs-btn-padding-y: 0.3rem; --bs-btn-padding-x: 0.7rem; --bs-btn-font-size: 0.8125rem; }
+    .btn-sm { --bs-btn-padding-y: 0.2rem; --bs-btn-padding-x: 0.55rem; --bs-btn-font-size: 0.75rem; }
+    .btn-lg { --bs-btn-padding-y: 0.4rem; --bs-btn-padding-x: 0.85rem; --bs-btn-font-size: 0.875rem; }
+    .basalt-pagehead-actions { gap: 0.375rem; }
+    .panduan-sistem__pemicu { right: 10px; bottom: 10px; --bs-btn-padding-y: 0.25rem; --bs-btn-padding-x: 0.6rem; --bs-btn-font-size: 0.75rem; }
+    .panduan-sistem__pemicu .bi { margin-right: 0.35rem !important; }
+
+    /* Kartu angka (pakan masuk, terpakai, dst.): setengah dari ukuran semula, dua kartu per baris. */
+    .db-kpi-body { padding: 0.625rem 0.75rem 0; }
+    .db-kpi-body.pb-4 { padding-bottom: 0.625rem !important; }
+    .db-kpi-head { gap: 0.5rem; }
+    .db-kpi-label { padding-top: 0.1rem; font-size: 0.7rem; line-height: 1.25; }
+    .db-kpi-icon { width: 1.5rem; height: 1.5rem; border-radius: 6px; font-size: 0.75rem; }
+    .db-kpi-value { margin-top: 0.3rem; font-size: 1.05rem; }
+    .db-kpi-change { margin-top: 0.3rem; font-size: 0.675rem; line-height: 1.3; }
+}
+
+/* ===== Ponsel: jarak antar kartu dirapatkan di semua halaman ===== */
+@media (max-width: 575.98px) {
+    .db-page .row { --bs-gutter-x: 0.5rem; --bs-gutter-y: 0.5rem; }
+    .db-page .mb-4 { margin-bottom: 0.625rem !important; }
+    .db-page .mb-5 { margin-bottom: 1rem !important; }
+}
+
+/* Catatan, peringatan, dan isi lain di dalam kartu tabel (di luar tabelnya) ikut punya padding sisi seperti kepala kartu. */
+.db-card-body-table > .tabel-data > :not(.table-responsive):not(table) { padding-left: 1.5rem; padding-right: 1.5rem; }
+@media (max-width: 575.98px) {
+    .db-card-body-table > .tabel-data > :not(.table-responsive):not(table) { padding-left: 0.75rem; padding-right: 0.75rem; }
+}

@@ -8,7 +8,7 @@
         x-cloak
         @click="buka"
         aria-label="Buka panduan penggunaan sistem">
-        <i class="bi bi-question-circle" aria-hidden="true"></i>Panduan sistem
+        <i class="bi bi-question-circle me-2" aria-hidden="true"></i>Panduan sistem
     </button>
 
     <div
@@ -59,7 +59,7 @@
 
             <div class="modal-footer justify-content-between">
                 <button type="button" class="btn btn-light btn-sm" @click="sebelumnya" x-show="indeks > 0">
-                    <i class="bi bi-arrow-left" aria-hidden="true"></i>Sebelumnya
+                    <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Sebelumnya
                 </button>
                 <span x-show="indeks === 0"></span>
                 <button type="button" class="btn btn-primary btn-sm" @click="berikutnya">

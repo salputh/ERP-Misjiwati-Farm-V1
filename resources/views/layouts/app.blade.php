@@ -14,7 +14,7 @@
         @include('partials._top_nav')
 
         <main id="basalt-stage" tabindex="-1" class="basalt-stage">
-            <div class="container-fluid px-3 px-lg-4 py-4 db-page">
+            <div class="container-fluid px-2 px-sm-3 px-lg-4 py-3 py-lg-4 db-page">
                 @if(config('app.demo_mode'))
                     <div class="alert alert-info mb-3" role="status">
                         <strong>Versi Demo</strong> — Data contoh untuk eksplorasi fitur.
