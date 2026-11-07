@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Hanya baca. Tidak ada job yang menulis ke repositori atau men-deploy.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: '8.5'
+  NODE_VERSION: '22'
+
+jobs:
+  pint:
+    name: Gaya kode (Pint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: vendor/bin/pint --test
+
+  phpstan:
+    name: Analisis statis (Larastan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+  tests:
+    name: Test (PHPUnit + coverage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_sqlite, sqlite3, gd, intl, zip, mbstring, bcmath
+          tools: composer:v2
+          coverage: pcov
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Siapkan .env uji
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+      - name: Jalankan test dengan coverage
+        run: vendor/bin/phpunit --coverage-clover coverage.xml --coverage-text --colors=never
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-clover
+          path: coverage.xml
+          if-no-files-found: ignore
+          retention-days: 14
+
+  audit:
+    name: Audit keamanan dependensi
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+          coverage: none
+      - name: Composer audit (paket produksi dan dev)
+        run: composer audit --locked --no-interaction
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: npm audit (paket produksi)
+        run: npm audit --omit=dev --audit-level=high
+
+  build:
+    name: Build aset (Vite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-build-${{ github.sha }}
+          path: public/build
+          retention-days: 14
+
+  shellcheck:
+    name: ShellCheck skrip deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        run: shellcheck -x --severity=style scripts/*.sh scripts/lib/*.sh scripts/remote/*.sh scripts/tests/*.sh
+
+  deploy-tests:
+    name: Uji skrip deploy dan rollback (lokal)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [shellcheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_sqlite, sqlite3
+          tools: composer:v2
+          coverage: none
+      - run: sudo apt-get update && sudo apt-get install -y sqlite3 jq
+      - run: scripts/tests/test-deploy.sh
+
+  # Gerbang tunggal untuk perlindungan branch: skrip deploy memeriksa nama check ini.
+  ci-gate:
+    name: CI lulus
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [pint, phpstan, tests, audit, build, shellcheck, deploy-tests]
+    steps:
+      - name: Semua job wajib lulus
+        run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == "success")'
