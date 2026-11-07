@@ -45,11 +45,18 @@ scripts/server-setup.sh prepare                  # dry-run: baca dulu
 scripts/server-setup.sh --apply prepare          # folder, .env disalin (tidak menimpa), sudoers terbatas, cron backup harian
 scripts/server-setup.sh --apply install-key "restrict ssh-ed25519 AAAA... deploy-temp-erp-..."
 
-# 3. Deploy pertama (lihat bagian 3), lalu setelah /up sehat:
-scripts/server-setup.sh --apply switch-nginx     # arahkan Nginx ke current/public
+# 3. Arahkan Nginx lebih dulu ke "current" yang sementara menunjuk ke aplikasi lama.
+#    Situs tidak berubah perilakunya; ini yang membuat deploy pertama aman:
+scripts/server-setup.sh --apply link-legacy      # current -> /var/www/erp
+scripts/server-setup.sh --apply switch-nginx     # root Nginx -> current/public (dicadangkan, nginx -t, otomatis dikembalikan bila gagal)
+#    Periksa https://misjiwatifarm.tech seperti biasa, lalu:
+
+# 4. Deploy pertama (bagian 3 di bawah)
 ```
 
 Aplikasi lama di `/var/www/erp` tidak dihapus dan tidak dimatikan: ia tetap menjadi cadangan sampai Anda yakin, dan database SQLite tetap di lokasi lamanya (`DB_DATABASE` di `.env` tidak berubah). Mengembalikan Nginx ke `/var/www/erp/public` adalah rollback penuh dari perpindahan ini.
+
+**Mengapa Nginx dialihkan sebelum deploy pertama:** migrasi nomor siklus menghapus sebuah kolom. Kode lama tidak jalan di atas skema baru, jadi pengalihan ke rilis baru harus terjadi segera setelah migrasi, dan cek kesehatan harus mengenai rilis baru, bukan aplikasi lama. Dengan `current` sementara menunjuk ke aplikasi lama, deploy pertama memakai alur normal (mode pemeliharaan dari `current`, migrasi, pemindahan symlink, cek kesehatan).
 
 ## 3. Menjalankan deploy
 

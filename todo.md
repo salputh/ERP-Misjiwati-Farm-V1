@@ -13,7 +13,11 @@ Terakhir diperbarui: 7 November 2026.
 - [x] ShellCheck bersih. 100 pemeriksaan sandbox lulus (dijalankan dua kali berturut-turut).
 - [x] Dokumentasi: README, rollback guide, security checklist.
 
-## Menunggu keputusan atau persetujuan Anda
+## Terhenti
+- [ ] **GitHub Actions tidak bisa memulai job apa pun** (`startup_failure`, 0 detik, bahkan untuk workflow `echo ok` minimal). Penyebabnya bukan berkas CI: `actionlint` bersih. Periksa github.com/settings/billing (batas pengeluaran/menit Actions untuk repositori privat) dan tab Actions repositori. Tanpa CI hijau, `deploy.sh` menolak deploy (disengaja, tidak ada cara melewatinya).
+
+## Persetujuan sudah diberikan (7 November 2026), menunggu langkah di atas
+
 - [ ] Push `release/ui-basalt` dan buka PR ke `main`. Catatan: branch ini berisi 4 commit demo di bawahnya (DemoMode, DemoSeeder, dll.), yang akan ikut masuk ke `main` bila digabung.
 - [ ] Aktifkan GitHub Actions dan branch protection (job **CI lulus**).
 - [ ] Persetujuan menjalankan `server-setup.sh --apply` (folder rilis, `.env` disalin, sudoers terbatas, cron backup, kunci deploy). Mengubah server.

@@ -5,6 +5,7 @@
 #
 #   scripts/server-setup.sh [--apply] prepare           Folder rilis, folder backup, salin .env (tidak menimpa), sudoers terbatas, cron backup.
 #   scripts/server-setup.sh [--apply] install-key "<baris>"  Memasang kunci ke authorized_keys akun deploy (tanpa duplikat).
+#   scripts/server-setup.sh [--apply] link-legacy       Membuat current -> aplikasi lama, supaya Nginx bisa dialihkan SEBELUM deploy pertama (tidak mengubah perilaku situs).
 #   scripts/server-setup.sh [--apply] switch-nginx      Mengarahkan root Nginx ke current/public (dicadangkan, nginx -t, otomatis dikembalikan bila gagal).
 #
 # Yang TIDAK dilakukan: menghapus sudo akun deploy yang sudah ada, menyentuh aplikasi lain
@@ -126,6 +127,18 @@ cmd_install_key() {
     fi
 }
 
+cmd_link_legacy() {
+    need_root
+    [[ -f "$LEGACY_APP/public/index.php" ]] || die "$LEGACY_APP/public/index.php tidak ada; bukan aplikasi Laravel yang valid"
+    if [[ -e "$APP_ROOT/current" || -L "$APP_ROOT/current" ]]; then
+        log "$APP_ROOT/current sudah ada ($(readlink "$APP_ROOT/current" 2>/dev/null || echo bukan-symlink)); tidak diubah"
+        return 0
+    fi
+    act ln -s "$LEGACY_APP" "$APP_ROOT/current"
+    log "Urutan yang benar: link-legacy, switch-nginx (situs tetap sama), baru deploy pertama."
+    log "Alasannya: migrasi pada deploy pertama menjalankan mode pemeliharaan dari 'current' dan cek kesehatan harus mengenai rilis baru."
+}
+
 cmd_switch_nginx() {
     need_root
     [[ -f "$NGINX_SITE" ]] || die "$NGINX_SITE tidak ada"
@@ -160,9 +173,10 @@ main() {
             shift
             cmd_install_key "${1:-}"
             ;;
+        link-legacy) cmd_link_legacy ;;
         switch-nginx) cmd_switch_nginx ;;
         *)
-            sed -n '3,16p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+            sed -n '3,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
             exit 2
             ;;
     esac

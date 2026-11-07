@@ -245,7 +245,9 @@ cmd_activate() {
     [[ -d "$dir" ]] || die "rilis $id tidak ada"
     lama="$(current_id)"
     atomic_symlink "releases/$id" "$CURRENT"
-    if [[ -n "$lama" && "$lama" != "$id" ]]; then
+    # Aplikasi lama (current -> /var/www/erp sebelum rilis pertama) bukan rilis berversi:
+    # kembali ke sana dilakukan dengan mengembalikan root Nginx, bukan lewat rollback.sh.
+    if [[ -n "$lama" && "$lama" != "$id" && "$lama" =~ ^[0-9]{14}-[0-9a-f]{7,40}$ ]]; then
         echo "$lama" > "$PREVIOUS_FILE"
     fi
     reload_services "$id"
