@@ -111,6 +111,14 @@ shellcheck -x --severity=style scripts/*.sh scripts/*/*.sh
 Mencakup: rencana hanya-baca, penolakan tanpa persetujuan, CI gagal atau belum selesai, perubahan lokal, commit di luar `origin/main`, deploy sukses dan tidak menimpa `.env`, idempotensi, migrasi butuh persetujuan, kegagalan migrasi, kegagalan health check, rollback ke rilis sehat, penolakan rollback ke rilis tak dikenal atau skema lebih baru, deploy bersamaan, konfigurasi SSH tidak aman, dan pemeriksaan statis atas perintah destruktif dan rahasia.
 **Belum teruji:** transport SSH sungguhan, `sudo systemctl reload`, Nginx, dan `composer install` di server (sandbox memakai transport `local`, artisan palsu, dan `COMPOSER_CMD=true`). Hal itu baru bisa dibuktikan pada deploy pertama, karena tidak ada staging.
 
+## 9. Memindahkan repositori ke organisasi
+
+Setelah transfer di GitHub:
+1. Di mesin operator: `git remote set-url origin <url baru>`. `deploy.sh` mengambil repositori untuk cek CI dari `origin`, jadi tidak ada nama repositori yang tertulis di skrip (atau isi `GITHUB_REPO=owner/nama` untuk menimpa). Pastikan `gh auth status` punya akses ke repositori baru.
+2. Aktifkan ulang GitHub Actions di repositori baru dan periksa batas menit/penagihan organisasi. Cek ulang pengaturan branch protection (job **CI lulus**) dan Dependabot, karena sebagian pengaturan tidak ikut pindah.
+3. Di server, aplikasi lama (`/var/www/erp`) masih memakai remote lama dan kunci `github_deploy` yang terdaftar sebagai deploy key di repositori lama. Skrip baru **tidak** menarik kode dari GitHub di server (kode dikirim dari mesin operator), jadi deploy berversi tidak terpengaruh. Hanya `deploy/deploy.sh` yang lama yang akan gagal sampai remote dan deploy key diperbarui; tidak perlu diperbaiki bila deploy lama tidak dipakai lagi.
+4. Lencana, tautan PR, dan referensi `salputh/...` di dokumen lama akan dialihkan GitHub secara otomatis untuk sementara.
+
 ## Skrip lama
 
 `deploy/deploy.sh` (tarik kode di tempat dengan mode pemeliharaan) tetap ada sebagai cadangan sampai deploy berversi terbukti. Jangan dipakai bersamaan dengan skrip baru.
