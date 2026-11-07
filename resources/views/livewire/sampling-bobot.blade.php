@@ -147,7 +147,7 @@
 </header>
                         <div class="tabel-data">
                             <div class="table-responsive">
-                                <table class="table mb-0 db-table">
+                                <table class="table mb-0 db-table tabel-riwayat">
                                     <thead>
                                         <tr>
                                             <th>Tanggal</th>
@@ -160,21 +160,21 @@
                                     <tbody>
                                         @forelse ($this->riwayat as $sesi)
                                             <tr wire:key="riwayat-{{ $sesi->id }}">
-                                                <td>
+                                                <td class="riwayat-tanggal">
                                                     <span class="d-block fw-medium text-body">{{ $sesi->tanggal->translatedFormat('j M Y') }}</span>
                                                     <span class="d-block small text-body-secondary">usia {{ $sesi->umur }} hari</span>
                                                 </td>
-                                                <td>
+                                                <td class="riwayat-jenis">
                                                     <span @class(['badge  m-0', 'bg-primary-subtle text-primary' => $sesi->dengan_sexing, 'bg-success-subtle text-success' => ! $sesi->dengan_sexing])>{{ $sesi->dengan_sexing ? 'Dengan sexing' : 'Tanpa sexing' }}</span>
                                                 </td>
-                                                <td class="text-end">@angka($sesi->titik->sum('ekor'))</td>
-                                                <td class="text-end">
+                                                <td class="text-end riwayat-ekor" data-label="Ekor">@angka($sesi->titik->sum('ekor'))</td>
+                                                <td class="text-end riwayat-abw" data-label="ABW">
                                                     <span class="d-block text-body">@angka($sesi->abw()) g</span>
                                                     @if ($sesi->dengan_sexing)
                                                         <span class="d-block small text-body-secondary">J @angka($sesi->abw('jantan')) / B @angka($sesi->abw('betina'))</span>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                <td class="riwayat-aksi">
                                                     @if ($this->periode->tertutup())
                                                         <x-aksi.ikon :aksi="[
                                                             ['kelas' => 'view', 'label' => 'Lihat sampling '.$sesi->tanggal->translatedFormat('j F Y'), 'click' => 'buka('.$sesi->id.')', 'modal' => '#modal-riwayat-sampling'],
@@ -189,7 +189,7 @@
                                                 </td>
                                             </tr>
                                         @empty
-                                            <tr>
+                                            <tr class="riwayat-kosong">
                                                 <td colspan="5" class="text-center text-body-secondary">Belum ada sampling tersimpan untuk {{ $this->terpilih->kandang->nama }}.</td>
                                             </tr>
                                         @endforelse
