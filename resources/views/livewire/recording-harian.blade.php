@@ -23,7 +23,7 @@
                         <div class="d-flex flex-wrap align-items-center gap-2">
                             <div class="dropdown">
                                 <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="bi bi-download" aria-hidden="true"></i>Export<i class="bi bi-chevron-down ms-2 me-0" aria-hidden="true"></i>
+                                    <i class="bi bi-download me-2" aria-hidden="true"></i>Export<i class="bi bi-chevron-down ms-2 me-0" aria-hidden="true"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end">
                                     <a href="{{ route('recording.harian.export', ['periodeKandang' => $this->terpilih->id, 'format' => 'pdf']) }}" class="dropdown-item">PDF</a>

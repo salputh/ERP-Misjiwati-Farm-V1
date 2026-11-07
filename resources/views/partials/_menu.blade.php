@@ -26,6 +26,10 @@
         </button>
     </div>
 
+    <div class="basalt-mainmenu-pilih d-lg-none">
+        @include('partials._pilih_farm_periode')
+    </div>
+
     <div role="search" aria-label="Cari menu" class="basalt-mainmenu-find">
         <label for="basalt-menu-search" class="visually-hidden">Cari halaman</label>
         <i aria-hidden="true" class="bi bi-search"></i>

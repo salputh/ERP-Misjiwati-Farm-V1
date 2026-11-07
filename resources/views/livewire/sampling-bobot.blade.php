@@ -139,21 +139,11 @@
                             <h2 class="db-card-title">Riwayat sampling</h2>
                             <span class="d-block small text-body-secondary fw-normal tanpa-kapital">Satu sesi per kandang per tanggal. Pilih kandang untuk melihat dan mengelola sesinya.</span>
                         </div>
-                        <div class="d-flex flex-wrap align-items-center gap-2">
-                            <ul class="nav nav-pills nav-sm" role="tablist">
-                                @foreach ($this->daftarKandang as $pilihan)
-                                    <li wire:key="tab-kandang-{{ $pilihan->id }}">
-                                        <a
-                                            href="{{ route('sampling.bobot', ['periode' => $this->periode->id, 'kandang' => $pilihan->id]) }}"
-                                            role="tab"
-                                            wire:click.prevent="pilihKandang({{ $pilihan->id }})"
-                                            @class(['nav-link', 'active' => $pilihan->is($this->terpilih)])
-                                            aria-selected="{{ $pilihan->is($this->terpilih) ? 'true' : 'false' }}"
-                                        >{{ $pilihan->kandang->nama }}</a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
+                        <x-pilih nama="Pilih kandang" :label="$this->terpilih->kandang->nama">
+                            @foreach ($this->daftarKandang as $pilihan)
+                                <button type="button" wire:key="pilih-kandang-{{ $pilihan->id }}" wire:click="pilihKandang({{ $pilihan->id }})" @class(['dropdown-item', 'active' => $pilihan->is($this->terpilih)])>{{ $pilihan->kandang->nama }}</button>
+                            @endforeach
+                        </x-pilih>
 </header>
                         <div class="tabel-data">
                             <div class="table-responsive">
