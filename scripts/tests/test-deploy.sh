@@ -348,6 +348,14 @@ assert_true "kunci lokal terhapus" test ! -e "$ACCESS_DIR/deploy_key"
 assert_true "kunci publik lokal terhapus" test ! -e "$ACCESS_DIR/deploy_key.pub"
 unset ACCESS_DIR
 
+echo "== repositori GitHub diambil dari origin"
+parse() { bash -c 'source "$1"; parse_github_repo "$2"' _ "$ASAL/scripts/lib/common.sh" "$1"; }
+for pasangan in "https://github.com/org-baru/erp.git|org-baru/erp" "git@github.com:org-baru/erp.git|org-baru/erp" "https://x-access-token:abc@github.com/org-baru/erp|org-baru/erp" "ssh://git@github.com/org-baru/erp.git|org-baru/erp"; do
+    HASIL="$(parse "${pasangan%%|*}" 2>/dev/null || true)"
+    if [[ "$HASIL" == "${pasangan##*|}" ]]; then ok "parse ${pasangan%%|*}"; else salah "parse ${pasangan%%|*} (dapat: $HASIL)"; fi
+done
+jalankan "URL non-GitHub ditolak" gagal parse "/tmp/lokal.git"
+
 echo "== keamanan statis"
 SKRIP=("$ASAL"/scripts/deploy.sh "$ASAL"/scripts/rollback.sh "$ASAL"/scripts/remote/release.sh "$ASAL"/scripts/lib/common.sh "$ASAL"/scripts/ssh-access.sh "$ASAL"/scripts/server-setup.sh)
 if grep -hvE '^\s*#' "${SKRIP[@]}" | grep -nE 'migrate:(fresh|refresh|rollback|reset)|db:wipe|DROP DATABASE|rm -rf /[^a-z]' >/dev/null; then

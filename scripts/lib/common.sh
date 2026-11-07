@@ -16,7 +16,7 @@
 #   PHP_FPM_SERVICE    layanan yang di-reload            (php8.5-fpm; kosong = tidak di-reload)
 #   BACKUP_DIR         folder backup di server           (/var/backups/erp-misjiwati)
 #   KEEP_RELEASES      jumlah rilis disimpan             (5)
-#   GITHUB_REPO        owner/nama untuk cek CI           (salputh/ERP-Misjiwati-Farm-V1)
+#   GITHUB_REPO        owner/nama untuk cek CI           (diambil dari remote origin; isi hanya untuk menimpa)
 #   CI_CHECK_NAME      nama check gerbang CI             (CI lulus)
 
 set -euo pipefail
@@ -33,7 +33,6 @@ HEALTH_PATHS="${HEALTH_PATHS:-/up}"
 PHP_FPM_SERVICE="${PHP_FPM_SERVICE-php8.5-fpm}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/erp-misjiwati}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
-GITHUB_REPO="${GITHUB_REPO:-salputh/ERP-Misjiwati-Farm-V1}"
 CI_CHECK_NAME="${CI_CHECK_NAME:-CI lulus}"
 
 log() {
@@ -137,6 +136,31 @@ push_file() {
     scp -q "${opsi_scp[@]}" "$1" "$DEPLOY_USER@$DEPLOY_HOST:$2"
 }
 
+# parse_github_repo <url>: mencetak owner/nama dari URL remote GitHub (https atau ssh).
+parse_github_repo() {
+    local url="$1"
+    url="${url%.git}"
+    case "$url" in
+        git@github.com:*) echo "${url#git@github.com:}" ;;
+        ssh://git@github.com/*) echo "${url#ssh://git@github.com/}" ;;
+        https://github.com/*) echo "${url#https://github.com/}" ;;
+        https://*@github.com/*) echo "${url#https://*@github.com/}" ;;
+        *) return 1 ;;
+    esac
+}
+
+# Repositori GitHub untuk cek CI: GITHUB_REPO bila diisi, bila tidak dari remote origin.
+# Jadi saat repositori dipindah (mis. ke organisasi), cukup 'git remote set-url origin <url baru>'.
+github_repo() {
+    if [[ -n "${GITHUB_REPO:-}" ]]; then
+        echo "$GITHUB_REPO"
+        return
+    fi
+    local url
+    url="$(git -C "$REPO_ROOT" remote get-url origin 2>/dev/null)" || die "remote origin tidak ada; isi GITHUB_REPO=owner/nama"
+    parse_github_repo "$url" || die "remote origin ($url) bukan URL GitHub yang dikenal; isi GITHUB_REPO=owner/nama"
+}
+
 # Status CI untuk sebuah commit: success, failure, pending, atau tidak-ada.
 # Memakai check "gerbang" (CI_CHECK_NAME) dari GitHub Actions. Tidak ada cara melewatinya
 # kecuali transport local (pengujian), yang boleh menyediakan DEPLOY_CI_STATUS_CMD.
@@ -149,7 +173,9 @@ ci_status() {
     fi
 
     require_commands gh jq
-    hasil="$(gh api "repos/$GITHUB_REPO/commits/$sha/check-runs?per_page=100" \
+    local repo
+    repo="$(github_repo)"
+    hasil="$(gh api "repos/$repo/commits/$sha/check-runs?per_page=100" \
         --jq "[.check_runs[] | select(.name == \"$CI_CHECK_NAME\")] | sort_by(.started_at) | last | (.conclusion // .status // \"tidak-ada\")" 2>/dev/null || true)"
 
     case "$hasil" in
