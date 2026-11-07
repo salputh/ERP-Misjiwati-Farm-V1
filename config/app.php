@@ -138,6 +138,12 @@ return [
 
     'demo_readonly' => (bool) env('DEMO_READONLY', false),
 
+    'admin' => [
+        'nama' => env('ADMIN_NAME', 'Admin'),
+        'email' => env('ADMIN_EMAIL'),
+        'password' => env('ADMIN_PASSWORD'),
+    ],
+
     'demo_credentials' => [
         'username' => env('DEMO_USERNAME', 'demo@misjiwatifarm.tech'),
         'password' => env('DEMO_PASSWORD', 'DemoMisjiwati2026'),
