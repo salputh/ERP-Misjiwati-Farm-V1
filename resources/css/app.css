@@ -480,6 +480,8 @@ body::after { display: none; }
 /* ===== Ponsel: jarak antar kartu dirapatkan di semua halaman ===== */
 @media (max-width: 575.98px) {
     .db-page .row { --bs-gutter-x: 0.5rem; --bs-gutter-y: 0.5rem; }
+    /* Tiap halaman membuka dengan container-fluid sendiri di dalam .db-page; di ponsel padding gandanya dibuang supaya kartu selebar layar dikurangi satu margin saja (8px). */
+    .db-page > .container-fluid, .db-page .container-fluid { --bs-gutter-x: 0; }
     .db-page .mb-4 { margin-bottom: 0.625rem !important; }
     .db-page .mb-5 { margin-bottom: 1rem !important; }
 }
