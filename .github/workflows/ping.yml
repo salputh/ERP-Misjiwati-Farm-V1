@@ -1,0 +1,11 @@
+name: Ping
+on:
+  push:
+    branches: [release/ui-basalt]
+permissions:
+  contents: read
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ok
