@@ -1,0 +1,155 @@
+/* headers.html: the demo page around the .basalt-hero headers.
+   The headers themselves live in basalt.css; this file only lays out
+   the page that shows them off. */
+
+.hd-page {
+	--hd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* Jump links */
+.hd-jump {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 2.5rem;
+}
+.hd-jump-link {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.4rem 0.85rem 0.4rem 0.4rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		color 170ms ease;
+}
+.hd-jump-link:hover {
+	border-color: var(--basalt-hue);
+	color: var(--basalt-copy);
+}
+.hd-jump-num {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 999px;
+	font:
+		600 0.7rem/1 "Chivo Mono",
+		monospace;
+	color: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+
+/* One section per look */
+.hd-section {
+	scroll-margin-top: 5rem;
+	margin-bottom: 3.5rem;
+}
+.hd-section-head {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.hd-section-num {
+	margin: 0.1rem 0 0;
+	font:
+		600 0.8rem/1.4 "Chivo Mono",
+		monospace;
+	color: var(--hd-quiet);
+}
+.hd-section-title {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+}
+.hd-section-desc {
+	max-width: 70ch;
+	margin: 0.3rem 0 0;
+	font-size: 0.9rem;
+	color: var(--hd-quiet);
+}
+
+.hd-stack {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+}
+/* Names the slots a smaller example leaves out. */
+.hd-case {
+	margin: 0.75rem 0 -0.6rem;
+	font:
+		600 0.71rem/1 "Chivo Mono",
+		monospace;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hd-quiet);
+}
+
+/* Markup snippet */
+.hd-code {
+	margin-top: 1.25rem;
+}
+.hd-code summary {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+}
+.hd-code summary::-webkit-details-marker {
+	display: none;
+}
+.hd-code summary:hover {
+	color: var(--basalt-copy);
+}
+.hd-code summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.hd-code summary .bi {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.hd-code[open] summary .bi {
+	transform: rotate(90deg);
+}
+.hd-code pre {
+	max-height: 26rem;
+	margin: 0.75rem 0 0;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	overflow: auto;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hd-jump-link,
+	.hd-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.hd-jump,
+	.hd-code {
+		display: none;
+	}
+}

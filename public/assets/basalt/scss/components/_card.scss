@@ -1,0 +1,43 @@
+/* The house card: a flat plane on a hairline edge that keeps its resting shadow under the pointer instead of lifting. */
+.basalt-box {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background-color: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	transition:
+		box-shadow 200ms ease,
+		transform 200ms ease;
+}
+
+.basalt-box:hover {
+	box-shadow: var(--basalt-card-shadow);
+}
+
+/* Bodies get a touch more room than Bootstrap gives them, and small headings sit just under body size.
+   The side and bottom padding are named so a chart at the foot can reach back out through them. */
+.basalt-box .card-body {
+	--basalt-foot-x: 1.25rem;
+	--basalt-foot-y: 1.25rem;
+	padding: 1.25rem var(--basalt-foot-x) var(--basalt-foot-y);
+}
+
+/* A chart at a card's foot bleeds to the card's edges: flush with the left,
+   right and bottom, clipped by the card's rounded corners, while the text
+   above keeps its padding. The body it sits in names its side and bottom
+   padding in --basalt-foot-x and --basalt-foot-y (none when the chart sits
+   straight inside the card), and the chart reaches back out by exactly that.
+   A Chart.js chart in it turns layout.autoPadding off, so its plot meets the edges. */
+.basalt-card-foot {
+	width: calc(100% + 2 * var(--basalt-foot-x, 0px));
+	max-width: none;
+	margin-inline: calc(-1 * var(--basalt-foot-x, 0px));
+	margin-bottom: calc(-1 * var(--basalt-foot-y, 0px));
+}
+:is(.card, .basalt-box):has(.basalt-card-foot) {
+	overflow: hidden;
+}
+
+.basalt-box h6 {
+	font-size: 0.95rem;
+	font-weight: 600;
+}

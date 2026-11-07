@@ -1,0 +1,1219 @@
+/* Styles for the Customers report (customer-insights.html); every class
+   here starts with .ca-. Colors come only from the --basalt-* tokens, the
+   same ones customer-insights.js reads for its canvases, so legends,
+   swatches and table tints shift with the palette in step with the charts.
+   Cards, legends and chart boxes match the chart pages on purpose. */
+
+/* Three page-wide text tones. Quiet is the muted token nudged toward body
+   copy; good and bad lean on the status colors but keep enough body copy
+   in them that small figures stay at 4.5:1 on any palette. */
+.ca-page {
+	--ca-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--ca-good: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	--ca-bad: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+[data-bs-theme="dark"] .ca-page {
+	--ca-good: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	--ca-bad: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+
+/* A hidden attribute always wins over the display these blocks set. */
+.ca-report[hidden],
+.ca-key li[hidden],
+.ca-risk-foot[hidden],
+.ca-risktable[hidden],
+.ca-pager[hidden] {
+	display: none;
+}
+
+/* The page title keeps its Export button beside it at every width. */
+.ca-head .basalt-hero-icon {
+	grid-row: auto;
+}
+@media (max-width: 767.98px) {
+	.basalt-hero-compact.ca-head {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "body actions";
+
+		& .basalt-hero-icon {
+			align-self: center;
+		}
+		& .basalt-hero-actions {
+			justify-self: end;
+			margin: 0 0 0 0.75rem;
+		}
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-compact.ca-head {
+		--basalt-hero-px: var(--basalt-pad-x-narrow);
+		--basalt-hero-py: var(--basalt-pad-x-narrow);
+
+		& .basalt-hero-body {
+			column-gap: 0.75rem;
+		}
+	}
+}
+
+/* The period and filter bar is one bordered panel of wrapping rows. */
+.ca-controls {
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+
+	& .basalt-segmented {
+		flex-wrap: wrap;
+	}
+}
+.ca-controls-row {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.ca-controls-row-filters {
+	gap: 0.6rem;
+	justify-content: flex-start;
+}
+.ca-controls-group {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-width: 0;
+}
+.ca-controls-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--ca-quiet);
+}
+.ca-select {
+	width: auto;
+	min-width: 10.5rem;
+}
+.ca-summary {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--ca-quiet);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The Custom button reads as pressed while a hand-picked period is on. */
+.ca-custom-toggle {
+	white-space: nowrap;
+
+	&.is-active {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.ca-custom {
+	width: min(20rem, calc(100vw - 2rem));
+	padding: 1rem;
+}
+.ca-custom-title {
+	margin: 0 0 0.75rem;
+	font-size: 0.85rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ca-custom-fields {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	& .form-label {
+		margin-bottom: 0.3rem;
+		font-size: 0.77rem;
+		color: var(--ca-quiet);
+	}
+}
+.ca-custom-error {
+	margin: 0.6rem 0 0;
+	font-size: 0.77rem;
+	color: var(--ca-bad);
+}
+.ca-custom-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
+@media (max-width: 575.98px) {
+	.ca-controls {
+		padding: 1rem var(--basalt-pad-x-narrow);
+	}
+	.ca-controls-row-filters {
+		& .ca-select {
+			flex: 1 1 9rem;
+			min-width: 0;
+		}
+		& .ca-controls-label {
+			flex-basis: 100%;
+		}
+	}
+}
+
+.ca-state {
+	margin-bottom: 1.5rem;
+}
+
+/* Headline tiles fill the row and fold to fewer columns as space runs out. */
+.ca-kpis {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+	margin-bottom: 1.5rem;
+}
+.ca-kpi {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.1rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+
+	& .basalt-skeleton + .basalt-skeleton {
+		margin-top: 0.6rem;
+	}
+}
+.ca-kpi-label {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--ca-quiet);
+
+	& .bi {
+		font-size: 0.8rem;
+	}
+}
+.ca-kpi-value {
+	margin: 0.4rem 0 0.3rem;
+	font:
+		700 1.6rem/1.1 "Chivo Mono",
+		monospace;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.ca-kpi-delta {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: 0.75rem;
+	color: var(--ca-quiet);
+}
+.ca-kpi-spark {
+	position: relative;
+	height: 44px;
+	margin-top: 0.7rem;
+}
+.ca-kpi-info {
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	line-height: 1;
+	color: var(--ca-quiet);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Cards sit on a twelve-column grid: full width, then halves from 1200px. */
+.ca-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.ca-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+/* An undrawn canvas still claims the browser's default 300px; capping it
+   keeps a narrow card, and the page, from growing past the screen. */
+.ca-kpi-spark canvas,
+.ca-card canvas {
+	display: block;
+	max-width: 100%;
+}
+@media (min-width: 1200px) {
+	.ca-card {
+		grid-column: span 6;
+	}
+	.ca-card-full {
+		grid-column: span 12;
+	}
+}
+.ca-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+.ca-card-head {
+	margin-bottom: 1.25rem;
+}
+.ca-card-head-tools {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	& > div:first-child {
+		flex: 1 1 22rem;
+		min-width: 0;
+	}
+}
+.ca-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ca-card-desc {
+	max-width: 70ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ca-quiet);
+}
+
+/* Stat pairs above a chart: a thin rule on the left, the first one tinted. */
+.ca-stats {
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 1.35rem;
+
+	& > div {
+		padding-left: 0.85rem;
+		border-left: 2px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		border-left-color: var(--basalt-series-1);
+	}
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--ca-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.35rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	& dd small {
+		margin-left: 0.25rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0;
+		color: var(--ca-quiet);
+	}
+}
+@media (min-width: 768px) {
+	.ca-stats {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.ca-stats.ca-stats-three {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* A chart box stretches to fill its card; its canvas is pinned inside
+   rather than in flow, so the drawing never holds the box open. */
+.ca-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 260px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+	& canvas:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+}
+.ca-chart-tall {
+	min-height: 300px;
+}
+.ca-chart-hero {
+	min-height: 320px;
+}
+.ca-chart-seg {
+	min-height: 250px;
+}
+@media (max-width: 575.98px) {
+	.ca-chart {
+		min-height: 240px;
+	}
+	.ca-chart-tall {
+		min-height: 270px;
+	}
+	.ca-chart-hero {
+		min-height: 280px;
+	}
+}
+
+/* Legends are HTML lists, so long ones wrap instead of overlapping. */
+.ca-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--ca-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.ca-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--ca-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.ca-key-line-dotted {
+	border-top-style: dotted;
+	border-top-width: 3px;
+}
+.ca-key-bar {
+	width: 10px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--ca-c, var(--basalt-series-1));
+}
+.ca-c1 {
+	--ca-c: var(--basalt-series-1);
+}
+.ca-c8 {
+	--ca-c: var(--basalt-series-8);
+}
+.ca-cs {
+	--ca-c: var(--basalt-success);
+}
+.ca-cd {
+	--ca-c: var(--basalt-danger);
+}
+.ca-ct {
+	--ca-c: var(--basalt-copy);
+}
+/* Matches the faint gray the canvases draw their reference lines in. */
+.ca-cr {
+	--ca-c: color-mix(in srgb, var(--basalt-copy) 40%, transparent);
+}
+
+/* "Show the numbers" folds a plain table under each chart. */
+.ca-numbers {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& .table {
+		--bs-table-bg: transparent;
+		margin: 0.75rem 0 0;
+		font-size: 0.8rem;
+		font-variant-numeric: tabular-nums;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ca-numbers summary .bi {
+		transition: none;
+	}
+}
+
+/* The folded tables and the segments table share one header and cell style. */
+.ca-numbers th,
+.ca-segtable th {
+	font-size: 0.74rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--ca-quiet);
+}
+.ca-numbers thead th,
+.ca-segtable thead th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+}
+.ca-numbers td,
+.ca-segtable td {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ca-numbers tbody th {
+	white-space: normal;
+}
+@media (max-width: 575.98px) {
+	.ca-numbers thead th {
+		white-space: normal;
+	}
+}
+
+/* Segments: the split picker, then the table beside the bar chart. */
+.ca-tabs {
+	margin-bottom: 1.25rem;
+}
+.ca-split {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.ca-split {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+		align-items: start;
+	}
+}
+.ca-segtable {
+	font-size: 0.8rem;
+
+	& .table {
+		--bs-table-bg: transparent;
+		font-variant-numeric: tabular-nums;
+	}
+	& th:first-child,
+	& td:first-child {
+		white-space: normal;
+	}
+	& tfoot td {
+		border-bottom: 0;
+		font-weight: 700;
+	}
+	& abbr {
+		text-decoration: underline dotted;
+		cursor: help;
+	}
+}
+.ca-segrow {
+	cursor: pointer;
+
+	&:hover td {
+		background: var(--basalt-wash);
+	}
+	&.is-current td {
+		background: color-mix(in srgb, var(--basalt-series-1) 9%, var(--basalt-plane));
+	}
+}
+.ca-seg-name {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.ca-seg-swatch {
+	flex: none;
+	width: 10px;
+	height: 10px;
+	border-radius: 3px;
+}
+/* On a phone each segment is two lines: its name with the customer count,
+   then change, ARR, NRR and churn as one quiet line, so nothing scrolls. */
+@media (max-width: 575.98px) {
+	.ca-segtable {
+		& thead {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			white-space: nowrap;
+			clip-path: inset(50%);
+		}
+		& .table,
+		& tbody,
+		& tfoot {
+			display: block;
+		}
+		& tr {
+			display: flex;
+			gap: 0.2rem 0.9rem;
+			flex-wrap: wrap;
+			align-items: center;
+			padding: 0.6rem 0.5rem;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& tfoot tr {
+			border-bottom: 0;
+		}
+		& .table > :not(caption) > tr > td {
+			display: block;
+			padding: 0;
+			border: 0;
+			white-space: normal;
+			background: transparent;
+			box-shadow: none;
+		}
+		& tr > :first-child {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+		& tr > :nth-child(2)::after {
+			content: " customers";
+			font-weight: 400;
+			color: var(--ca-quiet);
+		}
+		& tr::after {
+			content: "";
+			flex-basis: 100%;
+			order: 1;
+			height: 0;
+		}
+		& .table > :not(caption) > tr > :nth-child(n + 3) {
+			order: 2;
+			font-size: 0.77rem;
+			font-weight: 400;
+			color: var(--ca-quiet);
+		}
+		& tr > :nth-child(3):not(:empty)::before {
+			content: "Change ";
+		}
+		& tr > :nth-child(4)::before {
+			content: "ARR ";
+		}
+		& tr > :nth-child(5)::before {
+			content: "NRR ";
+		}
+		& tr > :nth-child(6)::before {
+			content: "Churn ";
+		}
+	}
+	.ca-segrow {
+		&:hover {
+			background: var(--basalt-wash);
+		}
+		&.is-current {
+			background: color-mix(in srgb, var(--basalt-series-1) 9%, var(--basalt-plane));
+		}
+	}
+}
+
+/* Change figures: green for growth, red for loss, quiet for no movement. */
+.ca-up {
+	font-weight: 650;
+	color: var(--ca-good);
+}
+.ca-down {
+	font-weight: 650;
+	color: var(--ca-bad);
+}
+.ca-flat {
+	color: var(--ca-quiet);
+}
+
+/* An account name links to its own page, and so does the rest of its row. */
+.ca-acc-line {
+	display: flex;
+	gap: 0.25rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.ca-acc-open {
+	border-radius: 4px;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* At-risk table: one action menu per row, quiet until it is used. */
+.ca-risktable {
+	& .ca-acc-sub {
+		font-size: 0.8rem;
+		color: var(--ca-quiet);
+	}
+	& > tbody > tr:last-child > td {
+		border-bottom: 0;
+	}
+}
+.ca-risk-act {
+	width: 1%;
+
+	& .btn-icon {
+		color: var(--ca-quiet);
+	}
+	& .btn-icon:hover,
+	& .btn-icon[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+/* A health score is its number led by a dot in the band's color. */
+.ca-dot {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	&::before {
+		content: "";
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--basalt-success);
+	}
+}
+.ca-dot-watch::before {
+	background: var(--basalt-warning);
+}
+.ca-dot-risk::before {
+	background: var(--basalt-danger);
+}
+.ca-risk-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.ca-risk-count {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--ca-quiet);
+}
+
+/* The first time the list is on screen its rows rise in one after
+   another, and each red dot gives a single soft ring. */
+@media (prefers-reduced-motion: no-preference) {
+	.ca-risktable > tbody.is-arriving > tr {
+		animation: ca-row-rise 520ms ease-out calc(var(--ca-at, 0) * 70ms) both;
+	}
+	.ca-risktable > tbody.is-arriving .ca-dot-risk::before {
+		animation: ca-dot-ring 900ms ease-out calc(var(--ca-at, 0) * 70ms + 300ms) both;
+	}
+	@keyframes ca-row-rise {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+	}
+	@keyframes ca-dot-ring {
+		from {
+			box-shadow: 0 0 0 0 color-mix(in srgb, var(--basalt-danger) 45%, transparent);
+		}
+		to {
+			box-shadow: 0 0 0 7px color-mix(in srgb, var(--basalt-danger) 0%, transparent);
+		}
+	}
+}
+
+/* The health meter is positioned so its visually hidden band name stays
+   inside the scrolling table rather than widening the page. */
+.ca-health {
+	position: relative;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-weight: 650;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.ca-health-bar {
+	position: relative;
+	width: 46px;
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 10%, var(--basalt-plane));
+
+	& span {
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: var(--ca-h, 50%);
+		border-radius: inherit;
+		background: var(--ca-c, var(--basalt-success));
+	}
+}
+
+/* The accounts toolbar: list switch with counts, then the search box. */
+.ca-tablebar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-start;
+	margin-bottom: var(--basalt-pad-head);
+
+	& .basalt-segmented {
+		flex-wrap: wrap;
+	}
+}
+/* On a phone the three views share one full-width row instead of wrapping
+   onto a second line. */
+@media (max-width: 575.98px) {
+	.ca-tablebar .basalt-segmented {
+		flex-wrap: nowrap;
+		width: 100%;
+	}
+	.ca-tablebar .basalt-segmented-option {
+		flex: 1 1 auto;
+		padding-inline: 0.3rem;
+		white-space: nowrap;
+	}
+	.ca-tablebar .ca-count {
+		min-width: 1.25rem;
+		padding-inline: 0.2rem;
+	}
+}
+.ca-count {
+	display: inline-block;
+	min-width: 1.5rem;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+}
+/* Search follows the list switch and stops widening at a readable size;
+   any spare room collects at the end of the bar. */
+.ca-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--ca-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.ca-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+}
+.ca-table-applied {
+	margin-bottom: 0.75rem;
+}
+.ca-page .table-responsive {
+	position: relative;
+}
+
+/* Accounts table: tabular figures, outer columns flush with the card edge. */
+.ca-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--ca-quiet);
+	}
+	& tbody td {
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& tbody td:first-child {
+		white-space: normal;
+	}
+	& tbody tr {
+		cursor: pointer;
+	}
+	& tbody tr:hover td {
+		background: var(--basalt-wash);
+	}
+	& tbody tr.ca-skel-row {
+		cursor: default;
+	}
+	& tbody tr.ca-skel-row:hover td {
+		background: transparent;
+	}
+}
+.ca-acc {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.ca-acc-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ca-acc-sub {
+	font-size: 0.74rem;
+	color: var(--ca-quiet);
+}
+.ca-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	& .bi {
+		font-size: 0.7rem;
+	}
+}
+th[aria-sort="ascending"] .ca-sort,
+th[aria-sort="descending"] .ca-sort {
+	color: var(--basalt-copy);
+}
+.ca-pager {
+	margin-top: 1rem;
+}
+@media (max-width: 767.98px) {
+	.ca-col-region {
+		display: none;
+	}
+}
+
+/* When a card is too narrow for the columns, each accounts row turns into
+   a small stacked card: name and health first, then plan, revenue and
+   change, then one quiet line of facts. Loading rows wrap the same way so
+   they never push the list sideways. The repeated class lifts these rules
+   over Bootstrap's own cell styles. */
+.ca-card:has(.ca-table) {
+	container-type: inline-size;
+}
+@container (max-width: 790px) {
+	.ca-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.ca-table,
+	.ca-table > tbody {
+		display: block;
+		width: 100%;
+		min-width: 0;
+	}
+	.ca-table > tbody > tr[data-ca-row],
+	.ca-table > tbody > tr.ca-skel-row {
+		display: flex;
+		gap: 0.5rem 0.75rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.ca-table.ca-table.ca-table.ca-table.ca-table.ca-table > tbody > tr[data-ca-row] > td,
+	.ca-table.ca-table.ca-table.ca-table.ca-table.ca-table > tbody > tr.ca-skel-row > td {
+		display: block;
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: start;
+		white-space: normal;
+		background: transparent;
+	}
+	.ca-table > tbody > tr[data-ca-row] {
+		&:last-child {
+			border-bottom: 0;
+		}
+		&::before,
+		&::after {
+			content: "";
+			flex-basis: 100%;
+			height: 0;
+		}
+		&::before {
+			order: 20;
+		}
+		&::after {
+			order: 40;
+		}
+		& > :nth-child(1) {
+			flex: 1 1 0;
+			order: 10;
+		}
+		& > :nth-child(6) {
+			order: 19;
+		}
+		& > :nth-child(2) {
+			order: 21;
+		}
+		& > :nth-child(4) {
+			order: 22;
+		}
+		& > :nth-child(5) {
+			order: 23;
+		}
+	}
+	.ca-table.ca-table.ca-table.ca-table.ca-table.ca-table > tbody > tr[data-ca-row] {
+		& > :nth-child(3) {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+			order: 41;
+			font-size: 0.8rem;
+			font-weight: 500;
+			color: var(--basalt-copy-muted);
+		}
+		& > :nth-child(7) {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+			order: 42;
+			font-size: 0.8rem;
+			font-weight: 500;
+			color: var(--basalt-copy-muted);
+		}
+	}
+	.ca-table > tbody > tr[data-ca-row] {
+		& > :nth-child(7)::before {
+			content: "\00b7";
+		}
+		& > :nth-child(6)::before {
+			content: "Health ";
+		}
+		& > :nth-child(7) .ca-acc-sub {
+			display: inline;
+		}
+		& > :nth-child(7) .ca-acc-sub::before {
+			content: "\00b7  ";
+		}
+	}
+	/* At-risk rows lead with the account and its value; plan, health,
+     renewal and owner follow on one quiet line, the menu last. */
+	.ca-table > tbody > tr[data-ca-risk-id] {
+		display: flex;
+		gap: 0.5rem 0.9rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+
+		&:last-child {
+			border-bottom: 0;
+		}
+	}
+	.ca-table.ca-table.ca-table.ca-table.ca-table.ca-table > tbody > tr[data-ca-risk-id] > td {
+		display: block;
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: start;
+		white-space: normal;
+		background: transparent;
+	}
+	.ca-table > tbody > tr[data-ca-risk-id] {
+		&::before {
+			content: "";
+			flex-basis: 100%;
+			order: 20;
+			height: 0;
+		}
+		& > :nth-child(1) {
+			flex: 1 1 0;
+			order: 10;
+		}
+		& > :nth-child(6) {
+			order: 11;
+			font-weight: 650;
+		}
+		& > :nth-child(2) {
+			order: 21;
+		}
+		& > :nth-child(3) {
+			order: 22;
+		}
+	}
+	.ca-table.ca-table.ca-table.ca-table.ca-table.ca-table > tbody > tr[data-ca-risk-id] {
+		& > :nth-child(4),
+		& > :nth-child(5) {
+			font-size: 0.8rem;
+			color: var(--ca-quiet);
+		}
+	}
+	.ca-table > tbody > tr[data-ca-risk-id] {
+		& > :nth-child(4) {
+			order: 23;
+		}
+		& > :nth-child(4)::before {
+			content: "Renews ";
+		}
+		& > :nth-child(5) {
+			flex: 1 1 auto;
+			order: 24;
+		}
+		& > :nth-child(7) {
+			order: 25;
+		}
+	}
+}
+
+/* On a phone an account row keeps its name, health, plan, revenue and
+   change; the region and the renewal line wait on the account page. An
+   at-risk row drops the owner, so its menu keeps to the right edge. */
+@media (max-width: 575.98px) {
+	.ca-table.ca-table.ca-table.ca-table.ca-table.ca-table > tbody > tr[data-ca-row] {
+		& > :nth-child(3),
+		& > :nth-child(7) {
+			display: none;
+		}
+	}
+	.ca-table.ca-table.ca-table.ca-table.ca-table.ca-table > tbody > tr[data-ca-risk-id] > :nth-child(5) {
+		display: none;
+	}
+	.ca-table > tbody > tr[data-ca-risk-id] > :nth-child(7) {
+		margin-left: auto;
+	}
+}
+
+/* While a report loads, charts and tables hide behind a pulsing block. */
+.ca-report.is-loading {
+	& .ca-chart canvas,
+	& .ca-segtable,
+	& .ca-risktable tbody,
+	& .ca-stats {
+		visibility: hidden;
+	}
+	& .ca-chart::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+		animation: basalt-skeleton-pulse 1.4s ease-in-out infinite;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ca-report.is-loading .ca-chart::after {
+		animation: none;
+	}
+}
+
+/* Paper copies drop the controls and keep each card on one page. */
+@media print {
+	.ca-controls .dropdown,
+	.ca-numbers,
+	.ca-search,
+	.ca-pager,
+	.ca-risk-foot .btn,
+	.ca-risk-act {
+		display: none;
+	}
+	.ca-kpi,
+	.ca-card {
+		break-inside: avoid;
+	}
+}

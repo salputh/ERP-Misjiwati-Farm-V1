@@ -1,0 +1,612 @@
+/* Styles for chartjs-charts.html; every class starts with .cjs-. Colors are
+   taken from the --basalt-* tokens, the same ones chartjs-charts.js reads for
+   the canvases, so legends, swatches and the HTML tooltip keep in step with
+   the charts whatever palette is active. */
+
+/* The quiet gray leans slightly toward the body color so small text still
+   reaches 4.5:1 on the lightest palettes. */
+.cjs-page {
+	--cjs-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* Ramp slots: a single custom property that dots, lines and swatches paint with. */
+.cjs-c1 {
+	--cjs-c: var(--basalt-series-1);
+}
+.cjs-c2 {
+	--cjs-c: var(--basalt-series-2);
+}
+.cjs-c3 {
+	--cjs-c: var(--basalt-series-3);
+}
+.cjs-c4 {
+	--cjs-c: var(--basalt-series-4);
+}
+.cjs-c5 {
+	--cjs-c: var(--basalt-series-5);
+}
+.cjs-c6 {
+	--cjs-c: var(--basalt-series-6);
+}
+.cjs-c7 {
+	--cjs-c: var(--basalt-series-7);
+}
+.cjs-c8 {
+	--cjs-c: var(--basalt-series-8);
+}
+
+/* The type filter spreads chips and the chart count across one row, wrapping when narrow. */
+.cjs-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+
+	@media print {
+		display: none;
+	}
+}
+.cjs-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cjs-quiet);
+}
+
+/* Chips are pills; the pressed one flips to dark text color on light. */
+.cjs-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .cjs-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.cjs-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.cjs-chip:focus-visible,
+.cjs-toggle:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* A picker sits above its own chart with slightly smaller chips. */
+.cjs-picker {
+	margin-bottom: 1rem;
+
+	& .cjs-chip {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.77rem;
+	}
+}
+
+/* Twelve columns: full width on phones, halves from tablets, an 8/4 rhythm
+   on wide screens. A filtered view goes back to halves, and a card left
+   alone in its row takes the whole row. */
+.cjs-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.cjs-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+
+		@media print {
+			display: block;
+		}
+	}
+}
+@media (min-width: 768px) {
+	.cjs-card {
+		grid-column: span 6;
+	}
+	.cjs-card-full,
+	.cjs-grid.is-filtered .cjs-card.is-alone {
+		grid-column: span 12;
+	}
+}
+@media (min-width: 1200px) {
+	.cjs-card-wide {
+		grid-column: span 8;
+	}
+	.cjs-card-narrow {
+		grid-column: span 4;
+	}
+	.cjs-grid.is-filtered :is(.cjs-card-wide, .cjs-card-narrow) {
+		grid-column: span 6;
+	}
+}
+
+/* The card body is a column, so whatever holds the chart can drop to the bottom. */
+.cjs-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+
+/* The kind badge shows above the title yet follows it in the markup, so a
+   screen reader hears the title first; the badge never shrinks. */
+.cjs-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.cjs-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cjs-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cjs-quiet);
+}
+.cjs-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--cjs-quiet);
+}
+
+/* Until Chart.js sizes it, a canvas is 300px wide by default; capping it
+   keeps a narrow card from overflowing the screen. */
+.cjs-card canvas {
+	display: block;
+	max-width: 100%;
+}
+.cjs-chart {
+	position: relative;
+	height: 260px;
+	margin-top: auto;
+
+	@media (max-width: 575.98px) {
+		height: 230px;
+	}
+}
+
+/* Legends are written in HTML so long labels wrap instead of overlapping. */
+.cjs-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--cjs-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.cjs-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--cjs-c, var(--cjs-quiet));
+	border-radius: 2px;
+}
+.cjs-key-line-dashed {
+	border-top-style: dashed;
+}
+.cjs-key-dot {
+	flex-shrink: 0;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--cjs-c, var(--basalt-series-1));
+}
+
+/* The pie legend doubles as switches; a slice that is off reads struck through,
+   with a dashed edge and a hollow dot. */
+.cjs-toggles {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+.cjs-toggle {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.65rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+
+	&[aria-pressed="false"] {
+		border-style: dashed;
+		text-decoration: line-through;
+		color: var(--cjs-quiet);
+
+		& .cjs-key-dot {
+			background: transparent;
+			box-shadow: inset 0 0 0 1.5px var(--cjs-c);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* The live chart's current reading sits at one end and its pause button at the other. */
+.cjs-live {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+
+	@media print {
+		& .btn {
+			display: none;
+		}
+	}
+}
+.cjs-live-now {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--cjs-quiet);
+}
+.cjs-live-value {
+	margin-right: 0.2rem;
+	font-size: 1.25rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+/* The editable table and its bar chart stack on phones and pair up from tablets. */
+.cjs-table-chart {
+	display: grid;
+	gap: 1.5rem;
+	margin-top: auto;
+
+	& .cjs-chart {
+		margin-top: 0;
+	}
+
+	@media (min-width: 768px) {
+		grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+		align-items: center;
+	}
+}
+
+/* Figures line up on the right; the total row loses its rule and reads bolder. */
+.cjs-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& :is(th, td) {
+		padding: 0.3rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		vertical-align: middle;
+	}
+
+	& thead th {
+		padding-bottom: 0.4rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--cjs-quiet);
+	}
+
+	& tbody th {
+		font-weight: 500;
+	}
+	& td {
+		text-align: right;
+	}
+	& thead th:last-child {
+		text-align: right;
+	}
+
+	& tfoot :is(th, td) {
+		padding-top: 0.5rem;
+		border-bottom: 0;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+
+	& tfoot td {
+		padding-right: 0.6rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	& input {
+		width: 5.5rem;
+		margin-left: auto;
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+}
+
+/* Sparklines stack in rows: a fixed-width figure on the left, the line filling the rest. */
+.cjs-sparks {
+	display: flex;
+	flex-direction: column;
+	margin-top: auto;
+}
+.cjs-spark {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 0.85rem 0;
+
+	& + .cjs-spark {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.cjs-spark-text {
+	flex: 0 0 8.5rem;
+	min-width: 0;
+}
+.cjs-spark-label {
+	margin: 0 0 0.1rem;
+	font-size: 0.8rem;
+	color: var(--cjs-quiet);
+}
+.cjs-spark-value {
+	margin: 0;
+	font-size: 1.35rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.cjs-spark-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 48px;
+}
+
+/* The stacked bar's HTML tooltip is placed by script with a transform and
+   fades in; it never takes the pointer. */
+.cjs-tip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+	min-width: 11rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 8px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	opacity: 0;
+	box-shadow: 0 6px 20px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+	pointer-events: none;
+	transition:
+		opacity 110ms ease,
+		transform 110ms ease;
+
+	&.is-on {
+		opacity: 1;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.cjs-tip-title {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin: 0 0 0.3rem;
+	font-weight: 650;
+}
+.cjs-tip-rows {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.4rem;
+		grid-template-columns: auto 1fr auto auto;
+		align-items: center;
+		padding: 0.1rem 0;
+	}
+
+	& .cjs-key-dot {
+		width: 8px;
+		height: 8px;
+	}
+}
+.cjs-tip-num {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+.cjs-tip-share {
+	min-width: 2.4rem;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--cjs-quiet);
+}
+
+/* Each card closes with a config disclosure, and the link to the chart's own
+   page pinned to the right of the same line. */
+.cjs-foot {
+	position: relative;
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	@media print {
+		display: none;
+	}
+}
+.cjs-more {
+	position: absolute;
+	top: 0.75rem;
+	right: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: underline;
+	text-decoration-color: var(--basalt-edge-strong);
+	text-underline-offset: 3px;
+	color: var(--basalt-copy-body);
+
+	&:hover {
+		text-decoration-color: currentColor;
+		color: var(--basalt-copy);
+	}
+}
+.cjs-code {
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+	}
+
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The closing panel lists the eight ramp tokens with a chip and the value
+   each resolves to right now. */
+.cjs-colors {
+	margin-top: 2.5rem;
+
+	& .card-body {
+		padding: 1.5rem;
+	}
+}
+.cjs-swatches {
+	display: grid;
+	gap: 0.9rem 1.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		column-gap: 0.75rem;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+	}
+
+	& code {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		color: var(--basalt-copy);
+	}
+}
+.cjs-swatch {
+	grid-row: span 2;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 8px;
+	background: var(--cjs-c);
+}
+.cjs-swatch-hex {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.74rem;
+	color: var(--cjs-quiet);
+}

@@ -1,0 +1,670 @@
+/**
+ * Everything that slides in from an edge. Bootstrap's offcanvas gets the
+ * palette first; the Basalt panels layered on it follow in the order a
+ * visitor meets them inside a panel: the drawer frame, record stepping, the
+ * drill-in menu, the resize grip, then the bottom sheet and the in-page push
+ * drawer. The filter count and applied-filter chips that live beside a
+ * panel's trigger close the file. offcanvas.html exercises every piece,
+ * the list pages reuse the drawer, and basalt.js answers the data-basalt-*
+ * hooks mentioned along the way.
+ */
+
+/* All slides, fades and size changes here share one soft deceleration. */
+$settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+/* Supporting text mixes the muted tone back toward the main ink. */
+$quiet-ink: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+/* Accent text on a tinted ground leans toward the ink to stay legible. */
+$deep-hue: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+
+/* A square control with one glyph dead center; size and corner vary. */
+@mixin glyph-square($side, $corner) {
+	display: inline-grid;
+	place-items: center;
+	width: $side;
+	height: $side;
+	border-radius: $corner;
+}
+
+/* Reduced-motion overrides travel with the rule they quiet. */
+@mixin motion-off {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+/* Bootstrap's panel reads its whole look from these variables; the slide uses
+   the shared curve, and the scrim behind it is tinted rather than black. */
+.offcanvas,
+.offcanvas-lg {
+	--bs-offcanvas-bg: var(--basalt-plane);
+	--bs-offcanvas-color: var(--basalt-copy-body);
+	--bs-offcanvas-border-color: var(--basalt-edge);
+	--bs-offcanvas-padding-x: 1.5rem;
+	--bs-offcanvas-padding-y: 1.25rem;
+	--bs-offcanvas-box-shadow: 0 30px 80px -24px var(--basalt-scrim);
+	--bs-offcanvas-transition: transform 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	--bs-offcanvas-title-line-height: 1.3;
+
+	@include motion-off {
+		--bs-offcanvas-transition: none;
+	}
+}
+
+/* Only the corners that face the page are rounded. */
+.offcanvas {
+	box-shadow: var(--bs-offcanvas-box-shadow);
+
+	&.offcanvas-start {
+		border-radius: 0 20px 20px 0;
+	}
+	&.offcanvas-end {
+		border-radius: 20px 0 0 20px;
+	}
+	&.offcanvas-top {
+		border-radius: 0 0 20px 20px;
+	}
+	&.offcanvas-bottom {
+		border-radius: 20px 20px 0 0;
+	}
+
+	/* A phone always keeps a strip of the page visible beside a side panel. */
+	@media (max-width: 575.98px) {
+		&.offcanvas-start,
+		&.offcanvas-end {
+			--bs-offcanvas-width: min(400px, 92vw);
+		}
+	}
+}
+
+.offcanvas-header {
+	gap: 0.75rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	.btn-close {
+		flex-shrink: 0;
+		margin: 0 0 0 auto;
+	}
+}
+
+.offcanvas-title {
+	font-size: 1.1rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+
+.offcanvas-backdrop {
+	background-color: var(--basalt-scrim);
+
+	&.show {
+		opacity: 1;
+	}
+}
+
+/* .basalt-drawer turns any panel into a titled head, a scrolling body and a
+   foot for actions. A form placed in .basalt-drawer-form stretches between
+   them so its submit button can sit in the foot. */
+.basalt-drawer {
+	container: basalt-drawer / inline-size;
+
+	.form-check {
+		margin-bottom: 0.6rem;
+	}
+	.form-check-label {
+		color: var(--basalt-copy);
+	}
+}
+
+.basalt-drawer-heading {
+	flex: 1;
+	min-width: 0;
+}
+
+.basalt-drawer-sub {
+	margin: 0.2rem 0 0;
+	font-size: 0.8rem;
+	color: $quiet-ink;
+}
+
+.basalt-drawer-form {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+/* Sections are bare fieldsets spaced apart, the last one flush with the end. */
+.basalt-drawer-section {
+	min-width: 0;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	border: 0;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.basalt-drawer-legend {
+	display: block;
+	float: none;
+	width: auto;
+	margin: 0 0 0.75rem;
+	padding: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.basalt-drawer-count {
+	margin-left: 0.3rem;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+
+/* The foot is stacked above the body that scrolls under it and casts a faint
+   shadow upward; its buttons gather on the right and never break a label. */
+.basalt-drawer-foot {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	margin-top: auto;
+	padding: 1.1rem var(--bs-offcanvas-padding-x) 1.35rem;
+	border-top: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	box-shadow: 0 -14px 24px -20px var(--basalt-scrim);
+
+	.btn-primary {
+		min-width: 9rem;
+	}
+	> .btn {
+		white-space: nowrap;
+	}
+
+	/* Once the panel is narrow, every button widens to fill its row, and one
+     that has no room left drops to the next row whole. */
+	@container basalt-drawer (max-width: 420px) {
+		> .btn {
+			flex: 1 1 auto;
+		}
+	}
+}
+
+/* Record stepping puts a position label and two arrow buttons in the head. */
+.basalt-drawer-nav {
+	display: flex;
+	gap: 0.25rem;
+	flex-shrink: 0;
+	align-items: center;
+
+	.btn-icon {
+		padding: 0;
+		border: 1px solid var(--basalt-edge-strong);
+		background: var(--basalt-plane);
+		@include glyph-square(32px, 8px);
+
+		&:hover {
+			background: var(--basalt-wash);
+		}
+	}
+}
+
+.basalt-drawer-pos {
+	margin-right: 0.25rem;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: $quiet-ink;
+}
+
+/* Each step re-runs the body's entrance; .is-back flips it so the next
+   record arrives from the side the visitor is heading toward. */
+.basalt-drawer-record {
+	--bs-offcanvas-width: 460px;
+
+	.offcanvas-body > * {
+		animation: basalt-record-in 240ms $settle;
+
+		@include motion-off {
+			animation: none;
+		}
+	}
+
+	&.is-back .offcanvas-body > * {
+		animation-name: basalt-record-back;
+	}
+}
+
+/* The drill-in drawer keeps every menu level in one panel and slides from
+   one to the next; [data-basalt-drawer-views] runs it (offcanvas.js). */
+.basalt-drawer-views {
+	position: relative;
+	overflow-x: hidden;
+}
+
+.basalt-drawer-views-view {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	animation: basalt-view-in 280ms $settle;
+
+	@include motion-off {
+		animation: none;
+	}
+
+	&.is-back {
+		animation-name: basalt-view-back;
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+.basalt-drawer-views-back {
+	flex-shrink: 0;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+	@include glyph-square(34px, 9px);
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* A level's entry is a full-width row: icon, label that takes the slack,
+   an optional tally, then the chevron. */
+.basalt-drawer-views-item {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.75rem 0.8rem;
+	border: 0;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+
+	> span:not([class]) {
+		flex: 1;
+		min-width: 0;
+	}
+}
+
+.basalt-drawer-views-icon {
+	flex-shrink: 0;
+	color: $deep-hue;
+	background: var(--basalt-hue-soft);
+	@include glyph-square(34px, 10px);
+}
+
+.basalt-drawer-views-hint {
+	margin-left: auto;
+	font-size: 0.8rem;
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+	color: $quiet-ink;
+}
+
+.basalt-drawer-views-chev {
+	font-size: 0.8rem;
+	color: $quiet-ink;
+}
+
+/* The resize grip is a focusable separator astride the panel's inner edge.
+   It answers to dragging and to the arrow keys, and
+   [data-basalt-drawer-resize] clamps it to data-min and data-max. */
+.basalt-drawer-resize {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	z-index: 2;
+	width: 14px;
+	cursor: ew-resize;
+	touch-action: none;
+
+	.offcanvas-end > & {
+		left: -7px;
+	}
+	.offcanvas-start > & {
+		right: -7px;
+	}
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 5px;
+		width: 4px;
+		height: 44px;
+		margin-top: -22px;
+		border-radius: 4px;
+		background: var(--basalt-edge-strong);
+		transition:
+			background-color 170ms ease,
+			height 170ms ease,
+			margin-top 170ms ease;
+
+		@include motion-off {
+			transition: none;
+		}
+	}
+
+	/* Hover, a drag in progress and keyboard focus all stretch the bar and
+     paint it in the accent; focus adds a ring in place of the outline. */
+	&:hover::after,
+	&.is-dragging::after,
+	&:focus-visible::after {
+		height: 64px;
+		margin-top: -32px;
+		background: var(--basalt-hue);
+	}
+
+	&:focus-visible {
+		outline: 0;
+		box-shadow: none;
+
+		&::after {
+			box-shadow: 0 0 0 3px var(--basalt-hue-border);
+		}
+	}
+}
+
+/* Mid-resize the panel tracks the pointer exactly and selects no text. */
+.offcanvas.is-resizing {
+	user-select: none;
+	transition: none;
+}
+
+/* A bottom sheet is a centered .offcanvas-bottom that snaps between the
+   heights in data-snap (percent of the viewport). Its handle drags and also
+   works as a button; [data-basalt-sheet] provides both. */
+.basalt-sheet {
+	--bs-offcanvas-height: 55vh;
+	max-width: 720px;
+	margin: 0 auto;
+	transition:
+		var(--bs-offcanvas-transition),
+		height 280ms $settle;
+
+	@include motion-off {
+		transition: none;
+	}
+
+	&.is-dragging {
+		transition: none;
+	}
+
+	.offcanvas-header {
+		padding-top: 0.25rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 0;
+	}
+
+	.offcanvas-body {
+		padding-top: 0.25rem;
+	}
+}
+
+.basalt-sheet-handle {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 100%;
+	height: 26px;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: grab;
+	touch-action: none;
+
+	span {
+		width: 44px;
+		height: 5px;
+		border-radius: 5px;
+		background: var(--basalt-edge-strong);
+		transition:
+			background-color 170ms ease,
+			width 170ms ease;
+
+		@include motion-off {
+			transition: none;
+		}
+	}
+
+	/* The pill widens under the pointer, while dragging and on focus; focus
+     paints it in the accent with a ring instead of an outline. */
+	&:hover span,
+	.basalt-sheet.is-dragging & span {
+		width: 56px;
+		background: var(--basalt-copy-muted);
+	}
+
+	&:focus-visible {
+		outline: 0;
+		box-shadow: none;
+
+		span {
+			width: 56px;
+			background: var(--basalt-hue);
+			box-shadow: 0 0 0 3px var(--basalt-hue-border);
+		}
+	}
+
+	.basalt-sheet.is-dragging & {
+		cursor: grabbing;
+	}
+}
+
+/* The push drawer sits inside the page and moves the content over instead
+   of covering it; [data-basalt-push-toggle] collapses its first column. */
+.basalt-push {
+	--basalt-push-width: 230px;
+	position: relative;
+	display: grid;
+	grid-template-columns: var(--basalt-push-width) minmax(0, 1fr);
+	min-height: 300px;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	transition: grid-template-columns 320ms $settle;
+
+	&.is-closed {
+		grid-template-columns: 0 minmax(0, 1fr);
+	}
+}
+
+.basalt-push-panel {
+	min-width: 0;
+	padding: 1rem 0.75rem;
+	border-right: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-canvas);
+	transition:
+		opacity 240ms ease,
+		visibility 240ms;
+
+	.basalt-push.is-closed & {
+		visibility: hidden;
+		border-right-color: transparent;
+		opacity: 0;
+	}
+}
+
+.basalt-push-title {
+	margin: 0 0 0.6rem;
+	padding: 0 0.7rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: $quiet-ink;
+}
+
+.basalt-push-main {
+	min-width: 0;
+}
+
+/* Under tablet width the content keeps the full row, and the panel floats
+   over its left edge, sliding away when closed instead of fading. */
+@media (max-width: 767.98px) {
+	.basalt-push,
+	.basalt-push.is-closed {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.basalt-push-panel {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 2;
+		width: min(var(--basalt-push-width), 80%);
+		box-shadow: 16px 0 32px -20px var(--basalt-scrim);
+		transition:
+			transform 210ms $settle,
+			visibility 210ms;
+	}
+
+	.basalt-push.is-closed .basalt-push-panel {
+		transform: translateX(-100%);
+		opacity: 1;
+	}
+}
+
+/* The push drawer opens and closes instantly for reduced-motion visitors;
+   this has to follow the narrow layout, which sets its own transition. */
+@include motion-off {
+	.basalt-push,
+	.basalt-push-panel {
+		transition: none;
+	}
+}
+
+/* A filter trigger shows how many filters are on in a small dark pill. */
+.basalt-count-badge {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.35rem;
+	height: 1.35rem;
+	margin-left: 0.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The filters in force become chips, each removable on its own, with a
+   clear-all link trailing them; a row with nothing in it collapses. */
+.basalt-applied {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	&:empty {
+		display: none;
+	}
+}
+
+.basalt-applied-chip {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	padding: 0.2rem 0.25rem 0.2rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-hue-border);
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+	animation: basalt-chip-in 200ms $settle;
+
+	@include motion-off {
+		animation: none;
+	}
+
+	button {
+		padding: 0;
+		border: 0;
+		color: var(--basalt-copy-body);
+		background: transparent;
+		@include glyph-square(22px, 50%);
+
+		&:hover {
+			color: var(--basalt-copy);
+			background: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 1px;
+		}
+	}
+}
+
+.basalt-applied-clear {
+	padding: 0.2rem 0.4rem;
+	border: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: $deep-hue;
+	background: none;
+}
+
+/* Every entrance above fades up from transparent while it travels the
+   listed offset back to rest. */
+$arrivals: (
+	basalt-record-in: translateY(8px),
+	basalt-record-back: translateY(-8px),
+	basalt-view-in: translateX(32px),
+	basalt-view-back: translateX(-32px),
+	basalt-chip-in: scale(0.9),
+);
+
+@each $name, $start in $arrivals {
+	@keyframes #{$name} {
+		from {
+			transform: $start;
+			opacity: 0;
+		}
+	}
+}

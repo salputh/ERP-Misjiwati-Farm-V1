@@ -1,0 +1,926 @@
+/*
+ * Layout for the Shifts page (shifts.html), every class under .at-.
+ * It covers today's shift board, the people table in its today and
+ * six-week views, the away-and-late chart, and the person and day panels.
+ * The page header, tabs, segmented control, drawer, empty state, status
+ * pills, avatars and toasts are shared components styled elsewhere.
+ */
+
+/* The page and its panels share one set of tones. Small gray text is the
+   muted token pulled toward the body color, so it clears 4.5:1 on the
+   lighter palettes and on hovered rows. Each kind of day borrows its status
+   pill's color, so the chart, its key and the person strip agree, and the
+   current-time mark is the primary, deepened to keep its label legible. */
+.at-page,
+.at-layer {
+	--at-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--at-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--at-leave: var(--basalt-info);
+	--at-sick: var(--basalt-danger);
+	--at-late: var(--basalt-warning);
+	--at-in: color-mix(in srgb, var(--basalt-copy) 14%, var(--basalt-plane));
+	--at-now-tone: color-mix(in srgb, var(--basalt-hue) 80%, var(--basalt-copy));
+}
+
+/* Gray outline buttons keep a readable label on the card and in panels. */
+.at-page .btn-outline-secondary,
+.at-layer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+	white-space: nowrap;
+}
+
+/* Each shift owns one color from the theme ramp, on the board and in the table. */
+.at-lane-early,
+.at-shift-early {
+	--at-tone: var(--basalt-series-1);
+}
+.at-lane-day,
+.at-shift-day {
+	--at-tone: var(--basalt-series-3);
+}
+.at-lane-late,
+.at-shift-late {
+	--at-tone: var(--basalt-series-8);
+}
+
+/* Cards stack with an even gap; the head wraps its controls under the
+   title when space runs short, and phones get tighter padding. */
+.at-stack {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+.at-card {
+	min-width: 0;
+}
+.at-card.basalt-box .card-body {
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.at-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+}
+.at-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.at-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--at-quiet);
+}
+
+/* The board runs three columns: the shift's name, its bar on the time
+   axis, and the head count. The axis row reuses the columns so the hour
+   labels sit over the bars, and one line marks the current time across
+   every lane. */
+.at-board {
+	--at-name: 9.5rem;
+	--at-sum: 9.5rem;
+	--at-gap: 1.5rem;
+	position: relative;
+	container: at-board / inline-size;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 1.5rem;
+		bottom: 0;
+		left: calc(
+			var(--at-name) + var(--at-gap) + (100% - var(--at-name) - var(--at-sum) - 2 * var(--at-gap)) * var(--at-now)
+		);
+		z-index: 1;
+		width: 2px;
+		margin-left: -1px;
+		background: var(--at-now-tone);
+		pointer-events: none;
+	}
+}
+.at-board-axis,
+.at-lane {
+	display: grid;
+	column-gap: var(--at-gap);
+	grid-template-columns: var(--at-name) minmax(0, 1fr) var(--at-sum);
+	align-items: center;
+}
+.at-board-axis {
+	height: 1.5rem;
+	margin-bottom: 0.5rem;
+
+	& > .at-board-track {
+		grid-column: 2;
+		align-self: stretch;
+	}
+}
+.at-board-track {
+	position: relative;
+	min-width: 0;
+}
+
+/* Hour labels center on their mark, except the first and the last, which
+   hug the axis ends; the current time is a filled pill. */
+.at-board-tick {
+	position: absolute;
+	top: 0;
+	left: var(--at-x);
+	transform: translateX(-50%);
+	font-size: 0.75rem;
+	line-height: 1.5rem;
+	white-space: nowrap;
+	color: var(--at-quiet);
+
+	&:first-child {
+		transform: none;
+	}
+	&:nth-last-child(2) {
+		transform: translateX(-100%);
+	}
+}
+.at-board-tick-now {
+	padding: 0 0.5rem;
+	border-radius: 999px;
+	font-weight: 650;
+	color: var(--basalt-on-hue);
+	background: var(--at-now-tone);
+}
+
+/* Lanes are ruled between, never above the first; the name carries a
+   small swatch in the shift's color. */
+.at-board-lanes {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.at-lane {
+	padding: 0.9rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		border-top: 0;
+	}
+}
+.at-lane-name,
+.at-lane-sum {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	margin: 0;
+	line-height: 1.35;
+}
+.at-lane-title {
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	&::before {
+		content: "";
+		display: inline-block;
+		width: 0.6rem;
+		height: 0.6rem;
+		margin-right: 0.5rem;
+		border-radius: 3px;
+		background: var(--at-tone);
+	}
+}
+.at-lane-hours,
+.at-lane-small {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--at-quiet);
+}
+.at-lane-big {
+	font-size: 0.9rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The bar is pale for the whole shift and takes the tone for the part
+   worked so far. A shift still ahead is only outlined, with its people
+   waiting inside it. */
+.at-lane-bar {
+	position: relative;
+	left: var(--at-x);
+	display: flex;
+	align-items: center;
+	width: var(--at-w);
+	height: 2.75rem;
+	padding: 0 0.4rem;
+	border-radius: 10px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--at-tone) 16%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: var(--at-done);
+		background: color-mix(in srgb, var(--at-tone) 55%, var(--basalt-plane));
+	}
+	&.is-ahead {
+		border: 1.5px dashed color-mix(in srgb, var(--at-tone) 60%, var(--basalt-plane));
+		background: transparent;
+	}
+}
+.at-lane-faces {
+	position: relative;
+	z-index: 2;
+
+	& .basalt-avatar {
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		font-size: 0.71rem;
+		cursor: pointer;
+	}
+	& .basalt-avatar-more {
+		cursor: default;
+	}
+}
+
+/* On a narrow card the name and count share a line above a full-width
+   bar, and the time line is drawn inside each bar rather than across. */
+@container at-board (max-width: 640px) {
+	.at-board {
+		--at-name: 0px;
+		--at-sum: 0px;
+		--at-gap: 0px;
+
+		&::after {
+			display: none;
+		}
+	}
+	.at-board-axis,
+	.at-lane {
+		row-gap: 0.75rem;
+		column-gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.at-board-axis > .at-board-track {
+		grid-column: 1 / -1;
+	}
+	.at-lane > .at-board-track {
+		grid-column: 1 / -1;
+		grid-row: 2;
+
+		&::after {
+			content: "";
+			position: absolute;
+			top: -0.25rem;
+			bottom: -0.25rem;
+			left: calc(var(--at-now) * 100%);
+			z-index: 1;
+			width: 2px;
+			margin-left: -1px;
+			background: var(--at-now-tone);
+		}
+	}
+	.at-lane-sum {
+		align-items: flex-end;
+		text-align: right;
+	}
+	.at-lane-faces .basalt-avatar {
+		width: 26px;
+		height: 26px;
+		font-size: 0.625rem;
+	}
+	.at-board-tick:nth-child(even):not(.at-board-tick-now) {
+		visibility: hidden;
+	}
+}
+
+/* In the table a shift shows its color as a small square before the hours. */
+.at-shift::before {
+	content: "";
+	display: inline-block;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.5rem;
+	border-radius: 2px;
+	background: var(--at-tone);
+}
+
+/* Above the table: status tabs, then search and selects in a wrapping row
+   that is left out of print. Inputs sit on the card surface. */
+.at-tabs {
+	margin-bottom: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.at-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+
+	@media print {
+		display: none;
+	}
+}
+.at-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--at-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+	}
+}
+.at-select {
+	width: auto;
+	min-width: 9rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.at-page {
+	& .form-control,
+	& .form-select {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+	& .form-control::placeholder {
+		color: var(--at-quiet);
+		opacity: 1;
+	}
+}
+
+/* The table is pulled out by its cells' side padding, so the first
+   column's text starts on the card's left edge under the title. Rows open
+   on click, and the action column never prints. */
+.at-list {
+	container: at-list / inline-size;
+}
+.at-scroll {
+	margin: 0 -0.75rem;
+}
+.at-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	&[hidden],
+	&.is-empty {
+		display: none;
+	}
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--at-quiet);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& td {
+		white-space: nowrap;
+	}
+	& tbody tr {
+		cursor: pointer;
+	}
+	& tbody tr:hover > * {
+		--bs-table-bg-state: var(--basalt-wash);
+		color: var(--basalt-copy);
+	}
+	& > tbody > tr > td:first-child {
+		width: 36%;
+	}
+
+	@media print {
+		& [data-at-cell="go"] {
+			display: none;
+		}
+	}
+}
+.at-num {
+	color: var(--basalt-copy);
+
+	&[data-zero] {
+		color: var(--at-quiet);
+	}
+}
+.at-quiet {
+	color: var(--at-quiet);
+}
+
+/* A person cell is the avatar beside a name over a role; the name is a
+   link everywhere except in the day panel, where it is a plain label. */
+.at-who-id {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.at-who-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	line-height: 1.35;
+}
+.at-who-name,
+.at-who-label {
+	border-radius: 4px;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.at-who-name {
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--at-link);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.at-who-role {
+	font-size: 0.8rem;
+	color: var(--at-quiet);
+}
+
+/* Under the table: the empty state, then the range line and the Show all
+   button, which stay off paper. */
+.at-empty {
+	padding: 2.5rem 1rem;
+}
+.at-more {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+	@media print {
+		display: none;
+	}
+}
+.at-more-range {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--at-quiet);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Below the full table's width each person turns into a calm record: who
+   and status on the first line, then one muted line of facts wrapping
+   under the name. The list is a size container, so this follows the
+   card's room rather than the window's. */
+@container at-list (max-width: 820px) {
+	.at-scroll {
+		margin: 0;
+	}
+	.at-table,
+	.at-table > tbody {
+		display: block;
+	}
+	.at-table {
+		& > thead {
+			display: none;
+		}
+		& > tbody > tr {
+			display: flex;
+			gap: 0.4rem 1rem;
+			flex-wrap: wrap;
+			align-items: baseline;
+			padding: var(--basalt-pad-row-y) 0 var(--basalt-pad-row-y) calc(32px + 0.85rem);
+			border-bottom: 1px solid var(--basalt-edge);
+
+			&:last-child {
+				border-bottom: 0;
+			}
+			& > td {
+				display: block;
+				width: auto;
+				padding: 0;
+				border: 0;
+			}
+			& > td:first-child {
+				margin-left: calc(-32px - 0.85rem);
+				white-space: normal;
+			}
+		}
+		& tbody tr:hover {
+			background: var(--basalt-wash);
+		}
+	}
+
+	/* Today: name and status share the first line, and team, shift,
+     clock-in and place follow as one line joined by dots. */
+	.at-table:not(.at-table-weeks) > tbody > tr {
+		gap: 0;
+		align-items: center;
+
+		&::after {
+			content: "";
+			flex-basis: 100%;
+			order: 2;
+			margin-top: 0.75rem;
+		}
+		& > td:first-child {
+			flex: 1 1 0;
+			min-width: 0;
+			margin-right: 1rem;
+		}
+	}
+	.at-table > tbody > tr > [data-at-cell="status"] {
+		order: 1;
+	}
+	.at-table:not(.at-table-weeks) > tbody > tr {
+		& > td:not(:first-child, [data-at-cell="status"], [data-at-cell="go"]) {
+			order: 3;
+			font-size: 0.8rem;
+			color: var(--at-quiet);
+		}
+		& > [data-at-cell="shift"]::before,
+		& > [data-at-cell="where"]::before {
+			content: "\00b7\2002";
+			margin-left: 0.5em;
+		}
+		& > [data-at-cell="in"]::before {
+			content: "\00b7\2002In at ";
+			margin-left: 0.5em;
+		}
+	}
+
+	/* Cells with nothing clocked drop out, the two row actions close the
+     first line, and the shift swatch is left off. */
+	.at-table > tbody > tr {
+		& > td:has(> .at-quiet) {
+			display: none;
+		}
+		& > td[data-at-cell="go"]:not(:first-child) {
+			align-self: center;
+			order: 1;
+			margin: -0.3rem 0 -0.3rem 0.5rem;
+		}
+	}
+	.at-shift::before {
+		display: none;
+	}
+
+	/* Last six weeks: team and counts become one wrapping line under the
+     name, with the zeros left out and a word after each count. */
+	.at-table-weeks {
+		& > tbody > tr {
+			&::after {
+				content: "";
+				flex-basis: 100%;
+				order: 2;
+			}
+			& > td:first-child {
+				flex: 1 1 0;
+				min-width: 0;
+			}
+			& > td:not(:first-child):not([data-at-cell="go"]) {
+				order: 3;
+			}
+			& > [data-at-cell="team"] {
+				font-size: 0.8rem;
+				color: var(--at-quiet);
+			}
+		}
+		& .at-num {
+			font-size: 0.8rem;
+			color: var(--basalt-copy-body);
+		}
+		& .at-num[data-zero] {
+			display: none;
+		}
+		& [data-at-cell="in"]::after {
+			content: " days in";
+		}
+		& [data-at-cell="remote"]::after {
+			content: " remote";
+		}
+		& [data-at-cell="late"]::after {
+			content: " late";
+		}
+		& [data-at-cell="sick"]::after {
+			content: " sick";
+		}
+		& [data-at-cell="leave"]::after {
+			content: " on leave";
+		}
+	}
+}
+
+/* At phone width a row keeps the person, the status and when and where
+   they clocked in; team and shift wait in the person's panel. The status
+   drops under the name to leave room beside the row icon. */
+@container at-list (max-width: 520px) {
+	.at-table:not(.at-table-weeks) > tbody > tr {
+		& > [data-at-cell="status"] {
+			flex-basis: 100%;
+			order: 2;
+			margin-top: 0.5rem;
+		}
+		& > td[data-at-cell="team"]:not(:first-child),
+		& > td[data-at-cell="shift"] {
+			display: none;
+		}
+		& > [data-at-cell="in"]::before {
+			content: "In at ";
+			margin-left: 0;
+		}
+	}
+}
+@container at-list (max-width: 300px) {
+	.at-table:not(.at-table-weeks) > tbody > tr {
+		& > td:first-child {
+			flex-basis: 100%;
+			margin-right: 0;
+		}
+		& > [data-at-cell="status"] {
+			margin-top: 0.5rem;
+		}
+	}
+}
+
+/* The chart's key is a wrapping row of swatches; the canvas keeps a fixed
+   height, shorter on phones, and shows a ring only for keyboard focus. */
+.at-legend {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.at-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--at-in);
+}
+.at-legend-swatch-leave {
+	background: var(--at-leave);
+}
+.at-legend-swatch-sick {
+	background: var(--at-sick);
+}
+.at-legend-swatch-late {
+	background: var(--at-late);
+}
+.at-chart {
+	position: relative;
+	height: 260px;
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+		border-radius: 8px;
+	}
+	& canvas:focus {
+		outline: none;
+	}
+	& canvas:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+	@media (max-width: 575.98px) {
+		height: 220px;
+	}
+}
+
+/* Both panels share a width; the day panel leads with a tinted calendar
+   tile, and the person panel's lines sit under a status pill. */
+.at-drawer {
+	--bs-offcanvas-width: min(460px, 100vw);
+}
+.at-drawer-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+.at-d-status {
+	margin: 0 0 0.5rem;
+}
+.at-d-line {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.at-d-line-lead {
+	margin-bottom: 1.25rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+
+/* Thirty days in a row with a gap between weeks: filled squares that name
+   the day in a tooltip, nothing that reads as a checkbox. The sentence
+   above already says it in words, so screen readers skip the strip. */
+.at-strip {
+	display: grid;
+	gap: 3px;
+	grid-template-columns: repeat(30, minmax(0, 1fr));
+	margin: 1rem 0 0.4rem;
+	padding: 0;
+	list-style: none;
+}
+.at-strip-day {
+	height: 1.6rem;
+	border-radius: 3px;
+	background: var(--at-in);
+
+	&:nth-child(5n):not(:last-child) {
+		margin-right: 4px;
+	}
+}
+.at-strip-day-late {
+	background: var(--at-late);
+}
+.at-strip-day-sick {
+	background: var(--at-sick);
+}
+.at-strip-day-leave {
+	background: var(--at-leave);
+}
+.at-strip-day-none {
+	background: transparent;
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+}
+.at-strip-ends {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.76rem;
+	color: var(--at-quiet);
+}
+.at-legend-strip {
+	margin-top: 0.9rem;
+}
+
+/* The latest clock-ins list the date down the left, the times beside it
+   and a note under them when there is one. */
+.at-days {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.at-days-row {
+	display: grid;
+	gap: 0.2rem 1rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.at-days-date {
+	grid-row: span 2;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.at-days-what {
+	color: var(--basalt-copy);
+
+	&.is-away {
+		color: var(--basalt-copy-body);
+	}
+}
+.at-days-note {
+	font-size: 0.8rem;
+	color: var(--at-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* The day panel's switch counts each kind, and its list puts a person on
+   the left and the detail on the right. */
+.at-d-switch {
+	margin-bottom: 1.25rem;
+}
+.at-d-count {
+	font-weight: 500;
+	color: var(--at-quiet);
+}
+.at-who {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.at-who-row {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+	& .at-who-id {
+		flex: 1 1 12rem;
+	}
+}
+.at-who-detail {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.at-who-none {
+	padding: 0.25rem 0;
+	font-size: 0.875rem;
+	color: var(--at-quiet);
+}

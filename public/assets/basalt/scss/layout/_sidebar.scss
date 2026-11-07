@@ -1,0 +1,441 @@
+/* The menu panel is fixed to the left edge. Below 992px it waits off screen
+   until the menu button slides it in; from 992px up it can also fold to an
+   80px rail of section tiles, which body.basalt-menu-narrow switches on. */
+.basalt-mainmenu {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1038;
+	display: flex;
+	flex-direction: column;
+	width: 300px;
+	border-right: 1px solid var(--basalt-edge);
+	background-color: var(--basalt-plane);
+	transition:
+		transform 240ms cubic-bezier(0.32, 0.72, 0, 1),
+		width 240ms cubic-bezier(0.32, 0.72, 0, 1);
+
+	@media (max-width: 991.98px) {
+		transform: translateX(-100%);
+		box-shadow: var(--basalt-card-shadow);
+
+		&.is-open {
+			transform: translateX(0);
+		}
+	}
+
+	@media (min-width: 992px) {
+		body.basalt-menu-narrow & {
+			width: 80px;
+		}
+	}
+}
+
+/* Top row: the logo, then the fold button on wide screens or the close
+   button on small ones. On the rail the row stacks into a column and only
+   the mark is left of the logo. */
+.basalt-mainmenu-top {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 72px;
+	padding: 1.125rem 0.875rem 0.75rem 1.125rem;
+
+	@media (min-width: 992px) {
+		body.basalt-menu-narrow & {
+			gap: 0.625rem;
+			flex-direction: column;
+			padding: 1.125rem 0 0.5rem;
+		}
+		body.basalt-menu-narrow & .basalt-logo-word,
+		body.basalt-menu-narrow & .basalt-logo-plan {
+			display: none;
+		}
+	}
+}
+.basalt-mainmenu-shrink {
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	margin-left: auto;
+	border: 0;
+	border-radius: 8px;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	@media (max-width: 991.98px) {
+		display: none;
+	}
+
+	@media (min-width: 992px) {
+		body.basalt-menu-narrow & {
+			width: 40px;
+			height: 38px;
+			margin: 0;
+			border-radius: 12px;
+			border: 1px dashed var(--basalt-edge-strong);
+		}
+		body.basalt-menu-narrow &:hover {
+			border-style: solid;
+		}
+	}
+}
+/* The button carries both pictures: panel open, and panel folded. */
+.basalt-mainmenu-shrink-narrow,
+body.basalt-menu-narrow .basalt-mainmenu-shrink-wide {
+	display: none;
+}
+body.basalt-menu-narrow .basalt-mainmenu-shrink-narrow {
+	display: inline;
+}
+.basalt-mainmenu-shut {
+	margin-left: auto;
+	border: 0;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Jump to a page: a plain field that filters the menu below it. The
+   gradient edge is a border-box background, so with gradients off it turns
+   into a solid line in the primary color. Focus adds no glow or ring; the
+   caret is the cue. */
+.basalt-mainmenu-find {
+	display: flex;
+	gap: 0.625rem;
+	align-items: center;
+	height: 42px;
+	margin: 0 1rem 0.75rem;
+	padding: 0 0.5rem 0 0.8rem;
+	border-radius: 13px;
+	border: 1px solid transparent;
+	color: var(--basalt-copy-muted);
+	background:
+		linear-gradient(var(--basalt-plane), var(--basalt-plane)) padding-box,
+		var(--basalt-grad) border-box;
+	cursor: text;
+
+	> .bi-search {
+		font-size: 1rem;
+		line-height: 1;
+		color: var(--basalt-hue);
+	}
+}
+.basalt-mainmenu-find-field {
+	flex: 1;
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font: inherit;
+	font-size: 0.84rem;
+	font-weight: 500;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&::placeholder {
+		color: var(--basalt-copy-muted);
+		opacity: 1;
+	}
+	&::-webkit-search-cancel-button {
+		display: none;
+	}
+	&:focus,
+	&:focus-visible {
+		outline: 0;
+		box-shadow: none;
+	}
+}
+.basalt-mainmenu-find-reset {
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	border: 0;
+	border-radius: 7px;
+	font-size: 0.7rem;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* The sections scroll on their own between the field and the account row. */
+.basalt-mainmenu-scroll {
+	flex: 1;
+	min-height: 0;
+	padding: 0 0.75rem 1rem;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--basalt-edge-strong) transparent;
+
+	&::-webkit-scrollbar {
+		width: 6px;
+	}
+	&::-webkit-scrollbar-thumb {
+		border-radius: 6px;
+		background: var(--basalt-edge-strong);
+	}
+}
+.basalt-mainmenu-nomatch {
+	margin: 0.75rem 0.25rem;
+	padding: 1rem;
+	border-radius: 12px;
+	border: 1px dashed var(--basalt-edge-strong);
+	font-size: 0.81rem;
+	text-align: center;
+	color: var(--basalt-copy-muted);
+}
+@media (min-width: 992px) {
+	body.basalt-menu-narrow .basalt-mainmenu-find,
+	body.basalt-menu-narrow .basalt-mainmenu-scroll {
+		display: none;
+	}
+}
+
+/* The account row closes the panel: the initials on a disc inside a 2px
+   gradient ring, the name over the role, and a settings link. On the rail
+   only the ring is left, centered. */
+.basalt-mainmenu-account {
+	display: flex;
+	gap: 0.625rem;
+	align-items: center;
+	margin: 0.5rem 0.875rem 0.875rem;
+	padding: 0.625rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+
+	@media (min-width: 992px) {
+		body.basalt-menu-narrow & {
+			justify-content: center;
+			margin: 0.5rem;
+			padding: 0.5rem 0;
+		}
+	}
+}
+.basalt-mainmenu-face {
+	flex: none;
+	width: 36px;
+	height: 36px;
+	padding: 2px;
+	border-radius: 50%;
+	background: var(--basalt-grad);
+
+	> span {
+		display: grid;
+		place-items: center;
+		width: 100%;
+		height: 100%;
+		border-radius: 50%;
+		font-size: 0.75rem;
+		font-weight: 800;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+	}
+}
+.basalt-mainmenu-account-text {
+	display: grid;
+	min-width: 0;
+	line-height: 1.2;
+}
+.basalt-mainmenu-person {
+	font-size: 0.81rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.basalt-mainmenu-jobline {
+	font-size: 0.71rem;
+	color: var(--basalt-copy-muted);
+}
+.basalt-mainmenu-account-gear {
+	display: grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	margin-left: auto;
+	border-radius: 8px;
+	text-decoration: none;
+	color: var(--basalt-copy-muted);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+@media (min-width: 992px) {
+	body.basalt-menu-narrow .basalt-mainmenu-account-text,
+	body.basalt-menu-narrow .basalt-mainmenu-account-gear {
+		display: none;
+	}
+}
+
+/* The rail menu.js builds for the folded panel: a search tile, then one
+   tile per section in the section's color, the current section's tile
+   larger and solid. It only shows while the panel is folded. */
+.basalt-mainmenu-strip {
+	display: none;
+
+	@media (min-width: 992px) {
+		body.basalt-menu-narrow & {
+			display: flex;
+			gap: 0.3rem;
+			flex: 1;
+			flex-direction: column;
+			align-items: center;
+			min-height: 0;
+			padding: 0.25rem 0 0.5rem;
+			overflow-y: auto;
+			scrollbar-width: none;
+		}
+		body.basalt-menu-narrow &::-webkit-scrollbar {
+			display: none;
+		}
+	}
+}
+/* The list wrapper adds no box of its own, and its tiles take the section
+   colors in the same order as the sections do. */
+.basalt-mainmenu-strip-list {
+	display: contents;
+
+	@for $slot from 2 through 8 {
+		> :nth-of-type(8n + #{$slot}) {
+			--basalt-section: var(--basalt-series-#{$slot});
+		}
+	}
+}
+.basalt-mainmenu-strip-btn {
+	--basalt-section: var(--basalt-series-1);
+	position: relative;
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 40px;
+	height: 38px;
+	border: 0;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--basalt-section) 78%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-section) 13%, transparent);
+	transition:
+		width 200ms cubic-bezier(0.3, 0.8, 0.3, 1),
+		height 200ms cubic-bezier(0.3, 0.8, 0.3, 1),
+		border-radius 200ms ease,
+		background-color 170ms ease;
+
+	&:hover,
+	&.is-hot {
+		background: color-mix(in srgb, var(--basalt-section) 22%, transparent);
+	}
+	&.is-active {
+		width: 50px;
+		height: 48px;
+		border-radius: 15px;
+		font-size: 1.25rem;
+		color: var(--basalt-plane);
+		background: color-mix(in srgb, var(--basalt-section) 72%, var(--basalt-copy));
+	}
+}
+.basalt-mainmenu-strip-btn-find {
+	--basalt-section: var(--basalt-hue);
+}
+/* On the narrow strip, a section holding a count shows a small ring in its
+   own color at the tile's corner. */
+.basalt-mainmenu-strip-mark {
+	position: absolute;
+	top: 7px;
+	right: 7px;
+	width: 9px;
+	height: 9px;
+	border: 2px solid var(--basalt-section, var(--basalt-hue));
+	border-radius: 50%;
+	background: var(--basalt-plane);
+}
+/* The flyout beside a rail tile lists that section's pages, grouped as
+   they are in the open menu. menu.js places it next to the tile. */
+.basalt-mainmenu-pop {
+	position: fixed;
+	z-index: 1045;
+	width: 240px;
+	max-height: calc(100vh - 24px);
+	padding: 0.375rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge-strong);
+	overflow-y: auto;
+	background: var(--basalt-plane);
+	box-shadow: 0 18px 44px -14px rgba(0, 0, 0, 0.4);
+	animation: basalt-flyout-in 130ms ease-out;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+@keyframes basalt-flyout-in {
+	from {
+		transform: translateX(-4px);
+		opacity: 0;
+	}
+}
+.basalt-mainmenu-pop-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.5rem 0.625rem 0.375rem;
+	font-weight: 700;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.basalt-mainmenu-pop-set {
+	padding: 0.5rem 0.625rem 0.125rem;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-muted);
+}
+.basalt-mainmenu-pop-link {
+	display: flex;
+	gap: 0.625rem;
+	align-items: center;
+	padding: 0.4rem 0.625rem;
+	border-radius: 9px;
+	font-size: 0.84rem;
+	font-weight: 500;
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+
+	.bi {
+		color: var(--basalt-copy-muted);
+	}
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&.active {
+		font-weight: 600;
+		color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+	}
+	&.active .bi {
+		color: var(--basalt-hue);
+	}
+	.basalt-menu-count {
+		margin-left: auto;
+	}
+}

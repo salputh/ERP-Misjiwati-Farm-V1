@@ -1,20 +1,20 @@
 @props(['lembar', 'tarifEfisiensiPerKg', 'terkunci' => false])
 
 {{-- Tab Simulasi RHPP: nilai panen menurut harga kontrak per bracket ABW, dikurangi biaya sapronak perkiraan. --}}
-<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['total']['nilai_kontrak'] / 1000000, 1).' jt'" label="Nilai penjualan (harga kontrak)" ikon="uil-bill" warna="primary">
+<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['total']['nilai_kontrak'] / 1000000, 1).' jt'" label="Nilai penjualan (harga kontrak)" ikon="bi-receipt" warna="primary">
     <small>rata-rata Rp @angka($lembar['total']['harga_kontrak']) per kg</small>
 </x-dashboard.kartu>
 
 @if ($lembar['hasil'])
-    <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['hasil']['sapronak'] / 1000000, 1).' jt'" label="Biaya sapronak" ikon="uil-box" warna="secondary">
+    <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['hasil']['sapronak'] / 1000000, 1).' jt'" label="Biaya sapronak" ikon="bi-box-seam" warna="secondary">
         <small>HPP Rp @angka($lembar['hasil']['hpp']) per kg</small>
     </x-dashboard.kartu>
 
-    <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['hasil']['laba'] / 1000000, 1).' jt'" label="Laba sebelum bagi hasil" ikon="uil-wallet" warna="info">
+    <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['hasil']['laba'] / 1000000, 1).' jt'" label="Laba sebelum bagi hasil" ikon="bi-wallet2" warna="info">
         <small>Rp @angka($lembar['hasil']['laba_per_ekor']) per ekor, Rp @angka($lembar['hasil']['laba_per_kg']) per kg</small>
     </x-dashboard.kartu>
 
-    <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($lembar['hasil']['margin'], 1).'%'" label="Margin terhadap penjualan" ikon="uil-percentage" warna="warning">
+    <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($lembar['hasil']['margin'], 1).'%'" label="Margin terhadap penjualan" ikon="bi-percent" warna="warning">
         <small>FCR @angka($lembar['performa']['fcr'], 3) (standar @angka($lembar['performa']['fcr_standar'], 3)), IP @angka($lembar['performa']['ip'])</small>
     </x-dashboard.kartu>
 @endif
@@ -44,7 +44,7 @@
         <x-slot:catatan>Biaya pakan menggunakan harga master terkini dan konsumsi aktual. Rincian sumber ada di tab Sapronak.</x-slot:catatan>
     </x-rhpp.rincian>
 
-    <form class="col-lg-6 mb-25" wire:submit="simpanSimulasi">
+    <form class="col-lg-6 mb-4" wire:submit="simpanSimulasi">
         <x-rhpp.rincian judul="Hasil usaha" lebar="col-12">
             <x-rhpp.baris label="Nilai penjualan ayam" :angka="$lembar['hasil']['penjualan']" satuan="Rp" />
             <x-rhpp.baris label="Total biaya sapronak" :angka="$lembar['hasil']['sapronak']" satuan="Rp" />
@@ -52,7 +52,7 @@
             <tr>
                 <td>Selisih Efisiensi</td>
                 <td class="text-end">@angka($lembar['hasil']['selisih_efisiensi'])</td>
-                <td class="fs-12 color-light">
+                <td class="small text-body-secondary">
                     <div class="input-group flex-nowrap rhpp-tarif-input">
                         <input
                             id="rhpp-tarif-efisiensi"
@@ -60,18 +60,18 @@
                             min="0"
                             max="4294967295"
                             step="1"
-                            @class(['form-control form-control-sm ip-gray radius-xs b-light px-15', 'is-invalid' => $errors->has('tarifEfisiensiPerKg')])
+                            @class(['form-control form-control-sm    px-3', 'is-invalid' => $errors->has('tarifEfisiensiPerKg')])
                             wire:model="tarifEfisiensiPerKg"
                             aria-label="Tarif selisih efisiensi per kg"
                             placeholder="Tarif efisiensi per kg"
                             @disabled($terkunci)
                         >
                         <button type="submit" class="btn btn-primary btn-sm" wire:loading.attr="disabled" wire:target="simpanSimulasi" aria-label="Simpan tarif dan hitung ulang" @disabled($terkunci)>
-                            <i class="uil uil-save m-0" aria-hidden="true"></i>
+                            <i class="bi bi-save m-0" aria-hidden="true"></i>
                         </button>
                     </div>
                     @error('tarifEfisiensiPerKg')
-                        <span class="color-danger d-block mt-1" role="alert">{{ $message }}</span>
+                        <span class="text-danger d-block mt-1" role="alert">{{ $message }}</span>
                     @enderror
                 </td>
             </tr>
@@ -89,19 +89,19 @@
 @endif
 
 {{-- Bracket harga kontrak --}}
-<div class="col-lg-6 mb-25">
-    <div class="card card-default card-md h-100">
-        <div class="card-header">
-            <h6>Harga kontrak periode ini</h6>
-            <div class="card-extra fs-13 color-light tanpa-kapital">per bracket ABW</div>
-        </div>
-        <div class="card-body">
-            <div class="table4 table-responsive">
-                <table class="table tabel-laporan mb-0">
+<div class="col-lg-6 mb-4">
+    <section class="card basalt-box db-card h-100">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Harga kontrak periode ini</h2></div>
+            <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">per bracket ABW</div>
+</header>
+            <div class="tabel-data table-responsive">
+                <table class="table tabel-laporan mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">ABW (kg per ekor)</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Harga (Rp per kg)</span></th>
+                        <tr>
+                            <th>ABW (kg per ekor)</th>
+                            <th class="text-end">Harga (Rp per kg)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -119,37 +119,38 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="2" class="color-light">Bracket harga kontrak periode ini belum diisi.</td>
+                                <td colspan="2" class="text-body-secondary">Bracket harga kontrak periode ini belum diisi.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
+        
+</div>
+</section>
 </div>
 
 {{-- Rincian penjualan per nota --}}
-<div class="col-12 mb-25">
-    <div class="card card-default card-md">
-        <div class="card-header">
-            <h6>Rincian penjualan per nota timbang</h6>
-            <div class="card-extra fs-13 color-light tanpa-kapital">@angka($lembar['total']['jumlah_nota']) nota</div>
-        </div>
-        <div class="card-body">
-            <div class="table4 table-responsive">
-                    <table class="table tabel-laporan mb-0">
+<div class="col-12 mb-4">
+    <section class="card basalt-box db-card">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Rincian penjualan per nota timbang</h2></div>
+            <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">@angka($lembar['total']['jumlah_nota']) nota</div>
+</header>
+            <div class="tabel-data table-responsive">
+                    <table class="table tabel-laporan mb-0 db-table">
                         <thead>
-                            <tr class="userDatatable-header">
-                                <th><span class="userDatatable-title">No.</span></th>
-                                <th><span class="userDatatable-title">Hari</span></th>
-                                <th><span class="userDatatable-title">No. BTPA / SPA</span></th>
-                                <th><span class="userDatatable-title">Pembeli / no. polisi</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Ekor</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Berat (kg)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">ABW (kg)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Harga kontrak</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Nilai penjualan (Rp)</span></th>
+                            <tr>
+                                <th>No.</th>
+                                <th>Hari</th>
+                                <th>No. BTPA / SPA</th>
+                                <th>Pembeli / no. polisi</th>
+                                <th class="text-end">Ekor</th>
+                                <th class="text-end">Berat (kg)</th>
+                                <th class="text-end">ABW (kg)</th>
+                                <th class="text-end">Harga kontrak</th>
+                                <th class="text-end">Nilai penjualan (Rp)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,12 +159,12 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>Hari {{ $nota['hari'] }}</td>
                                     <td>
-                                        <span class="d-block fw-500 color-dark">{{ $nota['no_btpa'] }}</span>
-                                        <span class="d-block fs-12 color-light">SPA {{ $nota['no_spa'] ?? '-' }}</span>
+                                        <span class="d-block fw-medium text-body">{{ $nota['no_btpa'] }}</span>
+                                        <span class="d-block small text-body-secondary">SPA {{ $nota['no_spa'] ?? '-' }}</span>
                                     </td>
                                     <td>
                                         {{ $nota['pembeli'] }}
-                                        <span class="d-block fs-12 color-light">{{ $nota['no_polisi'] }}</span>
+                                        <span class="d-block small text-body-secondary">{{ $nota['no_polisi'] }}</span>
                                     </td>
                                     <td class="text-end">@angka($nota['ekor'])</td>
                                     <td class="text-end">@angka($nota['berat'], 2)</td>
@@ -185,55 +186,56 @@
                         </tfoot>
                     </table>
             </div>
-        </div>
-    </div>
+        
+</div>
+</section>
 </div>
 
 {{-- Proyeksi ke tiap kandang; nilai bersama dibagi dengan dasar yang sesuai data aktualnya. --}}
 @if ($lembar['kandang'])
-    <div class="col-12 mb-25">
-        <div class="card card-default card-md">
-            <div class="card-header">
-                <div>
-                    <h6>Proyeksi simulasi per kandang</h6>
-                    <span class="d-block fs-13 color-light fw-400 tanpa-kapital">{{ count($lembar['kandang']['baris']) }} kandang</span>
+    <div class="col-12 mb-4">
+        <section class="card basalt-box db-card">
+<div class="db-card-body">
+<header class="db-card-head">
+<div>
+                    <h2 class="db-card-title">Proyeksi simulasi per kandang</h2>
+                    <span class="d-block small text-body-secondary fw-normal tanpa-kapital">{{ count($lembar['kandang']['baris']) }} kandang</span>
                 </div>
-                <div class="card-extra">
-                    <span @class(['dm-tag tag-transparented m-0', 'tag-success' => $lembar['kandang']['cocok'], 'tag-danger' => ! $lembar['kandang']['cocok']])>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span @class(['badge  m-0', 'bg-success-subtle text-success' => $lembar['kandang']['cocok'], 'bg-danger-subtle text-danger' => ! $lembar['kandang']['cocok']])>
                         {{ $lembar['kandang']['cocok'] ? 'Nilai rupiah cocok dengan total' : 'Periksa selisih pembulatan' }}
                     </span>
                 </div>
-            </div>
-            <div class="card-body">
+</header>
                 @unless ($lembar['kandang']['panen_sesuai'])
                     <x-peringatan warna="warning">Jumlah ekor atau tonase panen per kandang berbeda dari rekap panen periode. Penjualan tetap dibagi menurut proporsi tonase kandang.</x-peringatan>
                 @endunless
-                <div class="table4 table-responsive">
-                    <table class="table tabel-laporan mb-0">
+                <div class="tabel-data table-responsive">
+                    <table class="table tabel-laporan mb-0 db-table">
                         <thead>
-                            <tr class="userDatatable-header">
-                                <th><span class="userDatatable-title">Kandang</span></th>
-                                <th class="text-end"><span class="userDatatable-title">DOC aktual</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Pakan (kg)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Ekor panen</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Tonase (kg)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Porsi tonase</span></th>
-                                <th class="text-end"><span class="userDatatable-title">ABW (kg)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">FCR</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Penjualan (Rp)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Biaya DOC (Rp)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Biaya pakan (Rp)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">OVK (Rp)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Selisih Efisiensi (Rp)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Laba (Rp)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">HPP (Rp/kg)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Margin</span></th>
+                            <tr>
+                                <th>Kandang</th>
+                                <th class="text-end">DOC aktual</th>
+                                <th class="text-end">Pakan (kg)</th>
+                                <th class="text-end">Ekor panen</th>
+                                <th class="text-end">Tonase (kg)</th>
+                                <th class="text-end">Porsi tonase</th>
+                                <th class="text-end">ABW (kg)</th>
+                                <th class="text-end">FCR</th>
+                                <th class="text-end">Penjualan (Rp)</th>
+                                <th class="text-end">Biaya DOC (Rp)</th>
+                                <th class="text-end">Biaya pakan (Rp)</th>
+                                <th class="text-end">OVK (Rp)</th>
+                                <th class="text-end">Selisih Efisiensi (Rp)</th>
+                                <th class="text-end">Laba (Rp)</th>
+                                <th class="text-end">HPP (Rp/kg)</th>
+                                <th class="text-end">Margin</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($lembar['kandang']['baris'] as $kandang)
                                 <tr>
-                                    <td class="fw-500 color-dark">{{ $kandang['nama'] }}</td>
+                                    <td class="fw-medium text-body">{{ $kandang['nama'] }}</td>
                                     <td class="text-end">@angka($kandang['doc'])</td>
                                     <td class="text-end">@angka($kandang['pakan_kg'], 2)</td>
                                     <td class="text-end">@angka($kandang['ekor'])</td>
@@ -274,18 +276,19 @@
                         </tfoot>
                     </table>
                 </div>
-                <p class="fs-13 color-light mt-15 mb-0">
+                <p class="small text-body-secondary mt-3 mb-0">
                     Penjualan dan selisih efisiensi dibagi menurut tonase panen; OVK dibagi menurut DOC; biaya DOC mengikuti proporsi DOC aktual dan total dari master; biaya pakan mengikuti konsumsi pakan aktual per kandang. Sisa pembulatan rupiah diberikan ke kandang terakhir.
                 </p>
-            </div>
-        </div>
+            
+</div>
+</section>
     </div>
 @else
     <x-kosong judul="Proyeksi per kandang belum tersedia">Lengkapi DOC, catatan pemberian pakan, dan rekap ekor serta tonase panen per kandang untuk melihat pembagian simulasi.</x-kosong>
 @endif
 
-<div class="col-12 mb-25">
-    <p class="fs-13 color-light mb-0">
+<div class="col-12 mb-4">
+    <p class="small text-body-secondary mb-0">
         Harga tiap nota diambil dari bracket harga kontrak menurut ABW nota (berat dibagi ekor). Tonase dan ekor berasal dari nota timbang di halaman Panen, jadi simulasi ikut berubah bila ada nota baru.
         @if ($lembar['total']['tanpa_harga_kontrak'] > 0)
             Ada @angka($lembar['total']['tanpa_harga_kontrak']) nota dengan ABW di luar bracket; nilainya belum terhitung.

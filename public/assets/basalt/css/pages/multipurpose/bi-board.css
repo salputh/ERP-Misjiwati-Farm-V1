@@ -1,0 +1,915 @@
+/* Basalt - BI Board (bi-board.html)
+   Namespaced under .bib-*
+   Widgets sit on a 12-column grid; each takes 3, 4, 6, 8 or 12 columns.
+   A featured widget takes 6 and, on a wide screen, two rows.
+   Every color comes from the --basalt-* tokens, so the board follows
+   every palette and dark mode. */
+
+.bib-page {
+	--bib-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--bib-line: var(--basalt-series-1);
+	--bib-up: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+	--bib-down: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+
+/* Saved boards as tabs, the edit bar under them. */
+.bib-boards {
+	display: grid;
+	gap: 0.75rem;
+}
+.bib-tabs {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.bib-tab {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		border-color 130ms ease,
+		background-color 130ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge-strong));
+	}
+	&[aria-selected="true"] {
+		border-color: transparent;
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.bib-tab-count {
+	font-size: 0.77rem;
+	color: var(--bib-quiet);
+}
+.bib-editbar {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 1rem;
+	border: 1px dashed color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge-strong));
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane));
+}
+.bib-editbar-text {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--bib-quiet);
+}
+.bib-editbar-actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+/* The grid */
+.bib-grid {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	align-items: stretch;
+}
+.bib-span-3 {
+	grid-column: span 3;
+}
+.bib-span-4 {
+	grid-column: span 4;
+}
+.bib-span-6 {
+	grid-column: span 6;
+}
+.bib-span-8 {
+	grid-column: span 8;
+}
+.bib-span-12 {
+	grid-column: span 12;
+}
+@media (max-width: 1199.98px) {
+	.bib-span-3 {
+		grid-column: span 6;
+	}
+	.bib-span-4,
+	.bib-span-8 {
+		grid-column: span 12;
+	}
+	.bib-span-6 {
+		grid-column: span 12;
+	}
+}
+@media (max-width: 575.98px) {
+	.bib-grid {
+		gap: 1rem;
+	}
+	.bib-span-3 {
+		grid-column: span 12;
+	}
+}
+/* The script stretches each row to the full width (fitRows in bi-board.js);
+   these classes carry its widths for the desktop and the tablet grid. */
+@media (min-width: 576px) and (max-width: 1199.98px) {
+	.bib-fit-md-1 {
+		grid-column: span 1;
+	}
+	.bib-fit-md-2 {
+		grid-column: span 2;
+	}
+	.bib-fit-md-3 {
+		grid-column: span 3;
+	}
+	.bib-fit-md-4 {
+		grid-column: span 4;
+	}
+	.bib-fit-md-5 {
+		grid-column: span 5;
+	}
+	.bib-fit-md-6 {
+		grid-column: span 6;
+	}
+	.bib-fit-md-7 {
+		grid-column: span 7;
+	}
+	.bib-fit-md-8 {
+		grid-column: span 8;
+	}
+	.bib-fit-md-9 {
+		grid-column: span 9;
+	}
+	.bib-fit-md-10 {
+		grid-column: span 10;
+	}
+	.bib-fit-md-11 {
+		grid-column: span 11;
+	}
+	.bib-fit-md-12 {
+		grid-column: span 12;
+	}
+}
+@media (min-width: 1200px) {
+	.bib-fit-1 {
+		grid-column: span 1;
+	}
+	.bib-fit-2 {
+		grid-column: span 2;
+	}
+	.bib-fit-3 {
+		grid-column: span 3;
+	}
+	.bib-fit-4 {
+		grid-column: span 4;
+	}
+	.bib-fit-5 {
+		grid-column: span 5;
+	}
+	.bib-fit-6 {
+		grid-column: span 6;
+	}
+	.bib-fit-7 {
+		grid-column: span 7;
+	}
+	.bib-fit-8 {
+		grid-column: span 8;
+	}
+	.bib-fit-9 {
+		grid-column: span 9;
+	}
+	.bib-fit-10 {
+		grid-column: span 10;
+	}
+	.bib-fit-11 {
+		grid-column: span 11;
+	}
+	.bib-fit-12 {
+		grid-column: span 12;
+	}
+}
+/* With a featured widget on the board every row is the same height, so
+   the small widgets around it line up as a mosaic. */
+@media (min-width: 1200px) {
+	.bib-grid.is-mosaic {
+		grid-auto-rows: 1fr;
+	}
+	.bib-widget.is-tall {
+		grid-row: span 2;
+	}
+}
+.bib-empty {
+	grid-column: 1 / -1;
+	padding: 3rem 0;
+}
+
+/* A widget: its head, the edit tools while editing, then its body. */
+.bib-widget.card {
+	--basalt-foot-x: 1.25rem;
+	--basalt-foot-y: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem var(--basalt-foot-x) var(--basalt-foot-y);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease,
+		opacity 170ms ease;
+}
+.bib-widget-head {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+.bib-widget-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--bib-quiet);
+
+	.bi {
+		color: var(--bib-line);
+	}
+}
+.bib-widget-body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.bib-grid.is-editing .bib-widget.card {
+	border-style: dashed;
+	border-color: color-mix(in srgb, var(--basalt-hue) 40%, var(--basalt-edge-strong));
+	cursor: grab;
+}
+.bib-widget.is-dragging {
+	opacity: 0.45;
+}
+.bib-widget.is-drop {
+	box-shadow: 0 0 0 2px var(--basalt-hue);
+}
+.bib-tools {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: -0.25rem 0 0.75rem;
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.bib-handle {
+	display: inline-grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	font-size: 1.1rem;
+	color: var(--bib-quiet);
+	cursor: grab;
+	touch-action: none;
+}
+/* On touch the grip is how a widget is dragged, so it gets a finger-sized target. */
+@media (pointer: coarse) {
+	.bib-handle {
+		width: 2.75rem;
+		height: 2.75rem;
+		font-size: 1.35rem;
+	}
+}
+/* The size picker: every size the widget allows, the chosen one raised. It
+   takes its own line under the grip and buttons, so the tools never wrap
+   unevenly in a narrow widget. */
+.bib-sizes {
+	display: inline-flex;
+	gap: 0.125rem;
+	padding: 0.125rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	background: var(--basalt-wash);
+}
+.bib-size {
+	min-width: 1.75rem;
+	padding: 0.15rem 0.55rem;
+	border: 0;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--bib-quiet);
+	background: transparent;
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&[aria-checked="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: 0 1px 2px color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.bib-sizes-row {
+	order: 3;
+	flex-basis: 100%;
+	min-width: 0;
+}
+.bib-tools-buttons {
+	display: inline-flex;
+	gap: 0.1rem;
+	margin-left: auto;
+}
+/* A tool that cannot act stays focusable for its tooltip but reads as off. */
+.bib-tools .btn[aria-disabled="true"] {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+	.bib-size {
+		transition: none;
+	}
+}
+.bib-remove:hover {
+	color: var(--basalt-danger);
+}
+
+/* The featured widget: the board's lead figure on the palette color. */
+/* Dark palettes put dark text on a light primary, where any fading falls
+   under 4.5:1, so the quiet text is the full on-primary color there. */
+[data-bs-theme="dark"] .bib-hero.card {
+	--bib-quiet: var(--basalt-on-hue);
+
+	/* A dark wash would darken the violet under dark text; a light one keeps it readable. */
+	& .bib-sizes {
+		background: color-mix(in srgb, #fff 14%, transparent);
+	}
+}
+.bib-hero.card {
+	--bib-line: var(--basalt-on-hue);
+	--bib-quiet: color-mix(in srgb, var(--basalt-on-hue) 86%, transparent);
+	border-color: transparent;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+
+	.bib-kpi-value {
+		margin-top: 0.25rem;
+		font-size: 2.75rem;
+		color: var(--basalt-on-hue);
+	}
+	.bib-kpi-delta.is-up {
+		color: var(--basalt-on-hue);
+	}
+	.bib-spark {
+		flex: 1;
+		min-height: 4.5rem;
+		height: auto;
+
+		& polygon {
+			fill: color-mix(in srgb, var(--basalt-on-hue) 16%, transparent);
+		}
+		& polyline {
+			stroke-width: 2.5;
+		}
+	}
+	.bib-tools {
+		border-bottom-color: color-mix(in srgb, var(--basalt-on-hue) 28%, transparent);
+	}
+	.bib-sizes {
+		border-color: color-mix(in srgb, var(--basalt-on-hue) 30%, transparent);
+		background: color-mix(in srgb, var(--basalt-on-hue) 12%, transparent);
+	}
+	/* On the wash of the picker a faded label falls under 4.5:1. */
+	.bib-size {
+		color: var(--basalt-on-hue);
+
+		&:hover,
+		&[aria-checked="true"] {
+			color: var(--basalt-copy);
+		}
+	}
+	.btn-icon {
+		--bs-btn-disabled-color: color-mix(in srgb, var(--basalt-on-hue) 55%, transparent);
+		--bs-btn-disabled-bg: transparent;
+		color: var(--bib-quiet);
+
+		&:hover,
+		&:focus-visible {
+			color: var(--basalt-on-hue);
+			background-color: color-mix(in srgb, var(--basalt-on-hue) 14%, transparent);
+		}
+	}
+	.bib-remove:hover {
+		color: var(--basalt-on-hue);
+	}
+}
+.bib-grid.is-editing .bib-hero.card {
+	border-color: color-mix(in srgb, var(--basalt-on-hue) 45%, var(--basalt-hue));
+}
+
+/* Add a widget: a dashed tile that closes the last row while editing. */
+.bib-add-tile {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: center;
+	min-height: 7rem;
+	padding: 1rem;
+	border: 1px dashed color-mix(in srgb, var(--basalt-hue) 40%, var(--basalt-edge-strong));
+	border-radius: 12px;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--bib-quiet);
+	background: transparent;
+	transition:
+		border-color 130ms ease,
+		color 130ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Widgets rise into place, one after another, when a board opens. basalt.js
+   holds every animation until the page has settled. */
+@media (prefers-reduced-motion: no-preference) {
+	@keyframes bib-rise {
+		from {
+			transform: translateY(10px);
+			opacity: 0;
+		}
+	}
+	.bib-rise {
+		animation: bib-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+	.bib-rise-1 {
+		animation-delay: 40ms;
+	}
+	.bib-rise-2 {
+		animation-delay: 80ms;
+	}
+	.bib-rise-3 {
+		animation-delay: 120ms;
+	}
+	.bib-rise-4 {
+		animation-delay: 160ms;
+	}
+	.bib-rise-5 {
+		animation-delay: 200ms;
+	}
+	.bib-rise-6 {
+		animation-delay: 240ms;
+	}
+	.bib-rise-7 {
+		animation-delay: 280ms;
+	}
+	.bib-rise-8 {
+		animation-delay: 320ms;
+	}
+	.bib-rise-9 {
+		animation-delay: 360ms;
+	}
+}
+
+/* KPI */
+.bib-kpi-value {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.bib-kpi-delta {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0.3rem 0 0;
+	font-size: 0.81rem;
+	font-weight: 600;
+
+	&.is-up {
+		color: var(--bib-up);
+	}
+	&.is-down {
+		color: var(--bib-down);
+	}
+}
+/* The spark is the widget's foot chart (.basalt-card-foot): it runs to the
+   card's sides and bottom edge. */
+.bib-spark {
+	display: block;
+	height: 3rem;
+	margin-top: auto;
+	padding-top: 0.75rem;
+	overflow: visible;
+
+	& polygon {
+		fill: color-mix(in srgb, var(--bib-line) 12%, transparent);
+	}
+	& polyline {
+		fill: none;
+		stroke: var(--bib-line);
+		stroke-width: 2;
+		stroke-linejoin: round;
+		vector-effect: non-scaling-stroke;
+	}
+}
+
+/* Line and bars, with a reading line under them. */
+.bib-chart {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+}
+.bib-line {
+	display: block;
+	width: 100%;
+	height: 11rem;
+	overflow: visible;
+
+	& polygon {
+		fill: color-mix(in srgb, var(--bib-line) 12%, transparent);
+	}
+	& polyline {
+		fill: none;
+		stroke: var(--bib-line);
+		stroke-width: 2.25;
+		stroke-linejoin: round;
+		vector-effect: non-scaling-stroke;
+	}
+	& rect {
+		fill: transparent;
+	}
+	/* The chart stretches to its box, which would squash a circle into an
+	   oval. Each dot is a zero-length round stroke that ignores the stretch:
+	   a colored ring with the card color inside. */
+	.bib-dot-ring,
+	.bib-dot-core {
+		fill: none;
+		stroke-linecap: round;
+		opacity: 0;
+		vector-effect: non-scaling-stroke;
+		transition: opacity 110ms ease;
+	}
+	.bib-dot-ring {
+		stroke: var(--bib-line);
+		stroke-width: 11;
+	}
+	.bib-dot-core {
+		stroke: var(--basalt-plane);
+		stroke-width: 6.5;
+	}
+	.is-lit :is(.bib-dot-ring, .bib-dot-core),
+	& g:last-child :is(.bib-dot-ring, .bib-dot-core) {
+		opacity: 1;
+	}
+}
+.bib-bars {
+	display: flex;
+	gap: 6px;
+	align-items: flex-end;
+	height: 9rem;
+}
+.bib-bar {
+	flex: 1;
+	height: calc(var(--value, 0) * 1%);
+	border-radius: 5px 5px 2px 2px;
+	background: color-mix(in srgb, var(--basalt-series-1) 40%, var(--basalt-plane));
+	transition: background-color 130ms ease;
+
+	&.is-last,
+	&.is-lit {
+		background: var(--basalt-series-1);
+	}
+}
+.bib-axis {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.4rem;
+	font-size: 0.75rem;
+	color: var(--bib-quiet);
+}
+.bib-read {
+	margin: 0.5rem 0 0;
+	font-size: 0.81rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+/* Ring with its list beside it. */
+.bib-ring-wrap {
+	display: flex;
+	flex: 1;
+	gap: 1.25rem;
+	flex-wrap: wrap;
+	align-content: center;
+	align-items: center;
+}
+.bib-ring {
+	width: 8.5rem;
+	height: 8.5rem;
+	transform: rotate(-90deg);
+}
+.bib-ring-track,
+.bib-ring-seg {
+	fill: none;
+	stroke-width: 18;
+}
+.bib-ring-track {
+	stroke: color-mix(in srgb, var(--basalt-edge) 60%, transparent);
+}
+.bib-ring-seg {
+	stroke: var(--tone);
+}
+.bib-legend {
+	display: grid;
+	flex: 1;
+	gap: 0.5rem;
+	min-width: 9rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.875rem;
+
+	& li {
+		display: grid;
+		gap: 0.6rem;
+		grid-template-columns: auto 1fr auto 2.5rem;
+		align-items: center;
+	}
+	& b {
+		font-variant-numeric: tabular-nums;
+	}
+}
+.bib-key {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--tone);
+}
+.bib-share {
+	font-size: 0.81rem;
+	text-align: right;
+	color: var(--bib-quiet);
+}
+
+/* Funnel: each step a bar of its share of the first. */
+.bib-funnel {
+	display: grid;
+	gap: 0.85rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.2rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		font-size: 0.875rem;
+	}
+}
+.bib-funnel-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.bib-funnel-n {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+.bib-funnel-track {
+	grid-column: 1 / -1;
+	height: 0.6rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--basalt-edge) 60%, transparent);
+}
+.bib-funnel-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-7);
+}
+.bib-funnel-sub {
+	grid-column: 1 / -1;
+	font-size: 0.77rem;
+	color: var(--bib-quiet);
+}
+
+/* Horizontal bars */
+.bib-hbars {
+	display: grid;
+	gap: 0.8rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.3rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		font-size: 0.875rem;
+	}
+	& b {
+		font-variant-numeric: tabular-nums;
+	}
+}
+.bib-hbar-track {
+	grid-column: 1 / -1;
+	height: 0.5rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--basalt-edge) 60%, transparent);
+}
+.bib-hbar-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-2);
+}
+
+/* Goal: the amount, a bar with a mark for where the quarter should be. */
+.bib-goal-of {
+	margin: 0.3rem 0 0.9rem;
+	font-size: 0.81rem;
+	color: var(--bib-quiet);
+}
+.bib-goal-track {
+	position: relative;
+	display: block;
+	height: 0.7rem;
+	margin-top: auto;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--basalt-edge) 60%, transparent);
+}
+.bib-goal-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-1);
+}
+/* About 1 of 13 weeks of the quarter has passed by October 8. */
+.bib-goal-pace {
+	position: absolute;
+	top: -4px;
+	bottom: -4px;
+	left: 8%;
+	width: 2px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+.bib-goal-pace-note {
+	margin: 0.5rem 0 0;
+	font-size: 0.75rem;
+	color: var(--bib-quiet);
+}
+
+/* Table */
+.bib-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: inherit;
+	margin: 0;
+	font-size: 0.875rem;
+
+	& th {
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--bib-quiet);
+	}
+	& th,
+	& td {
+		padding: 0.5rem 0.5rem;
+		border-color: var(--basalt-edge);
+	}
+	& th:first-child,
+	& td:first-child {
+		padding-left: 0;
+	}
+	& th:last-child,
+	& td:last-child {
+		padding-right: 0;
+	}
+	& tbody tr:last-child td {
+		border-bottom: 0;
+	}
+	& a {
+		font-weight: 600;
+		color: var(--basalt-copy);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+.bib-num {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Library */
+.bib-library {
+	--bs-offcanvas-width: 440px;
+}
+.bib-library-sub {
+	margin: 0.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--bib-quiet);
+}
+.bib-library-bar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	.form-select {
+		width: auto;
+	}
+}
+.bib-search {
+	position: relative;
+	flex: 1 1 10rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		color: var(--bib-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.bib-library-count {
+	margin: 0.75rem 0 0.25rem;
+	font-size: 0.81rem;
+	color: var(--bib-quiet);
+}
+.bib-library-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.bib-library-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.85rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.bib-library-icon {
+	display: grid;
+	place-items: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	color: var(--bib-line);
+	background: color-mix(in srgb, var(--bib-line) 12%, var(--basalt-plane));
+}
+.bib-library-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	font-size: 0.875rem;
+
+	& b {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.81rem;
+		color: var(--bib-quiet);
+	}
+}
+.bib-library-empty {
+	padding: 1.5rem 0;
+}

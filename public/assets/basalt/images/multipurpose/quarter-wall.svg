@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- Placeholder for assets/basalt/images/multipurpose/quarter-wall.jpg (Blog photo). Any size works: the page crops the picture to fill its slot. Put your own image here and point the page at it. -->
+<style>.l{font:600 14px Schibsted Grotesk, system-ui, -apple-system, Segoe UI, Arial, sans-serif}.s{font:400 12px Schibsted Grotesk, system-ui, -apple-system, Segoe UI, Arial, sans-serif}.mark,.words{transform:translateY(9px)}@media (max-width:139px),(max-height:99px){.mark{display:none}.words{transform:translateY(-11px)}.l{font-size:12px}.s{font-size:11px}}@media (max-width:99px),(max-height:59px){.l{display:none}.s{transform:translateY(-4px)}}@media (max-width:63px),(max-height:33px){.words{display:none}.mark{display:inline;transform:translateY(32px)}}</style>
+<defs><pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2" height="10" fill="#6d3fe0" fill-opacity="0.07"/></pattern></defs>
+<rect width="100%" height="100%" fill="#6d3fe0" fill-opacity="0.07"/>
+<rect width="100%" height="100%" fill="url(#hatch)"/>
+<svg x="50%" y="50%" overflow="visible"><g class="mark" fill="#6d3fe0" fill-opacity="0.45"><rect x="-16.8" y="-32.4" width="6" height="12" rx="1.44"/><rect x="-7.8" y="-39.6" width="6" height="19.2" rx="1.44"/><rect x="1.2" y="-36" width="6" height="15.6" rx="1.44"/><rect x="10.2" y="-44.4" width="6" height="24" rx="1.44"/></g><g class="words" fill="#8178ad" text-anchor="middle"><text class="l" x="0" y="6">Blog photo</text><text class="s" x="0" y="22">Any size</text></g></svg>
+</svg>

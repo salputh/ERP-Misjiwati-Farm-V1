@@ -1,0 +1,1106 @@
+/* Styles for report-details.html, the page that opens one saved report
+   in full. Everything lives under the rd- prefix and takes its colors
+   from --basalt-* tokens, so palettes and dark mode reach it unchanged;
+   report-details.js reads the same tokens when it paints a canvas. */
+
+/* The page's own text tones are the theme's, mixed toward body copy so
+   small gray text keeps its contrast in the paler palettes. */
+.rd-page {
+	--rd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--rd-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--rd-up: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	--rd-down: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+}
+.rd-quiet {
+	color: var(--rd-quiet);
+}
+
+/* A hidden attribute always wins over the display a part sets for itself. */
+.rd-headline[hidden],
+.rd-key[hidden],
+.rd-viewnote[hidden],
+.rd-filters-count[hidden],
+.rd-filters-menu .rd-text-btn[hidden],
+.rd-card-head > .btn[hidden],
+.rd-more[hidden],
+.rd-error[hidden],
+.rd-form[hidden],
+[data-rd-view][hidden],
+.rd-field[hidden],
+.rd-form-foot [hidden] {
+	display: none;
+}
+
+/* The header sets the title block beside its actions and folds them
+   underneath on small screens. */
+.basalt-hero-detail.rd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.rd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.rd-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+	& .basalt-status .bi {
+		margin-right: 0.3rem;
+	}
+}
+.rd-kind {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--rd-quiet);
+}
+.rd-star {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+
+	&[aria-pressed="true"] .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 80%, var(--basalt-copy));
+	}
+}
+.rd-page .dropdown-item {
+	& .bi {
+		margin-right: 0.6rem;
+	}
+
+	&.rd-danger-item {
+		color: var(--rd-down);
+	}
+	&.rd-danger-item:hover,
+	&.rd-danger-item:focus {
+		color: var(--rd-down);
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+@media (max-width: 767.98px) {
+	.basalt-hero-detail.rd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.rd-head .basalt-hero-actions {
+		justify-self: start;
+	}
+}
+
+/* Cards stack on narrow screens; from 1200px the report spans the page
+   and the cards below pair up with level bottoms. */
+.rd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.rd-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.rd-card-wide {
+		grid-column: span 2;
+	}
+}
+
+/* Every card shares one padded body and a head that keeps its button
+   on the title's line. */
+.rd-card {
+	min-width: 0;
+}
+.rd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.rd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.rd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& > .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+.rd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rd-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* Section labels, table headings and send weekdays all speak in the
+   same small capitals. */
+.rd-sub,
+.rd-table thead th,
+.rd-send-day {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--rd-quiet);
+}
+.rd-sub {
+	margin: 1.5rem 0 0.75rem;
+}
+
+/* Field labels, help, errors and notes are shared by every card. */
+.rd-label {
+	display: block;
+	margin: 0 0 0.4rem;
+	padding: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rd-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.77rem;
+	line-height: 1.5;
+	color: var(--rd-quiet);
+}
+.rd-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--rd-down);
+}
+.rd-note {
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	color: var(--rd-quiet);
+}
+.rd-more {
+	margin-top: 1.25rem;
+}
+
+/* Text buttons read as links in the accent; the danger kind in red. */
+.rd-text-btn.btn-link {
+	--bs-btn-color: var(--rd-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	padding-left: 0;
+	padding-right: 0;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+.rd-text-btn-danger.btn-link {
+	--bs-btn-color: var(--rd-down);
+	--bs-btn-hover-color: var(--rd-down);
+}
+
+/* Inputs sit on the card's own surface with the stronger edge. */
+.rd-page .form-control,
+.rd-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.rd-page .form-control::placeholder {
+	color: var(--rd-quiet);
+	opacity: 1;
+}
+
+/* The chart toolbar wraps freely; its "not saved" note pushes to the end. */
+.rd-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.75rem;
+}
+.rd-compare.form-select {
+	width: auto;
+	min-width: 12.5rem;
+	max-width: 100%;
+}
+.rd-filters-btn {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+}
+.rd-filters-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.25rem;
+	height: 1.25rem;
+	margin-left: 0.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.rd-filters-menu {
+	width: 18rem;
+	max-width: calc(100vw - 2rem);
+	padding: 1rem;
+}
+.rd-filters-field {
+	margin-bottom: 0.9rem;
+
+	& .form-select {
+		width: 100%;
+	}
+}
+.rd-viewnote {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-left: auto;
+}
+.rd-viewnote-text {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--rd-quiet);
+}
+
+/* The headline figure sits over the chart, its key to the right. */
+.rd-headline {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+.rd-headline-figure {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+}
+.rd-headline-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--rd-quiet);
+}
+.rd-headline-value {
+	margin: 0;
+	font-size: clamp(2rem, 1.6rem + 1.2vw, 2.6rem);
+	font-weight: 800;
+	line-height: 1.05;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.rd-delta {
+	display: flex;
+	gap: 0.1rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.1rem 0 0;
+	font-size: 0.875rem;
+	color: var(--rd-quiet);
+
+	& strong {
+		font-weight: 700;
+	}
+	&.is-up .bi,
+	&.is-up strong {
+		color: var(--rd-up);
+	}
+	&.is-down .bi,
+	&.is-down strong {
+		color: var(--rd-down);
+	}
+}
+
+/* The chart box has a fixed height; ranked bars and the plan chart grow
+   with their rows, and the ring or an empty state size to content. */
+.rd-chart {
+	position: relative;
+	height: 340px;
+}
+@media (max-width: 575.98px) {
+	.rd-chart {
+		height: 260px;
+	}
+}
+.rd-chart.rd-chart-bars,
+.rd-chart.rd-chart-bullet {
+	height: calc(var(--rd-rows, 4) * 3.4rem + 2.5rem);
+}
+.rd-chart.rd-chart-ring,
+.rd-chart:has(> .basalt-empty) {
+	height: auto;
+}
+.rd-ring {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: center;
+}
+.rd-ring-chart {
+	position: relative;
+	height: 260px;
+}
+@media (min-width: 768px) {
+	.rd-ring {
+		column-gap: 3rem;
+		grid-template-columns: 300px minmax(0, 26rem);
+	}
+	.rd-ring-chart {
+		height: 300px;
+	}
+}
+
+/* The key is markup rather than canvas, so it wraps instead of colliding. */
+.rd-key {
+	display: flex;
+	gap: 0.3rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.rd-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--rd-c);
+	border-radius: 2px;
+}
+.rd-key-line-dashed {
+	border-top-style: dashed;
+}
+.rd-key-line-dotted {
+	border-top-style: dotted;
+}
+.rd-key-bar {
+	width: 10px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--rd-c);
+}
+.rd-key-tick {
+	width: 3px;
+	height: 14px;
+	border-radius: 2px;
+	background: var(--rd-c);
+}
+
+/* The numbers table runs edge to edge with the first and last columns
+   flush to the card. */
+.rd-scroll {
+	overflow-y: hidden;
+}
+.rd-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y, 1.2rem) 0.9rem;
+		border-bottom-color: var(--basalt-edge);
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		padding-bottom: 0.8rem;
+		border-bottom-color: var(--basalt-edge-strong);
+	}
+	& tbody th {
+		width: 100%;
+		font-weight: 600;
+		white-space: normal;
+	}
+	& tfoot > tr > * {
+		border-bottom: 0;
+		font-weight: 700;
+	}
+	& .rd-strong {
+		font-weight: 700;
+	}
+	& td.rd-quiet {
+		color: var(--rd-quiet);
+	}
+}
+.rd-dot {
+	display: inline-block;
+	width: 0.6rem;
+	height: 0.6rem;
+	margin-right: 0.5rem;
+	border-radius: 2px;
+	vertical-align: 0;
+	background: var(--rd-c);
+}
+.rd-latest {
+	display: inline-block;
+	margin-left: 0.6rem;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	vertical-align: 1px;
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.rd-change {
+	font-weight: 650;
+
+	&.is-up {
+		color: var(--rd-up);
+	}
+	&.is-down {
+		color: var(--rd-down);
+	}
+}
+.rd-month {
+	white-space: nowrap;
+}
+.rd-month-short {
+	display: none;
+}
+
+/* As the table's card narrows, a split's parts drop out first (the chart
+   still shows them), then the comparison column (the change still
+   compares each month), and the months switch to their short names. */
+.rd-card-table {
+	container-type: inline-size;
+}
+@container (max-width: 980px) {
+	.rd-table-wide .rd-col-part {
+		display: none;
+	}
+}
+@container (max-width: 760px) {
+	.rd-col-part {
+		display: none;
+	}
+}
+@container (max-width: 520px) {
+	.rd-col-extra,
+	.rd-month-long,
+	.rd-table .rd-latest {
+		display: none;
+	}
+	.rd-month-short {
+		display: inline;
+	}
+	.rd-card-table .rd-table {
+		& > :not(caption) > * > * {
+			padding-left: 0.4rem;
+			padding-right: 0.4rem;
+		}
+		& > :not(caption) > * > :first-child {
+			padding-left: 0;
+		}
+		& > :not(caption) > * > :last-child {
+			padding-right: 0;
+		}
+		& thead th {
+			white-space: normal;
+		}
+	}
+}
+
+/* Lists of rows lose the padding above the first row and the rule
+   under the last one. */
+.rd-move:first-child,
+.rd-split-row:first-child,
+.rd-person:first-child,
+.rd-facts > div:first-child {
+	padding-top: 0;
+}
+.rd-split-row:last-child,
+.rd-person:last-child,
+.rd-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+
+/* Each bridge row pairs its label with a bar in its tone and the amount;
+   below 480px the bar drops to a line of its own. */
+.rd-moves {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-move {
+	--rd-tone: var(--basalt-series-1);
+	display: grid;
+	gap: 0.5rem 1.25rem;
+	grid-template-columns: minmax(9rem, 1.1fr) minmax(4rem, 1fr) minmax(4.5rem, auto);
+	align-items: center;
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.rd-tone-series-1 {
+	--rd-tone: var(--basalt-series-1);
+}
+.rd-tone-series-3 {
+	--rd-tone: var(--basalt-series-3);
+}
+.rd-tone-warning {
+	--rd-tone: var(--basalt-warning);
+}
+.rd-tone-danger {
+	--rd-tone: var(--basalt-danger);
+}
+.rd-move-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-move-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rd-move-note {
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-move-track {
+	display: block;
+	height: 0.7rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--rd-tone) 10%, var(--basalt-plane-alt));
+}
+.rd-move-bar {
+	transform-origin: left;
+	display: block;
+	width: var(--rd-w);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--rd-tone);
+	animation: rd-grow 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rd-move-value {
+	font-size: 0.95rem;
+	font-weight: 700;
+	text-align: right;
+	white-space: nowrap;
+
+	&.is-up {
+		color: var(--rd-up);
+	}
+	&.is-down {
+		color: var(--rd-down);
+	}
+}
+@keyframes rd-grow {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+.rd-net {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 1.1rem 0 0;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	& strong {
+		font-size: 1.05rem;
+		font-weight: 800;
+	}
+	/* On the tinted panel the colors go a step darker to hold 4.5:1. */
+	& strong.is-up {
+		color: color-mix(in srgb, var(--basalt-success) 46%, var(--basalt-copy));
+	}
+	& strong.is-down {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+	}
+}
+@media (max-width: 479.98px) {
+	.rd-move {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.rd-move-track {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+}
+
+/* The split card centers its ring and list in whatever height its row
+   of the grid gives it. */
+.rd-card:has(.rd-split) .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.rd-split {
+	display: grid;
+	gap: 1.5rem;
+	flex: 1 1 auto;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: center;
+	align-content: center;
+}
+@media (min-width: 576px) {
+	.rd-split {
+		grid-template-columns: 13rem minmax(0, 1fr);
+	}
+}
+.rd-split-chart {
+	position: relative;
+	height: 220px;
+}
+.rd-split-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-split-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 0.7rem minmax(0, 1fr) auto 3rem;
+	align-items: center;
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.rd-split-dot {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--rd-c);
+}
+.rd-split-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rd-split-value {
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.rd-split-share {
+	text-align: right;
+	color: var(--rd-quiet);
+}
+
+/* The schedule card leads with when it sends, then the next three sends
+   as tiles; the next one carries an accent bar. Off, it shows a quiet
+   empty state with the same icon tile. */
+.rd-when {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+}
+.rd-when-icon,
+.rd-off-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.rd-when-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-when-main {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-when-sub {
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+.rd-sends {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-send {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	padding: 0.75rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+
+	&.is-next {
+		position: relative;
+		border-color: color-mix(in srgb, var(--basalt-hue) 30%, var(--basalt-edge));
+		overflow: hidden;
+		background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	}
+	/* The bar is straight and stops short of the tile's rounded corners. */
+	&.is-next::before {
+		content: "";
+		position: absolute;
+		top: 0.6rem;
+		bottom: 0.6rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-hue);
+	}
+}
+.rd-send-date {
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-send-time {
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-off {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.rd-off-icon {
+	margin-bottom: 0.5rem;
+	color: var(--rd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.rd-off-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-off-text {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--rd-quiet);
+}
+
+/* People are listed as rows with an access pill; the compact form used
+   for recipients wraps them side by side without rules. */
+.rd-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-person {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.rd-person-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.rd-person-name {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rd-link {
+	text-decoration: none;
+	color: inherit;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--rd-link);
+	}
+}
+.rd-person-role {
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-people-compact {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+
+	& .rd-person {
+		padding: 0;
+		border: 0;
+	}
+}
+.rd-access {
+	flex: none;
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 650;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.rd-access-owner {
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.rd-link-state {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 1.25rem 0 0;
+	padding: 0.75rem 1rem;
+	border-radius: 12px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+/* The forms that replace a card's summary while it is being edited. */
+.rd-field {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+.rd-fixed {
+	margin: 0 0 1.25rem;
+}
+.rd-pair {
+	display: grid;
+	gap: 0 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+.rd-select.form-select {
+	width: auto;
+	min-width: 9rem;
+	max-width: 100%;
+}
+.rd-url {
+	max-width: 28rem;
+}
+.rd-form-foot {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& [data-rd-sched="stop"] {
+		margin-right: auto;
+	}
+}
+
+/* The setup card lists its settings as label and value pairs. */
+.rd-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--rd-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The activity feed threads its icons on a thin line, and each kind of
+   event (sends, shares, exports, edits) keeps one tone. */
+.rd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.rd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.rd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 650;
+	}
+}
+.rd-feed-time {
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-feed-success {
+	--rd-tone: var(--basalt-success);
+}
+.rd-feed-danger {
+	--rd-tone: var(--basalt-danger);
+}
+.rd-feed-primary {
+	--rd-tone: var(--basalt-hue);
+}
+.rd-feed-series-2 {
+	--rd-tone: var(--basalt-series-2);
+}
+.rd-feed-series-3 {
+	--rd-tone: var(--basalt-series-3);
+}
+.rd-feed-series-4 {
+	--rd-tone: var(--basalt-series-4);
+}
+.rd-feed-item:not(.rd-feed-muted) .rd-feed-icon {
+	color: color-mix(in srgb, var(--rd-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-tone) 14%, var(--basalt-plane));
+}
+
+/* With reduced motion the bridge bars appear at full width at once. */
+@media (prefers-reduced-motion: reduce) {
+	.rd-move-bar {
+		animation: none;
+	}
+}
+
+/* A printout keeps the report and its cards, without the app chrome or
+   anything that only works on screen. */
+@media print {
+	.basalt-mainmenu,
+	.basalt-topbar,
+	.basalt-pagefoot,
+	.rd-head .basalt-hero-actions,
+	.rd-toolbar,
+	.rd-card-head > .btn,
+	.rd-more,
+	.rd-page [data-rd-section] {
+		display: none;
+	}
+	.rd-move-bar {
+		animation: none;
+	}
+	.rd-grid {
+		display: block;
+	}
+	.rd-card {
+		margin-bottom: 1.5rem;
+		break-inside: avoid;
+	}
+}

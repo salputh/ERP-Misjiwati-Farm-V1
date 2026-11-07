@@ -17,6 +17,7 @@ class PeriodeKandang extends Model
     protected function casts(): array
     {
         return [
+            'nomor_siklus' => 'integer',
             'panen_tonase_kg' => 'float',
             'tanggal_chick_in' => 'date',
             'berat_doc_gram' => 'integer',

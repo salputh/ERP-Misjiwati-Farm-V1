@@ -1,0 +1,299 @@
+/* Basalt - Lightbox page
+   Only what this demo page needs, namespaced under .lb-*.
+   The lightbox itself (the thumbnails, the viewer dialog and
+   its keys) lives in basalt.css and basalt.js.
+   Colors come from the --basalt-* tokens. */
+
+/* PAGE - the Lightbox demo page (.lb-*) */
+.lb-page {
+	--lb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+}
+.lb-page code {
+	padding: 0 0.3em;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px;
+	font-size: 0.85em;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Filter row */
+.lb-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.lb-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.lb-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.lb-chip:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.lb-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.lb-chips .lb-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.lb-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--lb-quiet);
+}
+
+/* Grid */
+.lb-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.lb-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.lb-card.is-hidden {
+	display: none;
+}
+@media (min-width: 1200px) {
+	.lb-card {
+		grid-column: span 6;
+	}
+	.lb-card-full,
+	.lb-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Card */
+.lb-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.lb-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+.lb-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.lb-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.lb-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--lb-quiet);
+}
+.lb-card-meta {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.lb-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--lb-quiet);
+}
+.lb-card-origin {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.71rem;
+	color: var(--lb-quiet);
+}
+.lb-card-origin .bi {
+	font-size: 0.8rem;
+}
+
+/* Code snippet */
+.lb-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.lb-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.lb-code summary {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+}
+.lb-code summary::-webkit-details-marker {
+	display: none;
+}
+.lb-code summary:hover {
+	color: var(--basalt-copy);
+}
+.lb-code summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.lb-code summary .bi {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.lb-code[open] summary .bi {
+	transform: rotate(90deg);
+}
+.lb-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.lb-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+.lb-code pre {
+	margin: 0;
+	padding: 2.9rem 1rem 0.9rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	line-height: 1.6;
+	/* Long lines wrap, so the sample never scrolls inside the card. */
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Demo bits */
+.lb-hint {
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--lb-quiet);
+}
+.lb-page kbd {
+	padding: 0.1rem 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-bottom-width: 2px;
+	border-radius: 5px;
+	font:
+		600 0.71rem/1 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+/* Gallery: four across, two on phones. */
+.lb-gallery {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.lb-gallery .basalt-viewer-thumb {
+	aspect-ratio: 4 / 3;
+}
+@media (max-width: 767.98px) {
+	.lb-gallery {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Single image and video: one wide frame. */
+/* Capped, so a full-width card on a tablet does not turn it into a poster. */
+.lb-single {
+	max-width: 640px;
+	aspect-ratio: 16 / 9;
+}
+
+/* Four thumbnails, the count over the last. */
+.lb-count {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.lb-count .basalt-viewer-thumb {
+	aspect-ratio: 1;
+	border-radius: 10px;
+}
+/* A solid pill on the photo, so the picture still shows and the
+   count reads the same with gradients off. */
+.lb-more-count {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	padding: 0.3rem 0.75rem;
+	border-radius: 999px;
+	font-size: 0.875rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 6px 18px -8px var(--basalt-scrim);
+}
+
+/* Open from code. */
+.lb-script {
+	display: grid;
+	gap: 0.25rem;
+	justify-items: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lb-chip,
+	.lb-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.lb-filter,
+	.lb-code {
+		display: none;
+	}
+	.lb-card.is-hidden {
+		display: block;
+	}
+}

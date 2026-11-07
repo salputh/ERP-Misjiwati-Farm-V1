@@ -1,0 +1,931 @@
+/* Styles for a single segment's page (segment-details.html),
+   prefixed .cgd-. The page loads segments.css first and borrows
+   its icon square, accent tones, kind pills, rule readout and rule
+   editor, so a segment looks identical in the table and here. Colors
+   come only from --basalt-* tokens. */
+
+/* The hero splits into the segment on the left and its actions on the
+   right, and stacks the two on phones. */
+.basalt-hero-detail.cgd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+
+	@media (max-width: 575.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+.cgd-head {
+	& .basalt-hero-actions {
+		flex-wrap: nowrap;
+		align-self: end;
+		align-items: center;
+		margin: 0;
+	}
+	& .basalt-hero-actions .btn {
+		white-space: nowrap;
+	}
+	& .basalt-hero-title:focus {
+		outline: 0;
+	}
+}
+.cgd-who {
+	display: flex;
+	gap: 1.1rem;
+	align-items: center;
+	margin-top: 0.3rem;
+
+	@media (max-width: 575.98px) {
+		gap: 0.9rem;
+		align-items: flex-start;
+	}
+}
+.cgd-who-text {
+	min-width: 0;
+}
+.cg-icon.cgd-icon {
+	width: 4rem;
+	height: 4rem;
+	border-radius: 18px;
+	font-size: 1.7rem;
+
+	@media (max-width: 575.98px) {
+		width: 3.25rem;
+		height: 3.25rem;
+		border-radius: 15px;
+		font-size: 1.35rem;
+	}
+}
+.cgd-tags {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+.cgd-when {
+	font-size: 0.8rem;
+	color: var(--cg-quiet);
+}
+.cgd-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.5rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+
+	@media (max-width: 575.98px) {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+
+/* Renaming swaps the title block for this form, in the same spot. */
+.cgd-rename {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 44rem;
+}
+.cgd-rename-fields {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 768px) {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+	}
+}
+
+/* One column of cards until 1200px. Above that, two uneven pairs (the
+   wider card leading), then Members and History across the full width. */
+.cgd-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.cgd-grid {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	}
+	.cgd-card-members,
+	.cgd-card-history {
+		grid-column: 1 / -1;
+	}
+}
+
+/* Every card: a column body, a wrapping head with an optional button,
+   then title, blurb and sub-headings. */
+.cgd-card {
+	min-width: 0;
+}
+.cgd-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.cgd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		flex: 1 1 15rem;
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+.cgd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cgd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cg-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.cgd-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cgd-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.25rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.cgd-quiet-line {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cg-quiet);
+}
+.cgd-more-line {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin: 1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--cg-quiet);
+
+	& a {
+		border-radius: 4px;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		color: var(--cg-link);
+	}
+	& a:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	& .basalt-empty {
+		width: 100%;
+		padding: 0.5rem 0;
+	}
+}
+
+/* The first card carries the segment's accent as a slim bar down its
+   left edge; the tone class lives on the grid. */
+.cgd-card-who {
+	position: relative;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.5rem;
+		bottom: 1.5rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--cg-tone, var(--basalt-hue));
+	}
+}
+.cgd-card-members {
+	scroll-margin-top: 5.5rem;
+}
+
+/* Membership card. Rules get a little more air than in the drawer, and
+   a list names where its customers come from. */
+.cgd-rules > li {
+	padding: 0.8rem 0;
+	font-size: 0.95rem;
+}
+.cgd-build {
+	margin-top: -0.6rem;
+}
+.cgd-who-actions {
+	margin-top: 1.25rem;
+}
+.cgd-source {
+	display: flex;
+	gap: 0.9rem;
+	align-items: flex-start;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.cgd-source-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--stp-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 16%, var(--basalt-plane));
+}
+.cgd-source-text {
+	min-width: 0;
+}
+.cgd-source-title {
+	margin: 0;
+	font-weight: 650;
+	font-size: 0.92rem;
+	color: var(--basalt-copy);
+}
+.cgd-source-note {
+	margin: 0.25rem 0 0;
+	font-size: 0.85rem;
+	color: var(--cg-quiet);
+}
+
+/* Recent joins and departures, four columns: avatar, who and why,
+   the status, and the date. */
+.cgd-moves {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.cgd-moves-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cgd-move {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) 5.5rem 3.75rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& .basalt-status {
+		justify-self: start;
+	}
+}
+.cgd-move-who {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cgd-move-day {
+	font-size: 0.8rem;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--cg-quiet);
+}
+@media (max-width: 419.98px) {
+	.cgd-move {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+	.cgd-move-day {
+		grid-column: 2;
+		grid-row: 2;
+		margin-top: -0.5rem;
+		text-align: left;
+	}
+}
+
+/* Pills for a departure and for a skipped send are muted, not colored. */
+.basalt-status.cgd-left,
+.basalt-status.cgd-skip {
+	--stp-tone: var(--basalt-copy-muted);
+	color: var(--cg-quiet);
+}
+
+/* For a suppression, two tinted columns: what it blocks in danger, what
+   still goes out in success. */
+.cgd-rule-split {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 576px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.cgd-rule-split-col {
+	--cgd-c: var(--basalt-danger);
+	padding: 1rem 1.1rem;
+	border: 1px solid color-mix(in srgb, var(--cgd-c) 22%, var(--basalt-edge));
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--cgd-c) 6%, var(--basalt-plane));
+
+	& .cgd-sub {
+		font-size: 0.95rem;
+	}
+	& ul {
+		display: grid;
+		gap: 0.5rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: baseline;
+		font-size: 0.875rem;
+		color: var(--basalt-copy-body);
+	}
+	& li .bi {
+		flex: none;
+		color: color-mix(in srgb, var(--cgd-c) 62%, var(--basalt-copy));
+	}
+}
+.cgd-rule-split-col-in {
+	--cgd-c: var(--basalt-success);
+}
+
+/* A big headline number with its unit, used by the Size and Worth cards. */
+.cgd-figure {
+	display: flex;
+	gap: 0.2rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0;
+}
+.cgd-figure-n {
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.cgd-figure-unit {
+	font-size: 0.95rem;
+	color: var(--cg-quiet);
+}
+
+/* Change pills: the 30-day badge beside the size, and the live
+   difference inside the rule editor. Growth reads green either way. */
+.cgd-change {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-left: 0.3rem;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--cg-quiet);
+	background: var(--basalt-plane-alt);
+}
+.cgd-delta {
+	margin-left: 0.3rem;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 650;
+	white-space: nowrap;
+}
+.cgd-change-up,
+.cgd-delta-up {
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 12%, var(--basalt-plane));
+}
+.cgd-change-down {
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 11%, var(--basalt-plane));
+}
+.cgd-delta-down {
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 14%, var(--basalt-plane));
+}
+
+/* The weekly line fills whatever height is left in the card; the SVG
+   stretches, while the dot and tooltip are HTML placed in percent. */
+.cgd-trend {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	justify-content: flex-end;
+	min-height: 11rem;
+	margin-top: 1.25rem;
+}
+.cgd-trend-plot {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 8.5rem;
+	border-radius: 6px;
+	cursor: crosshair;
+
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+	& svg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+}
+.cgd-trend-grid {
+	stroke: var(--basalt-edge);
+	stroke-dasharray: 3 4;
+	vector-effect: non-scaling-stroke;
+}
+.cgd-trend-area {
+	fill: color-mix(in srgb, var(--cg-tone) 14%, transparent);
+}
+.cgd-trend-line {
+	fill: none;
+	stroke: var(--cg-tone);
+	stroke-width: 2.5;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	vector-effect: non-scaling-stroke;
+}
+.cgd-trend-dot {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	margin: -6px 0 0 -6px;
+	border-radius: 50%;
+	background: var(--cg-tone);
+	box-shadow: 0 0 0 3px var(--basalt-plane);
+	pointer-events: none;
+}
+.cgd-trend-tip {
+	position: absolute;
+	transform: translate(-50%, calc(-100% - 14px));
+	padding: 0.3rem 0.6rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 8px;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--cg-quiet);
+	background: var(--basalt-plane);
+	box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--basalt-copy) 35%, transparent);
+	pointer-events: none;
+
+	&.is-below {
+		transform: translate(-50%, 14px);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.cgd-trend-axis {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: space-between;
+	margin-top: 0.6rem;
+	font-size: 0.75rem;
+	color: var(--cg-quiet);
+}
+
+/* Summary line under a card's figure, split by a hairline; the -top
+   variant drops the hairline when it sits right under the number. */
+.cgd-foot-line {
+	display: flex;
+	gap: 0.3rem 1rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin: 1rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--cg-quiet);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.cgd-foot-line-top {
+	margin-top: 0.5rem;
+	padding-top: 0;
+	border-top: 0;
+}
+
+/* Worth card: one stacked bar of plans, then a row per plan. */
+.cgd-card-worth .cgd-sub {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.cgd-mixbar {
+	display: flex;
+	gap: 3px;
+	height: 12px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.cgd-mixbar-part {
+	flex: 0 0 var(--cgd-part);
+	min-width: 4px;
+	background: var(--cgd-c);
+}
+.cgd-mix {
+	margin: 0.9rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.cgd-mix-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto 3.25rem;
+	align-items: center;
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.cgd-mix-dot {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--cgd-c);
+}
+.cgd-mix-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cgd-mix-n {
+	white-space: nowrap;
+	color: var(--cg-quiet);
+}
+.cgd-mix-pct {
+	font-weight: 650;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+/* Sends card. Here names and notes wrap beside the status instead of
+   being truncated, and the status drops below them on narrow phones. */
+.cgd-uses {
+	& .cg-use {
+		padding: 0.9rem 0;
+	}
+	& .cg-use:first-child {
+		padding-top: 0;
+	}
+	&:empty {
+		display: none;
+	}
+	& .basalt-status {
+		white-space: nowrap;
+	}
+}
+.cgd-use-name {
+	overflow: hidden;
+	font-weight: 650;
+	font-size: 0.9rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cgd-uses .cg-use-name,
+.cgd-uses .cgd-use-name,
+.cgd-uses .cg-mem-sub {
+	overflow: visible;
+	white-space: normal;
+}
+@media (max-width: 419.98px) {
+	.cgd-uses .cg-use {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.cgd-uses .cg-use .basalt-status {
+		grid-column: 2;
+		justify-self: start;
+	}
+}
+
+/* The add-customers panel: a tinted box with a search and a grid of
+   checkable accounts that highlight once ticked. */
+.cgd-add {
+	margin-bottom: 1.5rem;
+	padding: 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+
+	& .cg-search .form-control {
+		background-color: var(--basalt-plane);
+	}
+}
+.cgd-add-search {
+	margin-bottom: 1rem;
+}
+.cgd-picks {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& .cg-pick {
+		padding: 0.65rem 0.8rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 10px;
+		background: var(--basalt-plane);
+	}
+	& .cg-pick:has(input:checked) {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	}
+	& .cg-pick-text {
+		overflow: hidden;
+	}
+	& .cg-pick-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+.cgd-error {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cg-danger);
+}
+
+/* Both tables bleed to the card edge and inset their outer cells by the
+   same amount, so cell text still starts on the card's left edge. */
+.cgd-table-wrap {
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.cgd-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& thead th {
+		padding-top: 0.25rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--cg-quiet);
+	}
+	& tbody td {
+		font-size: 0.875rem;
+	}
+}
+.cgd-col-num {
+	width: 7rem;
+	text-align: right;
+	white-space: nowrap;
+}
+.cgd-col-plan {
+	width: 8.5rem;
+}
+.cgd-col-fact {
+	width: 9rem;
+	white-space: nowrap;
+}
+.cgd-col-remove {
+	width: 3rem;
+	text-align: right;
+}
+.cgd-col-when {
+	width: 11rem;
+	white-space: nowrap;
+}
+.cgd-col-by {
+	width: 12rem;
+	white-space: nowrap;
+}
+
+/* Member cells: avatar and name, a folded detail line for narrow
+   cards, and a remove button that turns red on hover. */
+.cgd-acct {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.cgd-acct-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cgd-acct-fold {
+	display: none;
+	font-size: 0.77rem;
+	color: var(--cg-quiet);
+}
+.cgd-remove.btn-icon {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	font-size: 0.85rem;
+	color: var(--cg-quiet);
+
+	&:hover {
+		color: var(--cg-danger);
+		background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+	}
+}
+
+/* History cells: an icon before each change and a You tag on the
+   viewer's own edits. */
+.cgd-change-cell {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	color: var(--basalt-copy);
+
+	& .bi {
+		flex: none;
+		color: var(--cg-quiet);
+	}
+}
+.cgd-you {
+	margin-left: 0.3rem;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--cg-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* Below 768px, plan, fact and seats move into the line under the name. */
+@media (max-width: 767.98px) {
+	.cgd-table-members .cgd-col-plan,
+	.cgd-table-members .cgd-col-fact,
+	.cgd-table-members .cgd-col-num:not(:last-of-type) {
+		display: none;
+	}
+	.cgd-acct-fold {
+		display: block;
+	}
+}
+/* On phones the tables drop their heads; a history row stacks as the
+   change, then when, then who. */
+@media (max-width: 575.98px) {
+	.cgd-table-wrap {
+		margin: 0;
+	}
+	.cgd-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.cgd-table-history,
+	.cgd-table-history tbody,
+	.cgd-table-history tr,
+	.cgd-table-history td {
+		display: block;
+		width: auto;
+	}
+	.cgd-table-history tr {
+		display: flex;
+		flex-direction: column;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.cgd-table-history tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.cgd-table-history > :not(caption) > * > * {
+		padding: 0;
+		border: 0;
+	}
+	.cgd-table-history .cgd-col-when {
+		order: 2;
+		margin-top: 0.3rem;
+		font-size: 0.77rem;
+		color: var(--cg-quiet);
+	}
+	.cgd-table-history .cgd-col-by {
+		order: 3;
+		font-size: 0.77rem;
+		color: var(--cg-quiet);
+	}
+	.cgd-table-members > :not(caption) > * > * {
+		padding-left: 0;
+		padding-right: 0;
+	}
+	.cgd-table-members .cgd-col-num:last-of-type {
+		display: none;
+	}
+	.cgd-table-members .cgd-col-remove {
+		padding-left: 0.5rem;
+	}
+}
+
+/* The notice that replaces the cards for a deleted or unknown segment. */
+.cgd-gone-back {
+	margin: 0 0 1rem;
+	text-align: center;
+}
+
+/* Everything the script toggles with the hidden attribute stays hidden,
+   whatever display its own rule gives it. */
+.cgd-head .basalt-hero-actions[hidden],
+.cgd-head .basalt-hero-actions .btn[hidden],
+.cgd-who-text[hidden],
+.cg-icon.cgd-icon[hidden],
+.cgd-tags[hidden],
+.cgd-rename[hidden],
+.cgd-grid[hidden],
+.cgd-card-head .btn[hidden],
+.cgd-quiet-line[hidden],
+.cgd-more-line[hidden],
+.cgd-trend-tip[hidden],
+.cgd-add[hidden],
+.cgd-picks > li[hidden],
+.cgd-error[hidden],
+.cgd-table-wrap[hidden],
+.cgd-gone[hidden] {
+	display: none;
+}
+
+@media print {
+	.cgd-head .basalt-hero-actions,
+	.cgd-card-head .btn,
+	.cgd-remove,
+	.cgd-who-actions {
+		display: none;
+	}
+}

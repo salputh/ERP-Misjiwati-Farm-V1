@@ -1,0 +1,1330 @@
+/*
+ * Quotes (quotes.html), every class under .qt-*. The shared pieces
+ * from basalt.css (page head, cards, drawer, dialogs, segmented switch,
+ * stepper, status pills, empty state) are only placed here; this file
+ * draws what is Quotes' own: the stage tiles, the Chase next cards, the
+ * list and its validity meters, both insight cards and the quick view's
+ * contents. Colors come from --basalt-* tokens and nothing else.
+ */
+
+.qt-page,
+.qt-drawer,
+.qt-modal {
+	/* The muted token leans toward the body color here, which keeps small
+     gray text above 4.5:1 on the light palettes and on hovered rows. */
+	--qt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Primary alone drops under 4.5:1 for links in a few light palettes. */
+	--qt-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--qt-line: var(--basalt-edge);
+	/* Time left on a quote: plenty, at most a week, at most three days. */
+	--qt-calm: var(--basalt-series-1);
+	--qt-soon: var(--basalt-warning);
+	--qt-urgent: var(--basalt-danger);
+}
+
+/* Parts the script hides with the hidden attribute stay out of the layout,
+   whatever display their own rule gives them. */
+.qt-chase[hidden],
+.qt-table-wrap[hidden],
+.qt-pager[hidden],
+.qt-foot[hidden],
+.qt-drawer .basalt-drawer-section[hidden],
+.qt-pick-remove[hidden] {
+	display: none;
+}
+
+/* Stage tiles: plain cards, each stage marked only by its icon and bars in
+   its own ramp color. They are radio buttons underneath, and the lit one
+   decides what the list shows. */
+.qt-stages-wrap {
+	container-type: inline-size;
+}
+
+.qt-stages {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.qt-stage {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	margin: 0;
+	padding: 1.1rem 1.25rem 1.2rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 130ms ease,
+		box-shadow 130ms ease,
+		background-color 130ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--qt-stage) 45%, var(--basalt-edge));
+	}
+}
+
+.qt-stage-open {
+	--qt-stage: var(--basalt-series-1);
+}
+.qt-stage-draft {
+	--qt-stage: var(--basalt-series-8);
+}
+.qt-stage-won {
+	--qt-stage: var(--basalt-series-3);
+}
+.qt-stage-lost {
+	--qt-stage: var(--basalt-series-6);
+}
+.qt-stage-all {
+	--qt-stage: var(--basalt-series-4);
+}
+
+.qt-stage-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--qt-quiet);
+}
+
+.qt-stage-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	font-size: 1.05rem;
+	line-height: 1;
+	color: var(--qt-stage);
+}
+
+/* What each quote in the tile is worth, as a small bar per quote on the
+   count's row, tallest first. The bars grow in one after another when
+   the page opens, and the one pointed at stays lit while the rest fade. */
+.qt-stage-spark {
+	align-self: flex-end;
+	height: 1.75rem;
+	margin-top: -1.95rem;
+	color: var(--qt-stage);
+
+	& svg {
+		display: block;
+		height: 100%;
+		overflow: visible;
+	}
+	& rect {
+		fill: currentColor;
+		opacity: 0.75;
+		transform-box: fill-box;
+		transform-origin: bottom;
+		animation: qt-bar-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		transition: opacity 170ms ease;
+	}
+	&:has(.is-read) rect {
+		opacity: 0.3;
+	}
+	& rect.is-read {
+		opacity: 1;
+	}
+}
+@keyframes qt-bar-in {
+	from {
+		transform: scaleY(0);
+	}
+}
+@container (max-width: 1000px) {
+	.qt-stage-all .qt-stage-spark {
+		display: none;
+	}
+}
+@container (max-width: 760px) {
+	.qt-stage-spark {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.qt-stage-spark rect {
+		animation: none;
+	}
+}
+.qt-stage-count {
+	margin-top: 0.85rem;
+	font-size: 1.85rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+	font-variant-numeric: normal;
+}
+
+.qt-stage-note {
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--qt-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	/* A quote read from the bars keeps to one line, so a long customer name
+	   ends in an ellipsis instead of making the tile taller. */
+	&.is-reading {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+/* The lit tile takes an edge in its own color and the faintest flat tint.
+   That already marks focus, so it carries no second ring. */
+.btn-check:checked + .qt-stage {
+	border-color: var(--qt-stage);
+	background: color-mix(in srgb, var(--qt-stage) 5%, var(--basalt-plane));
+	box-shadow: 0 0 0 1px var(--qt-stage);
+
+	.qt-stage-head {
+		color: var(--basalt-copy);
+	}
+}
+.btn-check:focus-visible + .qt-stage {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.btn-check:checked:focus-visible + .qt-stage {
+	outline: none;
+}
+
+/* Four to a row with All stretched thin below it, then two to a row.
+   While four share a row the icon stacks over the name so names fit. */
+@container (max-width: 1000px) {
+	.qt-stages {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+	.qt-stage:not(.qt-stage-all) .qt-stage-head {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.qt-stage-all {
+		display: grid;
+		column-gap: 1rem;
+		grid-column: 1 / -1;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "head count" "note count";
+		align-items: center;
+	}
+	.qt-stage-all .qt-stage-head {
+		grid-area: head;
+	}
+	.qt-stage-all .qt-stage-count {
+		grid-area: count;
+		margin: 0;
+	}
+	.qt-stage-all .qt-stage-note {
+		grid-area: note;
+	}
+}
+@container (max-width: 600px) {
+	.qt-stages {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.qt-stage {
+		padding: 0.9rem 1rem 0.95rem;
+	}
+	.qt-stage:not(.qt-stage-all) .qt-stage-head {
+		flex-direction: row;
+		align-items: center;
+	}
+	.qt-stage-count {
+		margin-top: 0.5rem;
+		font-size: 1.5rem;
+	}
+}
+@container (max-width: 360px) {
+	.qt-stage:not(.qt-stage-all) .qt-stage-head {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.qt-stage {
+		transition: none;
+	}
+	.qt-stage:hover {
+		transform: none;
+	}
+}
+
+/* Cards measure themselves, so their insides follow the card's width
+   rather than the window's. */
+.qt-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+
+.qt-cardhead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	& > div {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+	& > .btn {
+		white-space: nowrap;
+	}
+}
+
+.qt-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.qt-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--qt-quiet);
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The search grows only to a comfortable width, which leaves the filter
+   beside it; once room runs out, each one gets a row of its own. */
+.qt-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: 0.25rem var(--basalt-pad-x) 0.75rem;
+}
+
+.qt-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 13rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--qt-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+.qt-toolbar-select {
+	flex: 0 0 auto;
+	min-width: 11rem;
+}
+.qt-summary {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) 1rem;
+	font-size: 0.8rem;
+	color: var(--qt-quiet);
+}
+
+@container (max-width: 560px) {
+	.qt-toolbar {
+		flex-wrap: wrap;
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.qt-search,
+	.qt-toolbar-select {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.qt-search {
+		max-width: 28rem;
+	}
+	.qt-toolbar-select {
+		max-width: 13rem;
+	}
+	.qt-cardhead,
+	.qt-summary {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Chase next shows, on Awaiting reply, the three quotes to follow up
+   first. Its cards end level: three across, later one per row. */
+.qt-chase {
+	padding: 0 var(--basalt-pad-x) 1.25rem;
+}
+
+.qt-chase-title {
+	margin: 0 0 0.65rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--qt-quiet);
+}
+
+.qt-chase-list {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.qt-chase-item {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	grid-template-rows: 1fr auto;
+	align-items: start;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--qt-line);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+}
+
+.qt-chase-text {
+	min-width: 0;
+
+	& .qt-sub {
+		margin-top: 0.2rem;
+	}
+}
+
+.qt-chase-name {
+	display: block;
+	max-width: 100%;
+	padding: 0;
+	border: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		color: var(--qt-link);
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.qt-chase-btn {
+	grid-column: 2;
+	justify-self: start;
+	white-space: nowrap;
+}
+.qt-chase-btn-label {
+	margin-left: 0.25rem;
+}
+
+/* Stacked one per row, a card turns into a single line ending in its button. */
+@container (max-width: 1000px) {
+	.qt-chase-list {
+		gap: 0.6rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.qt-chase-item {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-rows: auto;
+		align-items: center;
+		padding: 0.75rem 0.9rem;
+	}
+	.qt-chase-btn {
+		grid-column: 3;
+	}
+}
+/* On a phone the button shrinks to its bell and leaves the room to the name. */
+@container (max-width: 560px) {
+	.qt-chase {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.qt-chase-btn-label {
+		display: none;
+	}
+}
+
+/* The quote list. A whole row is clickable, so it shows the pointer and
+   warms up on hover. */
+.qt-table-wrap {
+	border-top: 1px solid var(--qt-line);
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.qt-table {
+	--bs-table-bg: transparent;
+	--bs-table-hover-bg: var(--basalt-wash);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		border-color: var(--qt-line);
+		vertical-align: top;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: calc(var(--basalt-pad-x) - 0.5rem);
+	}
+
+	& thead th {
+		padding-top: 0.85rem;
+		padding-bottom: 0.85rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		vertical-align: middle;
+		color: var(--qt-quiet);
+	}
+
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& tbody tr {
+		cursor: pointer;
+	}
+	& tbody tr:hover > * {
+		background: var(--basalt-wash);
+	}
+
+	& th.qt-col-total,
+	& td.qt-col-total {
+		text-align: right;
+		white-space: nowrap;
+	}
+	& td.qt-col-act {
+		width: 1%;
+	}
+}
+
+.qt-col-quote,
+.qt-col-status {
+	white-space: nowrap;
+}
+.qt-table td.qt-col-valid {
+	width: 11rem;
+}
+
+.qt-link {
+	display: inline-block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--qt-link) 35%, transparent);
+	text-underline-offset: 0.2em;
+	color: var(--qt-link);
+
+	&:hover {
+		text-decoration-color: currentColor;
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+.qt-inline-link {
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--qt-link);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+
+.qt-who {
+	display: flex;
+	gap: 0.65rem;
+	align-items: flex-start;
+	min-width: 0;
+
+	& > span:last-child {
+		min-width: 0;
+	}
+}
+
+.qt-strong {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.qt-line {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.qt-sub {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--qt-quiet);
+}
+
+/* Small print turns amber or red when a quote needs attention; the
+   quick view's time-left line uses the very same two tones. */
+.qt-sub-warning,
+.qt-span-left.is-soon {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+.qt-sub-danger,
+.qt-span-left.is-urgent {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+
+.qt-money {
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+.qt-page .dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.qt-danger.dropdown-item {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+/* A row's buttons and menu line up with its first line of text. */
+.qt-acts {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	justify-content: flex-end;
+	margin-top: -0.3rem;
+}
+
+/* The validity meter: a short bar that drains as the deadline comes
+   closer, going amber and then red on the way. */
+.qt-meter {
+	--qt-tone: var(--qt-calm);
+	display: block;
+	width: 100%;
+	max-width: 8.5rem;
+	height: 5px;
+	margin-top: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--qt-tone) 16%, var(--basalt-plane-alt));
+
+	& > span {
+		display: block;
+		min-width: 4px;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--qt-tone);
+	}
+}
+
+.qt-meter-soon {
+	--qt-tone: var(--qt-soon);
+}
+.qt-meter-urgent {
+	--qt-tone: var(--qt-urgent);
+}
+
+/* Below the rows: the pager, the empty state and the note on older quotes. */
+.qt-foot {
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--qt-line);
+	font-size: 0.8rem;
+	color: var(--qt-quiet);
+}
+
+.qt-pager {
+	padding: 1rem var(--basalt-pad-x);
+	border-top-color: var(--qt-line);
+}
+.qt-empty {
+	padding: 2.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--qt-line);
+}
+
+/* In a narrow card a quote reads as a short record: quote, account and
+   total on the first line, items, validity and status on the next. */
+@container (max-width: 860px) {
+	.qt-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.qt-table,
+	.qt-table tbody,
+	.qt-table tr,
+	.qt-table td {
+		display: block;
+		width: 100%;
+	}
+	.qt-table tbody tr {
+		display: grid;
+		gap: 0.9rem 1.25rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"quote account total act"
+			"items valid   status status";
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--qt-line);
+	}
+	.qt-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.qt-table > :not(caption) > * > *,
+	.qt-table > :not(caption) > * > :first-child,
+	.qt-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.qt-table tbody tr:hover > * {
+		background: none;
+	}
+	.qt-table tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.qt-table td.qt-col-quote {
+		grid-area: quote;
+	}
+	.qt-table td.qt-col-account {
+		grid-area: account;
+	}
+	.qt-table td.qt-col-items {
+		grid-area: items;
+	}
+	.qt-table td.qt-col-valid {
+		grid-area: valid;
+		width: auto;
+	}
+	.qt-table td.qt-col-status {
+		grid-area: status;
+		width: auto;
+	}
+	.qt-table td.qt-col-total {
+		grid-area: total;
+		width: auto;
+	}
+	.qt-table td.qt-col-act {
+		grid-area: act;
+		width: auto;
+	}
+}
+@container (max-width: 600px) {
+	.qt-table tbody tr {
+		gap: 0.85rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+		grid-template-areas:
+			"quote quote act"
+			"account account total"
+			"items items items"
+			"valid status status";
+	}
+	.qt-table td.qt-col-status {
+		white-space: normal;
+	}
+}
+
+/* On a phone a quote keeps its number, the customer, the total, the
+   valid-until date and the status. The contact, the lines, the sent date
+   and the notes under the status and total wait in the quick view. */
+@media (max-width: 575.98px) {
+	.qt-table tbody tr {
+		grid-template-areas:
+			"quote quote act"
+			"account account total"
+			"valid status status";
+	}
+	.qt-table td.qt-col-items,
+	.qt-table :is(td.qt-col-quote, td.qt-col-account, td.qt-col-status, td.qt-col-total) .qt-sub {
+		display: none;
+	}
+}
+
+@container (max-width: 560px) {
+	.qt-table tbody tr {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.qt-foot,
+	.qt-empty,
+	.qt-pager {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.qt-table tbody tr {
+		transition: none;
+	}
+}
+
+/* Won and lost: a legend of square swatches above the stacked bars. */
+.qt-chart-body {
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+}
+
+.qt-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+
+.qt-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--qt-swatch);
+}
+.qt-swatch-won {
+	--qt-swatch: var(--basalt-series-3);
+}
+.qt-swatch-declined {
+	--qt-swatch: var(--basalt-series-6);
+}
+.qt-swatch-lapsed {
+	--qt-swatch: var(--basalt-edge-strong);
+}
+.qt-chart {
+	position: relative;
+	height: 14rem;
+}
+
+/* Win rate by salesperson: name and rate on one line, the bar under them,
+   each seller's bar in the next ramp color. */
+.qt-reps {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	list-style: none;
+}
+
+.qt-rep {
+	display: grid;
+	gap: 0.3rem 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-areas: "avatar name value" "avatar bar bar";
+	align-items: center;
+	padding: 0.95rem 0;
+	border-bottom: 1px solid var(--qt-line);
+
+	&:first-child {
+		padding-top: 0.25rem;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& > .basalt-avatar {
+		grid-area: avatar;
+	}
+}
+
+.qt-rep-name {
+	grid-area: name;
+	min-width: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& .qt-sub {
+		display: inline;
+		margin: 0 0 0 0.4rem;
+		font-weight: 400;
+	}
+}
+
+.qt-rep-value {
+	grid-area: value;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.qt-rep-bar {
+	grid-area: bar;
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--qt-rep-tone);
+	}
+}
+
+.qt-rep-1 {
+	--qt-rep-tone: var(--basalt-series-1);
+}
+.qt-rep-2 {
+	--qt-rep-tone: var(--basalt-series-2);
+}
+.qt-rep-3 {
+	--qt-rep-tone: var(--basalt-series-3);
+}
+.qt-rep-4 {
+	--qt-rep-tone: var(--basalt-series-4);
+}
+
+/* The quick view: a wider drawer whose header, links and footer button
+   never break onto a second line. */
+.qt-drawer {
+	--bs-offcanvas-width: 480px;
+
+	& .offcanvas-title {
+		white-space: nowrap;
+	}
+	& .basalt-drawer-foot > .btn {
+		white-space: nowrap;
+	}
+}
+
+.qt-drawer .basalt-drawer-sub a,
+.qt-facts a {
+	font-weight: 600;
+	color: var(--qt-link);
+}
+.qt-drawer .basalt-drawer-sub a:hover,
+.qt-facts a:hover {
+	color: var(--basalt-copy);
+}
+
+.qt-r-state {
+	margin-bottom: 1.5rem;
+}
+.qt-r-lead {
+	margin: 0.75rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+.qt-alert {
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	margin: 1rem 0 0;
+	padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+	border-radius: 10px;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	/* The tone shows as a straight bar set inside, not a border bent round
+     the corners. */
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: 0.4rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--qt-alert-tone);
+	}
+
+	& .bi {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--qt-alert-tone) 55%, var(--basalt-copy));
+	}
+}
+
+.qt-alert-warning {
+	--qt-alert-tone: var(--basalt-warning);
+}
+
+/* Validity in the quick view: sent date at the left, deadline at the
+   right, and the meter running between them. */
+.qt-span-ends {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	font-size: 0.84rem;
+	color: var(--qt-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+.qt-span .qt-meter {
+	max-width: none;
+	height: 8px;
+	margin: 0.5rem 0 0.6rem;
+}
+.qt-span-left {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+
+/* Each line item wears its product's tone on a small tile. */
+.qt-tone-1 {
+	--qt-item-tone: var(--basalt-series-1);
+}
+.qt-tone-2 {
+	--qt-item-tone: var(--basalt-series-2);
+}
+.qt-tone-3 {
+	--qt-item-tone: var(--basalt-series-3);
+}
+.qt-tone-4 {
+	--qt-item-tone: var(--basalt-series-4);
+}
+.qt-tone-5 {
+	--qt-item-tone: var(--basalt-series-5);
+}
+.qt-tone-6 {
+	--qt-item-tone: var(--basalt-series-6);
+}
+.qt-tone-7 {
+	--qt-item-tone: var(--basalt-series-7);
+}
+.qt-tone-8 {
+	--qt-item-tone: var(--basalt-series-8);
+}
+
+.qt-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.qt-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--qt-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+
+.qt-item-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--qt-item-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--qt-item-tone) 16%, var(--basalt-plane));
+}
+
+.qt-item-text {
+	min-width: 0;
+}
+
+/* The sums close on a ruled, bold total. */
+.qt-sums {
+	margin: 0.8rem 0 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+		justify-content: space-between;
+		padding: 0.3rem 0;
+	}
+	& dt {
+		font-size: 0.875rem;
+		font-weight: 400;
+		color: var(--basalt-copy-body);
+	}
+	& dt .qt-sub {
+		margin-top: 0.1rem;
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		line-height: 1.4;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	& .qt-sums-total {
+		margin-top: 0.4rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--qt-line);
+	}
+	& .qt-sums-total dt {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& .qt-sums-total dd {
+		font-weight: 700;
+	}
+}
+
+/* Facts sit in two columns, a quiet label beside its value. */
+.qt-facts {
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 6.5rem minmax(0, 1fr);
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--qt-line);
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-size: 0.875rem;
+		font-weight: 400;
+		color: var(--qt-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		line-height: 1.55;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The history is a column of small filled dots joined by a thin line,
+   with the newest event at the bottom. */
+.qt-history {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.qt-event {
+	position: relative;
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 0.6rem minmax(0, 1fr) auto;
+	align-items: baseline;
+	padding: 0.4rem 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	&::before {
+		content: "";
+		transform: translateY(0.05rem);
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 50%;
+		background: var(--qt-event-tone, var(--basalt-edge-strong));
+	}
+
+	& + &::after {
+		content: "";
+		position: absolute;
+		top: -0.35rem;
+		left: calc(0.3rem - 1px);
+		width: 2px;
+		height: 0.85rem;
+		background: var(--qt-line);
+	}
+}
+
+.qt-event-sent {
+	--qt-event-tone: var(--basalt-info);
+}
+.qt-event-won {
+	--qt-event-tone: var(--basalt-success);
+}
+.qt-event-lost {
+	--qt-event-tone: var(--basalt-danger);
+}
+.qt-event-time {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--qt-quiet);
+}
+
+/* New quote and Turn into an order share the field rows and the footer. */
+.qt-form-row {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+/* A legend here reads as a field label, not as Bootstrap's big legend. */
+.qt-modal legend.form-label {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+}
+.qt-account-field .basalt-select-trigger,
+.qt-account-field .form-select {
+	max-width: 22rem;
+}
+.qt-modal .basalt-dialog-foot .btn {
+	white-space: nowrap;
+}
+
+/* The product picker: one row per line, product then quantity then remove. */
+.qt-pick {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0 0 0.75rem;
+	padding: 0;
+	list-style: none;
+}
+.qt-pick-row {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.qt-pick-row > .form-select,
+.qt-pick-row > .basalt-select-trigger {
+	flex: 0 1 22rem;
+	min-width: 0;
+}
+.qt-pick-qty {
+	flex-shrink: 0;
+}
+
+.qt-new-sum {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* What turning a quote into an order will do, one ticked line each. */
+.qt-plan {
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 1.25rem minmax(0, 1fr);
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--qt-line);
+		font-size: 0.875rem;
+		line-height: 1.5;
+		color: var(--basalt-copy);
+	}
+	& li:first-child {
+		padding-top: 0;
+	}
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	}
+	& .qt-sub {
+		margin-top: 0.1rem;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.qt-pick-row {
+		flex-wrap: wrap;
+	}
+	.qt-pick-row > .form-select,
+	.qt-pick-row > .basalt-select-trigger {
+		flex: 1 1 100%;
+	}
+	.qt-modal .basalt-dialog-foot {
+		flex-wrap: wrap;
+	}
+	/* A phone cannot fit three buttons, so Send gets a full row to itself. */
+	[data-qt-new-form] .basalt-dialog-foot .btn-primary {
+		flex: 1 1 100%;
+	}
+	.qt-drawer .basalt-drawer-pos {
+		display: none;
+	}
+}
+
+/* On paper the controls drop away and only the figures remain. */
+@media print {
+	.qt-stages-wrap,
+	.qt-toolbar,
+	.qt-chase,
+	.qt-pager,
+	.qt-col-act,
+	.qt-cardhead > .btn {
+		display: none;
+	}
+	.qt-table tbody tr {
+		transition: none;
+	}
+}

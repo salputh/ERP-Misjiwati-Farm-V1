@@ -1,0 +1,442 @@
+@use "sass:list";
+@use "sass:map";
+
+/* No button here carries a color of its own. Each variant hands palette
+   colors to Bootstrap through the --bs-btn-* variables it already reads,
+   so rest, hover, press and disabled all follow whichever palette is on,
+   in light and in dark. Filled buttons sink toward the text color and set
+   their label in the surface color (on-primary for the primary) to hold
+   4.5:1 everywhere; outline labels stay legible on the page and on cards.
+   buttons.html lays out the whole family. */
+
+/* One palette color stirred into a second one at the given share. The
+   second is the text color unless named; "clear" means transparent. */
+@function stir($color, $share, $into: copy) {
+	$other: var(--basalt-#{$into});
+	@if $into == clear {
+		$other: transparent;
+	}
+	@return color-mix(in srgb, var(--basalt-#{$color}) $share, #{$other});
+}
+
+$halo-tint: stir(hue, 40%, clear);
+
+/* Writes Bootstrap's label, background and border variables for each
+   button phase handed in. A phase is a (label, background, border) list;
+   a null entry, or a missing phase, leaves Bootstrap's value alone.
+   Pressed copies hover unless it is given. */
+@mixin phases($rest: null, $hover: null, $active: $hover, $disabled: null) {
+	$given: (
+		"": $rest,
+		"-hover": $hover,
+		"-active": $active,
+		"-disabled": $disabled,
+	);
+	@each $suffix, $phase in $given {
+		@if $phase {
+			@each $part, $value in list.zip((color, bg, border-color), $phase) {
+				@if $value {
+					--bs-btn#{$suffix}-#{$part}: #{$value};
+				}
+			}
+		}
+	}
+}
+
+/* Shared shape: rounder corners than Bootstrap, the palette's focus halo,
+   and a disabled look that keeps full opacity on a quiet raised fill. */
+.btn {
+	--bs-btn-focus-box-shadow: 0 0 0 0.2rem #{$halo-tint};
+	--bs-btn-disabled-opacity: 1;
+	@include phases(
+		$disabled: (
+			stir(copy-muted, 72%),
+			var(--basalt-plane-alt),
+			var(--basalt-edge-strong),
+		)
+	);
+	border-radius: 10px;
+
+	&-sm {
+		border-radius: 8px;
+	}
+
+	/* Bootstrap leaves a toggle at rest under the pointer; here it answers
+     hover like every other button does. */
+	.btn-check + &:hover {
+		border-color: var(--bs-btn-hover-border-color);
+		color: var(--bs-btn-hover-color);
+		background-color: var(--bs-btn-hover-bg);
+	}
+}
+
+/* The dismiss cross wears the same halo, not Bootstrap's blue one. */
+.btn-close {
+	--bs-btn-close-focus-shadow: 0 0 0 0.2rem #{$halo-tint};
+}
+
+/* The toned variants. Each entry names its palette color, the label that
+   sits on its fill, and how much of that color goes into the resting fill,
+   the pressed fill and the outline label (the rest is text color), plus
+   how strongly the outline border shows over transparent. */
+$button-tones: (
+	primary: (
+		from: hue,
+		label: on-hue,
+		solid: 86%,
+		pressed: 74%,
+		outline: 62%,
+		rim: 70%,
+	),
+	success: (
+		from: success,
+		label: plane,
+		solid: 58%,
+		pressed: 50%,
+		outline: 52%,
+		rim: 70%,
+	),
+	danger: (
+		from: danger,
+		label: plane,
+		solid: 76%,
+		pressed: 66%,
+		outline: 62%,
+		rim: 70%,
+	),
+	warning: (
+		from: warning,
+		label: plane,
+		solid: 50%,
+		pressed: 42%,
+		outline: 48%,
+		rim: 80%,
+	),
+	info: (
+		from: flare,
+		label: plane,
+		solid: 50%,
+		pressed: 42%,
+		outline: 46%,
+		rim: 80%,
+	),
+);
+
+/* Selector list for every toned variant plus dark, under one prefix. */
+@function toned($prefix) {
+	$list: ();
+	@each $name in list.append(map.keys($button-tones), dark) {
+		$list: list.append($list, ".#{$prefix}#{$name}", comma);
+	}
+	@return $list;
+}
+
+/* A filled button rests on its fill and drops to the pressed fill on hover
+   and on press. */
+:is(#{toned("btn-")}) {
+	@include phases(
+		$rest: (
+			var(--btn-ink),
+			var(--btn-fill),
+			var(--btn-fill),
+		),
+		$hover: (
+			var(--btn-ink),
+			var(--btn-fill-deep),
+			var(--btn-fill-deep),
+		)
+	);
+}
+
+/* An outline button shows a label and a border only; hover borrows the
+   filled look and press the deeper fill. */
+:is(#{toned("btn-outline-")}) {
+	@include phases(
+		$rest: (
+			var(--btn-text),
+			transparent,
+			var(--btn-edge),
+		),
+		$hover: (
+			var(--btn-ink),
+			var(--btn-fill),
+			var(--btn-fill),
+		),
+		$active: (
+			var(--btn-ink),
+			var(--btn-fill-deep),
+			var(--btn-fill-deep),
+		),
+		$disabled: (
+			null,
+			transparent,
+		)
+	);
+}
+
+@each $tone, $mix in $button-tones {
+	$from: map.get($mix, from);
+
+	:is(.btn-#{$tone}, .btn-outline-#{$tone}) {
+		--btn-ink: var(--basalt-#{map.get($mix, label)});
+		--btn-fill: #{stir($from, map.get($mix, solid))};
+		--btn-fill-deep: #{stir($from, map.get($mix, pressed))};
+		--btn-text: #{stir($from, map.get($mix, outline))};
+		--btn-edge: #{stir($from, map.get($mix, rim), clear)};
+
+		@if $tone == primary {
+			/* The primary alone is set a weight heavier. */
+			font-weight: 600;
+		}
+	}
+}
+
+/* Dark mixes nothing: it is the text color, pressing to body copy. */
+:is(.btn-dark, .btn-outline-dark) {
+	--btn-ink: var(--basalt-plane);
+	--btn-fill: var(--basalt-copy);
+	--btn-fill-deep: var(--basalt-copy-body);
+	--btn-text: var(--basalt-copy);
+	--btn-edge: var(--basalt-copy);
+}
+
+/* Secondary rests on the raised surface tinted faintly by the primary, so
+   it moves with the palette while staying second to it. Hover and press
+   label in the text color; primary-deep missed 4.5:1 on the dark fills. */
+.btn-secondary {
+	@include phases(
+		$rest: (
+			stir(hue, 34%, copy-body),
+			stir(hue, 9%, plane-alt),
+			stir(hue, 26%, edge-strong),
+		),
+		$hover: (
+			var(--basalt-copy),
+			stir(hue, 16%, plane-alt),
+			var(--basalt-hue-border),
+		),
+		$active: (
+			var(--basalt-copy),
+			stir(hue, 22%, plane-alt),
+			var(--basalt-hue-border),
+		)
+	);
+}
+
+/* Its outline twin turns brand-colored when pressed or checked, since in
+   a toggle group that state is the selection. */
+.btn-outline-secondary {
+	@include phases(
+		$rest: (
+			stir(hue, 34%, copy-body),
+			null,
+			stir(hue, 30%, edge-strong),
+		),
+		$hover: (
+			var(--basalt-copy),
+			stir(hue, 10%, plane-alt),
+			stir(hue, 55%, clear),
+		),
+		$active: (
+			var(--basalt-on-hue),
+			stir(hue, 86%),
+			stir(hue, 86%),
+		)
+	);
+
+	/* An open dropdown has chosen nothing yet, so its toggle stays calm. */
+	&.show {
+		border-color: stir(hue, 55%, clear);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-wash);
+	}
+}
+
+/* Light and outline light share every phase; only light gets a fill. */
+.btn-light,
+.btn-outline-light {
+	@include phases(
+		$rest: (
+			var(--basalt-copy-body),
+			null,
+			var(--basalt-edge),
+		),
+		$hover: (
+			var(--basalt-copy),
+			var(--basalt-wash),
+			var(--basalt-edge-strong),
+		)
+	);
+}
+
+.btn-light {
+	--bs-btn-bg: var(--basalt-plane-alt);
+}
+
+/* A link button behaves as a link: primary text eased toward the body
+   color so it reads on the page and on tints, with no fill or border in
+   any phase. */
+.btn-link {
+	@include phases(
+		$rest: (
+			stir(hue, 62%),
+			transparent,
+			transparent,
+		),
+		$hover: (
+			var(--basalt-copy),
+			transparent,
+			transparent,
+		),
+		$disabled: (
+			null,
+			transparent,
+			transparent,
+		)
+	);
+	font-weight: 600;
+	text-decoration-color: stir(hue, 45%, clear);
+	text-underline-offset: 0.2em;
+}
+
+.btn-group > .btn {
+	font-weight: 600;
+}
+
+/* Exports and data downloads (.btn-export) make a file nobody opens on a
+   phone, so they step aside below 576px, along with the dropdown or group
+   an export toggle opens. */
+@media (max-width: 575.98px) {
+	.btn.btn-export,
+	.dropdown:has(> .btn-export),
+	.btn-group:has(> .btn-export) {
+		display: none;
+	}
+}
+
+/* Down a vertical group, a button that leads with an icon lines up at the
+   start, and each leading icon fills a 1em cell so mixed glyph widths
+   still form one column. Icon-only buttons are named with aria-label and
+   stay centered. */
+.btn-group-vertical > .btn {
+	&:has(> .bi:first-child):not([aria-label]) {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		text-align: start;
+	}
+
+	& > .bi:first-child {
+		display: inline-block;
+		flex-shrink: 0;
+		width: 1em;
+		text-align: center;
+	}
+}
+
+/* Gradient buttons carry the single lead action of a view, such as a hero
+   or an upgrade prompt. The plain, warm and cool sweeps each join two
+   palette colors darkened toward the text color until the on-primary label
+   clears 4.5:1 end to end, in every palette and mode. Hover and focus
+   shift the sweep sideways instead of lightening it. */
+$sweeps: ".btn-gradient", ".btn-gradient-warm", ".btn-gradient-cool";
+
+:is(#{$sweeps}) {
+	--btn-grad-a: #{stir(hue, 84%)};
+	--btn-grad-b: #{stir(series-2, 50%)};
+	@include phases(
+		$rest: (
+			var(--basalt-on-hue),
+			var(--btn-grad-a),
+			transparent,
+		),
+		$hover: (
+			var(--basalt-on-hue),
+			var(--btn-grad-b),
+			transparent,
+		)
+	);
+	font-weight: 600;
+	background-image: linear-gradient(120deg, var(--btn-grad-a) 0%, var(--btn-grad-b) 50%, var(--btn-grad-a) 100%);
+	background-size: 200% 100%;
+	background-position: 0 0;
+
+	&:is(:hover, :focus-visible, :active, .active) {
+		background-position: 100% 0;
+	}
+
+	&:is(:active, .active) {
+		box-shadow: inset 0 2px 6px stir(copy, 24%, clear);
+	}
+
+	/* With gradients switched off it is a flat button in its first color. */
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+
+	/* The sideways shift is motion, so it animates only when that is welcome. */
+	@media (prefers-reduced-motion: no-preference) {
+		transition:
+			color 170ms ease-in-out,
+			background-position 450ms ease,
+			border-color 170ms ease-in-out,
+			box-shadow 170ms ease-in-out;
+	}
+}
+
+.btn-gradient-warm {
+	--btn-grad-a: #{stir(series-5, 46%)};
+	--btn-grad-b: #{stir(series-6, 50%)};
+}
+
+.btn-gradient-cool {
+	--btn-grad-a: #{stir(series-3, 48%)};
+	--btn-grad-b: #{stir(series-4, 50%)};
+}
+
+/* The outline sweep is a gradient border round a surface fill with a
+   primary label; the fill picks up a touch of primary under hover and
+   a little more when pressed. */
+.btn-gradient-outline {
+	--btn-grad-a: var(--basalt-hue);
+	--btn-grad-b: var(--basalt-series-2);
+	--btn-grad-fill: var(--basalt-plane);
+	@include phases(
+		$rest: (
+			stir(hue, 62%),
+			null,
+			transparent,
+		),
+		$hover: (
+			var(--basalt-copy),
+			null,
+			transparent,
+		)
+	);
+	border: 1.5px solid transparent;
+	font-weight: 600;
+	background:
+		linear-gradient(var(--btn-grad-fill), var(--btn-grad-fill)) padding-box,
+		linear-gradient(120deg, var(--btn-grad-a), var(--btn-grad-b)) border-box;
+
+	&:is(:hover, :focus-visible) {
+		--btn-grad-fill: #{stir(hue, 8%, plane)};
+	}
+
+	&:is(:active, .active) {
+		--btn-grad-fill: #{stir(hue, 14%, plane)};
+	}
+
+	/* Gradients off collapses the border sweep to its first color. */
+	:root[data-basalt-gradients="off"] & {
+		--btn-grad-b: var(--btn-grad-a);
+	}
+}
+
+/* A disabled sweep of either kind gives up its gradient and takes the
+   same quiet disabled look as every other button. */
+:is(#{$sweeps}, .btn-gradient-outline):is(:disabled, .disabled) {
+	border-color: var(--bs-btn-disabled-border-color);
+	background: var(--bs-btn-disabled-bg);
+	box-shadow: none;
+}

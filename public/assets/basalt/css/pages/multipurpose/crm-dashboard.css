@@ -1,0 +1,1064 @@
+/* Basalt - CRM (crm-dashboard.html)
+   Namespaced under .pipe-*
+   Built from shared parts: the plain page header, cards, avatars,
+   status pills, choice tiles, styled selects, the date picker, empty
+   states, toasts, the side sheet and a dialog. This file lays them out and styles what belongs to this
+   page only: the winners' podium, the stage tiles, today's follow-ups, the quota bars, the
+   closing-soon table and the deal quick view. */
+
+.pipe-page,
+.pipe-sheet {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on every palette. */
+	--pipe-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--pipe-track: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+	/* Follow-ups and Closing soon sit side by side; one row height keeps
+	   their rows level. */
+	--pipe-row: 5.25rem;
+}
+
+/* One tone per stage or plan, from the palette's violets. */
+.pipe-tone-1 {
+	--pipe-tone: var(--basalt-series-1);
+}
+.pipe-tone-2 {
+	--pipe-tone: var(--basalt-series-2);
+}
+.pipe-tone-3 {
+	--pipe-tone: var(--basalt-series-7);
+}
+.pipe-tone-4 {
+	--pipe-tone: var(--basalt-series-4);
+}
+.pipe-tone-5 {
+	--pipe-tone: var(--basalt-hue-deep);
+}
+
+.pipe-num {
+	text-align: right;
+}
+
+/* Cards */
+.pipe-card.card {
+	display: flex;
+	flex-direction: column;
+	container-type: inline-size;
+	overflow: hidden;
+}
+.pipe-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.pipe-card-head > div:first-child {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+.pipe-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pipe-card-title:focus {
+	outline: 0;
+}
+.pipe-card-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--pipe-quiet);
+}
+.pipe-card-body {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	padding: 1.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.pipe-card-foot {
+	margin: auto 0 0;
+	padding: 1rem var(--basalt-pad-x) 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--pipe-quiet);
+}
+.pipe-card-foot:empty {
+	display: none;
+}
+
+/* Column labels, the same look as every table in the template. */
+.pipe-deals-table th,
+.pipe-today-head {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--pipe-quiet);
+}
+
+/* This week's winners
+   The top three reps on a podium: the winner in the middle on the
+   tallest step in full Dusk, second on the left and third on the right
+   in lighter shades of the same hue. The steps grow up from the floor
+   third to first, and each rep rises in after their step. */
+.pipe-podium {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	align-items: end;
+	width: 100%;
+	max-width: 48rem;
+	margin: 0 auto;
+	padding: 0;
+	list-style: none;
+}
+.pipe-pod {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	align-items: center;
+	grid-row: 1;
+	min-width: 0;
+	text-align: center;
+	--pipe-pod-shade: color-mix(in srgb, var(--basalt-hue) 22%, var(--basalt-plane));
+	--pipe-pod-ink: var(--basalt-copy);
+	--pipe-pod-lift: 4.75rem;
+	--pipe-pod-wait: 0ms;
+}
+.pipe-pod-1 {
+	grid-column: 2;
+	--pipe-pod-shade: var(--basalt-hue);
+	--pipe-pod-ink: var(--basalt-on-hue);
+	--pipe-pod-lift: 9rem;
+	--pipe-pod-wait: 360ms;
+}
+.pipe-pod-2 {
+	grid-column: 1;
+	--pipe-pod-shade: color-mix(in srgb, var(--basalt-hue) 48%, var(--basalt-plane));
+	--pipe-pod-lift: 6.5rem;
+	--pipe-pod-wait: 180ms;
+}
+.pipe-pod-3 {
+	grid-column: 3;
+}
+.pipe-pod .pipe-pod-face {
+	width: 64px;
+	height: 64px;
+	margin-bottom: 0.5rem;
+	font-size: 1.35rem;
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+	animation: pipe-rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--pipe-pod-wait) + 260ms) both;
+}
+.pipe-pod-1 .pipe-pod-face {
+	width: 80px;
+	height: 80px;
+	font-size: 1.7rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+	box-shadow:
+		0 0 0 3px var(--basalt-plane),
+		0 0 0 5px var(--basalt-hue);
+}
+.pipe-pod-name,
+.pipe-pod-value,
+.pipe-pod-meta {
+	max-width: 100%;
+	animation: pipe-rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--pipe-pod-wait) + 300ms) both;
+}
+.pipe-pod-name {
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+	text-decoration: none;
+	overflow-wrap: anywhere;
+
+	&:hover {
+		color: var(--basalt-hue);
+		text-decoration: underline;
+	}
+}
+.pipe-pod-value {
+	margin-top: 0.3rem;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pipe-pod-meta {
+	font-size: 0.8rem;
+	color: var(--pipe-quiet);
+}
+.pipe-pod-step {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	height: var(--pipe-pod-lift);
+	margin-top: 0.75rem;
+	padding-top: 0.6rem;
+	border-radius: 14px 14px 0 0;
+	background: var(--pipe-pod-shade);
+	transform-origin: bottom center;
+	animation: pipe-lift 620ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--pipe-pod-wait) both;
+
+	& span {
+		font-size: 1.75rem;
+		font-weight: 750;
+		line-height: 1;
+		color: var(--pipe-pod-ink);
+	}
+}
+@keyframes pipe-lift {
+	from {
+		transform: scaleY(0);
+	}
+}
+@container (max-width: 520px) {
+	.pipe-podium {
+		gap: 0.5rem;
+	}
+	.pipe-pod .pipe-pod-face {
+		width: 48px;
+		height: 48px;
+		font-size: 1rem;
+	}
+	.pipe-pod-1 .pipe-pod-face {
+		width: 60px;
+		height: 60px;
+		font-size: 1.3rem;
+	}
+	.pipe-pod-name {
+		font-size: 0.82rem;
+	}
+	.pipe-pod-value {
+		font-size: 1.3rem;
+	}
+	.pipe-pod-meta {
+		font-size: 0.75rem;
+	}
+	.pipe-pod-1 {
+		--pipe-pod-lift: 7rem;
+	}
+	.pipe-pod-2 {
+		--pipe-pod-lift: 5rem;
+	}
+	.pipe-pod-3 {
+		--pipe-pod-lift: 3.75rem;
+	}
+	.pipe-pod-step span {
+		font-size: 1.4rem;
+	}
+}
+
+/* Open pipeline
+   The stages as columns of one plain strip, left to right: name, value,
+   deals and close rate, and a thin bar for the stage's share of the open
+   value. They come in as a wave from left to right. Narrow cards stack
+   the stages into rows. */
+.pipe-flow-stages {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	list-style: none;
+}
+.pipe-flow-stage {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.2rem 1.5rem 1.3rem;
+	animation: pipe-rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--pipe-i, 0) * 90ms) both;
+
+	& + & {
+		border-left: 1px solid var(--basalt-edge);
+	}
+}
+.pipe-flow-share {
+	display: block;
+	height: 6px;
+	margin-top: 0.9rem;
+	overflow: hidden;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+
+	& span {
+		display: block;
+		width: calc(var(--pipe-share) * 100%);
+		min-width: 6px;
+		height: 100%;
+		border-radius: 3px;
+		background: var(--pipe-tone);
+		transform-origin: left center;
+		animation: pipe-grow 700ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(200ms + var(--pipe-i, 0) * 90ms) both;
+	}
+}
+@keyframes pipe-rise {
+	from {
+		transform: translateY(6px);
+		opacity: 0;
+	}
+}
+@keyframes pipe-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+/* A stage reads the same everywhere: its tile color as a dot, then its name. */
+.pipe-stage {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	white-space: nowrap;
+}
+.pipe-stage-dot {
+	flex-shrink: 0;
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 3px;
+	background: var(--pipe-tone);
+}
+
+.pipe-flow-name {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.85rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pipe-flow-value {
+	margin: 0.4rem 0 0.2rem;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.pipe-flow-meta {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+@container (max-width: 780px) {
+	.pipe-flow-stages {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.pipe-flow-stage {
+		display: grid;
+		column-gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.9rem 1.25rem;
+
+		& + & {
+			border-top: 1px solid var(--basalt-edge);
+			border-left: 0;
+		}
+	}
+	.pipe-flow-value {
+		grid-column: 2;
+		grid-row: 1 / span 2;
+		margin: 0;
+		font-size: 1.25rem;
+	}
+	.pipe-flow-share {
+		grid-column: 1 / -1;
+		margin-top: 0.6rem;
+	}
+}
+
+/* Today's follow-ups
+   Labeled and spaced like the Closing soon table beside it, so the two
+   cards' rows sit level. */
+.pipe-today-head,
+.pipe-task {
+	display: grid;
+	gap: 0.25rem 1rem;
+	grid-template-columns: 1.5rem 5.25rem minmax(0, 1fr) auto;
+	padding-right: var(--basalt-pad-x);
+	padding-left: var(--basalt-pad-x);
+}
+.pipe-today-head {
+	margin-top: 1.25rem;
+	padding-top: 0.7rem;
+	padding-bottom: calc(0.7rem - 1px);
+	border-top: 1px solid var(--basalt-edge);
+	border-bottom: 1px solid var(--basalt-edge);
+	white-space: nowrap;
+}
+.pipe-today-head > :first-child {
+	grid-column: 2;
+}
+.pipe-today {
+	flex: 1;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pipe-task {
+	align-items: center;
+	min-height: var(--pipe-row);
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+}
+.pipe-task + .pipe-task {
+	border-top: 1px solid var(--basalt-edge);
+}
+.pipe-task .form-check-input {
+	width: 1.1rem;
+	height: 1.1rem;
+	margin: 0;
+	cursor: pointer;
+}
+.pipe-task-time {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+}
+.pipe-task-clock {
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pipe-task-how {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.77rem;
+	color: var(--pipe-quiet);
+}
+.pipe-task-how .bi {
+	font-size: 0.75rem;
+	color: var(--basalt-hue);
+}
+.pipe-task-what {
+	min-width: 0;
+}
+.pipe-task-deal {
+	padding: 0;
+	border: 0;
+	font-size: 0.9rem;
+	font-weight: 650;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+}
+.pipe-task-deal:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-hue);
+}
+.pipe-task-deal:focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.pipe-task-note {
+	margin: 0.2rem 0 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.pipe-task-side {
+	display: flex;
+	align-items: center;
+}
+/* A follow-up past its time: the time and how it happens turn amber. */
+.pipe-task.is-late .pipe-task-clock,
+.pipe-task.is-late .pipe-task-how,
+.pipe-task.is-late .pipe-task-how .bi {
+	color: color-mix(in srgb, var(--basalt-warning) 48%, var(--basalt-copy));
+}
+.pipe-task.is-done .pipe-task-clock,
+.pipe-task.is-done .pipe-task-deal,
+.pipe-task.is-done .pipe-task-note {
+	text-decoration: line-through;
+	text-decoration-color: color-mix(in srgb, var(--pipe-quiet) 60%, transparent);
+	color: var(--pipe-quiet);
+}
+
+/* Chart */
+.pipe-headline {
+	display: flex;
+	gap: 1.75rem;
+	margin: 0;
+}
+.pipe-headline div {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+}
+.pipe-headline dt {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--pipe-quiet);
+}
+.pipe-headline dd {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pipe-headline dd.basalt-delta {
+	font-size: 1.1rem;
+}
+
+.pipe-legend {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.pipe-legend li {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.pipe-legend-key {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--pipe-tone);
+}
+.pipe-chart {
+	position: relative;
+	flex: 1;
+	min-height: 260px;
+}
+
+/* Who is closing */
+.pipe-reps {
+	flex: 1;
+	margin: 0;
+	padding: 0.75rem 0 0.5rem;
+	list-style: none;
+}
+.pipe-rep {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(7.5rem, 9.5rem) minmax(4rem, 1fr) 4.75rem;
+	align-items: center;
+	padding: 0.8rem var(--basalt-pad-x);
+}
+.pipe-rep-who {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.pipe-rep-name {
+	overflow: hidden;
+	font-size: 0.9rem;
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pipe-rep-meta {
+	font-size: 0.77rem;
+	color: var(--pipe-quiet);
+}
+/* The track runs to 125% of quota; the line at 80% of it is quota. */
+.pipe-rep-track {
+	position: relative;
+	height: 0.5rem;
+	border-radius: 999px;
+	background: var(--pipe-track);
+}
+.pipe-rep-track::after {
+	content: "";
+	position: absolute;
+	top: -0.3rem;
+	bottom: -0.3rem;
+	left: 80%;
+	width: 2px;
+	border-radius: 1px;
+	background: color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+}
+.pipe-rep-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	transform-origin: left center;
+	width: var(--share);
+	border-radius: inherit;
+	background: var(--basalt-series-2);
+	animation: pipe-grow 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.pipe-rep-fill.is-over {
+	background: var(--basalt-series-1);
+}
+.pipe-rep-value {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pipe-rep-pct {
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--pipe-quiet);
+}
+.pipe-rep-pct.is-over {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pipe-rep-pct .bi {
+	font-size: 0.7rem;
+	color: var(--basalt-warning);
+}
+
+/* Closing soon */
+.pipe-deals-table {
+	width: 100%;
+	margin-top: 1.25rem;
+	border-collapse: collapse;
+}
+.pipe-deals-table th {
+	padding: 0.7rem 0.6rem;
+	border-top: 1px solid var(--basalt-edge);
+	border-bottom: 1px solid var(--basalt-edge);
+	white-space: nowrap;
+}
+.pipe-deals-table td {
+	height: var(--pipe-row);
+	padding: 0.75rem 0.6rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.9rem;
+	vertical-align: middle;
+	color: var(--basalt-copy-body);
+}
+.pipe-deals-table tr > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.pipe-deals-table tr > :last-child {
+	width: 1%;
+	padding-right: var(--basalt-pad-x);
+}
+.pipe-deals-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+.pipe-deals-table tbody tr {
+	cursor: pointer;
+}
+.pipe-deals-table tbody tr:hover {
+	background: var(--basalt-wash);
+}
+.pipe-deals-table .pipe-num {
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pipe-deal-name {
+	display: block;
+	width: fit-content;
+	font-weight: 650;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pipe-deal-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-hue);
+}
+.pipe-deal-plan,
+.pipe-deal-when {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--pipe-quiet);
+}
+.pipe-deal-date {
+	white-space: nowrap;
+}
+.pipe-owner {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	white-space: nowrap;
+}
+.pipe-deals [data-pipe-deals-empty] {
+	padding: 2rem var(--basalt-pad-x);
+}
+.pipe-deals-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.pipe-deals-foot[hidden] {
+	display: none;
+}
+.pipe-deals-foot p {
+	margin: 0;
+}
+.pipe-deals-foot .btn {
+	white-space: nowrap;
+}
+
+/* Medium cards: the owner shows as an avatar only, its name in a tooltip. */
+@container (max-width: 820px) {
+	.pipe-owner-name {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+
+/* Card a little narrower than the table: closer cells and slightly
+   smaller row icons keep the last column inside the card. */
+@container (max-width: 680px) {
+	.pipe-deals-table th,
+	.pipe-deals-table td {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	.pipe-deal-go .basalt-row-actions .btn-icon {
+		width: 30px;
+		height: 30px;
+	}
+}
+
+/* Narrow cards: each deal becomes a stacked record. Name and stage on
+   top, then value and close date, then the owner. */
+@container (max-width: 580px) {
+	.pipe-owner-name {
+		position: static;
+		width: auto;
+		height: auto;
+		overflow: visible;
+		clip-path: none;
+	}
+	.pipe-deals-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.pipe-deals-table,
+	.pipe-deals-table tbody {
+		display: block;
+	}
+	.pipe-deals-table tbody tr {
+		display: grid;
+		gap: 1rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		padding: 1.2rem var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.pipe-deals-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.pipe-deals-table td,
+	.pipe-deals-table tr > :first-child,
+	.pipe-deals-table tr > :last-child {
+		width: auto;
+		height: auto;
+		padding: 0;
+		border: 0;
+	}
+	.pipe-deals-table td.pipe-deal-stage {
+		justify-self: end;
+	}
+	.pipe-deals-table td.pipe-num {
+		grid-row: 2;
+		grid-column: 2;
+		align-self: start;
+	}
+	.pipe-deals-table td.pipe-deal-close {
+		grid-row: 2;
+		grid-column: 1;
+	}
+	.pipe-deals-table td.pipe-deal-owner {
+		grid-row: 3;
+		grid-column: 1;
+	}
+	.pipe-deals-table td.pipe-deal-go {
+		grid-row: 3;
+		grid-column: 2;
+		justify-self: end;
+	}
+}
+
+/* On a phone a deal about to close reads in two lines: the company with its
+   stage and quick view, then the close date and the value. The owner and
+   the days left wait in the quick view. */
+@media (max-width: 575.98px) {
+	.pipe-deals-table tbody tr {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+	}
+	.pipe-deals-table td.pipe-deal-go {
+		grid-row: 1;
+		grid-column: 3;
+	}
+	.pipe-deals-table td.pipe-num {
+		grid-column: 2 / 4;
+		justify-self: end;
+	}
+	.pipe-deals-table td.pipe-deal-owner,
+	.pipe-deals-table .pipe-deal-when {
+		display: none;
+	}
+}
+
+@container (max-width: 520px) {
+	.pipe-card-head {
+		padding: var(--basalt-pad-head) var(--basalt-pad-x-narrow) 0;
+	}
+	.pipe-card-body {
+		padding: 1.5rem var(--basalt-pad-x-narrow) var(--basalt-pad-x-narrow);
+	}
+	.pipe-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.pipe-today-head,
+	.pipe-task,
+	.pipe-rep {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.pipe-rep {
+		row-gap: 0.6rem;
+		grid-template-columns: auto minmax(0, 1fr) 4.5rem;
+	}
+	.pipe-rep-track {
+		grid-column: 2 / -1;
+		grid-row: 2;
+	}
+}
+
+/* Phones: the time sits on its own line above the company. */
+@container (max-width: 400px) {
+	.pipe-today-head {
+		display: none;
+	}
+	.pipe-task {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+	.pipe-task-time {
+		gap: 0.5rem;
+		flex-direction: row;
+		grid-column: 2;
+		grid-row: 1;
+		align-items: baseline;
+	}
+	.pipe-task-what {
+		grid-column: 2;
+		grid-row: 2;
+	}
+	.pipe-task-side {
+		grid-column: 3;
+		grid-row: 1 / span 2;
+	}
+	.pipe-task .form-check-input {
+		grid-row: 1 / span 2;
+	}
+}
+
+/* Deal sheet */
+.pipe-sheet {
+	--bs-offcanvas-width: 460px;
+}
+.pipe-sheet [data-pipe-d="body"] {
+	display: flex;
+	gap: 1.75rem;
+	flex-direction: column;
+}
+.pipe-sec-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.1rem;
+}
+.pipe-sec-head .pipe-sec-title {
+	margin: 0;
+}
+.pipe-sec-head .btn {
+	white-space: nowrap;
+}
+.pipe-sec-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pipe-sum {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+}
+.pipe-sum-value {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.pipe-sum-value span {
+	margin-left: 0.3rem;
+	font-size: 0.9rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	color: var(--pipe-quiet);
+}
+.pipe-sum-line {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Where the deal stands: filled bars up to the current stage and one
+   line naming it, so nothing looks like a box to check. */
+.pipe-track {
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pipe-track li {
+	height: 0.4rem;
+	border-radius: 999px;
+	background: var(--pipe-track);
+}
+.pipe-track li.is-done {
+	background: var(--basalt-hue);
+}
+.pipe-track-text {
+	margin: 0.75rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.pipe-track-text strong {
+	color: var(--basalt-copy);
+}
+
+/* The deal's contact: one tile, who on the left and a way to reach
+   them on the right. */
+.pipe-contact {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: var(--bs-border-radius-lg);
+}
+.pipe-contact-text {
+	display: flex;
+	flex: 1;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.pipe-contact-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+a.pipe-contact-name {
+	text-decoration: none;
+}
+a.pipe-contact-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.pipe-contact-role {
+	font-size: 0.85rem;
+	color: var(--pipe-quiet);
+}
+.pipe-contact-mail {
+	flex-shrink: 0;
+}
+.pipe-next {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+}
+
+.pipe-log {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pipe-log li {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 4.25rem minmax(0, 1fr);
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.pipe-log li:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+.pipe-log-date {
+	white-space: nowrap;
+	color: var(--pipe-quiet);
+}
+.pipe-log-what {
+	color: var(--basalt-copy-body);
+}
+.pipe-log-who {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--pipe-quiet);
+}
+
+/* Add a deal */
+.pipe-plans {
+	--basalt-choice-min: 5.5rem;
+}
+.pipe-seats {
+	max-width: 9rem;
+}
+.pipe-add-value:empty {
+	display: none;
+}
+.pipe-add-value {
+	margin: 0.6rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.pipe-add-value strong {
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pipe-pod .pipe-pod-face,
+	.pipe-pod-name,
+	.pipe-pod-value,
+	.pipe-pod-meta,
+	.pipe-pod-step,
+	.pipe-flow-stage,
+	.pipe-flow-share span,
+	.pipe-rep-fill {
+		animation: none;
+	}
+}

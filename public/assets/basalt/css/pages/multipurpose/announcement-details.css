@@ -1,0 +1,1189 @@
+/*
+ * Styles for announcement-details.html, the full-page view of one post.
+ * Every class starts with .ad- and every color comes from a --basalt-*
+ * token, so each palette and the dark theme apply without extra rules.
+ * The page sticks to four type sizes: card titles, section headings,
+ * body text (--ad-fs-body) and one small size (--ad-fs-small).
+ */
+
+/* The page and its delete dialog share a handful of local tokens. Quiet
+   text and link text lean toward the body color so they keep 4.5:1
+   contrast in the lightest palettes; the read, confirmed and not-opened
+   tones feed the ring, the bars and the legend alike. */
+.ad-page,
+.ad-delete-dialog {
+	--ad-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--ad-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--ad-line: var(--basalt-edge);
+	--ad-confirmed: var(--basalt-series-1);
+	--ad-read: var(--basalt-series-3);
+	--ad-none: color-mix(in srgb, var(--basalt-edge) 70%, var(--basalt-plane-alt));
+	--ad-fs-body: 0.875rem;
+	--ad-fs-small: 0.77rem;
+}
+
+/* Whatever the script hides, or leaves empty, takes up no room. */
+.ad-head .basalt-hero-actions .btn[hidden],
+.ad-notice[hidden],
+.ad-card-head > .btn[hidden],
+.ad-card-desc:empty,
+.ad-note:empty,
+.ad-note[hidden],
+.ad-error[hidden],
+.ad-card-foot[hidden],
+.ad-card-post [data-ad-view][hidden],
+.ad-reactions[hidden],
+.ad-edit[hidden],
+.ad-aud-form[hidden],
+.ad-facts[hidden],
+.ad-linkform[hidden],
+.ad-table[hidden],
+.ad-comments[hidden],
+.ad-comment-actions:empty,
+.ad-reply[hidden],
+.ad-reply-to[hidden] {
+	display: none;
+}
+
+.ad-quiet {
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+.ad-page .basalt-status {
+	font-size: var(--ad-fs-small);
+	white-space: nowrap;
+}
+
+/* The header puts the title block and the actions on one row, with the
+   actions sitting on the baseline of the last line of text. */
+.basalt-hero-detail.ad-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.ad-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.ad-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+
+/* Status, pinned, confirmation and email tags wrap under the byline. */
+.ad-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.85rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+	}
+}
+.ad-tag {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.2rem 0.7rem;
+	border: 1px solid var(--ad-line);
+	border-radius: 999px;
+	font-size: var(--ad-fs-small);
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body, var(--basalt-copy));
+	background: var(--basalt-plane);
+
+	& .bi {
+		color: var(--ad-link);
+	}
+}
+
+/* The more menu gives its icons room, and Delete reads as a warning. */
+.ad-page .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+.ad-page .dropdown-item.ad-danger-item {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+
+	&:hover,
+	&:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* An archived, scheduled or draft post explains itself in one slim line. */
+.ad-notice {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid var(--ad-line);
+	border-radius: 10px;
+	font-size: var(--ad-fs-body);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	& > .bi {
+		flex: none;
+		color: var(--ad-quiet);
+	}
+}
+
+/* Below desktop width the cards stack in reading order. From 1200px they
+   pair up in rows that end level: post and reach, readers and audience,
+   comments and history. */
+.ad-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.ad-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.ad-card-post,
+	.ad-card-readers {
+		grid-column: span 8;
+	}
+	.ad-card-reach,
+	.ad-card-audience {
+		grid-column: span 4;
+	}
+	.ad-card-comments {
+		grid-column: span 7;
+	}
+	.ad-card-activity {
+		grid-column: span 5;
+	}
+}
+
+/* Every card shares the same padding, header and footer. */
+.ad-card {
+	min-width: 0;
+}
+.ad-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.ad-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.ad-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& > .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+.ad-card-head-wrap {
+	flex-wrap: wrap;
+	align-items: center;
+}
+.ad-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ad-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--ad-fs-body);
+	line-height: 1.55;
+	color: var(--ad-quiet);
+}
+.ad-sub {
+	margin: 1.5rem 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ad-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+
+	& .ad-note {
+		margin: 0;
+	}
+}
+
+/* Notes and field errors are small lines of text under what they explain. */
+.ad-note {
+	margin: 0.4rem 0 0;
+	font-size: var(--ad-fs-small);
+	line-height: 1.5;
+	color: var(--ad-quiet);
+}
+.ad-error {
+	margin: 0.4rem 0 0;
+	font-size: var(--ad-fs-small);
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+
+/* Reply, Delete and Cancel are buttons dressed as inline links. */
+.ad-link.btn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	--bs-btn-font-size: var(--ad-fs-small);
+	--bs-btn-font-weight: 600;
+	--bs-btn-color: var(--ad-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-border-width: 0;
+	text-decoration: none;
+	vertical-align: baseline;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+
+/* The post card stretches so its reactions can sit on the bottom edge. */
+.ad-card-post .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.ad-card-post [data-ad-view] {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+/* Message text, both in the letter and inside the editor. */
+.ad-prose {
+	font-size: 0.95rem;
+	line-height: 1.7;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body, var(--basalt-copy));
+
+	& > :last-child {
+		margin-bottom: 0;
+	}
+	& p {
+		margin: 0 0 0.9rem;
+	}
+	& ul,
+	& ol {
+		margin: 0 0 0.9rem;
+		padding-left: 1.3rem;
+	}
+	& li {
+		margin-bottom: 0.3rem;
+	}
+	& li::marker {
+		color: var(--basalt-hue);
+	}
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& a {
+		text-underline-offset: 2px;
+		color: var(--ad-link);
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The letter is the post as a reader gets it: sender, title, message and
+   the confirmation line when one is asked for. */
+.ad-letter {
+	padding: 1.4rem 1.5rem;
+	border-radius: 14px;
+	border: 1px solid var(--ad-line);
+	background-color: var(--basalt-plane);
+	background-image: linear-gradient(
+		150deg,
+		color-mix(in srgb, var(--basalt-series-1) 7%, transparent),
+		color-mix(in srgb, var(--basalt-series-3) 5%, transparent) 70%
+	);
+}
+:root[data-basalt-gradients="off"] .ad-letter {
+	background-image: none;
+}
+.ad-letter-from {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-bottom: 1.1rem;
+}
+.ad-letter-who {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.ad-letter-name {
+	font-size: var(--ad-fs-body);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ad-letter-meta {
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+.ad-letter-title {
+	margin: 0 0 0.6rem;
+	font-size: var(--basalt-fs-section, 1rem);
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+.ad-letter-ack {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 1.1rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px dashed var(--ad-line);
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+
+	& .bi {
+		color: var(--ad-link);
+	}
+}
+
+/* Reactions form one slim row of pills; each kind tints its own icon and,
+   once pressed, its pill. */
+.ad-reactions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: auto;
+	padding-top: 1.25rem;
+}
+.ad-react {
+	--ad-tone: var(--basalt-series-1);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border: 1px solid var(--ad-line);
+	border-radius: 999px;
+	font-size: var(--ad-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&[data-ad-react="heart"] {
+		--ad-tone: var(--basalt-series-4);
+	}
+	&[data-ad-react="party"] {
+		--ad-tone: var(--basalt-series-5);
+	}
+	& .bi {
+		color: color-mix(in srgb, var(--ad-tone) 70%, var(--basalt-copy));
+	}
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-pressed="true"] {
+		border-color: color-mix(in srgb, var(--ad-tone) 55%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--ad-tone) 13%, var(--basalt-plane));
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ad-react {
+		transition: none;
+	}
+}
+
+/* Editing in place: fields stack with even gaps, and the editor frame
+   lights up as one control while anything inside it has focus. */
+.ad-field + .ad-field {
+	margin-top: 1.25rem;
+}
+.ad-field > .form-check {
+	margin-bottom: 0;
+}
+.ad-editor {
+	border: 1px solid var(--basalt-edge-strong, var(--ad-line));
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue-border, var(--basalt-hue));
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+	&.is-invalid {
+		border-color: var(--basalt-danger);
+	}
+}
+
+/* The toolbar is a strip of square buttons; a pressed or open one keeps
+   the soft hue fill. */
+.ad-toolbar {
+	display: flex;
+	gap: 0.1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border-bottom: 1px solid var(--ad-line);
+	border-radius: 12px 12px 0 0;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 70%, var(--basalt-plane));
+}
+.ad-toolbar-sep {
+	width: 1px;
+	height: 20px;
+	margin: 0 0.25rem;
+	background: var(--basalt-edge-strong, var(--ad-line));
+}
+.ad-tool {
+	display: inline-grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1rem;
+	color: var(--basalt-copy-body, var(--basalt-copy));
+	background: transparent;
+	transition: background-color 110ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[aria-pressed="true"],
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+	}
+}
+
+/* The link form opens as one row between the toolbar and the text. */
+.ad-linkform {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.75rem;
+	border-bottom: 1px solid var(--ad-line);
+
+	& .form-control {
+		flex: 1 1 14rem;
+		max-width: 28rem;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+	& .ad-error {
+		flex-basis: 100%;
+		margin: 0;
+	}
+}
+
+/* The writing area shows its placeholder only while it is empty. */
+.ad-editor-body {
+	min-height: 12rem;
+	padding: 1.1rem 1.25rem;
+	color: var(--basalt-copy);
+	cursor: text;
+
+	&:focus,
+	&:focus-visible {
+		outline: 0;
+		box-shadow: none;
+	}
+	&:empty::before {
+		content: attr(data-placeholder);
+		color: var(--ad-quiet);
+	}
+}
+
+/* Inputs in the post form stop at a comfortable reading width; this comes
+   after the link form so the wider limit is the one that holds. */
+.ad-edit .form-control {
+	max-width: 40rem;
+}
+
+/* Both forms end on a ruled row with the note on the left and the
+   buttons pushed right. */
+.ad-edit-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--ad-line);
+
+	& .ad-note {
+		margin: 0;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* Reach: the ring and its legend share a row that wraps when the card is
+   narrow, and the arcs ease into place. */
+.ad-card-reach {
+	container-type: inline-size;
+}
+.ad-ring-wrap {
+	display: flex;
+	gap: 1.25rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.ad-ring {
+	position: relative;
+	flex: none;
+	width: 9rem;
+	height: 9rem;
+
+	& svg {
+		transform: rotate(-90deg);
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	& circle {
+		fill: none;
+		stroke-width: 13;
+	}
+}
+.ad-ring-track {
+	stroke: var(--ad-none);
+}
+.ad-ring-arc {
+	transition:
+		stroke-dasharray 600ms ease,
+		stroke-dashoffset 600ms ease;
+}
+.ad-ring-arc-confirmed,
+.ad-ring-arc-read-only {
+	stroke: var(--ad-confirmed);
+}
+.ad-ring-arc-read {
+	stroke: var(--ad-read);
+}
+.ad-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+.ad-ring-value {
+	font-size: 1.6rem;
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.ad-ring-label {
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+
+.ad-legend {
+	display: grid;
+	gap: 0.6rem;
+	flex: 1 1 10rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		font-size: var(--ad-fs-body);
+		color: var(--basalt-copy);
+	}
+}
+.ad-legend-label {
+	flex: 1;
+	min-width: 0;
+}
+.ad-legend-n {
+	font-weight: 700;
+}
+.ad-key {
+	flex: none;
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+}
+.ad-key-confirmed,
+.ad-key-read-only {
+	background: var(--ad-confirmed);
+}
+.ad-key-read {
+	background: var(--ad-read);
+}
+.ad-key-none {
+	background: var(--ad-none);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge-strong, var(--ad-line));
+}
+
+/* One bar per team, with the name and count above it. */
+.ad-teams {
+	display: grid;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& + .ad-note {
+		margin-top: 1rem;
+	}
+}
+.ad-team-line {
+	display: flex;
+	gap: 0.75rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 0 0 0.4rem;
+	font-size: var(--ad-fs-body);
+}
+.ad-team-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ad-team-n {
+	font-size: var(--ad-fs-small);
+	white-space: nowrap;
+	color: var(--ad-quiet);
+}
+
+/* A bar holds read and confirmed in one track, confirmed drawn over read. */
+.ad-bar {
+	position: relative;
+	height: 8px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--ad-none);
+
+	& > span {
+		position: absolute;
+		inset: 0 auto 0 0;
+		border-radius: inherit;
+		transition: width 500ms ease;
+	}
+}
+.ad-bar-read {
+	background: var(--ad-read);
+}
+.ad-bar-confirmed,
+.ad-bar-read-only {
+	background: var(--ad-confirmed);
+}
+.ad-reach-foot {
+	margin-top: 1.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--ad-line);
+}
+@media (prefers-reduced-motion: reduce) {
+	.ad-ring-arc,
+	.ad-bar > span {
+		transition: none;
+	}
+}
+
+/* Readers: a borderless table whose outer cells sit flush with the card,
+   with uppercase column labels and a brief highlight on new arrivals. */
+.ad-card-readers {
+	container-type: inline-size;
+}
+.ad-seg-n {
+	margin-left: 0.2rem;
+	font-weight: 700;
+}
+.ad-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: var(--ad-fs-body);
+
+	& > :not(caption) > * > * {
+		padding: 0.85rem 0.75rem;
+		border-bottom-color: var(--ad-line);
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--ad-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& tbody tr.is-new > td {
+		animation: ad-arrive 2.4s ease-out;
+	}
+}
+@keyframes ad-arrive {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+	to {
+		background: transparent;
+	}
+}
+.ad-col-when {
+	width: 10rem;
+	white-space: nowrap;
+}
+.ad-table td.ad-col-when {
+	color: var(--basalt-copy-body, var(--basalt-copy));
+}
+.ad-col-team {
+	width: 8.5rem;
+}
+
+/* On a customer post, the last column shows how many people at each
+   account opened it. */
+.ad-col-opened {
+	width: 13rem;
+}
+.ad-opened {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+
+	& .ad-bar {
+		flex: 1;
+		min-width: 4rem;
+	}
+}
+.ad-opened-n {
+	flex: none;
+	min-width: 3.75rem;
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* A person or account is an avatar beside a name and one quiet line. */
+.ad-who {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.ad-who-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.ad-who-name {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+.ad-who-meta {
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+.ad-who-team {
+	display: none;
+}
+
+/* As the card narrows the team column folds into the quiet line, and then
+   the time column and the account bars go. */
+@container (max-width: 620px) {
+	.ad-col-team {
+		display: none;
+	}
+	.ad-who-team {
+		display: inline;
+	}
+}
+@container (max-width: 440px) {
+	.ad-col-when {
+		display: none;
+	}
+	.ad-col-opened {
+		width: auto;
+	}
+	.ad-opened .ad-bar {
+		display: none;
+	}
+	.ad-opened-n {
+		min-width: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ad-table tbody tr.is-new > td {
+		animation: none;
+	}
+}
+
+/* An empty list gets a centered check mark and a short line instead. */
+.ad-empty {
+	max-width: 26rem;
+	margin: 1rem auto;
+	text-align: center;
+
+	& .basalt-empty-title {
+		font-size: var(--basalt-fs-section, 1rem);
+	}
+	& .basalt-empty-text {
+		font-size: var(--ad-fs-body);
+		color: var(--ad-quiet);
+	}
+}
+.ad-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.6rem;
+	border-radius: 14px;
+	font-size: 1.3rem;
+	color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+
+/* Audience and delivery read as label and value rows split by hairlines;
+   in a very narrow card each value drops under its label. */
+.ad-card-audience {
+	container-type: inline-size;
+}
+.ad-facts {
+	margin: 0;
+}
+.ad-fact {
+	display: grid;
+	gap: 0.25rem 1rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--ad-line);
+	font-size: var(--ad-fs-body);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--ad-quiet);
+	}
+	& dd {
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+}
+@container (max-width: 300px) {
+	.ad-fact {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.ad-fact-note {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+.ad-chips {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.ad-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	font-size: var(--ad-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+
+/* In the audience form the choices sit two to a row, and group names read
+   like the field labels beside them rather than like headings. */
+.ad-checks {
+	display: grid;
+	gap: 0.5rem 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	& .form-check {
+		margin: 0;
+	}
+}
+.ad-check-hint {
+	display: block;
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+.ad-switches .form-check + .form-check {
+	margin-top: 0.6rem;
+}
+.ad-aud-form fieldset > legend.form-label {
+	float: none;
+	margin-bottom: 0.5rem;
+	font-size: 0.92rem;
+	line-height: 1.55;
+}
+.ad-send {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.ad-date {
+	max-width: 12rem;
+}
+.ad-time {
+	max-width: 9rem;
+}
+
+/* Comments are chat bubbles beside avatars; one just posted flashes the
+   hue once before settling. */
+.ad-comments {
+	display: grid;
+	gap: 1.1rem;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+.ad-comment {
+	display: flex;
+	gap: 0.75rem;
+
+	&.is-new .ad-comment-text {
+		animation: ad-arrive-bubble 1.6s ease-out;
+	}
+}
+.ad-comment-body {
+	flex: 1;
+	min-width: 0;
+}
+.ad-comment-head {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0 0 0.3rem;
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+.ad-comment-name {
+	font-size: var(--ad-fs-body);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ad-comment-re {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+.ad-comment-text {
+	margin: 0;
+	padding: 0.6rem 0.85rem;
+	border-radius: 4px 14px 14px 14px;
+	font-size: var(--ad-fs-body);
+	line-height: 1.55;
+	white-space: pre-line;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+@keyframes ad-arrive-bubble {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+	to {
+		background: var(--basalt-plane-alt);
+	}
+}
+.ad-comment-actions {
+	display: flex;
+	gap: 0.9rem;
+	margin-top: 0.3rem;
+	padding-left: 0.2rem;
+}
+@media (prefers-reduced-motion: reduce) {
+	.ad-comment.is-new .ad-comment-text {
+		animation: none;
+	}
+}
+
+/* The composer: who you are answering, the text box, then a hint and the
+   send button on one row. */
+.ad-reply-to {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	font-size: var(--ad-fs-small);
+	color: var(--basalt-copy);
+
+	& .btn {
+		margin-left: 0.25rem;
+	}
+}
+.ad-reply textarea {
+	min-height: 4.5rem;
+	font-size: var(--ad-fs-body);
+	resize: vertical;
+}
+.ad-reply-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.75rem;
+
+	& .ad-note {
+		margin: 0;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* History is a timeline: round icons joined by a thin rail, cycling
+   through three series tints. */
+.ad-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ad-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--ad-line);
+	}
+}
+.ad-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: color-mix(in srgb, var(--basalt-series-1) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-1) 12%, var(--basalt-plane));
+}
+.ad-feed-item:nth-child(3n + 2) .ad-feed-icon {
+	color: color-mix(in srgb, var(--basalt-series-3) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-3) 14%, var(--basalt-plane));
+}
+.ad-feed-item:nth-child(3n) .ad-feed-icon {
+	color: color-mix(in srgb, var(--basalt-series-5) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-5) 14%, var(--basalt-plane));
+}
+.ad-feed-text {
+	margin: 0;
+	padding-top: 0.3rem;
+	font-size: var(--ad-fs-body);
+	line-height: 1.45;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 650;
+	}
+}
+.ad-feed-when {
+	margin: 0.2rem 0 0;
+	font-size: var(--ad-fs-small);
+	color: var(--ad-quiet);
+}
+
+/* On paper the controls drop out and the ring and bars print already
+   drawn. */
+@media print {
+	.ad-head .basalt-hero-actions,
+	.ad-card-head > .btn,
+	.ad-reply {
+		display: none;
+	}
+	.ad-ring-arc,
+	.ad-bar > span {
+		transition: none;
+	}
+}

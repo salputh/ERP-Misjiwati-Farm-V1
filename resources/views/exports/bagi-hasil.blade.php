@@ -141,7 +141,7 @@
 </head>
 <body>
     <h1>Bagi Hasil {{ $kandang->nama }}</h1>
-    <p class="sub">Misjiwati Farm / K0242 · {{ $periode->nama }} · Periode siklus {{ $periode->nomor_siklus ?? '-' }} · Inti {{ $periode->inti }}</p>
+    <p class="sub">Misjiwati Farm / K0242 · {{ $periode->nama }} · Periode siklus {{ $periode->kandangPeriode->firstWhere("kandang_id", $kandang->id)?->nomor_siklus ?? "-" }} · Inti {{ $periode->inti }}</p>
 
     <table class="info">
         <tr>

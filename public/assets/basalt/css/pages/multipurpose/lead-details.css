@@ -1,0 +1,1195 @@
+/* Lead Details (lead-details.html): the page's own pieces under .ld-*.
+   The hero header, cards, segmented controls, choice cards, segment bars,
+   dialogs and toasts come from basalt.css; this sheet arranges them and adds
+   the quote, the next-step card, the stage track, the fit ring, the fact
+   rows, the trial chart and the conversation thread. Colors are always a
+   --basalt-* token passed through color-mix(), so every palette and both
+   modes keep their own hues. The dialogs live outside the page container and
+   therefore repeat the two mixed tokens. */
+
+.ld-page,
+.ld-modal {
+	/* Quiet text is the muted token leaned toward the body color, which keeps
+     it above 4.5:1 on the paler palettes; links get the same treatment
+     because the bare primary falls short on a few of them. */
+	--ld-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--ld-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+
+/* Each stage borrows one hue from the theme ramp, matching the Leads list. */
+.ld-tone-new {
+	--ld-tone: var(--basalt-hue);
+}
+.ld-tone-contacted {
+	--ld-tone: var(--basalt-series-2);
+}
+.ld-tone-qualified {
+	--ld-tone: var(--basalt-series-4);
+}
+.ld-tone-trial {
+	--ld-tone: var(--basalt-series-8);
+}
+.ld-tone-converted {
+	--ld-tone: var(--basalt-success);
+}
+.ld-tone-notnow {
+	--ld-tone: var(--basalt-copy-muted);
+}
+
+/* Second lines, links and form fields shared by every card and dialog. */
+.ld-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--ld-quiet);
+}
+.ld-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--ld-link);
+
+	&:hover,
+	&:focus-visible {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+.ld-page .form-control,
+.ld-page .form-select,
+.ld-modal .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.ld-page .form-control::placeholder {
+	color: var(--ld-quiet);
+	opacity: 1;
+}
+.ld-page .btn,
+.ld-modal .btn {
+	white-space: nowrap;
+}
+
+/* Hero header: the back link and person on the left, the stage pill under
+   them, the main button and the "…" menu on the right. */
+.basalt-hero-detail.ld-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.ld-head .basalt-hero-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.ld-who {
+	display: flex;
+	gap: 1.1rem;
+	align-items: center;
+	min-width: 0;
+
+	& > .basalt-avatar {
+		flex: none;
+	}
+}
+.ld-who-text {
+	min-width: 0;
+}
+
+/* The avatar takes the person's hue at full strength, as on Users: dark
+   initials on a mid tint by day, light initials on a deep one by night. */
+.ld-av {
+	font-weight: 700;
+	color: color-mix(in srgb, var(--avatar-tone) 26%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--avatar-tone) 58%, var(--basalt-plane));
+	background-image: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--avatar-tone) 44%, var(--basalt-plane)),
+		transparent 55%
+	);
+	box-shadow: 0 0 0 3px var(--basalt-plane);
+
+	/* Flat mode drops the sheen and keeps the plain tint. */
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+
+	[data-bs-theme="dark"] & {
+		color: var(--basalt-copy);
+		background-color: color-mix(in srgb, var(--avatar-tone) 36%, var(--basalt-plane));
+		background-image: linear-gradient(
+			135deg,
+			transparent 28%,
+			color-mix(in srgb, var(--avatar-tone) 20%, var(--basalt-plane))
+		);
+	}
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+}
+.ld-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.65rem;
+
+	&:empty {
+		display: none;
+	}
+	& .basalt-status {
+		padding: 0.2rem 0.65rem;
+		font-size: 0.77rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.ld-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.ld-who {
+		gap: 1rem;
+		align-items: flex-start;
+
+		& .basalt-avatar-xl {
+			width: 56px;
+			height: 56px;
+			font-size: 1.2rem;
+		}
+	}
+}
+
+/* The stage pill: a tint of the stage hue with a solid dot in front. */
+.ld-stage {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--ld-tone) 40%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--ld-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--ld-tone);
+	}
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--ld-tone) 28%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--ld-tone) 22%, var(--basalt-plane));
+	}
+}
+
+/* The "…" menu: icons get breathing room and Delete reads as a warning. */
+.ld-page .dropdown-item {
+	& .bi {
+		margin-right: 0.6rem;
+	}
+	&.ld-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+	&.ld-danger-item:hover,
+	&.ld-danger-item:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* The card grid. Under 1200px everything stacks in reading order. From
+   1200px cards pair up with the stage track and the trial chart across the
+   full width. From 1400px the grid has six tracks: the message takes four
+   beside the next step, fit, needs and trial use split the row in three, and
+   the conversation takes four beside the details. Without trial activity the
+   trial card is gone and fit and needs take three tracks each. The rows end
+   level because every card stretches. */
+.ld-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.ld-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.ld-span-3,
+	.ld-trial {
+		grid-column: 1 / -1;
+	}
+}
+@media (min-width: 1400px) {
+	.ld-grid {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+	.ld-card {
+		grid-column: span 2;
+	}
+	.ld-grid .ld-span-2 {
+		grid-column: span 4;
+	}
+	.ld-grid .ld-span-3 {
+		grid-column: 1 / -1;
+	}
+	.ld-grid-no-trial .ld-half {
+		grid-column: span 3;
+	}
+}
+
+/* Cards: the message and trial cards push their last block to the bottom
+   so a row's cards end level without a gap inside. */
+.ld-card {
+	min-width: 0;
+	margin: 0;
+}
+.ld-ask > .card-body,
+.ld-trial > .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.ld-card > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.ld-card > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.ld-card-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.ld-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ld-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--ld-quiet);
+}
+
+/* What they asked: their message as a tinted quote with a short bar set in
+   from the corners, then the source chip and the ways to reach them. */
+.ld-quote {
+	position: relative;
+	margin: 1.5rem 0 0;
+	padding: 1.25rem 1.5rem 1.25rem 1.75rem;
+	border-radius: 14px;
+	font-size: 1.1rem;
+	line-height: 1.55;
+	text-wrap: pretty;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-series-1) 7%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.1rem;
+		bottom: 1.1rem;
+		left: 0.75rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--basalt-series-1);
+	}
+}
+.ld-reach {
+	display: flex;
+	gap: 0.75rem 1.75rem;
+	flex-wrap: wrap;
+	margin: auto 0 0;
+	padding: 1.5rem 0 0;
+	font-size: 0.875rem;
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.5rem;
+		align-items: center;
+		min-width: 0;
+		color: var(--basalt-copy-body);
+	}
+	& .bi {
+		color: var(--ld-quiet);
+	}
+	& a {
+		overflow-wrap: anywhere;
+	}
+	& .ld-source .bi {
+		color: inherit;
+	}
+}
+.ld-source {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.1rem 0.6rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: color-mix(in srgb, var(--basalt-series-3) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-3) 14%, var(--basalt-plane));
+}
+
+/* Next step: the card is washed in the stage hue and carries the same inset
+   bar as the quote. Inside sit the trial clock, the planned task and the
+   plan form, one at a time. */
+.ld-next {
+	position: relative;
+	border-color: color-mix(in srgb, var(--ld-tone) 30%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--ld-tone) 6%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.25rem;
+		bottom: 1.25rem;
+		left: 0.65rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--ld-tone);
+	}
+}
+.ld-clock {
+	margin-top: 1.1rem;
+
+	& .basalt-segments {
+		--segments-tone: var(--ld-tone);
+		gap: 0.2rem;
+	}
+}
+.ld-clock-line {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 0 0 0.6rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-size: 1.05rem;
+		color: var(--basalt-copy);
+	}
+}
+/* The planned step: what, with the two actions as small buttons at the
+   end of its line, and when under it. */
+.ld-task {
+	display: grid;
+	gap: 0.2rem 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	margin-top: 1.1rem;
+	padding: 0.75rem 0.85rem;
+	border: 1px solid color-mix(in srgb, var(--ld-tone) 22%, var(--basalt-edge));
+	border-radius: 12px;
+	background: var(--basalt-plane);
+}
+.ld-task-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--ld-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ld-tone) 16%, var(--basalt-plane));
+}
+/* The text's two lines become the grid's two rows: what beside the
+   icon and the actions, when under them across the full width. */
+.ld-task-text {
+	display: contents;
+}
+.ld-task-what {
+	grid-row: 1;
+	grid-column: 2;
+	margin: 0;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ld-task-when {
+	grid-row: 2;
+	grid-column: 1 / -1;
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	color: var(--ld-quiet);
+}
+.ld-task-actions {
+	display: flex;
+	grid-row: 1;
+	grid-column: 3;
+	gap: 0.4rem;
+}
+.ld-next-none {
+	margin: 1.5rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.ld-next-cta {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.5rem;
+}
+/* The step form fits in the room the clock and the step take, so the
+   card beside it keeps its height while the step is being changed; the
+   card's one-line description steps aside while it is open. */
+.ld-next:has(.ld-plan:not([hidden])) .ld-card-desc {
+	display: none;
+}
+.ld-plan {
+	margin-top: 1.1rem;
+
+	&[hidden] {
+		display: none;
+	}
+	& .form-label {
+		margin-bottom: 0.3rem;
+		font-size: 0.85rem;
+	}
+	& .ld-field + .ld-field {
+		margin-top: 0.75rem;
+	}
+	& .ld-form-foot {
+		margin-top: 0.9rem;
+	}
+}
+
+/* Fields inside the in-place forms, in cards and dialogs alike. */
+.ld-field + .ld-field {
+	margin-top: 1.25rem;
+}
+.ld-field.row {
+	--bs-gutter-y: 0;
+}
+.ld-page fieldset,
+.ld-modal fieldset {
+	min-width: 0;
+	margin-left: 0;
+	margin-right: 0;
+	padding-left: 0;
+	padding-right: 0;
+	border: 0;
+}
+.ld-page legend.form-label,
+.ld-modal legend.form-label {
+	float: none;
+	width: auto;
+	font-size: 0.92rem;
+}
+.ld-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+}
+.ld-seats .form-control {
+	max-width: 8rem;
+}
+
+/* Where it stands: one band across the top, the five steps centered with
+   a thick rail from marker to marker. A finished stretch fades from its
+   stage's hue into the next one's, and the current step is larger, with a
+   soft halo and the day count above it. Under 768px the track turns
+   vertical. */
+.ld-journey > .card-body {
+	padding-top: 3.25rem;
+	padding-bottom: 1.75rem;
+}
+.ld-steps {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ld-step {
+	--ld-next: var(--ld-tone);
+	--ld-trail-from: scaleX(0);
+	--ld-trail-origin: left;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+	padding: 0 0.5rem;
+	text-align: center;
+
+	&:not(:last-child)::after {
+		content: "";
+		position: absolute;
+		top: calc(1.25rem - 2px);
+		right: calc(-50% + 1.6rem);
+		left: calc(50% + 1.6rem);
+		height: 4px;
+		border-radius: 4px;
+		background: var(--basalt-edge);
+	}
+	&.is-done:not(:last-child)::after {
+		background: linear-gradient(90deg, var(--ld-tone), var(--ld-next));
+	}
+	/* Flat mode: a finished stretch keeps its own step's color. */
+	:root[data-basalt-gradients="off"] &.is-done:not(:last-child)::after {
+		background: var(--ld-tone);
+	}
+	/* A finished stretch grows out of its marker the first time the steps
+	   are on screen, each one a beat behind the one before. */
+	.ld-steps.is-waiting &.is-done:not(:last-child)::after {
+		transform: var(--ld-trail-from);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.ld-steps.is-drawing &.is-done:not(:last-child)::after {
+			transform-origin: var(--ld-trail-origin);
+			animation: ld-trail-grow 600ms ease-out calc(var(--ld-trail-at, 0) * 300ms) both;
+		}
+	}
+	&.is-done .ld-step-marker {
+		font-size: 1rem;
+		color: var(--basalt-plane);
+		background: var(--ld-tone);
+	}
+	&.is-now .ld-step-marker {
+		width: 2.5rem;
+		height: 2.5rem;
+		font-size: 0.95rem;
+		color: color-mix(in srgb, var(--ld-tone) 45%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--ld-tone) 20%, var(--basalt-plane));
+		box-shadow: 0 0 0 6px color-mix(in srgb, var(--ld-tone) 14%, transparent);
+		animation: ld-halo 2.4s ease-in-out infinite;
+	}
+	&.is-todo .ld-step-label {
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+	& .ld-sub {
+		line-height: 1.45;
+	}
+}
+/* Each finished stretch fades into the color of the step it leads to. */
+.ld-step:has(+ .ld-tone-contacted) {
+	--ld-next: var(--basalt-series-2);
+}
+.ld-step:has(+ .ld-tone-qualified) {
+	--ld-next: var(--basalt-series-4);
+}
+.ld-step:has(+ .ld-tone-trial) {
+	--ld-next: var(--basalt-series-8);
+}
+.ld-step:has(+ .ld-tone-converted) {
+	--ld-next: var(--basalt-success);
+}
+@keyframes ld-trail-grow {
+	from {
+		transform: var(--ld-trail-from);
+	}
+}
+@keyframes ld-halo {
+	50% {
+		box-shadow: 0 0 0 10px color-mix(in srgb, var(--ld-tone) 8%, transparent);
+	}
+}
+.ld-step-marker {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	margin-block: 0;
+	border: 4px solid var(--basalt-plane);
+	border-radius: 50%;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+}
+/* The day count rides above the current step without moving the rail. */
+.ld-step-day {
+	position: absolute;
+	bottom: calc(100% + 0.6rem);
+	left: 50%;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--ld-tone) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ld-tone) 16%, var(--basalt-plane));
+	transform: translateX(-50%);
+}
+.ld-step-label {
+	display: block;
+	margin-top: 0.7rem;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+@media (max-width: 767.98px) {
+	.ld-steps {
+		gap: 0;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.ld-step {
+		--ld-trail-from: scaleY(0);
+		--ld-trail-origin: top;
+		display: grid;
+		column-gap: 0.9rem;
+		grid-template-columns: 2.5rem minmax(0, 1fr);
+		align-items: start;
+		padding: 0 0 1.25rem;
+		text-align: left;
+
+		&:last-child {
+			padding-bottom: 0;
+		}
+		&:not(:last-child)::after {
+			top: 2.6rem;
+			right: auto;
+			bottom: 0.1rem;
+			left: calc(1.25rem - 2px);
+			width: 4px;
+			height: auto;
+			background: var(--basalt-edge);
+		}
+		&.is-done:not(:last-child)::after {
+			background: linear-gradient(180deg, var(--ld-tone), var(--ld-next));
+		}
+		:root[data-basalt-gradients="off"] &.is-done:not(:last-child)::after {
+			background: var(--ld-tone);
+		}
+	}
+	.ld-step-marker {
+		grid-row: span 2;
+	}
+	.ld-step-label {
+		margin-top: 0.4rem;
+	}
+	.ld-step-day {
+		position: static;
+		grid-column: 2;
+		grid-row: 3;
+		justify-self: start;
+		margin-top: 0.3rem;
+		transform: none;
+	}
+}
+
+/* Fit: a ring that sweeps to the score, graded by color, with the reasons
+   listed under it as a ruled list. */
+.ld-fit {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 1.5rem;
+}
+.ld-fit-strong {
+	--ld-fit: var(--basalt-success);
+}
+.ld-fit-fair {
+	--ld-fit: var(--basalt-warning);
+}
+.ld-fit-weak {
+	--ld-fit: var(--basalt-copy-muted);
+}
+.ld-ring {
+	position: relative;
+	flex: none;
+	width: 5.5rem;
+	height: 5.5rem;
+
+	& svg {
+		transform: rotate(-90deg);
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+}
+.ld-ring-track {
+	fill: none;
+	stroke: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+	stroke-width: 9;
+}
+.ld-ring-value {
+	fill: none;
+	stroke: var(--ld-fit);
+	stroke-width: 9;
+	stroke-linecap: round;
+	transition: stroke-dashoffset 0.5s cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+.ld-ring-num {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	font-size: 1.5rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.ld-fit-word {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ld-fit-why {
+	margin: 0.2rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.ld-reasons {
+	margin: 1.5rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.ld-reason {
+	display: flex;
+	gap: 0.7rem;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	& > .bi {
+		flex: none;
+		margin-top: 0.05rem;
+		font-size: 1rem;
+	}
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.ld-reason-good > .bi {
+	color: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-copy));
+}
+.ld-reason-watch > .bi {
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+
+/* What they need: label and value rows, a total that stands out, and the
+   form that swaps in for them. */
+.ld-facts {
+	margin: 1.5rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.ld-fact {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 6rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+.ld-fact-label {
+	color: var(--ld-quiet);
+}
+.ld-fact-value {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ld-fact-total {
+	align-items: baseline;
+	padding-bottom: 0;
+
+	& .ld-fact-value {
+		font-size: 1.1rem;
+		font-weight: 750;
+	}
+}
+.ld-needs-form {
+	margin-top: 1.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.ld-addons {
+	display: flex;
+	gap: 0.4rem 1.5rem;
+	flex-wrap: wrap;
+	padding-top: 0.4rem;
+
+	& .form-check {
+		margin: 0;
+	}
+}
+.ld-optional {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--ld-quiet);
+}
+.ld-sum {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	margin: 1.5rem 0 0;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	& > .bi {
+		margin-top: 0.1rem;
+		color: var(--ld-quiet);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Trial use: two big figures, a legend, and the chart filling the rest of
+   the card. The canvas is capped because Chart.js starts it at 300px. */
+.ld-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 1.25rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.ld-legend-item {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+
+	&::before {
+		content: "";
+		width: 0.7rem;
+		height: 0.7rem;
+		border-radius: 3px;
+	}
+}
+.ld-legend-item-done::before {
+	background: var(--basalt-series-1);
+}
+.ld-legend-item-open::before {
+	background: var(--basalt-series-3);
+}
+.ld-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 13rem;
+	margin-top: 1rem;
+
+	& > canvas {
+		display: block;
+		max-width: 100%;
+	}
+}
+.ld-figs {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+	margin: 1.5rem 0 0;
+
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 400;
+		color: var(--ld-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.5rem;
+		font-weight: 750;
+		line-height: 1.2;
+		color: var(--basalt-copy);
+	}
+}
+.ld-figs-item {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column-reverse;
+}
+.ld-figs-item-jobs dd {
+	color: color-mix(in srgb, var(--basalt-series-1) 60%, var(--basalt-copy));
+}
+.ld-figs-item-signed dd {
+	color: color-mix(in srgb, var(--basalt-series-3) 45%, var(--basalt-copy));
+}
+
+/* Conversation: the compose box on top, then the thread as a rail of icons
+   with the newest entry popping in. */
+.ld-compose {
+	margin-top: 1.5rem;
+	padding: 1.1rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+
+	& .basalt-segmented {
+		margin-bottom: 0.85rem;
+	}
+	& .ld-form-foot {
+		margin-top: 0.85rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.ld-compose {
+		padding: 1rem;
+	}
+}
+.ld-talk {
+	margin: 1.5rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+/* Opens the earlier entries; it sits in the card's head so the list
+   adds no row of its own. */
+.ld-talk-more {
+	flex: none;
+	padding: 0;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.ld-msg {
+	position: relative;
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr);
+	padding-bottom: 1.5rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.6rem;
+		bottom: 0.4rem;
+		left: calc(1.125rem - 1px);
+		width: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+}
+.ld-msg-icon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	color: color-mix(in srgb, var(--ld-tone, var(--basalt-copy-muted)) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ld-tone, var(--basalt-copy-muted)) 15%, var(--basalt-plane));
+}
+.ld-msg-head {
+	margin: 0.4rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+/* A message body shows two lines until Read more opens it (.basalt-clamp).
+   The room above and below the text is a transparent border, not padding,
+   so the clip stops at the second line instead of showing half a third. */
+.ld-msg-body {
+	--basalt-clamp-lines: 2;
+	margin: 0.6rem 0 0;
+	padding: 0 1rem;
+	border-block: 0.8rem solid transparent;
+	border-radius: 4px 12px 12px 12px;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	white-space: pre-line;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.ld-msg-theirs .ld-msg-body {
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-series-1) 8%, var(--basalt-plane));
+}
+.ld-msg-when {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--ld-quiet);
+}
+.ld-msg-fresh .ld-msg-icon {
+	animation: ld-pop 0.5s ease;
+}
+@keyframes ld-pop {
+	from {
+		transform: scale(0.6);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+
+/* Details: term and value rows, the email with its copy button kept on one
+   line, the form that replaces the rows, and the owner select under a rule. */
+.ld-dl {
+	margin: 1.5rem 0 0;
+
+	&[hidden] {
+		display: none;
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--ld-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& dd .ld-email {
+		overflow-wrap: normal;
+	}
+}
+.ld-dl-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+@media (max-width: 399.98px) {
+	.ld-dl-row {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.ld-email-end {
+	white-space: nowrap;
+}
+.ld-copy {
+	margin-left: 0.1rem;
+	padding: 0.1rem 0.3rem;
+	vertical-align: baseline;
+	color: var(--ld-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.ld-details-form {
+	margin-top: 1.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.ld-owner {
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .form-select {
+		max-width: 15rem;
+	}
+}
+
+/* Dialogs: stacked form rows (a Bootstrap row already pulls itself up by
+   its gutter), the three plan cards, and the reason chips. */
+.ld-form-row + .ld-form-row {
+	margin-top: 1.25rem;
+}
+.ld-form-row + .row.ld-form-row {
+	margin-top: calc(1.25rem - var(--bs-gutter-y));
+}
+.ld-plans {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 575.98px) {
+	.ld-plans {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.ld-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.ld-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.3rem 0.8rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	.btn-check:checked + & {
+		border-color: var(--basalt-hue-border);
+		color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+	}
+	.btn-check:focus-visible:not(:checked) + & {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ld-ring-value {
+		transition: none;
+	}
+	.ld-step.is-now .ld-step-marker {
+		animation: none;
+	}
+	.ld-msg-fresh .ld-msg-icon {
+		animation: none;
+	}
+}

@@ -1,0 +1,1006 @@
+/**
+ * Responsive tables page (tables-on-mobile.html), everything under .rt-*.
+ * Each table lives inside an .rt-frame that is a CSS size container, so a
+ * pattern answers to the width of its own frame rather than the window:
+ * the same markup behaves in a full row, a half row, a real phone and the
+ * "Phone width" preview. Colors come from the --basalt-* tokens only.
+ */
+
+/* Quiet text is the muted token pulled a little toward the body color, so
+   it clears 4.5:1 on the lighter palettes as well. */
+.rt-page {
+	--rt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* Pattern chips above the grid, with the count on its own line beneath. */
+.rt-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+.rt-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.rt-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+/* Every small control on the page shares one focus ring. */
+.rt-chip:focus-visible,
+.rt-seg-btn:focus-visible,
+.rt-sort:focus-visible,
+.rt-expand:focus-visible,
+.rt-edit:focus-visible,
+.rt-scroll:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.rt-chips .rt-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.rt-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--rt-quiet);
+}
+
+/* Twelve grid columns. Cards pair up from desktop width; under that each
+   one takes the row. A filtered view stretches the odd card out. */
+.rt-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.rt-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.rt-card {
+		grid-column: span 6;
+	}
+	.rt-card-full {
+		grid-column: span 12;
+	}
+	.rt-grid.is-filtered .rt-card-full {
+		grid-column: span 12;
+	}
+	.rt-grid.is-filtered .rt-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A card is a column with its frame pushed to fill the height. */
+.rt-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.rt-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+/* The kind pill and the phone toggle are drawn above the title although
+   they follow it in the markup, so the title is read first. */
+.rt-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: stretch;
+	margin-bottom: 1.5rem;
+}
+.rt-card-meta {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+}
+.rt-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rt-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rt-quiet);
+}
+.rt-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--rt-quiet);
+}
+
+/* The "Phone width" toggle. Pressed, it reads like a pressed chip; on an
+   actual phone it has no job, so it disappears. */
+.rt-phone {
+	--bs-btn-padding-y: 0.2rem;
+	--bs-btn-padding-x: 0.65rem;
+	--bs-btn-font-size: 0.75rem;
+}
+.rt-phone[aria-pressed="true"],
+.rt-phone[aria-pressed="true"]:hover {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.rt-phone {
+		display: none;
+	}
+}
+
+/* The frame is the size container every pattern keys off. The preview
+   narrows it to a phone and draws a dashed outline around it. */
+.rt-frame {
+	container: rt-frame / inline-size;
+	width: 100%;
+	margin-inline: auto;
+	margin-bottom: auto;
+	transition: max-width 210ms ease;
+
+	&.is-phone {
+		max-width: 375px;
+		padding: 1rem;
+		border: 1px dashed var(--basalt-edge-strong);
+		border-radius: 14px;
+	}
+}
+
+/* A line of quiet text and small controls above a table. */
+.rt-note {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+
+	& .rt-chip {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.77rem;
+	}
+}
+.rt-note-text {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--rt-quiet);
+}
+
+/* The table skin on top of Bootstrap's .table: theme colors, a firmer rule
+   under the header, and the template's one column-label style. */
+.rt-table {
+	--bs-table-bg: var(--basalt-plane);
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	--bs-table-border-color: var(--basalt-edge);
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.85rem 0.75rem;
+	}
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--rt-quiet);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+	& tbody th {
+		font-weight: inherit;
+	}
+}
+.rt-strong {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rt-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--rt-quiet);
+}
+.rt-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rt-scroll {
+	border-radius: 10px;
+}
+
+/* A sortable header turns the whole label into a button; in a right-aligned
+   column the arrow leads so the label lines up with the figures. */
+.rt-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	& .bi {
+		font-size: 0.7rem;
+		opacity: 0.5;
+	}
+}
+th[aria-sort="ascending"] .rt-sort,
+th[aria-sort="descending"] .rt-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort="ascending"] .rt-sort .bi,
+th[aria-sort="descending"] .rt-sort .bi {
+	opacity: 1;
+}
+.text-end > .rt-sort {
+	flex-direction: row-reverse;
+}
+
+/* Status pills: a soft tint of the tone behind a dot, with the text pulled
+   toward the body color so it reads on the tint in every palette. */
+.rt-pill {
+	--rt-tone: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--rt-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rt-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--rt-tone);
+	}
+}
+.rt-pill-primary {
+	--rt-tone: var(--basalt-hue);
+}
+.rt-pill-success {
+	--rt-tone: var(--basalt-success);
+}
+.rt-pill-warning {
+	--rt-tone: var(--basalt-warning);
+}
+.rt-pill-danger {
+	--rt-tone: var(--basalt-danger);
+}
+.rt-pill-info {
+	--rt-tone: var(--basalt-flare);
+}
+.rt-pill-neutral {
+	--rt-tone: var(--basalt-copy-muted);
+}
+
+/* Checkbox edges need 3:1 against the card to read as a control; checked
+   and half-checked boxes take the palette hue. */
+.rt-page .form-check-input {
+	border-color: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+}
+.rt-page .form-check-input:checked,
+.rt-page .form-check-input:indeterminate {
+	border-color: var(--basalt-hue);
+	background-color: var(--basalt-hue);
+}
+.rt-check {
+	width: 2.5rem;
+
+	& .form-check-input {
+		margin: 0;
+		cursor: pointer;
+	}
+}
+
+/* 1. Stack to cards. The toolbar holds a search box, a status menu and a
+   sort menu that only appears once the rows have become cards. */
+.rt-tools {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.rt-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 20rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--rt-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.rt-select {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 9rem;
+}
+.rt-page .form-control,
+.rt-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.rt-page .form-control:focus,
+.rt-page .form-select:focus-visible {
+	border-color: var(--basalt-hue);
+}
+.rt-page .form-control::placeholder {
+	color: var(--rt-quiet);
+	opacity: 1;
+}
+.rt-stack-sort {
+	display: none;
+}
+
+/* The bulk bar shows up once a row is ticked. */
+.rt-bulk {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+	padding: 0.6rem 0.6rem 0.6rem 1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn {
+		--bs-btn-bg: var(--basalt-plane);
+	}
+}
+.rt-bulk-count {
+	margin: 0 auto 0 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rt-table tr.is-selected > * {
+	--bs-table-bg-state: var(--basalt-wash);
+}
+
+.rt-empty {
+	padding: 2.5rem 1rem;
+	text-align: center;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.rt-empty-title {
+	margin: 0 0 0.25rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rt-empty-text {
+	margin: 0 0 1rem;
+	font-size: 0.85rem;
+	color: var(--rt-quiet);
+}
+
+/* The footer puts the range on the left and the pager on the right. */
+.rt-pager {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+}
+.rt-pager-range {
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--rt-quiet);
+}
+
+/* The pager: bordered squares with chevrons at each end, and the current
+   page filled with the text color like a pressed chip. */
+.rt-page .pagination {
+	--bs-pagination-color: var(--basalt-copy-body);
+	--bs-pagination-bg: var(--basalt-plane);
+	--bs-pagination-border-color: var(--basalt-edge-strong);
+	--bs-pagination-hover-color: var(--basalt-copy);
+	--bs-pagination-hover-bg: var(--basalt-wash);
+	--bs-pagination-hover-border-color: var(--basalt-edge-strong);
+	--bs-pagination-focus-color: var(--basalt-copy);
+	--bs-pagination-focus-bg: var(--basalt-wash);
+	--bs-pagination-focus-box-shadow: 0 0 0 0.2rem var(--basalt-hue-border);
+	--bs-pagination-active-color: var(--basalt-plane);
+	--bs-pagination-active-bg: var(--basalt-copy);
+	--bs-pagination-active-border-color: var(--basalt-copy);
+	--bs-pagination-disabled-color: var(--rt-quiet);
+	--bs-pagination-disabled-bg: var(--basalt-plane);
+	--bs-pagination-disabled-border-color: var(--basalt-edge);
+	--bs-pagination-border-radius: 8px;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& .page-link {
+		min-width: 2rem;
+		margin-left: 0;
+		border-radius: 8px;
+		font-weight: 600;
+		text-align: center;
+		color: var(--bs-pagination-color);
+	}
+	& .page-link:hover {
+		color: var(--bs-pagination-hover-color);
+	}
+	& .active > .page-link {
+		border-color: var(--bs-pagination-active-border-color);
+		color: var(--bs-pagination-active-color);
+		background-color: var(--bs-pagination-active-bg);
+	}
+	& .disabled > .page-link {
+		color: var(--bs-pagination-disabled-color);
+	}
+}
+
+/* Under 760px of frame the rows turn into cards before the columns get
+   cramped: who and status on the first line, what was ordered next, then
+   one muted line of facts (order, time, total). */
+@container rt-frame (max-width: 760px) {
+	.rt-stack-sort {
+		display: block;
+	}
+	.rt-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.rt-tools .rt-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	.rt-stack thead {
+		display: none;
+	}
+	.rt-stack,
+	.rt-stack tbody {
+		display: block;
+	}
+	.rt-stack tbody tr {
+		position: relative;
+		display: flex;
+		gap: 0.5rem 0.75rem;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		margin-bottom: 0.75rem;
+		padding: 1rem 1.1rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+	}
+	.rt-stack tbody tr[hidden] {
+		display: none;
+	}
+	.rt-stack tbody tr > td {
+		display: block;
+		padding: 0;
+		border: 0;
+		text-align: left;
+		background: none;
+		box-shadow: none;
+	}
+	.rt-stack tbody tr:hover,
+	.rt-stack tbody tr.is-selected {
+		background: var(--basalt-wash);
+	}
+	.rt-stack tbody tr > td.rt-check {
+		position: absolute;
+		top: 1rem;
+		right: 1.1rem;
+		width: auto;
+	}
+	.rt-stack tbody tr > [data-label="Customer"] {
+		flex: 1 1 0;
+		order: 1;
+		min-width: 0;
+	}
+	/* Status gets a fixed slot, so the badges start at the same x on every card. */
+	.rt-stack tbody tr > [data-label="Status"] {
+		flex: 0 0 5.75rem;
+		order: 2;
+		margin-right: 2rem;
+	}
+	.rt-stack tbody tr > [data-label="Items"] {
+		flex: 1 1 100%;
+		order: 3;
+		color: var(--basalt-copy);
+	}
+	.rt-stack tbody tr > [data-label="Order"],
+	.rt-stack tbody tr > [data-label="Placed"],
+	.rt-stack tbody tr > [data-label="Total"] {
+		flex: none;
+		order: 4;
+		font-size: 0.8rem;
+		color: var(--rt-quiet);
+	}
+	.rt-stack tbody tr > [data-label="Order"] .rt-mono {
+		font-size: inherit;
+		color: inherit;
+	}
+	.rt-stack tbody tr > [data-label="Placed"]::before,
+	.rt-stack tbody tr > [data-label="Total"]::before {
+		content: "\00B7";
+		margin-right: 0.75rem;
+	}
+	.rt-stack tbody tr.is-selected {
+		border-color: var(--basalt-hue);
+	}
+}
+/* Between a phone and a full table there is room for two cards per row. */
+@container rt-frame (min-width: 560px) and (max-width: 760px) {
+	.rt-stack tbody {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.rt-stack tbody tr {
+		margin: 0;
+	}
+}
+
+/* 2. Column priority: the lowest rank goes first as the frame narrows, and
+   "show every column" widens the table so it scrolls instead. */
+@container rt-frame (max-width: 720px) {
+	.rt-prio:not(.is-all) [data-rt-prio="3"] {
+		display: none;
+	}
+}
+@container rt-frame (max-width: 460px) {
+	.rt-prio:not(.is-all) [data-rt-prio="2"] {
+		display: none;
+	}
+}
+.rt-prio.is-all {
+	min-width: 40rem;
+}
+
+/* 3. Expandable rows: a chevron button in a slim first column, and a
+   detail row on the alternate surface beneath the open one. */
+.rt-toggle-cell {
+	width: 2.75rem;
+}
+.rt-table > :not(caption) > * > .rt-toggle-cell {
+	padding-right: 0;
+}
+.rt-expand {
+	display: inline-grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	& .bi {
+		font-size: 0.75rem;
+		transition: transform 170ms ease;
+	}
+	&[aria-expanded="true"] .bi {
+		transform: rotate(90deg);
+	}
+}
+.rt-expandable tr.is-open > * {
+	border-bottom-color: transparent;
+}
+.rt-detail > td {
+	--bs-table-bg: var(--basalt-plane-alt);
+}
+.rt-table > :not(caption) > .rt-detail > td {
+	padding: 1rem 1.1rem 1.1rem 3.6rem;
+}
+.rt-facts {
+	display: grid;
+	gap: 0.9rem 1.5rem;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+	margin: 0;
+
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--rt-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--basalt-copy);
+	}
+}
+.rt-fold-only {
+	display: none;
+}
+@container rt-frame (max-width: 520px) {
+	.rt-expandable [data-rt-fold] {
+		display: none;
+	}
+	.rt-expandable .rt-fold-only {
+		display: block;
+	}
+	.rt-table > :not(caption) > .rt-detail > td {
+		padding-left: 1.1rem;
+	}
+}
+
+/* 4. Sticky column and header. The wrapper paints a fade on the right
+   while more columns wait off screen; the grid scrolls sideways only, with
+   no max-height, so the rows grow with the page. */
+.rt-shadow {
+	position: relative;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 2.5rem;
+		border-radius: 0 10px 10px 0;
+		background: linear-gradient(to left, color-mix(in srgb, var(--basalt-copy) 10%, transparent), transparent);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 170ms ease;
+	}
+	&.has-more::after {
+		opacity: 1;
+	}
+}
+.rt-scroll-tall {
+	border: 1px solid var(--basalt-edge);
+}
+.rt-sticky-table {
+	border-collapse: separate;
+	border-spacing: 0;
+
+	/* The pinned head throws a soft shadow onto the rows passing under it. */
+	& > thead > tr > th {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		background-color: var(--basalt-plane);
+		box-shadow:
+			inset 0 -1px 0 var(--basalt-edge-strong),
+			0 12px 24px -18px var(--basalt-scrim);
+	}
+	& .rt-sticky {
+		position: sticky;
+		left: 0;
+		z-index: 1;
+		min-width: 11rem;
+		border-right: 1px solid var(--basalt-edge);
+		white-space: nowrap;
+	}
+	& > thead > tr > th.rt-sticky {
+		z-index: 3;
+	}
+	& tbody th {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& td {
+		font-variant-numeric: tabular-nums;
+	}
+}
+/* Once scrolled, the pinned cells cast a shadow and keep the row's hover
+   tint by painting it as an inset shadow of their own. */
+.rt-shadow.is-scrolled .rt-sticky {
+	box-shadow: 6px 0 10px -6px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+}
+.rt-shadow.is-scrolled .rt-sticky-table > tbody .rt-sticky {
+	box-shadow:
+		inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg))),
+		6px 0 10px -6px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+}
+.rt-best {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rt-total {
+	border-left: 1px solid var(--basalt-edge);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rt-nudge {
+	display: flex;
+	gap: 0.3rem;
+}
+
+/* 5. Column pager: a strip with arrows that appears when the frame is too
+   narrow, and only the current column stays visible. */
+.rt-colpager {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+	padding: 0.4rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.rt-colpager-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rt-paged [data-rt-col]:not(.is-current) {
+	display: none;
+}
+
+/* 6. Compact rows: the density attribute tightens the padding and pulls
+   the second line up beside the name; auto does the same on its own in a
+   narrow frame. */
+.rt-density[data-density="compact"] > :not(caption) > * > * {
+	padding: 0.4rem 0.6rem;
+}
+.rt-density[data-density="compact"] .rt-sub {
+	display: inline;
+	margin: 0 0 0 0.4rem;
+}
+.rt-density[data-density="compact"] .rt-strong {
+	display: inline;
+}
+@container rt-frame (max-width: 560px) {
+	.rt-density[data-density="auto"] > :not(caption) > * > * {
+		padding: 0.4rem 0.6rem;
+	}
+}
+@container rt-frame (max-width: 440px) {
+	.rt-density .rt-reorder {
+		display: none;
+	}
+}
+/* The stock count is a dashed button until it is clicked, then a stepper. */
+.rt-edit {
+	min-width: 3.25rem;
+	padding: 0.2rem 0.5rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 6px;
+	font-weight: 600;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		border-style: solid;
+		background: var(--basalt-wash);
+	}
+}
+.rt-edit-stepper {
+	vertical-align: middle;
+}
+.rt-page input[type="number"] {
+	appearance: textfield;
+}
+.rt-page input[type="number"]::-webkit-outer-spin-button,
+.rt-page input[type="number"]::-webkit-inner-spin-button {
+	margin: 0;
+	-webkit-appearance: none;
+}
+.rt-reorder {
+	font-variant-numeric: tabular-nums;
+	color: var(--rt-quiet);
+}
+/* On a phone a stepper inside a cell takes a slimmer number box; the
+   counts here never pass three digits. */
+@media (max-width: 575.98px) {
+	.rt-page td .basalt-stepper {
+		gap: 0;
+	}
+	.rt-page td .basalt-stepper-input {
+		width: 2rem;
+	}
+}
+.rt-seg {
+	display: inline-flex;
+	gap: 0.2rem;
+	padding: 0.2rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+}
+.rt-seg-btn {
+	padding: 0.3rem 0.8rem;
+	border: 0;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&[aria-pressed="true"] {
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+
+/* 7. Fold columns: the marked columns disappear and their summary line
+   under the name takes over. */
+@container rt-frame (max-width: 700px) {
+	.rt-fold [data-rt-fold] {
+		display: none;
+	}
+	.rt-fold .rt-fold-only {
+		display: block;
+	}
+}
+.rt-fold tr[hidden] {
+	display: none;
+}
+
+/* The markup snippet at the foot of each card. */
+.rt-code {
+	margin-top: 1.5rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rt-chip,
+	.rt-code summary .bi,
+	.rt-expand .bi,
+	.rt-frame,
+	.rt-shadow::after {
+		transition: none;
+	}
+}
+@media print {
+	.rt-filter,
+	.rt-code,
+	.rt-phone,
+	.rt-pager {
+		display: none;
+	}
+	.rt-card.is-hidden {
+		display: block;
+	}
+}
+
+/* Bootstrap fades a disabled button, and on outline buttons uses a fixed
+   gray; both drop the label under 4.5:1. A readable muted label on a faint
+   fill says "not now" in every palette. Every table page carries this. */
+:root .rt-page .btn:disabled,
+:root .rt-page .btn.disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--bs-btn-disabled-bg: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	--bs-btn-disabled-border-color: var(--basalt-edge);
+	opacity: 1;
+}

@@ -140,11 +140,11 @@ class ProjectsTest extends TestCase
 
         Livewire::test(ProjectsPage::class)
             ->assertSeeHtml('href="'.route('project.show', $project).'"')
-            ->assertSeeHtml('media-ui--completed')
-            ->assertDontSeeHtml('userDatatable-header')
+            ->assertSeeHtml('project-kartu--completed')
+            ->assertDontSeeHtml('<table')
             ->call('pilihTampilan', 'list')
             ->assertSet('tampilan', 'list')
-            ->assertSeeHtml('userDatatable-header')
+            ->assertSeeHtml('<table')
             ->assertSee('Pasang jaring rak');
 
         $this->get(route('project.show', $project))

@@ -1,0 +1,1150 @@
+/*
+ * Styles for the promo codes screen (promo-codes.html), all under the
+ * .pc- prefix: the spotlight tickets, the code table, the two September
+ * cards, the drawer for one code and the add or edit dialog. Page header,
+ * tabs, status dots, selects, segmented switches, choice tiles, drawer and
+ * dialog frames, empty states and toasts come from the shared stylesheet.
+ */
+
+/* Page and overlay share four derived tones. The quiet gray leans toward
+   the body color so small text still clears 4.5:1 on light palettes and
+   on hovered rows. */
+.pc-page,
+.pc-layer {
+	--pc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--pc-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--pc-warn: color-mix(in srgb, var(--basalt-warning) 46%, var(--basalt-copy));
+	--pc-track: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+}
+
+/* Every kind of offer borrows one chart color, which its dot, ring arc and
+   ranking bar all pick up. */
+.pc-kind-percent {
+	--pc-tone: var(--basalt-series-1);
+}
+.pc-kind-shipping {
+	--pc-tone: var(--basalt-series-3);
+}
+.pc-kind-addon {
+	--pc-tone: var(--basalt-series-5);
+}
+.pc-kind-amount {
+	--pc-tone: var(--basalt-series-2);
+}
+
+/* Inputs sit on the plain surface with the stronger edge, inside the page
+   and inside its panels alike. */
+.pc-page .form-control,
+.pc-page .form-select,
+.pc-layer .form-control,
+.pc-layer .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.pc-page .form-control::placeholder,
+.pc-layer .form-control::placeholder {
+	color: var(--pc-quiet);
+	opacity: 1;
+}
+
+/* Outline buttons keep a legible label on cards and panels, and no button
+   label ever wraps. */
+.pc-page .btn-outline-secondary,
+.pc-layer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+}
+.pc-page .btn,
+.pc-layer .btn {
+	white-space: nowrap;
+}
+
+/* A code reads as a little coupon wherever it appears: monospace on a pale
+   wash of its offer color, inside a dashed edge. */
+.pc-code {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.5rem;
+	border: 1px dashed color-mix(in srgb, var(--pc-tone, var(--basalt-hue)) 60%, var(--basalt-edge-strong));
+	border-radius: 6px;
+	font:
+		600 0.8rem/1.3 "Chivo Mono",
+		monospace;
+	letter-spacing: 0.03em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--pc-tone, var(--basalt-hue)) 10%, var(--basalt-plane));
+}
+button.pc-code {
+	cursor: pointer;
+
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The spotlight row holds three equal tickets side by side, or stacks
+   them when the row is narrow. */
+.pc-watch {
+	container: pc-watch / inline-size;
+	margin-bottom: 1.5rem;
+}
+.pc-watch-list {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@container pc-watch (min-width: 560px) {
+	.pc-watch-list {
+		gap: 1.25rem;
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+	}
+}
+.pc-watch-list > li {
+	container: pc-tk / inline-size;
+	min-width: 0;
+}
+
+/* Each ticket keeps the code and its reason on the left and the offer on
+   a stub past a dashed tear line. The mask, which only reads alpha, bites
+   a notch out of the top and bottom of that line. */
+.pc-tk {
+	--pc-stub: 5.75rem;
+	--pc-notch: 0.65rem;
+	display: flex;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 16px;
+	text-align: start;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--pc-tone) 11%, var(--basalt-plane));
+	mask:
+		radial-gradient(circle var(--pc-notch) at calc(100% - var(--pc-stub)) 0, transparent 97%, currentColor) top /
+			100% 51% no-repeat,
+		radial-gradient(circle var(--pc-notch) at calc(100% - var(--pc-stub)) 100%, transparent 97%, currentColor)
+			bottom / 100% 51% no-repeat;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		transform 170ms ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--pc-tone) 17%, var(--basalt-plane));
+	}
+	&:focus {
+		outline: none;
+	}
+	/* The mask would clip an outline, so focus is drawn as an inner ring. */
+	&:focus-visible {
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+}
+.pc-tk-main {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 1.35rem 1.25rem 1.35rem 1.5rem;
+}
+/* Stacked tickets trim their vertical padding. This sits ahead of the
+   fact line's own rule on purpose, so that rule's top padding still wins. */
+@container pc-watch (max-width: 559px) {
+	.pc-tk-main {
+		padding-top: 1.1rem;
+		padding-bottom: 1.1rem;
+	}
+	.pc-tk-fact {
+		padding-top: 0.6rem;
+	}
+}
+.pc-tk-label {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: color-mix(in srgb, var(--pc-tone) 70%, var(--basalt-copy));
+	}
+}
+.pc-tk-code {
+	margin-top: 0.6rem;
+	font:
+		700 1.2rem/1.2 "Chivo Mono",
+		monospace;
+	letter-spacing: 0.035em;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.pc-tk-offer {
+	margin-top: 0.3rem;
+	font-size: 0.85rem;
+	line-height: 1.45;
+	color: var(--basalt-copy-body);
+}
+.pc-tk-fact {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pc-tk-stub {
+	display: flex;
+	gap: 0.1rem;
+	flex: 0 0 var(--pc-stub);
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border-left: 2px dashed color-mix(in srgb, var(--pc-tone) 45%, var(--basalt-plane));
+	text-align: center;
+	background: color-mix(in srgb, var(--pc-tone) 20%, var(--basalt-plane));
+}
+.pc-tk-big {
+	font-size: 1.6rem;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.pc-tk-small {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-body);
+}
+/* Under 300px the tear runs across the bottom instead, and the offer
+   becomes a single strip. */
+@container pc-tk (max-width: 299px) {
+	.pc-tk {
+		--pc-strip: 3.25rem;
+		flex-direction: column;
+		mask:
+			radial-gradient(circle var(--pc-notch) at 0 calc(100% - var(--pc-strip)), transparent 97%, currentColor)
+				left / 51% 100% no-repeat,
+			radial-gradient(circle var(--pc-notch) at 100% calc(100% - var(--pc-strip)), transparent 97%, currentColor)
+				right / 51% 100% no-repeat;
+	}
+	.pc-tk-main {
+		flex: 1 1 auto;
+		padding-right: 1.5rem;
+	}
+	.pc-tk-stub {
+		gap: 0.4rem;
+		flex: 0 0 var(--pc-strip);
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: flex-start;
+		padding: 0 1.5rem;
+		border-left: 0;
+		border-top: 2px dashed color-mix(in srgb, var(--pc-tone) 45%, var(--basalt-plane));
+	}
+	.pc-tk-big {
+		font-size: 1.25rem;
+		line-height: var(--pc-strip);
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	.pc-tk:hover {
+		transform: translateY(-2px);
+	}
+}
+
+/* Cards share roomier padding, a column body and one heading style. */
+.pc-card.basalt-box .card-body {
+	padding: 1.75rem;
+}
+.pc-card .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.pc-card-head {
+	margin-bottom: 1.5rem;
+}
+.pc-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pc-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pc-quiet);
+}
+
+/* The tabs and the search row above the table. */
+.pc-tabs {
+	margin-bottom: 1.25rem;
+}
+.pc-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.pc-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--pc-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.pc-select {
+	width: auto;
+	min-width: 10rem;
+}
+.pc-toolbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--pc-quiet);
+}
+
+/* The table bleeds out by its cells' side padding, which lines the code
+   column up with the card title above. */
+.pc-scroll {
+	margin: 0 -0.75rem;
+}
+.pc-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		vertical-align: top;
+	}
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--pc-quiet);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& > tbody > tr[data-pc-id] {
+		cursor: pointer;
+	}
+	& > tbody > tr[data-pc-id]:hover > * {
+		--bs-table-bg-state: var(--basalt-wash);
+	}
+	& th:nth-child(1) {
+		width: 30%;
+	}
+	& th:nth-child(2) {
+		width: 24%;
+	}
+	& th:nth-child(3) {
+		width: 17%;
+	}
+	& th:nth-child(4) {
+		width: 11%;
+	}
+	& th:last-child {
+		width: 2.75rem;
+	}
+	& .basalt-empty-row > td {
+		padding: 0;
+	}
+}
+
+/* Cell text: a strong first line with a quiet note under it. */
+.pc-line {
+	margin: 0;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pc-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.4;
+	color: var(--pc-quiet);
+}
+.pc-row-code {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+
+	& .pc-sub {
+		white-space: normal;
+	}
+}
+
+/* A dot in the offer's color leads its value; the note below indents to
+   clear the dot. */
+.pc-offer {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+
+	&::before {
+		content: "";
+		flex-shrink: 0;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--pc-tone, var(--basalt-copy-muted));
+	}
+}
+.pc-row-offer .pc-sub {
+	padding-left: 1rem;
+}
+
+/* Use against the limit fills a thin meter, which warms once nine
+   tenths are gone. */
+.pc-meter {
+	width: 7.5rem;
+	max-width: 100%;
+	height: 6px;
+	margin: 0.4rem 0 0;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--pc-track);
+
+	& > span {
+		display: block;
+		width: var(--pc-used, 0%);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-hue);
+	}
+	&.is-full > span {
+		background: var(--basalt-warning);
+	}
+}
+.pc-meter-lg {
+	width: 100%;
+	height: 8px;
+	margin: 0.6rem 0 0;
+}
+.pc-meter[hidden] {
+	display: none;
+}
+.pc-used {
+	margin: 0;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pc-used-of {
+	font-weight: 400;
+	color: var(--pc-quiet);
+}
+
+/* Dates are plain weight; a code close to its end turns amber. */
+.pc-runs.is-soon,
+.pc-runs.is-soon .bi {
+	color: var(--pc-warn);
+}
+.pc-runs {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-weight: 400;
+}
+.pc-chev {
+	font-size: 0.85rem;
+	color: var(--pc-quiet);
+}
+
+/* Below 760px of table width each code turns into a two-line record:
+   code, offer and status first, then use and dates. Below 520px the offer
+   takes a line to itself. */
+.pc-card .tab-content {
+	container: pc-list / inline-size;
+}
+@container pc-list (max-width: 760px) {
+	.pc-scroll {
+		margin: 0;
+	}
+	.pc-more {
+		margin-inline: 0;
+		padding-inline: 0;
+	}
+	.pc-table,
+	.pc-table > tbody {
+		display: block;
+	}
+	.pc-table > thead {
+		display: none;
+	}
+	.pc-table > tbody > tr:not(.basalt-empty-row) {
+		display: grid;
+		gap: 1rem 1rem;
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 8.5rem;
+		grid-template-areas:
+			"code offer status"
+			"used used  runs";
+		align-items: start;
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.pc-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.pc-table > tbody > tr:not(.basalt-empty-row) > * {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+	.pc-table > tbody > tr > .pc-row-code {
+		grid-area: code;
+	}
+	.pc-table > tbody > tr > .pc-row-offer {
+		grid-area: offer;
+	}
+	.pc-table > tbody > tr > .pc-row-used {
+		grid-area: used;
+	}
+	.pc-table > tbody > tr > .pc-row-status {
+		grid-area: status;
+	}
+	.pc-table > tbody > tr > .pc-row-runs {
+		grid-area: runs;
+	}
+	.pc-table > tbody > tr > .pc-row-go {
+		display: none;
+	}
+	.pc-table > tbody > tr[data-pc-id]:hover {
+		background: var(--basalt-wash);
+	}
+}
+@container pc-list (max-width: 520px) {
+	.pc-table > tbody > tr:not(.basalt-empty-row) {
+		grid-template-columns: minmax(0, 1fr) 8.5rem;
+		grid-template-areas:
+			"code  status"
+			"offer offer"
+			"used  runs";
+	}
+}
+
+/* On a phone a code keeps its offer, its use and its dates; the notes
+   under the code and the offer step aside. */
+@media (max-width: 575.98px) {
+	.pc-table :is(.pc-row-code, .pc-row-offer) .pc-sub {
+		display: none;
+	}
+}
+
+/* Codes past the first batch wait behind one button under a rule. This
+   follows the narrow-table block, so its own margins and padding hold. */
+.pc-more {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0.25rem -0.75rem 0;
+	padding: 1.25rem 0.75rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.pc-more-text {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--pc-quiet);
+}
+
+/* The September cards stack until 1200px, then pair up at equal height. */
+.pc-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 1.5rem;
+}
+@media (min-width: 1200px) {
+	.pc-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.pc-grid > .pc-card {
+	height: 100%;
+}
+
+/* Ruled rows recur in three lists: the offer mix, the drawer's facts and
+   its customers. They share one rhythm and a hairline between rows. */
+.pc-mix-item,
+.pc-d-facts > div,
+.pc-who-item {
+	display: grid;
+	gap: 1rem;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.pc-mix-item:last-child,
+.pc-who-item:last-child {
+	border-bottom: 0;
+}
+
+/* The offer mix puts its ring beside the list from 576px, centered above
+   it on smaller screens. */
+.pc-mix {
+	display: grid;
+	gap: 1.5rem;
+	flex: 1 1 auto;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: center;
+	justify-items: center;
+}
+@media (min-width: 576px) {
+	.pc-mix {
+		gap: 2rem;
+		grid-template-columns: 13rem minmax(0, 1fr);
+		justify-items: stretch;
+	}
+}
+.pc-ring {
+	position: relative;
+	width: 13rem;
+	aspect-ratio: 1;
+
+	& svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+}
+.pc-ring-track {
+	fill: none;
+	stroke: var(--pc-track);
+}
+.pc-ring-seg {
+	fill: none;
+	stroke: var(--pc-tone);
+}
+.pc-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	pointer-events: none;
+}
+.pc-ring-value {
+	font-size: 1.6rem;
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.pc-ring-label {
+	margin-top: 0.2rem;
+	font-size: 0.77rem;
+	color: var(--pc-quiet);
+}
+.pc-mix-list {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pc-mix-item {
+	grid-template-columns: minmax(0, 1fr) auto 3rem;
+	align-items: baseline;
+}
+.pc-mix-name {
+	color: var(--basalt-copy);
+}
+.pc-mix-count {
+	font-weight: 600;
+	text-align: end;
+	color: var(--basalt-copy);
+}
+.pc-mix-share {
+	text-align: end;
+	color: var(--pc-quiet);
+}
+
+/* The discount ranking: each row is a button with a bar scaled to the
+   leader. Under 420px the bar drops below the code and amount. */
+.pc-cost {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pc-cost-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 8.75rem minmax(0, 1fr) 5.5rem;
+	align-items: center;
+	box-sizing: content-box;
+	width: 100%;
+	margin: 0 -0.5rem;
+	padding: 0.65rem 0.5rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: start;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+	transition: background-color 130ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.pc-cost-bar {
+	height: 0.65rem;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--pc-track);
+}
+.pc-cost-bar > span,
+.pc-who-bar > span {
+	display: block;
+	width: var(--pc-share, 0%);
+	height: 100%;
+	border-radius: inherit;
+}
+.pc-cost-bar > span {
+	background: var(--pc-tone);
+}
+.pc-cost-value {
+	line-height: 1.25;
+	text-align: end;
+}
+.pc-cost-money {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pc-cost-uses {
+	display: block;
+	font-size: 0.75rem;
+	color: var(--pc-quiet);
+}
+.pc-cost-more {
+	margin: 1rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--pc-quiet);
+}
+@media (max-width: 419.98px) {
+	.pc-cost-row {
+		gap: 0.5rem 1rem;
+		grid-template-columns: minmax(0, 1fr) 5.5rem;
+		grid-template-areas: "code value" "bar bar";
+	}
+	.pc-cost-row > .pc-code {
+		grid-area: code;
+		justify-self: start;
+	}
+	.pc-cost-bar {
+		grid-area: bar;
+	}
+	.pc-cost-value {
+		grid-area: value;
+	}
+}
+
+/* Meters and ranking bars ease to their new width when they change. */
+@media (prefers-reduced-motion: no-preference) {
+	.pc-meter > span,
+	.pc-cost-bar > span {
+		transition: width 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+
+/* The drawer is a little wider than the default. Its title is the code in
+   monospace, followed by a small copy button. */
+.pc-drawer {
+	--bs-offcanvas-width: 480px;
+
+	& .offcanvas-body {
+		padding-top: 1.5rem;
+		padding-bottom: 1.75rem;
+	}
+}
+.pc-drawer-titlerow {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	min-width: 0;
+}
+.pc-drawer-title {
+	margin: 0;
+	font-family: "Chivo Mono", monospace;
+	letter-spacing: 0.02em;
+	overflow-wrap: anywhere;
+}
+.pc-drawer-copy {
+	display: inline-grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border-radius: 8px;
+	color: var(--pc-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* The status pill heads the drawer with a sentence about its dates. */
+.pc-d-status {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.pc-d-status-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* Drawer sections are split by a rule and open with a small heading. */
+.pc-d-section {
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& + .pc-d-section {
+		margin-top: 1.5rem;
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+.pc-d-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pc-d-use {
+	margin: 0;
+	font-size: 0.95rem;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 700;
+	}
+}
+.pc-d-note {
+	margin: 0.75rem 0 0;
+	font-size: 0.85rem;
+	color: var(--pc-quiet);
+}
+
+/* Facts read as a two-column list with no rule above the first row or
+   below the last. */
+.pc-d-facts {
+	margin: 0;
+
+	& > div {
+		grid-template-columns: 9rem minmax(0, 1fr);
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--pc-quiet);
+	}
+	& dd {
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+}
+
+/* "Who used it" keeps its heading and switch on one line when they fit. */
+.pc-d-whohead {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+
+	& .pc-d-sub {
+		margin: 0;
+	}
+}
+.pc-who {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pc-who-item {
+	grid-template-columns: minmax(0, 1fr) 6rem 5.25rem;
+	align-items: center;
+}
+.pc-who-item-order {
+	grid-template-columns: minmax(0, 1fr) 5.25rem;
+}
+.pc-who-name {
+	min-width: 0;
+
+	& a {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--pc-link);
+	}
+	& a:hover {
+		text-decoration: underline;
+	}
+}
+.pc-who-meta {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--pc-quiet);
+}
+.pc-who-bar {
+	height: 6px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--pc-track);
+}
+.pc-who-bar > span {
+	background: var(--basalt-hue);
+}
+.pc-who-value {
+	font-weight: 600;
+	text-align: end;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pc-d-more {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--pc-quiet);
+
+	& a {
+		color: var(--pc-link);
+	}
+}
+.pc-d-note:empty,
+.pc-d-more:empty {
+	display: none;
+}
+/* A narrow drawer drops the customer bars and stacks each fact. */
+@container basalt-drawer (max-width: 380px) {
+	.pc-who-item {
+		grid-template-columns: minmax(0, 1fr) 5.25rem;
+	}
+	.pc-who-bar {
+		display: none;
+	}
+	.pc-d-facts > div {
+		gap: 0.2rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The dialog's form column is its own container, so its pairs and the
+   offer tiles respond to the space they get, not to the window. */
+.pc-form {
+	display: grid;
+	gap: 1.25rem;
+	container: pc-form / inline-size;
+	min-width: 0;
+
+	& fieldset {
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+}
+.pc-form .form-label,
+.pc-kinds > legend {
+	display: block;
+	margin-bottom: 0.4rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pc-kinds.basalt-choices {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@container pc-form (min-width: 440px) {
+	.pc-kinds.basalt-choices {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.pc-optional {
+	font-weight: 400;
+	color: var(--pc-quiet);
+}
+.pc-short {
+	max-width: 10rem;
+}
+
+/* The code field types in capitals and monospace; its placeholder stays
+   in the body face. */
+.pc-codefield {
+	max-width: 22rem;
+}
+.pc-codefield-input {
+	font-family: "Chivo Mono", monospace;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+
+	&::placeholder {
+		font-family: var(--bs-body-font-family);
+		letter-spacing: normal;
+		text-transform: none;
+	}
+}
+
+/* Fields go in pairs once the form is 420px wide. */
+.pc-pair {
+	display: grid;
+	gap: 1.25rem;
+}
+@container pc-form (min-width: 420px) {
+	.pc-pair {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.pc-pair > [hidden],
+.pc-pair[hidden] {
+	display: none;
+}
+.pc-once {
+	display: flex;
+	align-items: flex-end;
+	padding-bottom: 0.4rem;
+
+	& .form-check {
+		margin: 0;
+	}
+	& .form-check-label {
+		color: var(--basalt-copy);
+	}
+}
+/* Grouped fields show their message as soon as the group is flagged. */
+.input-group.is-invalid ~ .invalid-feedback {
+	display: block;
+}
+
+/* The checkout preview: the code on a dashed ticket, the offer, its
+   terms, and a worked saving under a rule when there is one. */
+.pc-preview {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.pc-ticket {
+	position: relative;
+	max-width: 100%;
+	margin: 0.25rem 0 1rem;
+	padding: 0.7rem 1.1rem;
+	border: 1.5px dashed color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-edge-strong));
+	border-radius: 10px;
+	font:
+		700 1.05rem/1.2 "Chivo Mono",
+		monospace;
+	letter-spacing: 0.05em;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&.is-empty {
+		font-weight: 600;
+		color: var(--pc-quiet);
+	}
+}
+.pc-preview-offer {
+	margin: 0 0 0.6rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pc-preview-terms {
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.4rem;
+		padding: 0.2rem 0;
+	}
+	& .bi {
+		color: var(--pc-quiet);
+	}
+}
+.pc-preview-example {
+	width: 100%;
+	margin: 0.9rem 0 0;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--pc-quiet);
+
+	&:empty {
+		display: none;
+	}
+}

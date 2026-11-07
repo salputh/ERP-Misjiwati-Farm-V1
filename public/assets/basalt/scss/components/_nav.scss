@@ -1,0 +1,480 @@
+/* A section takes its color from the palette's chart ramp by its place in
+   the menu, so a section added later is colored without a class of its own.
+   Everything inside reads the color from --basalt-section. */
+.basalt-menu-group {
+	--basalt-section: var(--basalt-series-1);
+
+	@for $slot from 2 through 8 {
+		&:nth-of-type(8n + #{$slot}) {
+			--basalt-section: var(--basalt-series-#{$slot});
+		}
+	}
+}
+
+/* The section heading is a button that folds the section. The small color
+   chip in front of the name is drawn by ::before; the caret turns sideways
+   while the section is folded. */
+.basalt-menu-group-heading {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.75rem 0.5rem 0.375rem;
+	border: 0;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.07em;
+	text-align: left;
+	text-transform: uppercase;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 8px;
+		height: 8px;
+		border-radius: 3px;
+		background: var(--basalt-section);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-section) 18%, transparent);
+	}
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.basalt-menu-group-caret {
+	margin-left: auto;
+	font-size: 0.625rem;
+	opacity: 0.7;
+	transition: transform 200ms ease;
+}
+.basalt-menu-group-shut {
+	.basalt-menu-group-caret {
+		transform: rotate(-90deg);
+	}
+	> .basalt-menu-links {
+		display: none;
+	}
+}
+
+/* A menu row: the glyph tile, the label, and on some rows a new-tab arrow
+   or a count. The row of the page you are on grows a size, with a taller
+   row and a larger solid tile. */
+.basalt-menu-links {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.basalt-menu-entry,
+.basalt-menu-child {
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	height: 38px;
+	padding: 0 0.5rem 0 0.375rem;
+	border-radius: 12px;
+	font-size: 0.84rem;
+	font-weight: 500;
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+	transition:
+		height 200ms cubic-bezier(0.3, 0.8, 0.3, 1),
+		font-size 200ms ease,
+		background-color 170ms ease,
+		color 170ms ease;
+}
+.basalt-menu-label {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+
+	/* The menu filter marks the typed letters in the section's color. */
+	mark {
+		padding: 0;
+		border-radius: 3px;
+		color: inherit;
+		background: color-mix(in srgb, var(--basalt-section) 24%, transparent);
+		box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--basalt-section) 24%, transparent);
+	}
+}
+/* A row that opens in a new tab ends in a small arrow after the name. */
+.basalt-menu-newtab {
+	flex-shrink: 0;
+	margin-left: 0.3rem;
+	font-size: 0.7rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+	body.basalt-menu-narrow & {
+		display: none;
+	}
+}
+/* The glyph element is the tile itself; its icon is drawn by the icon
+   font's ::before, centered in the tile. */
+.basalt-menu-glyph {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 8px;
+	font-size: 0.92rem;
+	line-height: 1;
+	color: color-mix(in srgb, var(--basalt-section) 78%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-section) 13%, transparent);
+	transition:
+		width 200ms cubic-bezier(0.3, 0.8, 0.3, 1),
+		height 200ms cubic-bezier(0.3, 0.8, 0.3, 1),
+		border-radius 200ms ease,
+		font-size 200ms ease,
+		background-color 170ms ease,
+		color 170ms ease;
+}
+.basalt-menu-entry:hover,
+.basalt-menu-child:hover {
+	color: var(--basalt-copy);
+	background-color: var(--basalt-wash);
+}
+.basalt-menu-entry.active,
+.basalt-menu-child.active {
+	height: 48px;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-section) 11%, transparent);
+
+	.basalt-menu-glyph {
+		width: 36px;
+		height: 36px;
+		border-radius: 11px;
+		font-size: 1.1rem;
+		color: var(--basalt-plane);
+		background: color-mix(in srgb, var(--basalt-section) 72%, var(--basalt-copy));
+	}
+}
+.basalt-menu-entry.trail-current {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* A parent row folds its own list open and shut; its caret turns sideways
+   while the list is shut. */
+.basalt-menu-caret {
+	margin-left: auto;
+	font-size: 0.625rem;
+	opacity: 0.6;
+	transition: transform 200ms ease;
+}
+.basalt-menu-count + .basalt-menu-caret {
+	margin-left: 0.375rem;
+}
+.basalt-menu-entry-parent[aria-expanded="false"] .basalt-menu-caret {
+	transform: rotate(-90deg);
+}
+
+/* The list under a parent hangs from a line in the section color, with
+   rows and tiles a step smaller than the rows above it. */
+.basalt-menu-children {
+	margin: 0.125rem 0 0.375rem 1.2rem;
+	padding: 0.125rem 0 0.125rem 0.56rem;
+	border-left: 2px solid color-mix(in srgb, var(--basalt-section) 28%, transparent);
+	list-style: none;
+}
+.basalt-menu-child {
+	height: 34px;
+	padding-left: 0.3rem;
+	font-size: 0.81rem;
+
+	.basalt-menu-glyph {
+		width: 24px;
+		height: 24px;
+		border-radius: 7px;
+		font-size: 0.8rem;
+	}
+
+	&.active {
+		height: 42px;
+		font-size: 0.875rem;
+
+		.basalt-menu-glyph {
+			width: 30px;
+			height: 30px;
+			border-radius: 9px;
+			font-size: 0.95rem;
+		}
+	}
+}
+
+/* A count of things waiting on a menu entry, tinted in its section's color
+   so it reads as part of the menu rather than an alert. */
+.basalt-menu-count {
+	min-width: 22px;
+	margin-left: auto;
+	padding: 4px 6px;
+	border-radius: 6px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	text-align: center;
+	color: color-mix(in srgb, var(--basalt-section, var(--basalt-hue)) 54%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-section, var(--basalt-hue)) 15%, transparent);
+}
+
+/* A dashboard row tells how many pages wait in its business area, quietly
+   and only while the row is pointed at or focused. The count is plain text
+   in each page's menu, matching the area's pages in data/areas.js. */
+.basalt-menu-pages {
+	flex-shrink: 0;
+	margin-left: auto;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.66rem;
+	font-weight: 400;
+	white-space: nowrap;
+	color: color-mix(in srgb, currentColor 62%, transparent);
+	opacity: 0;
+	transition: opacity 150ms ease;
+
+	a:hover > &,
+	a:focus-visible > & {
+		opacity: 1;
+	}
+	body.basalt-menu-narrow & {
+		display: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* While the filter has text, every section and list that still holds a
+   match is shown open; menu.js hides the rows that do not match. */
+.basalt-mainmenu.is-filtering {
+	.basalt-menu-group > .basalt-menu-links,
+	.basalt-menu-children {
+		display: block;
+	}
+	.basalt-menu-group-caret,
+	.basalt-menu-caret {
+		transform: none;
+	}
+}
+
+/* Four looks for one menu, chosen by data-basalt-menu-look on <html> from
+   the Appearance panel, or fixed in a build by writing the attribute into
+   the page. Without the attribute the menu is Quiet: line icons, no tiles,
+   and a fine bar beside the page you are on. Pop gives every section its
+   own color and fills the current row with it. Ink is a dark menu beside a
+   light page. Floating is a detached card, and choosing it floats the
+   header too. */
+
+/* Quiet, Ink and Floating share the line icons and the plain rows. */
+:root:not([data-basalt-menu-look="pop"]) {
+	.basalt-menu-group-heading {
+		padding: 1.1rem 0.75rem 0.4rem;
+		font-size: 0.7rem;
+		letter-spacing: 0.08em;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 80%, var(--basalt-copy));
+
+		&::before {
+			display: none;
+		}
+	}
+	.basalt-menu-entry,
+	.basalt-menu-child {
+		position: relative;
+		gap: 0.75rem;
+		height: 38px;
+		padding: 0 0.75rem;
+		border-radius: 10px;
+		font-size: 0.875rem;
+	}
+	.basalt-menu-glyph,
+	.basalt-menu-entry.active .basalt-menu-glyph,
+	.basalt-menu-child.active .basalt-menu-glyph {
+		width: 20px;
+		height: 20px;
+		border-radius: 0;
+		font-size: 1rem;
+		color: var(--basalt-copy-muted);
+		background: transparent;
+	}
+	.basalt-menu-entry.active,
+	.basalt-menu-child.active {
+		height: 38px;
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+	.basalt-menu-children {
+		padding-left: 1.1rem;
+	}
+	.basalt-mainmenu-find {
+		margin: 0.25rem 1rem 0.5rem;
+		border: 1px solid var(--basalt-edge-strong);
+		background: transparent;
+
+		> .bi-search {
+			color: var(--basalt-copy-muted);
+		}
+	}
+	.basalt-mainmenu-account {
+		background: transparent;
+	}
+	.basalt-mainmenu-face {
+		background: var(--basalt-edge-strong);
+	}
+}
+
+/* Quiet: the current row gets a soft fill, a palette-colored icon and a
+   fine bar on its left edge. */
+:root:not([data-basalt-menu-look]) {
+	.basalt-menu-entry.active,
+	.basalt-menu-child.active {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+
+		&::before {
+			content: "";
+			position: absolute;
+			top: 9px;
+			bottom: 9px;
+			left: 0;
+			width: 3px;
+			border-radius: 0 3px 3px 0;
+			background: var(--basalt-hue);
+		}
+		.basalt-menu-glyph {
+			color: var(--basalt-hue);
+		}
+	}
+}
+
+/* Pop: each section in its own color, the current row filled with it. */
+[data-basalt-menu-look="pop"] {
+	.basalt-menu-group-heading {
+		padding: 1rem 0.6rem 0.4rem;
+
+		&::before {
+			width: 14px;
+			height: 4px;
+			border-radius: 4px;
+			box-shadow: none;
+		}
+	}
+	.basalt-menu-entry,
+	.basalt-menu-child {
+		gap: 0.7rem;
+		height: 40px;
+		padding: 0 0.6rem;
+		border-radius: 12px;
+		font-size: 0.875rem;
+	}
+	.basalt-menu-glyph,
+	.basalt-menu-entry.active .basalt-menu-glyph,
+	.basalt-menu-child.active .basalt-menu-glyph {
+		width: 22px;
+		height: 22px;
+		border-radius: 0;
+		font-size: 1.05rem;
+		background: transparent;
+	}
+	.basalt-menu-glyph {
+		color: color-mix(in srgb, var(--basalt-section) 80%, var(--basalt-copy));
+	}
+	.basalt-menu-entry:hover,
+	.basalt-menu-child:hover {
+		background: color-mix(in srgb, var(--basalt-section) 10%, transparent);
+	}
+	.basalt-menu-entry.active,
+	.basalt-menu-child.active {
+		height: 44px;
+		font-size: 0.9rem;
+		color: var(--basalt-plane);
+		background: color-mix(in srgb, var(--basalt-section) 78%, var(--basalt-copy));
+		box-shadow: 0 10px 22px -14px color-mix(in srgb, var(--basalt-section) 90%, transparent);
+
+		.basalt-menu-glyph {
+			color: var(--basalt-plane);
+		}
+	}
+}
+
+/* Ink: a dark menu beside a light page. Its shade comes from the palette's
+   deep color; in dark mode it sits on the page color. Inside the menu the
+   surface and text tokens are swapped for the ink ones, so every part of
+   the menu follows without rules of its own. */
+[data-basalt-menu-look="ink"] {
+	--basalt-ink: color-mix(in srgb, var(--basalt-hue-deep) 24%, var(--basalt-copy));
+	--basalt-ink-fg: var(--basalt-plane);
+
+	&[data-bs-theme="dark"] {
+		--basalt-ink: var(--basalt-canvas);
+		--basalt-ink-fg: var(--basalt-copy);
+	}
+	.basalt-mainmenu {
+		--basalt-plane: var(--basalt-ink);
+		--basalt-canvas: color-mix(in srgb, var(--basalt-ink-fg) 6%, var(--basalt-ink));
+		--basalt-copy: var(--basalt-ink-fg);
+		--basalt-copy-body: color-mix(in srgb, var(--basalt-ink-fg) 82%, var(--basalt-ink));
+		--basalt-copy-muted: color-mix(in srgb, var(--basalt-ink-fg) 62%, var(--basalt-ink));
+		--basalt-edge: color-mix(in srgb, var(--basalt-ink-fg) 10%, transparent);
+		--basalt-edge-strong: color-mix(in srgb, var(--basalt-ink-fg) 18%, transparent);
+		--basalt-wash: color-mix(in srgb, var(--basalt-ink-fg) 8%, transparent);
+		border-right-color: transparent;
+		color-scheme: dark;
+	}
+	.basalt-menu-entry.active,
+	.basalt-menu-child.active {
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+
+		.basalt-menu-glyph {
+			color: var(--basalt-on-hue);
+		}
+	}
+}
+
+/* Floating: a detached card, inset from the window edges. Closed on a
+   small screen it has to travel further to hide its edge and shadow. */
+[data-basalt-menu-look="floating"] {
+	.basalt-mainmenu {
+		border: 1px solid var(--basalt-edge);
+		border-radius: 18px;
+		box-shadow:
+			0 1px 2px color-mix(in srgb, var(--basalt-copy) 5%, transparent),
+			0 18px 40px -28px color-mix(in srgb, var(--basalt-copy) 50%, transparent);
+	}
+	@media (min-width: 992px) {
+		body:not(.basalt-menu-narrow) .basalt-mainmenu {
+			top: 12px;
+			bottom: 12px;
+			left: 12px;
+			width: 276px;
+		}
+		body.basalt-menu-narrow .basalt-mainmenu {
+			top: 12px;
+			bottom: 12px;
+			left: 12px;
+			width: 68px;
+		}
+	}
+	@media (max-width: 991.98px) {
+		.basalt-mainmenu {
+			top: 8px;
+			bottom: 8px;
+			left: 8px;
+		}
+		.basalt-mainmenu:not(.is-open) {
+			transform: translateX(calc(-100% - 3rem));
+		}
+	}
+	.basalt-menu-entry.active,
+	.basalt-menu-child.active {
+		color: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+		background: var(--basalt-hue-soft);
+
+		.basalt-menu-glyph {
+			color: var(--basalt-hue);
+		}
+	}
+}

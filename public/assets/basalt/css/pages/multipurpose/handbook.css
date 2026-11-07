@@ -1,0 +1,1378 @@
+/* The handbook page (handbook.html), every class under hb-. Most of
+   what it shows comes from shared Basalt parts: the page head, the tree,
+   status pills, empty states, skeletons, choice tiles, the tag field, the
+   segmented switch, loading and confirm buttons, dialogs, the drawer and
+   toasts. This file arranges them and adds what only the handbook has: the
+   reader layout, article rows, the article text and its callouts, the
+   feedback box and the editor. */
+
+/* Both the page and its dialogs share two text colors: a quiet gray pulled
+   toward body copy so it keeps 4.5:1 on light palettes and hovered rows,
+   and a link color mixed the same way because plain primary falls short in
+   a few palettes. */
+.hb-page,
+.hb-dialog {
+	--hb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--hb-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--hb-sticky: calc(var(--basalt-header-h, 72px) + 1rem);
+}
+
+/* Keyboard hints are outlined in the current color and vanish on touch. */
+.hb-kbd {
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+	font:
+		600 0.71rem/1.3 "Chivo Mono",
+		monospace;
+	color: inherit;
+	background: transparent;
+	box-shadow: none;
+}
+@media (hover: none) {
+	.hb-kbd {
+		display: none;
+	}
+}
+
+/* Inline links and link-styled buttons underline in the link color and
+   turn to body copy on hover. */
+.hb-link,
+.hb-link-btn {
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--hb-link);
+}
+.hb-link {
+	text-decoration-thickness: 1px;
+}
+.hb-link-btn {
+	padding: 0;
+	border: 0;
+	background: none;
+}
+.hb-link:hover,
+.hb-link-btn:hover {
+	color: var(--basalt-copy);
+}
+
+.hb-quiet {
+	color: var(--hb-quiet);
+}
+.hb-optional {
+	margin-left: 0.25rem;
+	font-weight: 500;
+	color: var(--hb-quiet);
+}
+.hb-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--hb-quiet);
+}
+
+/* Each collection borrows a chart color by its place in the list. */
+.hb-tone-1 {
+	--hb-tone: var(--basalt-series-1);
+}
+.hb-tone-2 {
+	--hb-tone: var(--basalt-series-2);
+}
+.hb-tone-3 {
+	--hb-tone: var(--basalt-series-3);
+}
+.hb-tone-4 {
+	--hb-tone: var(--basalt-series-4);
+}
+.hb-tone-5 {
+	--hb-tone: var(--basalt-series-5);
+}
+.hb-tone-6 {
+	--hb-tone: var(--basalt-series-6);
+}
+.hb-tone-7 {
+	--hb-tone: var(--basalt-series-7);
+}
+.hb-tone-8 {
+	--hb-tone: var(--basalt-series-8);
+}
+
+/* One column on phones and tablets, with the collections in a drawer; from
+   1200px the collections sit beside the reader. */
+.hb-app {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+	scroll-margin-top: var(--hb-sticky);
+}
+@media (min-width: 1200px) {
+	.hb-app {
+		grid-template-columns: 20rem minmax(0, 1fr);
+	}
+}
+
+/* The left column scrolls on its own inside the drawer. */
+.hb-nav-drawer-title {
+	font-size: 1.05rem;
+	font-weight: 700;
+}
+.hb-nav-body {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	flex-grow: 1;
+	padding: 1rem;
+	overflow-y: auto;
+}
+/* Bootstrap drops the drawer's background from 1200px, so the card look
+   moves to the inner box and the column sticks under the top bar. */
+@media (min-width: 1200px) {
+	.hb-nav {
+		position: sticky;
+		top: var(--hb-sticky);
+	}
+	.hb-nav-body {
+		max-height: calc(100vh - var(--basalt-header-h, 72px) - 2rem);
+		padding: 0.85rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		background: var(--basalt-plane);
+		box-shadow: var(--basalt-card-shadow);
+	}
+}
+
+/* The fixed views are a stack of links; the open one is tinted, and counts
+   sit at the right edge as pills. */
+.hb-views {
+	display: grid;
+	gap: 0.1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hb-views-link {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.4rem 0.6rem;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		width: 1.1rem;
+		text-align: center;
+		color: var(--hb-quiet);
+	}
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&[aria-current="page"] {
+		font-weight: 650;
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+
+		& .bi {
+			color: inherit;
+		}
+	}
+}
+.hb-views-count {
+	min-width: 1.5rem;
+	margin-left: auto;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 650;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+/* A rule and a small caps label start the collections, with the add
+   button on the same line. */
+.hb-nav-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hb-nav-title {
+	margin: 0 0 0 0.6rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--hb-quiet);
+}
+.hb-nav-add {
+	color: var(--basalt-copy-body);
+}
+
+/* Tree labels run a touch smaller than the shared tree's. */
+.hb-tree-panel {
+	padding: 0.3rem;
+}
+.hb-tree {
+	& .basalt-tree-label {
+		font-size: 0.84rem;
+		line-height: 1.35;
+	}
+	& .basalt-tree-meta {
+		color: var(--hb-quiet);
+	}
+}
+.hb-tree-skeleton {
+	padding: 0.5rem 0.4rem;
+	list-style: none;
+}
+.hb-tree-note {
+	padding: 0.5rem 0.6rem;
+	font-size: 0.84rem;
+	color: var(--hb-quiet);
+	list-style: none;
+}
+
+/* The middle column is one card holding the search bar and the open view. */
+.hb-main {
+	min-width: 0;
+	padding: 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+@media (max-width: 575.98px) {
+	.hb-main {
+		padding: 1rem;
+	}
+}
+
+/* Browse opens the drawer below 1200px and is gone above it; the search
+   field fills the rest of the row. */
+.hb-bar {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.hb-bar-browse {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+@media (min-width: 1200px) {
+	.hb-bar-browse {
+		display: none;
+	}
+}
+.hb-search {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.hb-search-icon {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--hb-quiet);
+	pointer-events: none;
+}
+.hb-page .hb-search-input {
+	min-height: 2.6rem;
+	padding-left: 2.35rem;
+	padding-right: 2.5rem;
+	border-radius: 10px;
+}
+/* The slash hint sits inside the field until something is typed. */
+.hb-search-kbd {
+	position: absolute;
+	top: 50%;
+	right: 0.7rem;
+	transform: translateY(-50%);
+	margin: 0;
+	color: var(--hb-quiet);
+	pointer-events: none;
+}
+.hb-search-input:not(:placeholder-shown) ~ .hb-search-kbd {
+	display: none;
+}
+@media (max-width: 575.98px) {
+	.hb-search-kbd {
+		display: none;
+	}
+}
+
+/* Every view opens with a title, a line of context and, on collections, a
+   tinted icon and an action. */
+.hb-view-head {
+	display: flex;
+	gap: 0.9rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.hb-view-text {
+	flex: 1 1 18rem;
+	min-width: 0;
+}
+.hb-view-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.35rem;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+	color: var(--basalt-copy);
+}
+.hb-view-desc {
+	max-width: 64ch;
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	text-wrap: pretty;
+	color: var(--hb-quiet);
+}
+.hb-view-owner {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-left: 0.3rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.hb-view-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Headings take focus after a move but only draw a ring for the keyboard. */
+:is(.hb-view-title, .hb-article-title, .hb-editor-title):focus {
+	outline: none;
+}
+:is(.hb-view-title, .hb-article-title, .hb-editor-title):focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--hb-link);
+	outline-offset: 3px;
+}
+
+/* Collection icons are soft squares in the collection's color, in three
+   sizes: view head, home card and list row. */
+.hb-view-icon,
+.hb-col-card-icon,
+.hb-row-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--hb-tone, var(--basalt-hue)) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--hb-tone, var(--basalt-hue)) 15%, var(--basalt-plane));
+}
+.hb-view-icon {
+	width: 2.75rem;
+	height: 2.75rem;
+	font-size: 1.25rem;
+}
+
+/* While loading, a short title bar, two lines and a block stand in. */
+.hb-loading {
+	display: grid;
+	gap: 0.85rem;
+	padding: 0.25rem 0;
+
+	& .basalt-skeleton-title {
+		width: 45%;
+	}
+	& .basalt-skeleton-block {
+		height: 12rem;
+	}
+}
+
+/* Empty states sit a little lower; suggested searches are small pills. */
+.hb-empty {
+	margin-top: 0.5rem;
+}
+.hb-try {
+	padding: 0.05rem 0.5rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* Home lays the collections out as cards, one per row until 1200px. */
+.hb-col-grid {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@media (min-width: 1200px) {
+	.hb-col-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.hb-col-card {
+	display: grid;
+	row-gap: 0.1rem;
+	column-gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	height: 100%;
+	padding: var(--basalt-pad-row-y);
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+}
+.hb-col-card-icon {
+	grid-row: 1 / span 3;
+	width: 2.5rem;
+	height: 2.5rem;
+	font-size: 1.1rem;
+}
+.hb-col-card-name {
+	font-weight: 650;
+	font-size: 0.95rem;
+}
+.hb-col-card-desc {
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--hb-quiet);
+}
+.hb-col-card-meta {
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.5rem;
+	font-size: 0.77rem;
+	color: var(--basalt-copy-body);
+}
+.hb-col-card-due {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+@media (max-width: 575.98px) {
+	.hb-col-card {
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Under the cards, the latest changes and the review list stack, then
+   pair up from 1200px. */
+.hb-home-lists {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 2.25rem;
+}
+@media (min-width: 1200px) {
+	.hb-home-lists {
+		gap: 1.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.hb-sub-head {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+.hb-sub-title {
+	margin: 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Article rows serve every list, collection and set of results: icon,
+   title, two lines of summary, a dotted meta line and the status pills. */
+.hb-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hb-row + .hb-row {
+	border-top: 1px solid var(--basalt-edge);
+}
+.hb-row-link {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: start;
+	margin: 0 -0.6rem;
+	padding: var(--basalt-pad-row-y) 0.6rem;
+	border-radius: 10px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--hb-link);
+		outline-offset: -2px;
+	}
+}
+.hb-row-icon {
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 8px;
+	font-size: 0.95rem;
+}
+.hb-row-main {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.hb-row-title {
+	font-weight: 650;
+	font-size: 0.92rem;
+	line-height: 1.35;
+}
+.hb-row-sub {
+	display: -webkit-box;
+	overflow: hidden;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	color: var(--basalt-copy-body);
+}
+.hb-row-meta {
+	display: flex;
+	gap: 0.1rem 0;
+	flex-wrap: wrap;
+	font-size: 0.76rem;
+	color: var(--hb-quiet);
+
+	& > span:not(:last-child)::after {
+		content: "·";
+		margin: 0 0.4rem;
+	}
+}
+.hb-row-pills {
+	display: flex;
+	gap: 0.3rem;
+	padding-top: 0.1rem;
+
+	&:empty {
+		display: none;
+	}
+}
+/* On phones the pills drop under the text. */
+@media (max-width: 575.98px) {
+	.hb-row-link {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.hb-row-pills {
+		grid-column: 2;
+		padding-top: 0;
+	}
+}
+
+/* Matched search words get a warm wash. */
+.hb-page mark {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 32%, var(--basalt-plane));
+}
+
+/* A count on the left and the sort menu on the right head a collection. */
+.hb-list-tools {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+
+	& .hb-list-count {
+		margin: 0;
+	}
+}
+.hb-list-count {
+	margin: 0 0 0.25rem;
+	font-size: 0.8rem;
+	color: var(--hb-quiet);
+}
+.hb-sort {
+	width: auto;
+	min-width: 11rem;
+}
+
+/* Result filters are pills; the pressed one inverts to dark on light. */
+.hb-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: -0.5rem 0 1rem;
+}
+.hb-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.hb-chip-n {
+	font-variant-numeric: tabular-nums;
+	opacity: 0.85;
+}
+
+/* An article opens with its collection as a crumb, then a large title with
+   the star beside it. */
+.hb-crumbs {
+	margin-bottom: 0.75rem;
+	font-size: 0.8rem;
+
+	& a {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--basalt-copy-body);
+	}
+	& a:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+.hb-article-titlerow {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+}
+.hb-article-title {
+	flex: 1 1 auto;
+	margin: 0;
+	font-size: 1.85rem;
+	font-weight: 800;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.hb-article-title {
+		font-size: 1.45rem;
+	}
+}
+.hb-star {
+	margin-top: 0.1rem;
+	font-size: 1.1rem;
+	color: var(--basalt-copy-body);
+
+	&[aria-pressed="true"] {
+		color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-copy));
+	}
+}
+.hb-article-summary {
+	margin: 0.6rem 0 0;
+	font-size: 1.02rem;
+	line-height: 1.55;
+	text-wrap: pretty;
+	color: var(--basalt-copy-body);
+}
+
+/* The owner, the last change and the reading time wrap as one line of facts. */
+.hb-article-meta {
+	display: flex;
+	gap: 0.6rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.1rem;
+	font-size: 0.84rem;
+	color: var(--hb-quiet);
+}
+.hb-article-owner {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	& > span:last-child {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.25;
+	}
+}
+.hb-article-who {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.hb-article-role {
+	font-size: 0.76rem;
+}
+.hb-article-fact {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+
+/* The action row closes the head with a rule; Delete reads red. */
+.hb-article-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.1rem;
+	padding-bottom: 1.25rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.hb-btn-n {
+	margin-left: 0.25rem;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-variant-numeric: tabular-nums;
+	background: var(--basalt-plane-alt);
+}
+.hb-danger-item {
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+.hb-page .dropdown-item.hb-danger-item:is(:hover, :focus) {
+	color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+}
+
+/* Drafts and reviews announce themselves in a tinted strip, blue by
+   default and amber when a review is near. */
+.hb-banner {
+	--hb-banner: var(--basalt-info);
+	display: flex;
+	gap: 0.6rem 0.85rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.25rem;
+	padding: 0.8rem 1rem;
+	border: 1px solid color-mix(in srgb, var(--hb-banner) 35%, var(--basalt-edge));
+	border-radius: 10px;
+	font-size: 0.88rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--hb-banner) 10%, var(--basalt-plane));
+
+	& > .bi {
+		font-size: 1.05rem;
+		color: color-mix(in srgb, var(--hb-banner) 60%, var(--basalt-copy));
+	}
+	& p {
+		flex: 1 1 16rem;
+		margin: 0;
+		line-height: 1.5;
+	}
+}
+.hb-banner-warning {
+	--hb-banner: var(--basalt-warning);
+}
+.hb-banner-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Article text reads at about 80 characters a line; section headings stop
+   clear of the sticky top bar when jumped to. */
+.hb-prose {
+	max-width: 80ch;
+	margin-top: 1.5rem;
+	font-size: 0.97rem;
+	line-height: 1.7;
+	color: var(--basalt-copy-body);
+
+	& > :first-child {
+		margin-top: 0;
+	}
+	& p {
+		margin: 0 0 1rem;
+	}
+	& h3 {
+		scroll-margin-top: calc(var(--hb-sticky) + 0.5rem);
+		margin: 2rem 0 0.6rem;
+		font-size: 1.1rem;
+		font-weight: 750;
+		letter-spacing: -0.01em;
+		color: var(--basalt-copy);
+	}
+	& h4 {
+		scroll-margin-top: calc(var(--hb-sticky) + 0.5rem);
+		margin: 1.5rem 0 0.5rem;
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& h3:focus,
+	& h4:focus {
+		outline: none;
+	}
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& code {
+		padding: 0.1em 0.35em;
+		border-radius: 5px;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+	& ul {
+		margin: 0 0 1rem;
+		padding-left: 1.25rem;
+	}
+	& ul li {
+		margin-bottom: 0.3rem;
+		padding-left: 0.2rem;
+	}
+	& ul li::marker {
+		color: var(--hb-quiet);
+	}
+}
+
+/* Numbered steps count in tinted circles instead of plain numerals. */
+.hb-steps {
+	counter-reset: hb-step;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		counter-increment: hb-step;
+		position: relative;
+		min-height: 1.6rem;
+		margin-bottom: 0.5rem;
+		padding-left: 2.35rem;
+	}
+	& li::before {
+		content: counter(hb-step);
+		position: absolute;
+		top: 0.1rem;
+		left: 0;
+		display: grid;
+		place-items: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 50%;
+		font-size: 0.77rem;
+		font-weight: 700;
+		line-height: 1;
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+}
+
+/* Tables scroll sideways inside a rounded frame when they run wide. */
+.hb-table {
+	margin: 0 0 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	& .table {
+		--bs-table-bg: transparent;
+		--bs-table-color: var(--basalt-copy-body);
+		margin: 0;
+		font-size: 0.87rem;
+	}
+	& th {
+		font-weight: 650;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+	& th,
+	& td {
+		padding: 0.5rem 0.8rem;
+		border-color: var(--basalt-edge);
+	}
+	& tr:last-child td {
+		border-bottom: 0;
+	}
+}
+
+/* Callouts are tinted boxes with a short bar on the left: blue notes,
+   green tips and amber warnings. */
+.hb-callout {
+	--hb-callout: var(--basalt-info);
+	position: relative;
+	display: flex;
+	gap: 0.7rem;
+	margin: 0 0 1.25rem;
+	padding: 0.85rem 1rem;
+	border-radius: 10px;
+	font-size: 0.92rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--hb-callout) 10%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.75rem;
+		bottom: 0.75rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--hb-callout);
+	}
+	& > .bi {
+		font-size: 1.05rem;
+		line-height: 1.5;
+		color: color-mix(in srgb, var(--hb-callout) 60%, var(--basalt-copy));
+	}
+	& p {
+		margin: 0;
+	}
+}
+.hb-callout-tip {
+	--hb-callout: var(--basalt-success);
+}
+.hb-callout-warning {
+	--hb-callout: var(--basalt-warning);
+}
+
+/* Tags under the text are pills that start a search. */
+.hb-tags {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.75rem;
+}
+.hb-tags-label {
+	margin-right: 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: var(--hb-quiet);
+}
+.hb-tag {
+	padding: 0.1rem 0.65rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* The feedback box: the question on the left, the answer on the right, and
+   the "no" form across the full width. */
+.hb-helpful {
+	display: flex;
+	gap: 0.85rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 2rem;
+	padding: 1.1rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.hb-helpful-title {
+	margin: 0;
+	font-size: 0.98rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hb-helpful-count {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--hb-quiet);
+}
+.hb-helpful-btns {
+	display: flex;
+	gap: 0.5rem;
+
+	& .btn {
+		background: var(--basalt-plane);
+	}
+}
+.hb-helpful-more {
+	display: grid;
+	gap: 0.6rem;
+	flex: 1 1 100%;
+}
+.hb-helpful-legend {
+	float: none;
+	width: auto;
+	margin-bottom: 0.5rem;
+	padding: 0;
+	font-size: 0.86rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.hb-helpful-send {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.hb-helpful-done {
+	display: flex;
+	gap: 0.4rem;
+	flex: 1 1 100%;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: 0.88rem;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+	& .bi {
+		font-size: 1.05rem;
+		color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	}
+}
+/* From 768px the thank-you line shares the row with the question. */
+@media (min-width: 768px) {
+	.hb-helpful-done {
+		flex-basis: auto;
+	}
+}
+
+/* Related articles are outlined cards, title left and meta right. */
+.hb-related {
+	margin-top: 2.25rem;
+}
+.hb-related-list {
+	display: grid;
+	gap: 0.65rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0.65rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.hb-related-card {
+	display: flex;
+	gap: 0.2rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.75rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+}
+.hb-related-title {
+	font-weight: 650;
+	font-size: 0.88rem;
+	line-height: 1.4;
+}
+.hb-related-meta {
+	font-size: 0.76rem;
+	color: var(--hb-quiet);
+}
+
+/* Form controls on the page and in its dialogs use the page's surface,
+   stronger edges and the quiet placeholder color. */
+:is(.hb-page, .hb-dialog) .form-label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+:is(.hb-page, .hb-dialog) fieldset legend.form-label {
+	float: none;
+	width: auto;
+	margin-bottom: 0.5rem;
+	padding: 0;
+}
+:is(.hb-page, .hb-dialog) :is(.form-control, .form-select) {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+:is(.hb-page, .hb-dialog) .form-control::placeholder {
+	color: var(--hb-quiet);
+	opacity: 1;
+}
+:is(.hb-page, .hb-dialog) .invalid-feedback {
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+
+/* The editor replaces the view: its head carries the title on the left and
+   the status with quick actions on the right. Search steps aside while it
+   is open. */
+.hb-main:has(> .hb-editor:not([hidden])) > .hb-bar {
+	display: none;
+}
+.hb-editor-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+}
+.hb-editor-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.35rem;
+	font-weight: 750;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.hb-editor-desc {
+	margin: 0;
+	font-size: 0.88rem;
+	color: var(--hb-quiet);
+}
+.hb-editor-top {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+
+	& .basalt-status {
+		margin-right: 0.25rem;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+	& [hidden] {
+		display: none;
+	}
+}
+.hb-editor-icon {
+	min-width: 2rem;
+	padding-inline: 0.5rem;
+}
+
+/* Fields stack with even gaps; the short selects share a row when there
+   is room. */
+.hb-fields {
+	display: grid;
+	gap: 1.1rem;
+}
+.hb-fields-row {
+	display: grid;
+	gap: 1.1rem;
+	grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+/* The article box is a formatting bar joined to a monospace text area, or
+   to the preview in its place. */
+.hb-body-field-top {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+.hb-toolbar {
+	display: flex;
+	gap: 0.2rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-bottom: 0;
+	border-radius: 8px 8px 0 0;
+	background: var(--basalt-plane-alt);
+
+	&.is-off {
+		opacity: 0.55;
+	}
+}
+.hb-toolbar-btn {
+	--bs-btn-padding-x: 0.5rem;
+	--bs-btn-padding-y: 0.25rem;
+	border: 0;
+	color: var(--basalt-copy-body);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.hb-toolbar-sep {
+	width: 1px;
+	height: 1.25rem;
+	margin: 0 0.25rem;
+	background: var(--basalt-edge-strong);
+}
+.hb-page .hb-body-field-input {
+	min-height: 18rem;
+	border-radius: 0 0 8px 8px;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.86rem;
+	line-height: 1.65;
+}
+.hb-body-field-preview {
+	max-width: none;
+	min-height: 18rem;
+	margin-top: 0;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 0 0 8px 8px;
+
+	&:focus-visible {
+		outline: 2px solid var(--hb-link);
+		outline-offset: 2px;
+	}
+}
+
+/* Discard sits alone on the left of the foot, the save buttons on the right. */
+.hb-editor-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hb-editor-save {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Collection tiles in the move dialog are wide; icon tiles in the new
+   collection dialog are small centered squares. */
+.hb-move-choices {
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+.hb-icon-choices {
+	grid-template-columns: repeat(auto-fit, minmax(3.25rem, 1fr));
+
+	& .basalt-choice {
+		justify-content: center;
+		text-align: center;
+	}
+	& .basalt-choice .bi {
+		margin: 0;
+		font-size: 1.1rem;
+	}
+}
+
+/* Each history entry is an avatar beside the note and who made it, with
+   rules between entries. */
+.hb-history {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hb-history-item {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	padding: var(--basalt-pad-row-y) 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.hb-history-note {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.hb-history-meta {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--hb-quiet);
+}
+
+/* Hover tints ease in, unless motion is turned down. */
+@media (prefers-reduced-motion: no-preference) {
+	.hb-row-link,
+	.hb-col-card,
+	.hb-related-card,
+	.hb-views-link,
+	.hb-chip,
+	.hb-tag {
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease,
+			color 150ms ease;
+	}
+}
+
+/* A printout carries the article alone, without the card around it. */
+@media print {
+	.basalt-pagehead,
+	.hb-nav,
+	.hb-bar,
+	.hb-article-actions,
+	.hb-banner-actions,
+	.hb-helpful,
+	.hb-related {
+		display: none;
+	}
+	.hb-app {
+		display: block;
+	}
+	.hb-main {
+		padding: 0;
+		border: 0;
+		box-shadow: none;
+	}
+	.hb-page * {
+		transition: none;
+		animation: none;
+	}
+}

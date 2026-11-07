@@ -1,0 +1,251 @@
+/* .basalt-tick turns a checkbox or radio into a rounded square without any
+   script. The real input sits inside the label, out of sight yet still in the
+   tab order, and the .basalt-tick-box after it paints whatever state the
+   input is in. Size follows --basalt-tick-size and color follows the theme
+   tokens, so every palette and dark mode carry over; field-types.html shows
+   the whole set.
+
+   label.basalt-tick
+     input (checkbox or radio, with an aria-label when there is no caption)
+     span.basalt-tick-box > i.bi.bi-check-lg (aria-hidden)
+     span.basalt-tick-label (optional caption) */
+
+$tick-pop:
+	opacity 170ms ease,
+	transform 200ms cubic-bezier(0.3, 1.6, 0.5, 1);
+
+.basalt-tick {
+	--basalt-tick-size: 36px;
+	--basalt-tick-radius: 11px;
+	--basalt-tick-border: 1.5px;
+	--basalt-tick-tone: var(--basalt-hue);
+	--basalt-tick-fill: color-mix(in srgb, var(--basalt-tick-tone) 86%, var(--basalt-copy));
+	--basalt-tick-ink: var(--basalt-on-hue);
+	--basalt-tick-ring: var(--basalt-hue-border);
+	--basalt-tick-line: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+	position: relative;
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	vertical-align: middle;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+
+	/* The input keeps focus and its form value but takes up no room. */
+	> input {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 1px;
+		height: 1px;
+		margin: 0;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+.basalt-tick-box {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: var(--basalt-tick-size);
+	height: var(--basalt-tick-size);
+	border: var(--basalt-tick-border) solid var(--basalt-tick-line);
+	border-radius: var(--basalt-tick-radius);
+	font-size: calc(var(--basalt-tick-size) * 0.5);
+	line-height: 1;
+	color: var(--basalt-tick-ink);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		box-shadow 170ms ease,
+		transform 170ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	/* The check waits small and invisible until the input is checked. */
+	.bi {
+		transform: scale(0.6);
+		display: block;
+		line-height: 1;
+		opacity: 0;
+		transition: $tick-pop;
+
+		@media (prefers-reduced-motion: reduce) {
+			transform: none;
+			transition: none;
+		}
+	}
+
+	/* A half-checked box shows a bar drawn here, so no second icon is needed. */
+	&::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%) scaleX(0.4);
+		width: 44%;
+		height: max(2px, calc(var(--basalt-tick-size) * 0.085));
+		margin: 0;
+		border-radius: 99px;
+		background: currentColor;
+		opacity: 0;
+		transition: $tick-pop;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+}
+
+.basalt-tick-label {
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+
+/* Every state is read off the hidden input and painted on the box beside it.
+   Hover comes first so a checked or half-checked fill still owns the edge. */
+.basalt-tick {
+	&:hover > input:enabled + .basalt-tick-box {
+		border-color: var(--basalt-tick-ring);
+	}
+
+	> input:checked + .basalt-tick-box,
+	> input[type="checkbox"]:indeterminate + .basalt-tick-box {
+		border-color: var(--basalt-tick-fill);
+		background: var(--basalt-tick-fill);
+	}
+
+	> input:checked + .basalt-tick-box .bi {
+		transform: none;
+		opacity: 1;
+	}
+
+	/* Half-checked hides the check again and grows the bar to full width. */
+	> input[type="checkbox"]:indeterminate + .basalt-tick-box {
+		.bi {
+			transform: scale(0.6);
+			opacity: 0;
+
+			@media (prefers-reduced-motion: reduce) {
+				transform: none;
+			}
+		}
+
+		&::after {
+			transform: translate(-50%, -50%);
+			opacity: 1;
+		}
+	}
+
+	> input:focus-visible + .basalt-tick-box {
+		box-shadow: 0 0 0 3px var(--basalt-tick-ring);
+	}
+
+	&:active > input:enabled + .basalt-tick-box {
+		transform: scale(0.94);
+
+		@media (prefers-reduced-motion: reduce) {
+			transform: none;
+		}
+	}
+
+	/* A disabled input grays the box, its fill and its caption alike. */
+	&:has(> input:disabled) {
+		cursor: not-allowed;
+	}
+
+	> input:disabled {
+		+ .basalt-tick-box {
+			border-color: var(--basalt-edge-strong);
+			color: var(--basalt-copy-muted);
+			background: var(--basalt-plane-alt);
+		}
+
+		~ .basalt-tick-label {
+			color: var(--basalt-copy-muted);
+		}
+	}
+
+	> input:disabled:checked + .basalt-tick-box,
+	> input[type="checkbox"]:disabled:indeterminate + .basalt-tick-box {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-plane-alt);
+	}
+
+	/* .is-refused, added for a moment, shakes off a change the app declined. */
+	&.is-refused .basalt-tick-box {
+		border-color: var(--basalt-danger);
+		animation: basalt-tick-shake 360ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+
+@keyframes basalt-tick-shake {
+	25% {
+		transform: translateX(-3px);
+	}
+	75% {
+		transform: translateX(3px);
+	}
+}
+
+/* Tones swap the hue; the fill leans toward the text color, as a stock
+   checkbox does, so the check drawn on it keeps its contrast. */
+$tick-tones: (
+	success: 70%,
+	danger: 80%,
+);
+
+@each $tone, $share in $tick-tones {
+	.basalt-tick-#{$tone} {
+		--basalt-tick-tone: var(--basalt-#{$tone});
+		--basalt-tick-fill: color-mix(in srgb, var(--basalt-tick-tone) #{$share}, var(--basalt-copy));
+		--basalt-tick-ring: color-mix(in srgb, var(--basalt-#{$tone}) 45%, transparent);
+	}
+}
+
+/* The small size enlarges its glyph relative to the box so it stays legible. */
+.basalt-tick-sm {
+	--basalt-tick-size: 24px;
+	--basalt-tick-radius: 8px;
+
+	.basalt-tick-box {
+		font-size: calc(var(--basalt-tick-size) * 0.58);
+	}
+	.basalt-tick-label {
+		font-size: 0.8rem;
+	}
+}
+
+/* Both large sizes share a heavier edge and a slightly bigger caption. */
+.basalt-tick-lg {
+	--basalt-tick-size: 48px;
+	--basalt-tick-radius: 14px;
+}
+
+.basalt-tick-xl {
+	--basalt-tick-size: 64px;
+	--basalt-tick-radius: 18px;
+}
+
+.basalt-tick-lg,
+.basalt-tick-xl {
+	--basalt-tick-border: 2px;
+}
+
+.basalt-tick-lg .basalt-tick-label,
+.basalt-tick-xl .basalt-tick-label {
+	font-size: 0.95rem;
+}

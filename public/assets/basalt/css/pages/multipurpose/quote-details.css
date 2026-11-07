@@ -1,0 +1,1303 @@
+/* Quote Details (quote-details.html): the page's own pieces under .qd-*.
+   The hero header, cards, status pills, segmented switch, stepper, choice
+   tiles, dialogs and toasts come from basalt.css; this sheet arranges them
+   and adds the standing card with its ring and steps, the paper document
+   and its edit bar, the customer facts, the version list and the journal.
+   Colors are always a --basalt-* token, so palettes and dark mode carry
+   through. */
+
+.qd-page {
+	/* Quiet text is the muted token leaned toward the body color, which keeps
+     small labels above 4.5:1 on the paler palettes; links get the same
+     treatment because the bare primary falls short on a few of them. */
+	--qd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--qd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+
+/* The header is a two-column grid: back link and quote number on the left,
+   the buttons on the right, resting on the same baseline. */
+.basalt-hero-detail.qd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.qd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	.btn {
+		white-space: nowrap;
+	}
+	.btn[hidden] {
+		display: none;
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.qd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.qd-head .basalt-hero-actions {
+		flex-wrap: wrap;
+	}
+}
+
+/* The "…" menu: icons spaced from their labels, the declining item in red. */
+.qd-page .dropdown-item {
+	.bi {
+		margin-right: 0.6rem;
+	}
+
+	&.qd-danger {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+	&.qd-danger:hover,
+	&.qd-danger:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+.qd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--qd-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+/* Cards share one padding and one head: title and blurb, a link at the end. */
+.qd-card {
+	min-width: 0;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.qd-card {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.qd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	.qd-link {
+		flex: none;
+		margin-top: 0.2rem;
+		font-size: 0.875rem;
+		white-space: nowrap;
+	}
+}
+.qd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.qd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--qd-quiet);
+}
+
+/* Where it stands is one card in the quote's color: blue while it waits,
+   green once won, red once lost, warming to amber and red as the deadline
+   nears. The card measures its own width for the layouts below. */
+.qd-standing {
+	--qd-tone: var(--basalt-series-1);
+	--qd-tone-end: var(--basalt-series-4);
+	position: relative;
+	container-type: inline-size;
+	overflow: hidden;
+
+	&[data-tone="soon"] {
+		--qd-tone: var(--basalt-warning);
+		--qd-tone-end: var(--basalt-warning);
+	}
+	&[data-tone="urgent"],
+	&[data-tone="declined"] {
+		--qd-tone: var(--basalt-danger);
+		--qd-tone-end: var(--basalt-danger);
+	}
+	&[data-tone="accepted"] {
+		--qd-tone: var(--basalt-success);
+		--qd-tone-end: var(--basalt-success);
+	}
+	&.basalt-box {
+		border-color: color-mix(in srgb, var(--qd-tone) 26%, var(--basalt-edge));
+		background:
+			radial-gradient(70% 120% at 100% 0%, color-mix(in srgb, var(--qd-tone) 16%, transparent), transparent 65%),
+			radial-gradient(
+				50% 90% at 0% 100%,
+				color-mix(in srgb, var(--basalt-series-4) 8%, transparent),
+				transparent 70%
+			),
+			var(--basalt-plane);
+	}
+}
+:root[data-basalt-gradients="off"] .qd-standing.basalt-box {
+	background: var(--basalt-plane);
+}
+.qd-standing-top {
+	display: grid;
+	gap: 1.5rem 2.75rem;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center;
+}
+.qd-standing-lead {
+	min-width: 0;
+}
+.qd-standing-status {
+	margin-bottom: 0.75rem;
+}
+.qd-standing-text {
+	max-width: 40rem;
+	margin: 0.5rem 0 0;
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+/* The hint carries a dot in the quote's color instead of a bullet. */
+.qd-standing-hint {
+	position: relative;
+	max-width: 40rem;
+	margin: 0.75rem 0 0;
+	padding-left: 1.1rem;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+
+	&[hidden] {
+		display: none;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		left: 0;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--qd-tone);
+	}
+}
+.qd-inline-btn {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--qd-link);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.qd-standing-total {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	padding-left: 2.75rem;
+	border-left: 1px solid color-mix(in srgb, var(--qd-tone) 22%, var(--basalt-edge));
+}
+.qd-standing-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--qd-quiet);
+}
+.qd-standing-money {
+	font-size: 2rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.qd-standing-note {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+/* The clock is a ring that empties as the validity runs down. 326.7 is its
+   circumference (r = 52) and --qd-ring the percentage left; the ring runs
+   from the quote's color into a second ramp color while it waits. */
+.qd-clock {
+	display: grid;
+	gap: 0.6rem;
+	justify-items: center;
+}
+.qd-clock-ring {
+	transform: rotate(-90deg);
+	grid-area: 1 / 1;
+	width: 7.5rem;
+	height: 7.5rem;
+}
+.qd-clock-track,
+.qd-clock-fill {
+	fill: none;
+	stroke-width: 10;
+}
+.qd-clock-track {
+	stroke: color-mix(in srgb, var(--qd-tone) 16%, var(--basalt-plane-alt));
+}
+.qd-clock-fill {
+	stroke: url(#qd-ring-ink);
+	stroke-linecap: round;
+	stroke-dasharray: 0 400px;
+	transition: stroke-dasharray 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.qd-clock-stop-start {
+	stop-color: var(--qd-tone);
+}
+.qd-clock-stop-end {
+	stop-color: var(--qd-tone-end);
+}
+/* Flat mode: the ring is drawn in its first color alone. */
+:root[data-basalt-gradients="off"] .qd-clock-stop-end {
+	stop-color: var(--qd-tone);
+}
+.qd-standing.is-ready .qd-clock-fill {
+	stroke-dasharray: calc(var(--qd-ring, 0) * 3.267px) 400px;
+}
+.qd-standing[data-tone="declined"] .qd-clock-fill {
+	visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+	.qd-clock-fill {
+		transition: none;
+	}
+}
+.qd-clock-face {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	grid-area: 1 / 1;
+	align-self: center;
+	align-items: center;
+}
+.qd-clock-num {
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1;
+	color: var(--basalt-copy);
+}
+.qd-clock-unit {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--qd-quiet);
+}
+.qd-clock-caption {
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Started, sent, opened, accepted, ordered: a column of markers joined by
+   a line, which the done ones fill with the brand gradient. */
+.qd-steps {
+	--qd-trail-from: scaleY(0);
+	--qd-trail-origin: top;
+	display: grid;
+	margin: 1.75rem 0 0;
+	padding: 1.5rem 0 0;
+	border-top: 1px solid color-mix(in srgb, var(--qd-tone) 18%, var(--basalt-edge));
+	list-style: none;
+}
+.qd-step {
+	position: relative;
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.25rem;
+		bottom: 0.25rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+	&.is-done:not(:last-child)::before {
+		background: var(--basalt-grad);
+	}
+}
+.qd-step-marker {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--qd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.qd-step.is-done .qd-step-marker {
+	font-size: 0.95rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.qd-step.is-done:nth-child(n + 4) .qd-step-marker {
+	color: var(--basalt-plane);
+	background: var(--basalt-success);
+}
+.qd-step.is-next .qd-step-marker {
+	color: color-mix(in srgb, var(--qd-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--qd-tone) 16%, var(--basalt-plane));
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--qd-tone) 12%, transparent);
+}
+.qd-step.is-stopped .qd-step-marker {
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 16%, var(--basalt-plane));
+}
+.qd-step-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.qd-step-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.qd-step.is-todo .qd-step-label {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.qd-step-when {
+	font-size: 0.77rem;
+	color: var(--qd-quiet);
+}
+/* A filled line grows out of its marker the first time the steps are on
+   screen, each one a beat behind the one before. */
+.qd-steps.is-waiting .qd-step.is-done:not(:last-child)::before {
+	transform: var(--qd-trail-from);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.qd-steps.is-drawing .qd-step.is-done:not(:last-child)::before {
+		transform-origin: var(--qd-trail-origin);
+		animation: qd-trail-grow 600ms ease-out both;
+	}
+	.qd-steps.is-drawing .qd-step.is-done:nth-child(2)::before {
+		animation-delay: 300ms;
+	}
+	.qd-steps.is-drawing .qd-step.is-done:nth-child(3)::before {
+		animation-delay: 600ms;
+	}
+	.qd-steps.is-drawing .qd-step.is-done:nth-child(4)::before {
+		animation-delay: 900ms;
+	}
+	@keyframes qd-trail-grow {
+		from {
+			transform: var(--qd-trail-from);
+		}
+	}
+}
+
+/* With room to spare the steps lie in a row and the joining line runs
+   sideways between the markers. */
+@container (min-width: 640px) {
+	.qd-steps {
+		--qd-trail-from: scaleX(0);
+		--qd-trail-origin: left;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+	.qd-step {
+		row-gap: 0.7rem;
+		grid-template-columns: minmax(0, 1fr);
+		padding-bottom: 0;
+	}
+	.qd-step:not(:last-child)::before {
+		top: calc(1rem - 1px);
+		right: 0.6rem;
+		bottom: auto;
+		left: 2.6rem;
+		width: auto;
+		height: 2px;
+	}
+	.qd-step-text {
+		padding-top: 0;
+		padding-right: 0.75rem;
+	}
+}
+/* Narrower, the clock and the total share a row under the sentence. */
+@container (max-width: 760px) {
+	.qd-standing-top {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.qd-standing-lead {
+		grid-column: 1 / -1;
+	}
+	.qd-standing-total {
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+/* On a phone the ring shrinks and its caption sits beside it. */
+@container (max-width: 380px) {
+	.qd-standing-top {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.qd-clock {
+		column-gap: 1.1rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		justify-items: start;
+	}
+	.qd-clock-ring {
+		width: 5.5rem;
+		height: 5.5rem;
+	}
+	.qd-clock-face {
+		justify-self: center;
+	}
+	.qd-clock-num {
+		font-size: 1.35rem;
+	}
+	.qd-clock-unit {
+		font-size: 0.7rem;
+	}
+	.qd-clock-caption {
+		grid-area: 1 / 2;
+		white-space: normal;
+	}
+}
+
+/* The document takes the wide column; the side cards stack beside it and
+   the last one stretches so both columns end level. On a tablet the side
+   cards pair up under the document. */
+.qd-grid {
+	display: grid;
+	gap: 1.5rem;
+}
+.qd-side {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.qd-side {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.qd-side > :last-child {
+		grid-column: 1 / -1;
+	}
+}
+@media (min-width: 1200px) {
+	.qd-grid {
+		grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem);
+	}
+	.qd-side > :last-child {
+		flex: 1 0 auto;
+	}
+}
+
+/* The document card: an older version is announced in a band across the
+   top, and the paper fills the rest so the terms sit at its foot like a
+   printed page. */
+.qd-doc {
+	container-type: inline-size;
+	scroll-margin-top: 5.5rem;
+	padding: 0;
+	overflow: clip;
+
+	&:focus {
+		outline: none;
+	}
+	&.is-editing {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge));
+	}
+	&.is-old .qd-paper {
+		background: color-mix(in srgb, var(--basalt-plane-alt) 50%, var(--basalt-plane));
+	}
+}
+.qd-viewing {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	padding: 0.85rem var(--basalt-pad-x);
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 10%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+	}
+	& > span {
+		flex: 1 1 14rem;
+	}
+	.btn {
+		white-space: nowrap;
+	}
+}
+.qd-paper {
+	display: flex;
+	flex: 1 0 auto;
+	flex-direction: column;
+	padding: 2.25rem clamp(1.25rem, 4cqi, 2.75rem) 2rem;
+}
+
+/* The paper head: the seller's mark and name, the word "Quote" and its
+   number at the other end, under a heavy rule. */
+.qd-paper-head {
+	display: flex;
+	gap: 1.25rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding-bottom: 1.5rem;
+	border-bottom: 2px solid var(--basalt-copy);
+}
+.qd-brand {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.qd-brand-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}
+.qd-brand-name {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.qd-brand-meta {
+	margin: 0.2rem 0 0;
+	font-size: 0.8rem;
+	color: var(--qd-quiet);
+}
+.qd-paper-id {
+	text-align: right;
+}
+.qd-paper-word {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.qd-paper-no {
+	margin: 0.4rem 0 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--qd-quiet);
+}
+
+/* Who it is for on the left, the dates and terms on the right. */
+.qd-paper-meta {
+	display: grid;
+	gap: 1.5rem 2rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+	padding: 1.5rem 0;
+}
+.qd-eyebrow {
+	margin: 0 0 0.6rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--qd-quiet);
+}
+.qd-address {
+	margin: 0;
+	font-size: 0.875rem;
+	font-style: normal;
+	line-height: 1.65;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.qd-dates {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	font-size: 0.875rem;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--qd-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-weight: 600;
+		text-align: right;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The lines: product, unit price, quantity (a stepper while editing),
+   amount, and a remove column that only shows while editing. */
+.qd-table {
+	--bs-table-bg: transparent;
+	margin: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 1.1rem 0.75rem;
+		border-bottom-color: var(--basalt-edge);
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		padding-bottom: 0.8rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--qd-quiet);
+	}
+	& tbody td {
+		white-space: nowrap;
+	}
+	& tbody td:first-child {
+		width: 100%;
+		white-space: normal;
+	}
+}
+.qd-col-rm {
+	width: 0;
+}
+.qd-doc:not(.is-editing) .qd-col-rm {
+	display: none;
+}
+.qd-doc:not(.is-editing) .qd-table .qd-col-total {
+	padding-right: 0;
+}
+.qd-product {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.qd-product-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--qd-item) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--qd-item) 15%, var(--basalt-plane));
+}
+/* Each product keeps one ramp color for its icon; the journal uses the
+   same set for its entries. */
+.qd-tone-1 {
+	--qd-item: var(--basalt-series-1);
+}
+.qd-tone-2 {
+	--qd-item: var(--basalt-series-2);
+}
+.qd-tone-3 {
+	--qd-item: var(--basalt-series-3);
+}
+.qd-tone-4 {
+	--qd-item: var(--basalt-series-4);
+}
+.qd-tone-7 {
+	--qd-item: var(--basalt-series-7);
+}
+.qd-tone-8 {
+	--qd-item: var(--basalt-series-8);
+}
+.qd-product-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.qd-product-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.qd-product-sku {
+	font-size: 0.77rem;
+	color: var(--qd-quiet);
+}
+.qd-fold {
+	display: none;
+}
+.qd-amount {
+	font-weight: 650;
+}
+.qd-qty {
+	display: inline-flex;
+	width: 8rem;
+}
+.qd-rm {
+	color: var(--qd-quiet);
+
+	&:hover {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+/* As the paper narrows the unit price folds under the product name, then
+   the icons go and the meta block stacks. */
+@container (max-width: 600px) {
+	.qd-col-unit {
+		display: none;
+	}
+	.qd-fold {
+		display: inline;
+	}
+}
+@container (max-width: 440px) {
+	.qd-product-icon {
+		display: none;
+	}
+	.qd-paper-meta {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.qd-paper-id {
+		text-align: left;
+	}
+	.qd-qty {
+		width: 6.75rem;
+	}
+}
+
+.qd-add {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	padding-top: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+	.form-select {
+		width: auto;
+		max-width: 100%;
+	}
+	.btn {
+		white-space: nowrap;
+	}
+}
+
+/* The foot of the paper: the note to the buyer beside the totals, which
+   move above it when the paper is narrow. */
+.qd-paper-foot {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+	align-items: start;
+	margin-bottom: 2rem;
+	padding-top: 1.75rem;
+}
+@container (max-width: 640px) {
+	.qd-paper-foot {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.qd-totals {
+		order: -1;
+	}
+}
+/* A straight inset bar marks the note as the rep's own words. */
+.qd-message-text {
+	position: relative;
+	margin: 0;
+	padding: 0.9rem 1rem 0.9rem 1.25rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.7rem;
+		bottom: 0.7rem;
+		left: 0;
+		width: 3px;
+		border-radius: 2px;
+		background: var(--basalt-series-1);
+	}
+}
+.qd-message-text[hidden],
+.qd-message-field[hidden] {
+	display: none;
+}
+.qd-message-field {
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+
+.qd-totals {
+	display: grid;
+	gap: 0.7rem;
+	margin: 0;
+	font-size: 0.875rem;
+
+	& > div {
+		display: flex;
+		gap: 1.5rem;
+		align-items: baseline;
+		justify-content: space-between;
+	}
+	& dt {
+		display: flex;
+		gap: 0.1rem;
+		flex-direction: column;
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+	& dt small {
+		font-size: 0.77rem;
+		font-weight: 400;
+		color: var(--qd-quiet);
+	}
+	& dd {
+		margin: 0;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	.qd-totals-save dd {
+		font-weight: 650;
+		color: color-mix(in srgb, var(--basalt-success) 58%, var(--basalt-copy));
+	}
+	.qd-totals-total {
+		align-items: center;
+		margin-top: 0.3rem;
+		padding: 0.9rem 1.1rem;
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+	}
+	.qd-totals-total dt,
+	.qd-totals-total dd {
+		font-size: 1.1rem;
+		font-weight: 750;
+		color: var(--basalt-copy);
+	}
+}
+
+.qd-terms {
+	margin: auto 0 0;
+	padding-top: 1.25rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	line-height: 1.6;
+	color: var(--qd-quiet);
+}
+
+/* While editing, the bar with the validity switch, the email toggle and
+   the buttons sticks to the foot of the window. */
+.qd-editbar {
+	position: sticky;
+	bottom: 0;
+	z-index: 2;
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.1rem var(--basalt-pad-x) 1.35rem;
+	border-top: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+	box-shadow: 0 -10px 24px -18px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+
+	&[hidden] {
+		display: none;
+	}
+	.form-check {
+		margin: 0;
+	}
+}
+.qd-editbar-opts {
+	display: flex;
+	gap: 1rem 1.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.qd-editbar-valid {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.qd-editbar-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.qd-editbar-actions {
+	display: flex;
+	gap: 0.75rem;
+	margin-left: auto;
+
+	.btn {
+		white-space: nowrap;
+	}
+}
+
+/* The customer card: avatar and name, then fact rows. */
+.qd-who {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.qd-who-mark.basalt-avatar {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+}
+.qd-who-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.qd-who-name {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.qd-who-meta {
+	font-size: 0.8rem;
+	color: var(--qd-quiet);
+}
+.qd-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 5.5rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--qd-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+.qd-facts-mail {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	min-width: 0;
+
+	.qd-link {
+		min-width: 0;
+		overflow-wrap: normal;
+	}
+}
+.qd-facts-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--qd-quiet);
+}
+.qd-copy {
+	flex: none;
+	padding: 0.1rem 0.3rem;
+	color: var(--qd-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Versions: a numbered tile, what changed and when, the total and a Show
+   button; the one on display is tinted. */
+.qd-versions {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.qd-version {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+	align-items: start;
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	.btn {
+		white-space: nowrap;
+	}
+}
+.qd-version-n {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 0.8rem;
+	font-weight: 750;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.qd-version.is-shown .qd-version-n {
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+.qd-version-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.qd-version-title {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.qd-version-meta {
+	font-size: 0.77rem;
+	line-height: 1.45;
+	color: var(--qd-quiet);
+}
+.qd-version-side {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.qd-version-money {
+	font-size: 0.875rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.qd-version-on {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--qd-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* The journal is a timeline: a tinted icon, a line down to the next entry,
+   the text and the time; won and lost entries take the outcome's color. */
+.qd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.qd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.qd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: color-mix(in srgb, var(--qd-item) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--qd-item) 14%, var(--basalt-plane));
+}
+.qd-feed-item-won .qd-feed-icon {
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.qd-feed-item-lost .qd-feed-icon {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+}
+.qd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.qd-feed-time {
+	font-size: 0.77rem;
+	color: var(--qd-quiet);
+}
+
+/* The dialogs: the plan for an order as a ticked list, and the reasons for
+   a decline as two columns of choice tiles. */
+.qd-plan {
+	display: grid;
+	gap: 1rem;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.65rem;
+		grid-template-columns: 1.25rem minmax(0, 1fr);
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	.bi {
+		color: color-mix(in srgb, var(--basalt-success) 58%, var(--basalt-copy));
+	}
+}
+.qd-plan-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--qd-quiet);
+}
+.qd-reasons {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Printing keeps the document alone on the page. */
+@media print {
+	body.basalt-doc .basalt-mainmenu,
+	body.basalt-doc .basalt-dim,
+	body.basalt-doc .basalt-topbar,
+	body.basalt-doc .basalt-pagefoot,
+	body.basalt-doc .modal,
+	.qd-head,
+	.qd-standing,
+	.qd-side,
+	.qd-viewing,
+	.qd-editbar {
+		display: none;
+	}
+	body.basalt-doc .basalt-frame {
+		margin-left: 0;
+		transition: none;
+	}
+	.qd-grid {
+		display: block;
+	}
+	.qd-doc.basalt-box {
+		border: 0;
+		box-shadow: none;
+	}
+	.qd-clock-fill {
+		transition: none;
+	}
+}

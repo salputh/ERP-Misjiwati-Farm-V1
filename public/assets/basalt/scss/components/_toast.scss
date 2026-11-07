@@ -1,0 +1,485 @@
+/* Pop-up notifications: Bootstrap's plain .toast on the palette, the richer
+   .basalt-notice card, and the floating pile that stacks them. toasts.html
+   shows each one; Basalt.toasts in basalt.js builds and runs the pile. */
+
+/* Secondary text in a toast is muted copy pulled toward full copy. */
+$quiet-ink: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+/* A solid keyboard outline in the given color, set off the element. */
+@mixin focus-line($ink, $gap) {
+	outline: 2px solid $ink;
+	outline-offset: $gap;
+}
+
+/* Out of the box a Bootstrap toast is translucent white with gray text. Each
+   of its variables is pointed at a palette token here, so untouched Bootstrap
+   markup follows the theme in light and dark alike. */
+.toast {
+	--bs-toast-bg: var(--basalt-plane);
+	--bs-toast-color: var(--basalt-copy-body);
+	--bs-toast-border-color: var(--basalt-edge);
+	--bs-toast-border-radius: 12px;
+	--bs-toast-box-shadow:
+		var(--basalt-card-shadow), 0 14px 34px -18px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+	--bs-toast-header-bg: color-mix(in srgb, var(--basalt-plane-alt) 55%, var(--basalt-plane));
+	--bs-toast-header-color: var(--basalt-copy);
+	--bs-toast-header-border-color: var(--basalt-edge);
+	--bs-toast-font-size: 0.86rem;
+	--bs-toast-max-width: 360px;
+	--bs-toast-padding-x: 0.85rem;
+	--bs-toast-padding-y: 0.6rem;
+
+	/* Dark copy is light, so in dark mode the drop shadow is cast from the
+     page color instead. */
+	[data-bs-theme="dark"] & {
+		--bs-toast-box-shadow:
+			var(--basalt-card-shadow), 0 16px 36px -14px color-mix(in srgb, var(--basalt-canvas) 92%, transparent);
+	}
+}
+.toast-header {
+	strong {
+		font-weight: 650;
+	}
+	small {
+		color: $quiet-ink;
+	}
+}
+.toast-body {
+	line-height: 1.5;
+}
+.toast .border-top {
+	border-color: var(--basalt-edge);
+}
+
+/* .basalt-notice is a toast laid out as an icon or avatar tile beside a
+   title, timestamp, message and action row, with an optional close button
+   in the corner and a countdown bar the pile adds along the bottom. It works
+   alone (with Bootstrap's .toast and .show) or inside the pile. One tone
+   variable colors it; the -message and -bar forms change its shape. */
+.toast.basalt-notice {
+	--basalt-toast-tone: var(--basalt-hue);
+	--basalt-toast-ink: color-mix(in srgb, var(--basalt-toast-tone) 50%, var(--basalt-copy));
+	--bs-toast-max-width: 24rem;
+	position: relative;
+	width: 100%;
+	border-radius: 14px;
+	overflow: hidden;
+	color: var(--basalt-copy-body);
+}
+
+/* Each tone class swaps the tone token, and every status tone also draws a
+   thin stripe of its color down the leading edge. */
+%notice-stripe {
+	content: "";
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: 3px;
+	background: var(--basalt-toast-tone);
+}
+$notice-tones: (
+	success: success,
+	warning: warning,
+	danger: danger,
+	info: flare,
+	busy: hue,
+);
+@each $tone, $token in $notice-tones {
+	.toast.basalt-notice-#{$tone} {
+		--basalt-toast-tone: var(--basalt-#{$token});
+	}
+}
+@each $tone in success, warning, danger, info {
+	.basalt-notice-#{$tone}::before {
+		@extend %notice-stripe;
+	}
+}
+
+/* Tile on the left, text on the right; a close button reserves its corner. */
+.basalt-notice:not(.basalt-notice-piled),
+.basalt-notice-wrap {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: start;
+	padding: 0.85rem 1rem;
+}
+.basalt-notice:has(.basalt-notice-dismiss):not(.basalt-notice-piled),
+.basalt-notice-wrap:has(.basalt-notice-dismiss) {
+	padding-right: 2.75rem;
+}
+
+/* The tile is a tinted rounded square holding an icon; a person's initials
+   sit in a slightly larger circle instead. */
+.basalt-notice-mark,
+.basalt-notice-face {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.95rem;
+	color: var(--basalt-toast-ink);
+	background: color-mix(in srgb, var(--basalt-toast-tone) 16%, var(--basalt-plane));
+}
+.basalt-notice-face {
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-size: 0.74rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+}
+
+/* While work is under way the icon gives place to a spinning ring, which
+   slows right down for visitors who ask for less motion. */
+.basalt-notice-busy .basalt-notice-mark {
+	.bi {
+		display: none;
+	}
+	&::before {
+		content: "";
+		width: 1rem;
+		height: 1rem;
+		border-radius: 50%;
+		border: 2px solid currentColor;
+		border-right-color: transparent;
+		animation: basalt-toast-spin 700ms linear infinite;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation-duration: 2s;
+		}
+	}
+}
+@keyframes basalt-toast-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* The text column: a bold title with its time beside it, then the message. */
+.basalt-notice-content {
+	align-self: center;
+	min-width: 0;
+}
+.basalt-notice-head {
+	margin: 0;
+	font-size: 0.88rem;
+	font-weight: 650;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+.basalt-notice-when {
+	margin-left: 0.3rem;
+	font-size: 0.75rem;
+	font-weight: 400;
+	color: $quiet-ink;
+}
+.basalt-notice-msg {
+	margin: 0;
+	font-size: 0.84rem;
+	line-height: 1.45;
+
+	.basalt-notice-head + & {
+		margin-top: 0.1rem;
+	}
+}
+
+/* Actions wrap in a row under the text. The main one is a solid ink button,
+   and the quiet one is outlined on a clear ground. */
+.basalt-notice-acts {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.7rem;
+}
+.basalt-notice-action {
+	--bs-btn-color: var(--basalt-plane);
+	--bs-btn-bg: var(--basalt-copy);
+	--bs-btn-border-color: var(--basalt-copy);
+	--bs-btn-hover-color: var(--basalt-plane);
+	--bs-btn-hover-bg: color-mix(in srgb, var(--basalt-copy) 84%, var(--basalt-plane));
+	--bs-btn-hover-border-color: color-mix(in srgb, var(--basalt-copy) 84%, var(--basalt-plane));
+	--bs-btn-active-color: var(--basalt-plane);
+	--bs-btn-active-bg: color-mix(in srgb, var(--basalt-copy) 76%, var(--basalt-plane));
+	--bs-btn-active-border-color: color-mix(in srgb, var(--basalt-copy) 76%, var(--basalt-plane));
+	--bs-btn-font-weight: 600;
+	--bs-btn-padding-y: 0.2rem;
+	--bs-btn-padding-x: 0.65rem;
+	white-space: nowrap;
+
+	&:focus-visible {
+		box-shadow: none;
+		@include focus-line(var(--basalt-copy), 2px);
+	}
+}
+.basalt-notice-action-quiet {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-bg: transparent;
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-copy-muted);
+}
+
+/* The close button floats in the top right corner above the content. */
+.basalt-notice-dismiss {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	z-index: 1;
+	display: inline-grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.77rem;
+	color: $quiet-ink;
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		@include focus-line(var(--basalt-copy), 1px);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* The countdown bar shrinks from the right as time runs out, and fades
+   back while the visitor holds the toast open. */
+.basalt-notice-timer {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	transform-origin: left center;
+	transform: scaleX(var(--basalt-toast-left, 1));
+	height: 3px;
+	background: var(--basalt-toast-ink);
+	opacity: 0.75;
+
+	.basalt-notice.is-paused & {
+		opacity: 0.35;
+	}
+}
+
+/* The message form adds a reply field below the text, and can list line
+   items with a ruled total at the bottom. */
+.basalt-notice-answer {
+	display: flex;
+	gap: 0.4rem;
+	margin-top: 0.65rem;
+
+	.form-control {
+		min-width: 0;
+	}
+}
+.basalt-notice-copy {
+	margin: 0.5rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+	list-style: none;
+
+	li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.1rem 0;
+	}
+	.basalt-notice-sum {
+		margin-top: 0.3rem;
+		padding-top: 0.4rem;
+		border-top: 1px solid var(--basalt-edge);
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The snackbar flips to the inverse of the page and holds a single line
+   with one uppercase text action. */
+.toast.basalt-notice-bar {
+	--bs-toast-bg: var(--basalt-copy);
+	--bs-toast-border-color: var(--basalt-copy);
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.7rem 0.8rem 0.7rem 1rem;
+	color: var(--basalt-plane);
+}
+.basalt-notice-bar {
+	.basalt-notice-msg {
+		flex: 1 1 auto;
+		color: var(--basalt-plane);
+	}
+	.basalt-notice-mark {
+		width: auto;
+		height: auto;
+		color: var(--basalt-plane);
+		background: none;
+	}
+}
+.basalt-notice-anchor {
+	flex-shrink: 0;
+	padding: 0.25rem 0.5rem;
+	border: 0;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-hue) 30%, var(--basalt-plane));
+	background: transparent;
+	cursor: pointer;
+
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-plane) 12%, transparent);
+	}
+	&:focus-visible {
+		@include focus-line(var(--basalt-plane), 1px);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* The pile is the fixed corner region the script builds. Toasts lie on top
+   of one another: while it is closed the older ones tuck in behind the
+   newest (the script sets --y and --s on each), and hovering or focusing it
+   adds .is-open, which spreads them out. It sits bottom-end unless a
+   -bottom-center, -top-end or -top-center class moves it. */
+.basalt-notice-pile {
+	position: fixed;
+	/* The script steers the pile around an open drawer or dialog. Its
+     --basalt-toast-avoid shifts it left of the panel, --basalt-toast-w
+     narrows it to the space beside one, and --basalt-toast-lift raises it
+     over the panel's footer buttons. */
+	right: calc(1.25rem + var(--basalt-toast-avoid, 0px));
+	bottom: calc(1.25rem + var(--basalt-toast-lift, 0px));
+	z-index: 1090;
+	width: var(--basalt-toast-w, min(24rem, calc(100vw - 2.5rem)));
+	pointer-events: none;
+
+	/* Floating over anything, a toast needs the stronger edge to stand out. */
+	.toast {
+		--bs-toast-border-color: var(--basalt-edge-strong);
+	}
+}
+.basalt-notice-pile-bottom-center,
+.basalt-notice-pile-top-center {
+	right: auto;
+	left: 50%;
+	transform: translateX(-50%);
+}
+.basalt-notice-pile-top-end,
+.basalt-notice-pile-top-center {
+	top: 1.25rem;
+	bottom: auto;
+}
+.basalt-notice-pile-items {
+	position: relative;
+	height: var(--basalt-stack-h, 0);
+	transition: height 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	&:not(:empty) {
+		pointer-events: auto;
+	}
+}
+
+/* Inside the pile each toast is pinned to the bottom (or the top, for the
+   top positions) and slides and scales to the place the script gives it. */
+.basalt-notice-pile .basalt-notice {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	transform: translateY(var(--y, 0)) scale(var(--s, 1));
+	transform-origin: center bottom;
+	height: var(--basalt-toast-h, auto);
+	transition:
+		transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+		opacity 320ms ease,
+		height 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.basalt-notice-pile-top-end .basalt-notice,
+.basalt-notice-pile-top-center .basalt-notice {
+	top: 0;
+	bottom: auto;
+	transform-origin: center top;
+}
+.basalt-notice-pile {
+	.basalt-notice-wrap {
+		transition: opacity 200ms ease;
+	}
+	.basalt-notice.is-behind .basalt-notice-wrap {
+		opacity: 0;
+	}
+	.basalt-notice.is-gone {
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+/* A new toast rises in from below (drops in from above at the top), and a
+   closing one slides out to the side, or shrinks away when centered. */
+.basalt-notice-pile .basalt-notice.is-entering {
+	transform: translateY(calc(var(--y, 0px) + 1.5rem)) scale(0.96);
+	opacity: 0;
+}
+.basalt-notice-pile-top-end .basalt-notice.is-entering,
+.basalt-notice-pile-top-center .basalt-notice.is-entering {
+	transform: translateY(calc(var(--y, 0px) - 1.5rem)) scale(0.96);
+}
+.basalt-notice-pile .basalt-notice.is-leaving {
+	transform: translateX(110%);
+	opacity: 0;
+}
+.basalt-notice-pile-bottom-center .basalt-notice.is-leaving,
+.basalt-notice-pile-top-center .basalt-notice.is-leaving {
+	transform: translateY(var(--y, 0)) scale(0.9);
+}
+.basalt-notice-pile .basalt-notice:focus-visible {
+	@include focus-line(var(--basalt-copy), 2px);
+}
+
+/* Under reduced motion the pile jumps straight to each new layout. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-notice-pile-items,
+	.basalt-notice-pile .basalt-notice,
+	.basalt-notice-pile .basalt-notice-wrap {
+		transition: none;
+	}
+}
+
+/* Phones pull the pile closer to the screen edges and let it run nearly
+   full width. */
+@media (max-width: 575.98px) {
+	.basalt-notice-pile {
+		right: calc(0.75rem + var(--basalt-toast-avoid, 0px));
+		bottom: calc(0.75rem + var(--basalt-toast-lift, 0px));
+		width: var(--basalt-toast-w, calc(100vw - 1.5rem));
+	}
+	.basalt-notice-pile-top-end,
+	.basalt-notice-pile-top-center {
+		top: 0.75rem;
+	}
+}
+
+/* Notifications have no place on paper. */
+@media print {
+	.basalt-notice-pile {
+		display: none;
+	}
+}

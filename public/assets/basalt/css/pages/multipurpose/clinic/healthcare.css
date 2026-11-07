@@ -1,0 +1,5979 @@
+/* Basalt - Healthcare suite (healthcare-*.html)
+   Namespaced under .hc-*
+   Built from shared parts: the plain page header, the detail hero, cards,
+   avatars, pills and tables. This file lays them out and styles what
+   belongs to these pages only: the director's figures, the floor plan,
+   the day as lanes, the body with chips floating around it, the lab
+   results on their range, and the small lists beside them. */
+
+/* Dialogs and drawers sit outside the page's root, so they read the
+   same tokens from here. */
+.hc-page,
+.modal,
+.offcanvas {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on every palette. */
+	--hc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--hc-track: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+	--hc-free: color-mix(in srgb, var(--basalt-copy) 5%, var(--basalt-plane));
+	/* Links in running text, the same mix as on the other detail pages. */
+	--hc-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+
+/* Cards */
+.hc-card.card {
+	display: flex;
+	flex-direction: column;
+	container-type: inline-size;
+	overflow: hidden;
+}
+.hc-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.hc-card-head > div:first-child {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+.hc-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hc-card-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--hc-quiet);
+}
+.hc-card-body {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	padding: 1.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.hc-card-foot {
+	margin: auto 0 0;
+	padding: 1rem var(--basalt-pad-x) 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--hc-quiet);
+}
+
+/* Headline figures in a card head: label over value. */
+.hc-headline {
+	display: flex;
+	gap: 1.75rem;
+	flex-wrap: wrap;
+	margin: 0;
+}
+.hc-headline dt,
+.hc-col-head,
+.hc-table th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-headline dd {
+	margin: 0.1rem 0 0;
+	font-size: 1.1rem;
+	font-weight: 750;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+/* Headline figures: a row of plain cards, as Travel draws its figures.
+   Each carries its chart color only on the icon and the day bars: the
+   label over a big figure, one line of trend, and small bars with the
+   latest one solid. The figure counts up on load. */
+.hc-tiles {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+}
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-tile) {
+	--tone: var(--basalt-hue);
+	--hc-tile-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.hc-tile {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.2rem 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background-color: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+
+	& dt {
+		display: flex;
+		gap: 0.4rem;
+		align-items: center;
+		margin-bottom: 0.4rem;
+		font-size: 0.81rem;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--hc-tile-quiet);
+	}
+	& dt .bi {
+		font-size: 1rem;
+		color: var(--tone);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.75rem;
+		font-weight: 750;
+		line-height: 1.1;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	& [data-hc-value] {
+		font-variant-numeric: tabular-nums;
+	}
+	& .hc-band-trend {
+		margin-top: 0.3rem;
+	}
+	& .hc-tile-sub {
+		display: flex;
+		gap: 0.3rem;
+		align-items: center;
+		min-width: 0;
+		margin: 0.1rem 0 0;
+		font-size: 0.81rem;
+		font-weight: 500;
+		line-height: 1.5;
+		color: var(--hc-tile-quiet);
+	}
+	& .hc-tile-sub .bi {
+		color: var(--tone);
+	}
+}
+/* Small day bars under a figure, the latest one solid, kept at the
+   card's foot so a row of cards lines them up. */
+.hc-tile .hc-tile-foot {
+	margin-top: auto;
+	padding-top: 0.75rem;
+	line-height: 0;
+}
+.hc-tile-bars {
+	display: flex;
+	gap: 3px;
+	align-items: flex-end;
+	height: 2.25rem;
+}
+.hc-tile-bar {
+	flex: 1;
+	height: calc(var(--value, 4) * 1%);
+	border-radius: 2px 2px 1px 1px;
+	background: color-mix(in srgb, var(--tone) 45%, var(--basalt-plane));
+
+	&.is-now {
+		background: var(--tone);
+	}
+}
+/* A tile's value that opens its page reads as a link: the accent, and
+   underlined on hover. */
+.hc-tile-link,
+.hc-tile .hc-person-link > span:last-child {
+	color: var(--hc-link);
+	text-decoration: none;
+}
+.hc-tile-link:hover,
+.hc-tile .hc-person-link:hover > span:last-child {
+	color: var(--basalt-copy);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.hc-tile .hc-person-link {
+	font-weight: inherit;
+	max-width: 100%;
+}
+.hc-tile .hc-person-link .basalt-avatar {
+	flex: none;
+}
+
+/* Tiles that hold words rather than figures (a name, a plan) set them smaller. */
+.hc-tiles-as-text .hc-tile dd:not(.hc-tile-sub) {
+	overflow: hidden;
+	font-size: 1.1rem;
+	font-weight: 700;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.hc-tiles-as-text .hc-tile-sub {
+	margin-left: 0;
+}
+@media (max-width: 991.98px) {
+	.hc-tiles {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 419.98px) {
+	.hc-tiles {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The rest of today: one row per provider, the specialty and room under
+   the name, lined up with it past the avatar. The row opens the quick
+   view; its buttons sit together at the end. */
+.hc-rest tbody tr:not(.basalt-empty-row) {
+	cursor: pointer;
+}
+.hc-rest .hc-person-link {
+	white-space: nowrap;
+}
+.hc-rest-room {
+	display: block;
+	margin-left: calc(26px + 0.4rem);
+	white-space: nowrap;
+}
+.hc-rest-room,
+.hc-rest-none {
+	font-size: 0.8rem;
+	color: var(--hc-quiet);
+}
+.hc-rest-done,
+.hc-rest-open {
+	white-space: nowrap;
+}
+.hc-rest-acts {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: flex-end;
+	white-space: nowrap;
+}
+/* Columns leave as the card narrows, so the actions never crowd: first the
+   finish time and the full-page link (the name opens that page too), then
+   the open slots, then the waitlist button, then the figures. */
+@container (max-width: 60rem) {
+	.hc-rest .hc-rest-done,
+	.hc-rest .basalt-row-actions > a {
+		display: none;
+	}
+}
+@container (max-width: 56rem) {
+	.hc-rest .hc-rest-open {
+		display: none;
+	}
+}
+@container (max-width: 44rem) {
+	.hc-rest .hc-rest-acts > .btn {
+		display: none;
+	}
+}
+@container (max-width: 36rem) {
+	.hc-rest :is(.hc-rest-left, .hc-rest-run) {
+		display: none;
+	}
+}
+
+/* A list toolbar, as on the template's other lists: a search that stops
+   growing at 28rem, one filter beside it, and the running count at the
+   far end. */
+.hc-listbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.5rem var(--basalt-pad-x) 1.25rem;
+}
+.hc-listbar-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--hc-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.hc-listbar-select.form-select {
+	width: auto;
+	flex: none;
+}
+.hc-listbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+@media (max-width: 575.98px) {
+	.hc-listbar-search {
+		flex-basis: 100%;
+	}
+}
+
+/* Sortable heads are bare buttons that borrow the head's type. */
+.hc-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	white-space: nowrap;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+[aria-sort] .hc-sort {
+	color: var(--basalt-copy);
+}
+.hc-sort-idle {
+	opacity: 0.55;
+}
+.hc-sort:hover .hc-sort-idle {
+	opacity: 1;
+}
+
+/* The quick view: a sentence, the facts as label and value, then a short
+   list with a muted line for the rest. */
+.hc-peek-lead {
+	margin: 0 0 1rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.hc-peek-facts {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 8rem minmax(0, 1fr);
+	}
+	& dt {
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--hc-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.hc-peek-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		padding: 0.75rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.9rem;
+		color: var(--basalt-copy);
+	}
+	& li:first-child {
+		border-top: 0;
+		padding-top: 0;
+	}
+}
+.hc-peek-when {
+	flex: none;
+	width: 4.5rem;
+	color: var(--hc-quiet);
+}
+.hc-peek-foot {
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	color: var(--hc-quiet);
+}
+
+/* Record the exam: group headings and the live flags under the vitals. */
+.hc-exam-group {
+	margin: 0 0 0.75rem;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hc-exam-flags {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 1rem 0 1.5rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		--tone: var(--basalt-success);
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		padding: 0.3rem 0.7rem;
+		border-radius: 8px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: color-mix(in srgb, var(--tone) 50%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--tone) 12%, var(--basalt-plane));
+	}
+	& li.is-warn {
+		--tone: var(--basalt-warning);
+	}
+}
+a.hc-waits-name {
+	color: var(--basalt-copy);
+	text-decoration: none;
+
+	&:hover {
+		color: var(--basalt-hue);
+	}
+}
+
+/* Links take the accent, semibold, no underline, so what can be clicked
+   is plain at a glance: a link in running text and a row's title alike.
+   Both turn ink and underline on hover. */
+:is(.hc-page, .modal, .offcanvas) :is(h2, h3, dd, p, td, li, .hc-who-meta, .hc-waits-meta) a:not([class]) {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+}
+.hc-cell-link {
+	display: block;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Next up as a table: compact rows, the time over its room. */
+.hc-next-table td {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+}
+/* In a narrow card the doctor steps aside so the status never gets cut. */
+@container (max-width: 30rem) {
+	.hc-next-table .hc-next-with {
+		display: none;
+	}
+}
+
+/* A person standing on their own (a table cell, a tile, a fact): the
+   avatar and the name in the accent, no outline. On hover the avatar takes
+   a soft ring and the name turns ink; nothing underlines. Inside a
+   sentence it is a plain link. */
+.hc-person-link {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	max-width: 100%;
+	vertical-align: middle;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+	transition: color 170ms ease;
+
+	& > .basalt-avatar {
+		flex: none;
+		transition: box-shadow 170ms ease;
+	}
+	& > span:last-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	&:hover,
+	&:focus-visible {
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+	&:hover > .basalt-avatar,
+	&:focus-visible > .basalt-avatar {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-hue-border);
+	}
+	&:focus-visible {
+		outline: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-person-link {
+		transition: none;
+	}
+}
+
+/* A person named inside a sentence is a plain accent link: an avatar in
+   the middle of a line breaks it. The avatar stays where a name stands
+   on its own (a table cell, a tile, a fact). */
+:is(.hc-who-meta, .hc-waits-meta, p) .hc-person-link {
+	display: inline;
+	padding: 0;
+	border: 0;
+	font-size: inherit;
+	color: var(--hc-link);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	& > .basalt-avatar {
+		display: none;
+	}
+}
+
+/* The medicines table sits inside the card's padding, so its first and
+   last cells line up with the card's text. */
+.hc-takes-table {
+	& th:first-child,
+	& td:first-child {
+		padding-left: 0;
+	}
+	& th:last-child,
+	& td:last-child {
+		padding-right: 0;
+	}
+	& td {
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+	}
+}
+/* On a phone the prescriber steps aside, so the medicine and
+   its refill keep the width; past visits drop who saw them the same way. */
+@media (max-width: 575.98px) {
+	.hc-takes-table :is(th, td):nth-child(2),
+	.hc-ad-visits :is(th, td):nth-child(3) {
+		display: none;
+	}
+	.hc-ad-visits td:first-child {
+		white-space: nowrap;
+	}
+}
+
+/* Renew under a refill that is due: a small accent text button. */
+.hc-renew {
+	display: block;
+	margin-top: 0.3rem;
+	padding: 0;
+	border: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--hc-link);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+
+/* Under a range bar, what it says in words, in the quiet size. */
+.hc-range-note {
+	display: block;
+	margin-top: 0.4rem;
+	font-size: 0.75rem;
+	color: var(--hc-quiet);
+}
+
+/* The problem quick view: the measure as a big figure over its line, then
+   short lists. Its mark takes the problem's own color. */
+.hc-p-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+	color: color-mix(in srgb, var(--tone, var(--basalt-hue)) 75%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone, var(--basalt-hue)) 16%, var(--basalt-plane));
+}
+.hc-problem-drawer .basalt-drawer-legend .hc-pill {
+	margin-left: 0.4rem;
+	vertical-align: middle;
+}
+.hc-p-figure {
+	margin: 0;
+
+	& b {
+		font-size: 2rem;
+		font-weight: 800;
+		line-height: 1;
+		color: var(--basalt-copy);
+	}
+	& span {
+		color: var(--hc-quiet);
+	}
+}
+.hc-p-measure,
+.hc-p-target {
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	color: var(--hc-quiet);
+}
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-p-spark) {
+	--tone: var(--basalt-hue);
+}
+.hc-p-spark {
+	height: 3rem;
+	margin-top: 0.75rem;
+}
+.hc-p-next {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	margin: 0;
+
+	& b {
+		font-size: 1.05rem;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.85rem;
+		color: var(--hc-quiet);
+	}
+}
+.hc-p-list,
+.hc-p-history {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hc-p-by {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 0.25rem;
+	font-size: 0.85rem;
+	color: var(--hc-quiet);
+}
+.hc-p-history li {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 4.5rem minmax(0, 1fr);
+}
+
+/* Appointments: the toolbar (search, who, view) on one row, then the day
+   by provider: a row each, hours across, a block per visit. */
+.hc-cal-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 1.25rem var(--basalt-pad-x) 0;
+
+	& .hc-cal-search {
+		flex: 1 1 14rem;
+		max-width: 28rem;
+		margin: 0;
+	}
+	& .hc-who,
+	& .hc-who:has(> .dropdown) {
+		margin: 0;
+		padding: 0;
+	}
+	/* The menu button stands as tall as the search and the switch. */
+	& .hc-who-btn {
+		min-height: 2.375rem;
+	}
+	& .hc-cal-views {
+		margin-left: auto;
+	}
+}
+/* Too narrow for one row: the search takes a row of its own and the
+   menu and the switch follow from the left. */
+@container (max-width: 48rem) {
+	.hc-cal-toolbar {
+		& .hc-cal-search {
+			flex-basis: 100%;
+			max-width: none;
+		}
+		& .hc-cal-views {
+			margin-left: 0;
+		}
+	}
+}
+.hc-board {
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.hc-board-nav {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+.hc-board-title {
+	margin: 0 0 0 0.4rem;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hc-board-sum {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	color: var(--hc-quiet);
+}
+.hc-board-grid {
+	display: grid;
+	min-width: 0;
+}
+.hc-board-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 11rem minmax(0, 1fr);
+	align-items: center;
+	padding: 0.5rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&.is-head {
+		padding: 0 0 0.4rem;
+		border-top: 0;
+	}
+}
+.hc-board-who {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	align-items: flex-start;
+	min-width: 0;
+
+	& small {
+		padding-left: 0.3rem;
+		font-size: 0.75rem;
+		color: var(--hc-quiet);
+	}
+}
+.hc-board-track {
+	position: relative;
+	height: 3.1rem;
+
+	.is-head & {
+		height: 1.1rem;
+	}
+}
+.hc-board-hour {
+	position: absolute;
+	top: 0;
+	font-size: 0.71rem;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+	transform: translateX(-50%);
+}
+.hc-board-hour:first-child {
+	transform: none;
+}
+.hc-board-line {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 1px;
+	background: var(--basalt-edge);
+}
+.hc-board-lunch {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	background: repeating-linear-gradient(
+		135deg,
+		transparent 0 6px,
+		color-mix(in srgb, var(--basalt-copy) 5%, transparent) 6px 12px
+	);
+}
+.hc-board-now {
+	position: absolute;
+	top: -0.5rem;
+	bottom: -0.5rem;
+	z-index: 2;
+	width: 2px;
+	border-radius: 2px;
+	background: var(--basalt-danger);
+}
+.hc-board-visit {
+	position: absolute;
+	top: 0.2rem;
+	bottom: 0.2rem;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
+	padding: 0 0.4rem;
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--tone) 45%, var(--basalt-edge));
+	border-radius: 7px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+	transition: transform 170ms ease;
+
+	& b,
+	& span {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	& b {
+		font-size: 0.75rem;
+		font-weight: 650;
+	}
+	& span {
+		font-size: 0.67rem;
+		color: var(--basalt-copy-body);
+	}
+	&:hover {
+		z-index: 3;
+		transform: translateY(-1px);
+		box-shadow: var(--basalt-card-shadow);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	/* Seen and gone visits go quiet through their surface, not opacity, so the text stays readable. */
+	&.is-seen {
+		border-color: var(--basalt-edge);
+		background: color-mix(in srgb, var(--tone) 6%, var(--basalt-plane));
+	}
+	&.is-now {
+		border-color: var(--tone);
+		color: #fff;
+		/* Dark enough for white text on the lightest tones. */
+		background: color-mix(in srgb, var(--tone) 48%, #000);
+
+		& span {
+			color: rgb(255 255 255 / 94%);
+		}
+	}
+	&.is-checked {
+		border: 1.5px solid color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+	}
+	&.is-gone {
+		border-color: var(--basalt-edge);
+		color: var(--basalt-copy-body);
+		background: var(--basalt-plane);
+
+		& b {
+			text-decoration: line-through;
+		}
+	}
+}
+@media (max-width: 991.98px) {
+	.hc-board-grid {
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+	.hc-board-row {
+		min-width: 56rem;
+	}
+}
+
+/* A row whose action is done goes quiet; its pill says what happened. */
+.is-settled > :not(:last-child) {
+	opacity: 0.55;
+}
+
+/* Triage wizard: the five levels and the free spots as tiles to pick. */
+.hc-tr-group {
+	margin-top: 1.5rem;
+}
+.hc-tr-levels {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.hc-tr-level {
+	display: grid;
+	gap: 0.1rem;
+	justify-items: center;
+	padding: 0.85rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	text-align: center;
+	cursor: pointer;
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	& b {
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		color: #fff;
+		background: color-mix(in srgb, var(--tone) 85%, #000);
+	}
+	& span {
+		font-size: 0.85rem;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& small {
+		font-size: 0.71rem;
+		color: var(--hc-quiet);
+	}
+	&:hover {
+		border-color: color-mix(in srgb, var(--tone) 50%, var(--basalt-edge));
+	}
+	.btn-check:checked + & {
+		border-color: var(--tone);
+		background: color-mix(in srgb, var(--tone) 10%, var(--basalt-plane));
+	}
+	.btn-check:focus-visible + & {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.hc-tr-spots {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.hc-tr-spot {
+	display: grid;
+	gap: 0.2rem;
+	justify-items: center;
+	padding: 0.85rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-weight: 650;
+	text-align: center;
+	cursor: pointer;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	& .bi {
+		font-size: 1.1rem;
+		color: var(--hc-link);
+	}
+	& small {
+		font-size: 0.71rem;
+		font-weight: 500;
+		color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	}
+	.btn-check:checked + & {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	}
+	.btn-check:focus-visible + & {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+@media (max-width: 575.98px) {
+	.hc-tr-levels,
+	.hc-tr-spots {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Claim details: the claim's path as numbered steps on one line (done
+   ones filled, the current one ringed, the rest quiet), the questioned
+   line tinted, the payer's words as a quote, and the fix list. */
+.hc-cd-path {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	margin: 0;
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+	list-style: none;
+}
+.hc-cd-step {
+	position: relative;
+	display: grid;
+	gap: 0.2rem;
+	justify-items: center;
+	padding: 0 0.5rem;
+	text-align: center;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1rem;
+		right: 50%;
+		left: -50%;
+		height: 2px;
+		background: var(--basalt-edge-strong);
+	}
+	&:first-child::before {
+		display: none;
+	}
+	&.is-done::before,
+	&.is-bad::before,
+	&.is-now::before {
+		background: var(--basalt-hue);
+	}
+	& b {
+		margin-top: 0.5rem;
+		font-size: 0.9rem;
+		color: var(--basalt-copy);
+	}
+}
+.hc-cd-step-dot {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--hc-quiet);
+	background: var(--basalt-plane-alt);
+
+	.is-done & {
+		color: #fff;
+		background: var(--basalt-hue);
+	}
+	.is-bad & {
+		color: #fff;
+		background: color-mix(in srgb, var(--basalt-danger) 85%, #000);
+	}
+	.is-now & {
+		color: var(--hc-link);
+		background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+		box-shadow: 0 0 0 2px var(--basalt-hue);
+	}
+}
+.hc-cd-step-when {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.hc-cd-step-note {
+	font-size: 0.75rem;
+	color: var(--hc-quiet);
+}
+.hc-cd-lines tr.is-flagged td {
+	background: color-mix(in srgb, var(--basalt-danger) 5%, transparent);
+}
+/* On a phone each claim line stacks: what was done with its status, then
+   the code and the two amounts on one quiet row, each amount named. */
+@container (max-width: 30rem) {
+	.hc-table.hc-cd-lines thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.hc-table.hc-cd-lines tr {
+		display: grid;
+		gap: 0.3rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		padding: 0.9rem var(--basalt-pad-x);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.hc-table.hc-cd-lines tr.is-flagged {
+		background: color-mix(in srgb, var(--basalt-danger) 5%, transparent);
+	}
+	.hc-table.hc-cd-lines td:nth-child(n) {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.hc-table.hc-cd-lines tr.is-flagged td {
+		background: none;
+	}
+	.hc-table.hc-cd-lines td:first-child {
+		display: none;
+	}
+	.hc-table.hc-cd-lines td:nth-child(2) {
+		grid-row: 2;
+		grid-column: 1;
+		font-size: 0.8rem;
+		white-space: nowrap;
+		color: var(--hc-quiet);
+	}
+	.hc-table.hc-cd-lines td:nth-child(3) {
+		grid-row: 1;
+		grid-column: 1 / 3;
+		font-weight: 600;
+	}
+	.hc-table.hc-cd-lines td:nth-child(4),
+	.hc-table.hc-cd-lines td:nth-child(5) {
+		grid-row: 2;
+		font-size: 0.8rem;
+	}
+	.hc-table.hc-cd-lines td:nth-child(4)::before {
+		content: "Billed ";
+		color: var(--hc-quiet);
+	}
+	.hc-table.hc-cd-lines td:nth-child(5)::before {
+		content: "Allowed ";
+		color: var(--hc-quiet);
+	}
+	.hc-table.hc-cd-lines td:last-child {
+		grid-row: 1;
+		grid-column: 3;
+		justify-self: end;
+	}
+}
+.hc-cd-quote {
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x) var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+
+	& p {
+		margin: 0;
+		font-size: 0.95rem;
+		color: var(--basalt-copy);
+	}
+	& footer {
+		margin-top: 0.3rem;
+		font-size: 0.8rem;
+		color: var(--hc-quiet);
+	}
+}
+.hc-cd-fix {
+	display: grid;
+	gap: 0;
+	flex: 1;
+	margin: 0;
+	padding: 0.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: flex-start;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& li:first-child {
+		border-top: 0;
+	}
+	& .form-check-input {
+		flex: none;
+		margin-top: 0.2rem;
+	}
+	& label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+		cursor: pointer;
+	}
+	& small {
+		font-weight: 500;
+		color: var(--hc-quiet);
+	}
+}
+@media (max-width: 767.98px) {
+	.hc-cd-path {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		row-gap: 1.25rem;
+	}
+	.hc-cd-step:nth-child(4)::before {
+		display: none;
+	}
+}
+
+/* A muted line under a person link starts where the name does, past the avatar. */
+.hc-under-person {
+	padding-left: calc(1.5rem + 0.5rem);
+}
+
+/* After a click, links and buttons keep no ring; rings are for the keyboard. */
+:is(.hc-page, .modal, .offcanvas) :is(a, button):focus:not(:focus-visible) {
+	outline: none;
+	box-shadow: none;
+}
+
+/* Providers: the departments card holds the figures as tiles over the body. */
+.hc-dept-card {
+	& .hc-stats {
+		gap: 0.75rem;
+		margin: 1rem var(--basalt-pad-x) 0;
+	}
+	& .hc-stats .hc-stat {
+		padding: 1.2rem 1.5rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		background: var(--basalt-plane);
+	}
+	/* A switch redraws what is inside the cards, never the cards: the day
+	   bars stand up again one after another and the ring fills. */
+	& .hc-stats.is-redrawn .hc-stat-days s {
+		transform-origin: center bottom;
+		animation: hc-grow-y 480ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+	}
+	& .hc-stats.is-redrawn .hc-stat-days > span:nth-child(2) s {
+		animation-delay: 50ms;
+	}
+	& .hc-stats.is-redrawn .hc-stat-days > span:nth-child(3) s {
+		animation-delay: 100ms;
+	}
+	& .hc-stats.is-redrawn .hc-stat-days > span:nth-child(4) s {
+		animation-delay: 150ms;
+	}
+	& .hc-stats.is-redrawn .hc-stat-days > span:nth-child(5) s {
+		animation-delay: 200ms;
+	}
+	& .hc-stats.is-redrawn .hc-stat-ring .fill {
+		animation: hc-ring-fill 600ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+	}
+	& .hc-stage {
+		margin: 1rem var(--basalt-pad-x) var(--basalt-pad-x);
+	}
+}
+
+/* Provider schedule on FullCalendar: lunch quietly hatched, blocked time
+   in the warning tint, a held slot dashed until it is booked. */
+.hc-calendar .fc .hc-fc-lunch {
+	background: repeating-linear-gradient(
+		135deg,
+		transparent 0 6px,
+		color-mix(in srgb, var(--basalt-copy) 6%, transparent) 6px 12px
+	);
+	opacity: 1;
+}
+.hc-calendar .fc .hc-fc-blocked {
+	background: color-mix(in srgb, var(--basalt-warning) 16%, transparent);
+	opacity: 1;
+}
+.hc-calendar .fc .hc-fc-held {
+	border: 1.5px dashed var(--basalt-hue);
+	color: var(--hc-link);
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+.hc-key-blocked {
+	--tone: color-mix(in srgb, var(--basalt-warning) 30%, var(--basalt-plane));
+}
+.hc-key-lunch {
+	--tone: color-mix(in srgb, var(--basalt-copy) 10%, var(--basalt-plane));
+}
+
+/* A fieldset's legend reads as a field label in every healthcare dialog. */
+.basalt-dialog-body legend.form-label {
+	font-size: inherit;
+}
+#hco-pay .basalt-choice-grid {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Status pills: one soft tint per state, text pulled toward the copy so it
+   clears 4.5:1 on every palette. */
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-pill) {
+	--tone: var(--basalt-copy-muted);
+}
+.hc-pill {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.3em 0.6em;
+	border-radius: 6px;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 14%, var(--basalt-plane));
+}
+.hc-pill-ok {
+	--tone: var(--basalt-success);
+}
+.hc-pill-wait {
+	--tone: var(--basalt-warning);
+}
+.hc-pill-late {
+	--tone: var(--basalt-danger);
+}
+.hc-pill-info {
+	--tone: var(--basalt-flare);
+}
+
+/* Legends */
+.hc-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.8rem;
+	color: var(--hc-quiet);
+}
+.hc-legend li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.hc-legend-key {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--tone, var(--basalt-hue));
+	border: 1px solid color-mix(in srgb, var(--tone, var(--basalt-hue)) 60%, var(--basalt-edge-strong));
+}
+
+/* A person in a list or a table cell: avatar, name, one quiet line. */
+.hc-who {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.hc-who-name {
+	display: block;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+	white-space: nowrap;
+}
+.hc-who-meta {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--hc-quiet);
+	white-space: nowrap;
+}
+.hc-band-trend {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--hc-quiet);
+}
+
+/* The clinic on a monitor: four traces across the working day with a
+   readout each, drawn by healthcare.js. The grid is faint, the trace is
+   its own color, the future is dashed, and the dot at now breathes. */
+.hc-monitor-body {
+	display: grid;
+	padding: 0.75rem var(--basalt-pad-x) 0;
+	touch-action: pan-y;
+}
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-trace) {
+	--tone: var(--basalt-hue);
+}
+.hc-trace {
+	display: grid;
+	gap: 0 1.25rem;
+	grid-template-columns: 9.5rem minmax(0, 1fr) 9rem;
+	align-items: center;
+	padding: 0.3rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hc-trace:first-child {
+	border-top: 0;
+}
+.hc-trace-label {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.hc-trace-name {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--tone) 55%, var(--basalt-copy));
+}
+.hc-trace-sub {
+	font-size: 0.77rem;
+	color: var(--hc-quiet);
+}
+.hc-trace-art {
+	display: block;
+	width: 100%;
+	height: 5.25rem;
+	overflow: visible;
+}
+.hc-trace-art .grid {
+	stroke: var(--basalt-edge);
+	stroke-width: 1;
+	vector-effect: non-scaling-stroke;
+}
+.hc-trace-art .past,
+.hc-trace-art .future {
+	fill: none;
+	stroke: var(--tone);
+	stroke-width: 2;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	vector-effect: non-scaling-stroke;
+}
+.hc-trace-art .future {
+	stroke-opacity: 0.35;
+	stroke-dasharray: 4 5;
+}
+.hc-trace-art .now {
+	stroke: var(--basalt-danger);
+	stroke-width: 1.5;
+	stroke-opacity: 0.7;
+	vector-effect: non-scaling-stroke;
+}
+.hc-trace-art .cursor {
+	stroke: var(--basalt-copy);
+	stroke-width: 1;
+	stroke-opacity: 0;
+	stroke-dasharray: 3 3;
+	vector-effect: non-scaling-stroke;
+	pointer-events: none;
+}
+.hc-trace.is-hover .cursor {
+	stroke-opacity: 0.5;
+}
+.hc-trace-art .dot {
+	fill: var(--tone);
+	transform-origin: center;
+	transform-box: fill-box;
+	animation: hc-breathe-dot 1.6s ease-in-out infinite;
+}
+@keyframes hc-breathe-dot {
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	50% {
+		transform: scale(1.6);
+		opacity: 0.55;
+	}
+}
+.hc-trace-read {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	text-align: right;
+	line-height: 1.1;
+}
+.hc-trace-read strong {
+	font-family: "Chivo Mono", monospace;
+	font-size: 1.75rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, var(--tone) 60%, var(--basalt-copy));
+}
+.hc-trace-read small {
+	margin-top: 0.2rem;
+	font-size: 0.74rem;
+	color: var(--hc-quiet);
+}
+.hc-trace-scale {
+	position: relative;
+	grid-column: 1 / -1;
+	height: 1.6rem;
+	margin: 0.25rem 9rem 0 9.5rem;
+	font-size: 0.71rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--hc-quiet);
+}
+.hc-trace-scale span {
+	position: absolute;
+	top: 0.3rem;
+	transform: translateX(-50%);
+}
+.hc-trace-scale span:first-child {
+	transform: none;
+}
+.hc-trace-scale span:last-child {
+	transform: translateX(-100%);
+}
+@container (max-width: 48rem) {
+	.hc-trace {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"label read"
+			"art art";
+		gap: 0.25rem 1rem;
+	}
+	.hc-trace-label {
+		grid-area: label;
+	}
+	.hc-trace-art {
+		grid-area: art;
+	}
+	.hc-trace-read {
+		grid-area: read;
+		flex-direction: row;
+		gap: 0.4rem;
+		align-items: baseline;
+	}
+	.hc-trace-scale {
+		margin: 0.25rem 0 0;
+	}
+}
+/* When the card comes into view each trace draws itself in from the
+   left, a row after the other, with what is still to come already in
+   place; the dot at now follows once its line has reached it. Until then
+   it waits on its first frame, and nothing stays behind once it lands. */
+@media (prefers-reduced-motion: no-preference) {
+	.hc-monitor-body.is-drawing-in {
+		& .hc-trace {
+			--draw-delay: calc(var(--row, 0) * 60ms);
+		}
+		& .hc-trace-art .past {
+			animation: hc-trace-draw 600ms cubic-bezier(0.22, 1, 0.36, 1) var(--draw-delay) backwards;
+		}
+		& .hc-trace-art .dot {
+			animation:
+				hc-trace-dot 200ms ease-out calc(var(--draw-delay) + 560ms) backwards,
+				hc-breathe-dot 1.6s ease-in-out infinite;
+		}
+		&.is-waiting .hc-trace-art :is(.past, .dot) {
+			animation-play-state: paused;
+		}
+	}
+}
+@keyframes hc-trace-draw {
+	from {
+		clip-path: inset(-10px 100% -10px -10px);
+	}
+	to {
+		clip-path: inset(-10px -10px -10px -10px);
+	}
+}
+@keyframes hc-trace-dot {
+	from {
+		fill-opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-trace-art .dot {
+		animation: none;
+	}
+}
+
+/* Small facts: label, value, an optional bar. They stand on their own,
+   no box round each; a fact that moves while the desk works leads with
+   a breathing dot, the ones with a bar go without. */
+.hc-facts {
+	display: grid;
+	gap: 1.5rem 2rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+}
+.hc-fact dt {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-fact-live {
+	flex: none;
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--basalt-success);
+	animation: basalt-status-pulse 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-fact-live {
+		animation: none;
+	}
+}
+.hc-fact dd {
+	margin: 0.3rem 0 0;
+	font-size: 1.35rem;
+	font-weight: 750;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+}
+.hc-fact dd small {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--hc-quiet);
+}
+.hc-fact-bar {
+	display: block;
+	height: 0.4rem;
+	margin-top: 0.6rem;
+	border-radius: 999px;
+	background: var(--hc-track);
+	overflow: hidden;
+}
+.hc-fact-bar span {
+	display: block;
+	height: 100%;
+	width: var(--share, 0%);
+	border-radius: inherit;
+	background: var(--tone, var(--basalt-hue));
+}
+
+/* The building right now: a floor plan drawn from the rooms, the chairs
+   and the beds by healthcare.js. Rooms take the palette color while a
+   provider is in them; a room past its target pulses. */
+.hc-floor-body {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: minmax(0, 1.5fr) minmax(16rem, 1fr);
+	align-items: start;
+	padding: 1.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+@container (max-width: 56rem) {
+	.hc-floor-body {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.hc-floor-art {
+	display: block;
+	width: 100%;
+	height: auto;
+	overflow: visible;
+	font-family: "Schibsted Grotesk", sans-serif;
+}
+.hc-floor-art .room {
+	fill: var(--hc-free);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1;
+	rx: 6px;
+}
+.hc-floor-art .room.is-busy {
+	fill: var(--basalt-hue);
+	stroke: var(--basalt-hue);
+}
+.hc-floor-art .room.is-clean {
+	fill: color-mix(in srgb, var(--basalt-warning) 22%, var(--basalt-plane));
+	stroke: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-edge-strong));
+}
+.hc-floor-art .room.is-zone {
+	fill: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	stroke: var(--basalt-edge-strong);
+	stroke-dasharray: 3 3;
+}
+.hc-floor-art .room-name {
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	fill: var(--hc-quiet);
+}
+.hc-floor-art .room-name.on-busy {
+	fill: color-mix(in srgb, var(--basalt-on-hue) 80%, transparent);
+}
+.hc-floor-art .room-who {
+	font-size: 11px;
+	font-weight: 700;
+	fill: var(--basalt-on-hue);
+}
+.hc-floor-art .room-since {
+	font-size: 9px;
+	font-variant-numeric: tabular-nums;
+	fill: color-mix(in srgb, var(--basalt-on-hue) 80%, transparent);
+}
+.hc-floor-art .room-free {
+	font-size: 9px;
+	fill: var(--hc-quiet);
+}
+.hc-floor-art .thorne {
+	fill: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+}
+.hc-floor-art .spot {
+	cursor: pointer;
+	outline: 0;
+}
+.hc-floor-art .spot:hover .room,
+.hc-floor-art .spot:hover .seat,
+.hc-floor-art .spot:hover .bed,
+.hc-floor-art .spot:focus-visible .room,
+.hc-floor-art .spot:focus-visible .seat,
+.hc-floor-art .spot:focus-visible .bed {
+	stroke: var(--basalt-copy);
+	stroke-width: 2;
+}
+.hc-floor-art .seat {
+	fill: var(--hc-free);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1;
+}
+.hc-floor-art .seat.is-taken {
+	fill: var(--basalt-series-2);
+	stroke: var(--basalt-series-2);
+}
+.hc-floor-art .seat.is-long {
+	fill: var(--basalt-warning);
+	stroke: var(--basalt-warning);
+}
+.hc-floor-art .seat.is-late {
+	fill: var(--basalt-danger);
+	stroke: var(--basalt-danger);
+}
+.hc-floor-art .bed {
+	fill: var(--hc-free);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1;
+	rx: 3px;
+}
+.hc-floor-art .bed.is-taken {
+	fill: var(--basalt-series-4);
+	stroke: var(--basalt-series-4);
+}
+.hc-floor-art .bed.is-clean {
+	fill: color-mix(in srgb, var(--basalt-warning) 22%, var(--basalt-plane));
+	stroke: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-edge-strong));
+}
+.hc-floor-art .pulse {
+	pointer-events: none;
+	fill: none;
+	stroke: var(--basalt-hue);
+	stroke-width: 1.5;
+	opacity: 0.6;
+	transform-origin: center;
+	transform-box: fill-box;
+	animation: hc-pulse 2.4s ease-out infinite;
+}
+@keyframes hc-pulse {
+	0% {
+		transform: scale(1);
+		opacity: 0.55;
+	}
+	100% {
+		transform: scale(1.9);
+		opacity: 0;
+	}
+}
+
+/* The longest waits, one row each. */
+.hc-waits {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hc-waits li {
+	display: grid;
+	gap: 0 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hc-waits li:first-child {
+	border-top: 0;
+}
+.hc-waits-name {
+	display: block;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.hc-waits-meta {
+	display: block;
+	font-size: 0.8rem;
+	color: var(--hc-quiet);
+	overflow-wrap: anywhere;
+}
+.hc-waits-time {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hc-waits-time.is-long {
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+.hc-waits-time.is-late {
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+
+/* Patient flow: plain tiles as wide as each stage's share, each marked
+   by a straight bar of its color on the left. */
+.hc-flow {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hc-flow li {
+	position: relative;
+	flex: var(--grow, 1) 1 7rem;
+	min-width: 0;
+	padding: 0.9rem 1rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--tone) 8%, var(--basalt-plane));
+}
+.hc-flow-name {
+	display: block;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--hc-quiet);
+}
+.hc-flow-value {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 1.35rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.hc-flow-meta {
+	display: block;
+	font-size: 0.75rem;
+	color: var(--hc-quiet);
+}
+
+/* Appointments: find a visit by name or id; the hits list under the box. */
+.hc-search {
+	position: relative;
+	margin: 1.25rem var(--basalt-pad-x) 0;
+}
+.hc-search .form-control {
+	padding-left: 2.4rem;
+}
+.hc-search-icon {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--hc-quiet);
+	pointer-events: none;
+}
+.hc-search-results {
+	margin: 0.5rem var(--basalt-pad-x) 0;
+	padding: 0.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	list-style: none;
+}
+.hc-search-row {
+	display: grid;
+	gap: 0 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	width: 100%;
+	padding: 0.5rem 0.65rem;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	text-align: left;
+	font: inherit;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+.hc-search-row:hover,
+.hc-search-row:focus-visible {
+	background: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	outline: 0;
+}
+.hc-search-who,
+.hc-search-when {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.hc-search-who b {
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+.hc-search-who small,
+.hc-search-when small {
+	font-size: 0.75rem;
+	color: var(--hc-quiet);
+}
+.hc-search-when {
+	align-items: flex-end;
+	text-align: right;
+	font-size: 0.8rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.hc-search-none {
+	padding: 0.6rem 0.75rem;
+	font-size: 0.85rem;
+	color: var(--hc-quiet);
+}
+.hc-live {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+.hc-live::before {
+	content: "";
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--basalt-danger);
+	animation: hc-breathe-dot 1.2s ease-in-out infinite;
+}
+
+/* Appointments: who the calendar shows, as one menu; only its holder is
+   padded, a person row elsewhere keeps none. */
+.hc-who:has(> .dropdown) {
+	padding: 0 var(--basalt-pad-x) 1rem;
+}
+.hc-who-btn b {
+	margin-left: 0.25rem;
+	font-weight: 700;
+}
+.hc-who-menu {
+	width: 19rem;
+	padding: 0.4rem;
+}
+.hc-who-head {
+	margin: 0.3rem 0.6rem 0.25rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-who-menu .dropdown-item {
+	border-radius: 8px;
+}
+.hc-who-row {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.25rem 0.6rem;
+	border-radius: 8px;
+
+	&:hover {
+		background: var(--basalt-plane-alt);
+	}
+	& .form-check-input {
+		margin: 0;
+	}
+	& label {
+		display: inline-flex;
+		gap: 0.5rem;
+		align-items: center;
+		font-size: 0.875rem;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+		cursor: pointer;
+	}
+	& .btn-link {
+		padding: 0 0.25rem;
+		font-size: 0.8rem;
+		text-decoration: none;
+		opacity: 0.55;
+	}
+	&:hover .btn-link,
+	& .btn-link:focus-visible {
+		opacity: 1;
+	}
+}
+.hc-who-dot {
+	flex: none;
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 50%;
+	background: var(--tone);
+}
+.hc-calendar {
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-x);
+}
+/* Inside a padded card body on a phone the calendar takes the card's
+   own edge instead of a second inset. */
+@media (max-width: 575.98px) {
+	.hc-card-body > .hc-calendar {
+		padding: 0;
+	}
+}
+.hc-calendar .fc-event.hc-visit-seen,
+.hc-calendar .fc-event.hc-visit-gone {
+	--basalt-fc-mix: 8%;
+	box-shadow: inset 3px 0 0 color-mix(in srgb, var(--basalt-fc-tone) 45%, var(--basalt-plane));
+}
+.hc-calendar .fc-event.hc-visit-gone {
+	text-decoration: line-through;
+}
+.hc-calendar .fc-event.hc-visit-checked {
+	box-shadow: inset 0 0 0 2px var(--basalt-warning);
+}
+.hc-calendar .fc-event.hc-visit-now {
+	box-shadow: 0 4px 12px color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+}
+
+/* The body: it stands on the page itself, in the middle of a stage, with
+   the chips floating around it near the organ each stands for. Drawn
+   from theme tokens, no filters or blurs, so it stays light to render. */
+.hc-stage-head {
+	display: flex;
+	gap: 0.75rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+.hc-stage-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hc-stage-sub {
+	margin: 0.3rem 0 0;
+	max-width: 40rem;
+	font-size: 0.875rem;
+	color: var(--hc-quiet);
+}
+.hc-stage {
+	position: relative;
+	height: clamp(24rem, 40vw, 30rem);
+	margin: 1rem 0 1.75rem;
+}
+.hc-figure {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	display: block;
+	height: 100%;
+	width: auto;
+	overflow: visible;
+	font-family: "Schibsted Grotesk", sans-serif;
+}
+.hc-figure .skin-stop-a {
+	stop-color: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+}
+.hc-figure .skin-stop-b {
+	stop-color: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+}
+[data-basalt-gradients="off"] .hc-figure :is(.skin-stop-a, .skin-stop-b) {
+	stop-color: color-mix(in srgb, var(--basalt-hue) 9%, var(--basalt-plane));
+}
+.hc-figure .body {
+	stroke: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge-strong));
+	stroke-width: 1.3;
+}
+.hc-figure .bones rect,
+.hc-figure .bones circle {
+	fill: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+}
+.hc-figure .bone-line {
+	fill: none;
+	stroke: color-mix(in srgb, var(--basalt-copy) 11%, transparent);
+	stroke-width: 2;
+	stroke-linecap: round;
+}
+.hc-figure .organ {
+	outline: 0;
+	cursor: default;
+	transition: opacity 200ms ease;
+}
+.hc-figure .organ-fill {
+	fill: var(--tone);
+	fill-opacity: var(--heat, 0.7);
+	stroke: color-mix(in srgb, var(--tone) 65%, var(--basalt-copy));
+	stroke-opacity: 0.5;
+	stroke-width: 1;
+	transition:
+		fill-opacity 200ms ease,
+		stroke-width 200ms ease;
+}
+.hc-figure .organ-soft {
+	fill-opacity: calc(var(--heat, 0.7) * 0.6);
+}
+.hc-figure .organ-line {
+	fill: none;
+	stroke: color-mix(in srgb, var(--tone) 55%, var(--basalt-copy));
+	stroke-opacity: 0.55;
+	stroke-width: 1.2;
+	stroke-linecap: round;
+}
+.hc-figure .organ-tube {
+	fill: none;
+	stroke: var(--tone);
+	stroke-width: 5;
+	stroke-linecap: round;
+	stroke-opacity: 0.8;
+}
+.hc-figure .organ-dot {
+	fill: var(--basalt-plane);
+	stroke: color-mix(in srgb, var(--tone) 70%, var(--basalt-copy));
+	stroke-width: 1.2;
+}
+.hc-figure .organ.is-quiet .organ-fill,
+.hc-figure .organ.is-quiet .organ-line,
+.hc-figure .organ.is-quiet .organ-tube {
+	stroke-opacity: 0.3;
+}
+.hc-figure.has-lit .organ:not(.is-lit) {
+	opacity: 0.3;
+}
+.hc-figure.has-lit .tag:not(.is-lit) {
+	opacity: 0.35;
+}
+.hc-figure .organ.is-lit .organ-fill {
+	fill-opacity: 1;
+	stroke-width: 2;
+	stroke-opacity: 0.9;
+}
+.hc-figure .organ:focus-visible .organ-fill {
+	stroke-width: 2;
+	stroke-opacity: 1;
+}
+.hc-figure .tag {
+	cursor: pointer;
+	transition: opacity 200ms ease;
+}
+.hc-figure .organ[role="button"] {
+	cursor: pointer;
+}
+.hc-figure .tag-box {
+	fill: var(--basalt-plane);
+	stroke: var(--tone);
+	stroke-width: 2;
+}
+.hc-figure .tag-text {
+	font-size: 13px;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+	fill: var(--basalt-copy);
+}
+.hc-figure .lungs {
+	transform-origin: 160px 250px;
+	animation: hc-breathe 4.8s ease-in-out infinite;
+}
+.hc-figure .heart {
+	transform-origin: 166px 240px;
+	animation: hc-beat 1.3s ease-in-out infinite;
+}
+@keyframes hc-breathe {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.035);
+	}
+}
+@keyframes hc-beat {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	12% {
+		transform: scale(1.07);
+	}
+	24% {
+		transform: scale(1);
+	}
+	36% {
+		transform: scale(1.05);
+	}
+	48% {
+		transform: scale(1);
+	}
+}
+
+/* The chips: a ring with the count, the name and one quiet line, and a
+   second row with who handles it once picked out. Each floats at its own
+   spot and drifts a little, a transform only. */
+.hc-orbit {
+	position: absolute;
+	inset: 0;
+}
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-orb) {
+	--tone: var(--basalt-hue);
+}
+.hc-orb {
+	position: absolute;
+	top: var(--y);
+	display: grid;
+	gap: 0 0.65rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	padding: 0.5rem 0.95rem 0.5rem 0.6rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 1.6em;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	color: var(--basalt-copy);
+	text-align: left;
+	font: inherit;
+	font-size: calc(1rem * var(--size, 1));
+	cursor: pointer;
+	animation: hc-drift var(--drift, 6s) ease-in-out var(--phase, 0s) infinite;
+	transition:
+		border-color 180ms ease,
+		box-shadow 180ms ease;
+}
+.hc-orb.is-left {
+	right: calc(100% - var(--x));
+}
+.hc-orb.is-right {
+	left: var(--x);
+}
+.hc-orb:hover,
+.hc-orb.is-lit {
+	z-index: 2;
+	border-color: color-mix(in srgb, var(--tone) 60%, var(--basalt-edge-strong));
+	box-shadow: 0 14px 34px color-mix(in srgb, var(--tone) 22%, transparent);
+	animation-play-state: paused;
+}
+.hc-orb:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.hc-orb-count {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 2.6em;
+	height: 2.6em;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 2px var(--tone);
+	font-size: 1.05em;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, var(--tone) 42%, var(--basalt-copy));
+}
+.hc-orb-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	line-height: 1.2;
+}
+.hc-orb-name {
+	font-size: 0.9em;
+	font-weight: 700;
+	white-space: nowrap;
+}
+.hc-orb-line {
+	font-size: 0.72em;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+.hc-orb-more {
+	display: none;
+	gap: 0.4rem;
+	align-items: center;
+	grid-column: 2;
+	margin-top: 0.3rem;
+	padding-top: 0.3rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.74em;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.hc-orb:hover .hc-orb-more,
+.hc-orb.is-lit .hc-orb-more,
+.hc-orb:focus-visible .hc-orb-more {
+	display: inline-flex;
+}
+.hc-orb-faces {
+	display: inline-flex;
+}
+.hc-orb-faces .basalt-avatar {
+	box-shadow: 0 0 0 2px var(--basalt-plane);
+}
+.hc-orb-faces .basalt-avatar + .basalt-avatar {
+	margin-left: -0.4rem;
+}
+@keyframes hc-drift {
+	0%,
+	100% {
+		translate: 0 0;
+	}
+	50% {
+		translate: 0 -7px;
+	}
+}
+/* The body and its departments need room to spread; where the card is
+   narrower than that (a phone, a tablet, a desktop with the menu open
+   on a small screen) the figure stands alone and the departments sit
+   under it as a wrapped row. It follows the card's width, not the window. */
+:has(> .hc-stage) {
+	container-type: inline-size;
+}
+@container (max-width: 56rem) {
+	.hc-stage {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		align-items: center;
+		height: auto;
+	}
+	.hc-figure {
+		position: static;
+		transform: none;
+		width: 100%;
+		max-width: 17rem;
+		height: auto;
+	}
+	.hc-orbit {
+		position: static;
+		display: flex;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+	.hc-orb {
+		position: static;
+		animation: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-floor-art .pulse,
+	.hc-figure .lungs,
+	.hc-figure .heart,
+	.hc-orb {
+		animation: none;
+	}
+	.hc-floor-art .pulse {
+		opacity: 0;
+	}
+}
+
+/* Tables: the template's column labels, no scrolling by a stray pixel. */
+.hc-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: inherit;
+	margin: 0;
+}
+.hc-table th,
+.hc-table td {
+	padding: 0.85rem var(--basalt-pad-x);
+	vertical-align: middle;
+	border-color: var(--basalt-edge);
+}
+.hc-table th {
+	padding-top: 0;
+	border-top: 0;
+}
+.hc-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+.hc-table .hc-num {
+	text-align: right;
+}
+/* A table wider than its card slides sideways inside it rather than spill
+   out; it never scrolls up and down. */
+.hc-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.hc-table td:not(:first-child):not(:last-child),
+.hc-table th:not(:first-child):not(:last-child) {
+	padding-left: 0.75rem;
+	padding-right: 0.75rem;
+}
+.hc-table td:last-child,
+.hc-table th:last-child {
+	padding-left: 0.5rem;
+}
+.hc-table .hc-num {
+	white-space: nowrap;
+}
+@container (max-width: 26rem) {
+	.hc-table .hc-col-range {
+		display: none;
+	}
+}
+
+/* A lab value against its normal range: the calm way to show a result. */
+.hc-range {
+	position: relative;
+	display: block;
+	width: 100%;
+	min-width: 5rem;
+	height: 0.5rem;
+	border-radius: 999px;
+	background: var(--basalt-edge);
+}
+/* The normal range is drawn as data, so it shows with gradients on or off. */
+.hc-range::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--lo);
+	width: calc(var(--hi) - var(--lo));
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-plane));
+}
+.hc-range::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: var(--at);
+	width: 0.9rem;
+	height: 0.9rem;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--basalt-copy);
+	box-shadow: 0 0 0 1px var(--basalt-edge-strong);
+	transform: translate(-50%, -50%);
+	transition: transform 170ms ease;
+}
+.hc-range.is-out::after {
+	background: var(--basalt-danger);
+}
+.hc-range[data-bs-toggle]:hover::after {
+	transform: translate(-50%, -50%) scale(1.25);
+}
+
+/* Providers: seen against booked, as a bar with the figure beside it. */
+.hc-provider-track {
+	display: block;
+	height: 0.4rem;
+	border-radius: 999px;
+	background: var(--hc-track);
+	overflow: hidden;
+}
+.hc-provider-fill {
+	display: block;
+	height: 100%;
+	width: var(--share, 0%);
+	border-radius: inherit;
+	background: var(--basalt-hue);
+}
+.hc-provider-value {
+	font-size: 0.85rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hc-provider-value small {
+	margin-left: 0.3rem;
+	font-weight: 500;
+	color: var(--hc-quiet);
+}
+
+/* Next up, and the visit timeline on the chart: a time column first. */
+.hc-next {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hc-next li {
+	display: grid;
+	gap: 0 1.25rem;
+	grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+.hc-next li:first-child {
+	border-top: 0;
+}
+.hc-next-time {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hc-next-time small {
+	display: block;
+	font-size: 0.71rem;
+	font-weight: 500;
+	color: var(--hc-quiet);
+}
+
+/* The patient's vitals: value with a small unit and a sparkline each. */
+/* Standing on their own (no card around them), the vitals look like the
+   page's other tiles: a soft tint with the tone, room inside. */
+.hc-vitals.is-bare {
+	gap: 1rem;
+
+	/* Plain cards like the headline figures: the tone stays on the line. */
+	& .hc-vital {
+		padding: 1.2rem 1.5rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		background: var(--basalt-plane);
+		box-shadow: var(--basalt-card-shadow);
+	}
+}
+/* With no card to measure, the bare row folds on the window's width;
+   beside the open menu that is already the case below 1200px. */
+@media (max-width: 1199.98px) {
+	.hc-vitals.is-bare,
+	.hc-ad-tiles {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 419.98px) {
+	.hc-ad-tiles {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.hc-vital-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+}
+.hc-vital-when {
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--hc-quiet);
+}
+
+.hc-vitals {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-vital) {
+	--tone: var(--basalt-hue);
+}
+.hc-vital {
+	display: grid;
+	gap: 0.1rem;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--tone) 8%, var(--basalt-plane));
+}
+.hc-vital-name {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+/* Proportional figures: this face's tabular set spaces out the point in 36.8. */
+.hc-vital-value {
+	font-size: 1.35rem;
+	font-weight: 750;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+}
+.hc-vital-value small {
+	margin-left: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--hc-quiet);
+}
+.hc-vital-spark {
+	display: block;
+	width: 100%;
+	height: 1.75rem;
+	margin-top: 0.4rem;
+	overflow: visible;
+}
+.hc-vital-spark polyline {
+	fill: none;
+	stroke: var(--tone);
+	stroke-width: 2;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	vector-effect: non-scaling-stroke;
+}
+.hc-vital-spark circle {
+	fill: var(--tone);
+}
+@container (max-width: 40rem) {
+	.hc-vitals {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* The patient's header: the name block on the left, the actions on the
+   right, and a strip of the facts that matter in the room. On a phone
+   the actions drop below. */
+.basalt-hero-detail.hc-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.hc-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	margin: 0;
+}
+.hc-head .basalt-hero-actions .btn {
+	white-space: nowrap;
+}
+/* Until the page is wide enough for both, the actions take a row of their
+   own under the patient, so the title and its flags keep the full width. */
+@media (max-width: 1399.98px) {
+	.basalt-hero-detail.hc-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.hc-head .basalt-hero-actions {
+		justify-content: flex-start;
+	}
+}
+.hc-patient {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.hc-patient-text {
+	min-width: 0;
+}
+/* A visit carries several flags, so they get their own row under the time
+   and room instead of squeezing into a column beside the title. */
+.hc-patient-text.basalt-hero-who-text {
+	display: block;
+}
+.hc-patient .basalt-avatar-lg {
+	flex: none;
+	width: 72px;
+	height: 72px;
+	border-radius: 20px;
+	font-size: 1.5rem;
+}
+.hc-patient-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.75rem;
+}
+.hc-patient-tags .hc-pill {
+	padding: 0.3em 0.7em;
+	font-size: 0.77rem;
+}
+
+/* The dialog for one room, chair or bed: a few facts, then the actions. */
+.hc-spot-facts {
+	display: grid;
+	gap: 1.35rem 2rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+}
+.hc-spot-facts dt {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-spot-facts dd {
+	margin: 0.4rem 0 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.hc-spot-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Right now as one picture: the day's patients flowing through the
+   building, along bands of one thickness; the dots move. */
+/* Too wide to read on a phone, so the card stays off small screens. */
+@media (max-width: 575.98px) {
+	.hc-card.hc-flow-card {
+		display: none;
+	}
+}
+.hc-flow {
+	padding: 0.5rem var(--basalt-pad-x) 0.75rem;
+}
+/* The flow grows a little past its drawn size, so its text stays readable,
+   then stops instead of filling a wide card; it sits centered. */
+.hc-flow-art {
+	display: block;
+	width: 100%;
+	max-width: 76rem;
+	margin-inline: auto;
+	height: auto;
+	overflow: visible;
+	font-family: "Schibsted Grotesk", sans-serif;
+}
+.hc-flow-art .lane {
+	fill: none;
+	stroke: var(--tone);
+	stroke-opacity: 0.18;
+	stroke-width: 12;
+	stroke-linecap: round;
+}
+.hc-flow-art .dot {
+	fill: var(--tone);
+}
+.hc-flow-art .stop {
+	cursor: pointer;
+	text-decoration: none;
+}
+.hc-flow-art .stop-box {
+	fill: var(--basalt-plane);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1;
+	transition: stroke 170ms ease;
+}
+.hc-flow-art .stop:hover .stop-box,
+.hc-flow-art .stop:focus-visible .stop-box {
+	stroke: var(--basalt-hue);
+	stroke-width: 2;
+}
+.hc-flow-art .stop:focus-visible {
+	outline: 0;
+}
+.hc-flow-art .stop-label {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	fill: var(--hc-quiet);
+}
+.hc-flow-art .stop-figure {
+	font-size: 28px;
+	font-weight: 750;
+	fill: var(--basalt-copy);
+}
+.hc-flow-art .stop-unit {
+	font-size: 12px;
+	fill: var(--hc-quiet);
+}
+.hc-flow-art .stop-line {
+	font-size: 12px;
+	font-weight: 600;
+	fill: var(--basalt-hue);
+}
+.hc-flow-art .chair {
+	fill: var(--hc-free);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1;
+}
+.hc-flow-art .chair.is-taken {
+	fill: var(--basalt-series-2);
+	stroke: var(--basalt-series-2);
+}
+.hc-flow-art .chair.is-long {
+	fill: var(--basalt-warning);
+	stroke: var(--basalt-warning);
+}
+.hc-flow-art .chair.is-late {
+	fill: var(--basalt-danger);
+	stroke: var(--basalt-danger);
+}
+.hc-flow-art .roomlet {
+	fill: var(--hc-free);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1;
+}
+.hc-flow-art .roomlet.is-busy {
+	fill: var(--basalt-hue);
+	stroke: var(--basalt-hue);
+}
+.hc-flow-art .roomlet.is-clean {
+	fill: color-mix(in srgb, var(--basalt-warning) 25%, var(--basalt-plane));
+	stroke: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-edge-strong));
+}
+.hc-flow-art .roomlet-who {
+	font-size: 10px;
+	font-weight: 700;
+	fill: var(--basalt-on-hue);
+}
+.hc-flow-art .bedlet {
+	fill: var(--hc-free);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1;
+}
+.hc-flow-art .bedlet.is-taken {
+	fill: var(--basalt-series-4);
+	stroke: var(--basalt-series-4);
+}
+.hc-flow-art .bedlet.is-watch {
+	fill: var(--basalt-danger);
+	stroke: var(--basalt-danger);
+}
+.hc-flow-art .bedlet.is-home {
+	fill: var(--basalt-success);
+	stroke: var(--basalt-success);
+}
+.hc-flow-art .bedlet.is-clean {
+	stroke-dasharray: 2 2;
+}
+
+/* The AI note: a drafted note appearing section by section. */
+.hc-ai-status {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 1rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--hc-quiet);
+}
+.hc-ai-status::before {
+	content: "";
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--basalt-danger);
+	animation: hc-breathe-dot 1.2s ease-in-out infinite;
+}
+.hc-ai-draft {
+	display: grid;
+	gap: 0.85rem;
+	min-height: 8rem;
+}
+.hc-ai-section {
+	padding: 0.75rem 0.9rem;
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane));
+}
+.hc-ai-head {
+	margin: 0 0 0.2rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-ai-text {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.hc-team {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hc-team li {
+	display: grid;
+	gap: 0 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hc-team li:first-child {
+	border-top: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-ai-status::before {
+		animation: none;
+	}
+}
+
+/* Providers: the statistics band above the body follows the department
+   under the pointer or pinned; a pinned department filters the list. The
+   figures stand on the page with a hairline between them, no boxes. */
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-stats) {
+	--tone: var(--basalt-hue);
+}
+.hc-stats {
+	display: grid;
+	gap: 1.25rem 0;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 1.5rem 0 0;
+}
+.hc-stat {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	min-width: 0;
+	padding: 0.1rem 1.5rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+.hc-stat:first-child {
+	padding-left: 0;
+	border-left: 0;
+}
+.hc-stat-label {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+.hc-stat-value {
+	font-size: 1.5rem;
+	font-weight: 750;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+}
+.hc-stat-value small {
+	margin-left: 0.3rem;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--hc-quiet);
+}
+.hc-stat-note {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--hc-quiet);
+}
+.hc-stat-note.is-up {
+	color: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+}
+.hc-stat-note.is-down {
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+.hc-stat-days {
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	height: 4.2rem;
+}
+.hc-stat-days > span {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	gap: 0.1rem;
+	height: 100%;
+}
+.hc-stat-days em {
+	font-size: 0.7rem;
+	font-style: normal;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+	color: var(--basalt-copy);
+}
+/* Each day's bar stands in its own track; today is full strength. */
+.hc-stat-days i {
+	display: flex;
+	flex: 1;
+	align-items: flex-end;
+}
+.hc-stat-days s {
+	display: block;
+	width: 100%;
+	height: var(--share, 0%);
+	min-height: 0.25rem;
+	border-radius: 4px 4px 2px 2px;
+	background: color-mix(in srgb, var(--tone) 40%, var(--basalt-plane));
+	transition: height 250ms ease;
+
+	.is-today & {
+		background: var(--tone);
+	}
+}
+.hc-stat-days b {
+	font-size: 0.62rem;
+	font-weight: 700;
+	text-align: center;
+	color: var(--hc-quiet);
+}
+.hc-stat-ring {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.hc-stat-ring svg {
+	width: 3.2rem;
+	height: 3.2rem;
+	flex: none;
+	transform: rotate(-90deg);
+}
+.hc-stat-ring .track {
+	fill: none;
+	stroke: var(--hc-track);
+	stroke-width: 4;
+}
+.hc-stat-ring .fill {
+	fill: none;
+	stroke: var(--tone);
+	stroke-width: 4;
+	stroke-linecap: round;
+	stroke-dasharray: calc(var(--share) * 0.974) 100;
+	transition: stroke-dasharray 300ms ease;
+}
+.hc-stat-heads {
+	display: flex;
+	align-items: center;
+	margin-top: 0.1rem;
+}
+.hc-stat-heads .basalt-avatar {
+	box-shadow: 0 0 0 2px var(--basalt-plane);
+}
+.hc-stat-heads .basalt-avatar + .basalt-avatar {
+	margin-left: -0.35rem;
+}
+.hc-stat-heads small {
+	margin-left: 0.4rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--hc-quiet);
+}
+@media (max-width: 1299.98px) {
+	.hc-stats {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.hc-stat:nth-child(odd) {
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.hc-stat {
+		padding: 0.1rem 0 0.1rem 1rem;
+	}
+}
+
+/* Live state: a word with a dot. The live one breathes; the rest hold still. */
+.hc-now {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: normal;
+	text-transform: none;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.hc-now::before {
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	content: "";
+	background: var(--basalt-edge-strong);
+}
+.hc-now.is-live {
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+}
+.hc-now.is-live::before {
+	background: var(--basalt-success);
+	animation: hc-breathe-dot 1.6s ease-in-out infinite;
+}
+.hc-stat-label .hc-now {
+	font-size: 0.71rem;
+}
+
+/* A list of records: search, the Filters menu, the chips in use and a
+   running count on one ruled row, then a table with sortable heads. */
+.hc-list-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 1.25rem var(--basalt-pad-x) 0.25rem;
+	padding: 1.25rem 0 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hc-list-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--hc-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.hc-list-applied {
+	flex: 0 1 auto;
+}
+.hc-list-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+.hc-list-filter-btn.btn {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	background-color: var(--basalt-plane);
+}
+.hc-list-filter-btn.is-on {
+	border-color: var(--basalt-hue-border);
+	color: var(--basalt-copy);
+}
+.hc-list-filter-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.3rem;
+	height: 1.3rem;
+	margin-left: 0.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.hc-list-filter-panel.dropdown-menu {
+	width: min(25rem, calc(100vw - 2rem));
+	padding: 1.1rem 1.1rem 0.85rem;
+	border-radius: 14px;
+}
+.hc-list-filter-group {
+	min-width: 0;
+	margin: 0 0 1.1rem;
+	padding: 0;
+	border: 0;
+}
+.hc-list-filter-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-list-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.hc-list-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.24rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .hc-list-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:focus-visible:not(:checked) + .hc-list-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.hc-list-filter-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn-link {
+		padding-left: 0;
+	}
+}
+.hc-list-table-wrap {
+	padding: 0 calc(var(--basalt-pad-x) - 0.6rem) 0.5rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.hc-list-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+}
+.hc-list-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.6rem;
+	border-bottom-color: var(--basalt-edge);
+	color: inherit;
+	background: transparent;
+}
+.hc-list-table > tbody > tr:last-child > * {
+	border-bottom: 0;
+}
+.hc-list-table thead th {
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+.hc-list-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+[aria-sort] .hc-list-sort {
+	color: var(--basalt-copy);
+}
+.hc-list-sort-idle {
+	opacity: 0.55;
+}
+.hc-list-sort:hover .hc-list-sort-idle {
+	opacity: 1;
+}
+.hc-list-row {
+	cursor: pointer;
+
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+	}
+}
+
+/* The roster: who first, then department, room, the period's figure as a
+   bar, what they are doing now and the row's two icons. */
+.hc-roster-name {
+	gap: 0.75rem;
+
+	& > span:last-child {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+	& b {
+		font-size: 0.9rem;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+	& small {
+		font-size: 0.77rem;
+		font-weight: 500;
+		white-space: nowrap;
+		color: var(--hc-quiet);
+	}
+	&:hover > span:last-child,
+	&:focus-visible > span:last-child {
+		text-decoration: none;
+	}
+	&:hover b,
+	&:focus-visible b {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+.hc-roster td {
+	white-space: nowrap;
+}
+.hc-roster-load {
+	width: 13rem;
+}
+.hc-roster-bar {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(3rem, 1fr) 4.25rem;
+	align-items: center;
+}
+.hc-roster-now .hc-who-meta {
+	margin-top: 0.1rem;
+	padding-left: 0.9rem;
+}
+.hc-roster-none {
+	color: var(--hc-quiet);
+}
+.hc-roster-act {
+	width: 1%;
+	text-align: right;
+}
+@media (max-width: 1299.98px) {
+	.hc-roster .hc-roster-dept {
+		display: none;
+	}
+}
+/* On a phone each provider is a small block: who and the icons, then the
+   room and what they are doing, then the bar. */
+@media (max-width: 767.98px) {
+	.hc-list-table-wrap {
+		overflow: visible;
+	}
+	.hc-roster thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.hc-roster,
+	.hc-roster tbody {
+		display: block;
+	}
+	.hc-roster tr {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who  act"
+			"now  room"
+			"load load";
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.hc-roster > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.hc-roster > tbody > tr > td {
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.hc-roster .hc-roster-who {
+		grid-area: who;
+		min-width: 0;
+	}
+	.hc-roster .hc-roster-room {
+		grid-area: room;
+		text-align: right;
+	}
+	.hc-roster .hc-roster-load {
+		grid-area: load;
+	}
+	.hc-roster .hc-roster-now {
+		grid-area: now;
+	}
+	.hc-roster .hc-roster-act {
+		grid-area: act;
+	}
+	.hc-roster .basalt-empty-row {
+		display: block;
+	}
+}
+
+/* The provider quick view: what they are doing, three tiles, the week. */
+.hc-pd-now {
+	--hc-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 1rem;
+	font-size: 0.875rem;
+}
+.hc-pd-now a {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+.hc-pd-tiles.hc-tiles {
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+
+	& .hc-tile {
+		padding: 0.85rem 1rem;
+	}
+}
+.hc-pd-note {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.hc-pd-chart {
+	position: relative;
+	height: 11rem;
+}
+
+/* A list of records, built like the template's Companies list: one row
+   holding the search, the Filters menu, the filters in use and a running
+   count; sortable heads; and the row's Quick view and Open full page
+   icons at the right edge. */
+.hc-list-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.5rem var(--basalt-pad-x);
+}
+.hc-list-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	@media (max-width: 767.98px) {
+		flex: 1 1 100%;
+	}
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--hc-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.hc-list-applied {
+	flex: 0 1 auto;
+}
+.hc-list-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+.hc-list-filter-btn.btn {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	background-color: var(--basalt-plane);
+}
+.hc-list-filter-btn.is-on {
+	border-color: var(--basalt-hue-border);
+	color: var(--basalt-copy);
+}
+.hc-list-filter-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.3rem;
+	height: 1.3rem;
+	margin-left: 0.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.hc-list-filter-panel.dropdown-menu {
+	width: min(24rem, calc(100vw - 2rem));
+	padding: 1.1rem 1.1rem 0.85rem;
+	border-radius: 14px;
+}
+.hc-list-filter-group {
+	min-width: 0;
+	margin: 0 0 1.1rem;
+	padding: 0;
+	border: 0;
+}
+.hc-list-filter-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-list-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.hc-list-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.24rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .hc-list-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:focus-visible:not(:checked) + .hc-list-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.hc-list-filter-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn-link {
+		padding-left: 0;
+	}
+}
+
+/* The table under the toolbar: roomy rows that tint on hover, heads that sort. */
+.hc-list-wrap {
+	overflow-x: auto;
+	/* Sideways only: a row border poking out a pixel must not add a scrollbar. */
+	overflow-y: hidden;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hc-list-table th {
+	padding-top: 0.85rem;
+	padding-bottom: 0.85rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+.hc-list-table td {
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+}
+.hc-list-row {
+	cursor: pointer;
+
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	}
+	&.is-fresh {
+		animation: hc-list-fresh 1.8s ease;
+	}
+}
+@keyframes hc-list-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+.hc-list-col-actions {
+	width: 6rem;
+	text-align: right;
+}
+.hc-list-table .basalt-empty-row td {
+	padding: 2rem var(--basalt-pad-x);
+	cursor: default;
+}
+.hc-list-empty-more {
+	display: flex;
+	justify-content: center;
+	margin-top: 0.75rem;
+}
+
+/* Sortable heads are bare buttons that borrow the head's type. */
+.hc-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+[aria-sort] .hc-sort {
+	color: var(--basalt-copy);
+}
+.hc-num .hc-sort {
+	flex-direction: row-reverse;
+}
+.hc-sort-idle {
+	opacity: 0.55;
+}
+.hc-sort:hover .hc-sort-idle {
+	opacity: 1;
+}
+
+/* Patients: the columns fold away as the card narrows, the name stays. */
+.hc-pt-table td {
+	white-space: nowrap;
+}
+@container (max-width: 60rem) {
+	.hc-pt-col-last {
+		display: none;
+	}
+}
+@container (max-width: 46rem) {
+	.hc-pt-col-next {
+		display: none;
+	}
+}
+@container (max-width: 36rem) {
+	.hc-pt-col-doctor {
+		display: none;
+	}
+}
+@container (max-width: 30rem) {
+	.hc-pt-col-status,
+	.hc-pt-col-balance {
+		display: none;
+	}
+	.hc-pt-table .hc-who-name,
+	.hc-pt-table .hc-who-meta {
+		white-space: nowrap;
+	}
+}
+
+/* The patient quick view: a line on what is next, then the facts. */
+.hc-pt-drawer.offcanvas {
+	--bs-offcanvas-width: 460px;
+	--hc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--hc-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+.hc-pt-drawer dd a:not([class]) {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+}
+@media (max-width: 575.98px) {
+	.hc-pt-drawer.offcanvas {
+		--bs-offcanvas-width: min(400px, 92vw);
+	}
+	.hc-pt-drawer .basalt-drawer-nav {
+		display: none;
+	}
+}
+.hc-pt-d-lead {
+	margin: 0 0 1rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.hc-pt-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		align-items: center;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--hc-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+}
+.hc-pt-d-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Supplies: a table of items, each shelf a bar with the reorder point as
+   a mark and the count written beside it. */
+.hc-stock td {
+	white-space: nowrap;
+}
+.hc-stock-item .hc-cell-link,
+.hc-stock-name {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.hc-stock-shelf {
+	width: 40%;
+}
+.hc-stock-meter {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(6rem, 1fr) 4.25rem;
+	align-items: center;
+}
+.hc-stock-bar {
+	position: relative;
+	display: block;
+	height: 0.6rem;
+	border-radius: 999px;
+	background: var(--hc-track);
+}
+.hc-stock-bar i {
+	display: block;
+	height: 100%;
+	width: var(--share, 0%);
+	border-radius: inherit;
+	background: var(--basalt-success);
+}
+.hc-stock-row.is-low .hc-stock-bar i {
+	background: var(--basalt-danger);
+}
+.hc-stock-row.is-ordered .hc-stock-bar i {
+	background: var(--basalt-info);
+}
+.hc-stock-bar b {
+	position: absolute;
+	top: -0.3rem;
+	bottom: -0.3rem;
+	left: var(--at, 50%);
+	width: 2px;
+	background: var(--basalt-copy);
+	opacity: 0.6;
+}
+.hc-stock-have {
+	font-size: 0.85rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.hc-stock-have small {
+	margin-left: 0.3rem;
+	font-weight: 500;
+	color: var(--hc-quiet);
+}
+.hc-stock-point {
+	font-variant-numeric: tabular-nums;
+}
+.hc-stock-act {
+	width: 1%;
+	text-align: right;
+}
+.hc-stock-note,
+.hc-rx-done {
+	font-size: 0.8rem;
+	color: var(--hc-quiet);
+}
+.hc-rx-med a:not([class]) {
+	display: block;
+	white-space: nowrap;
+}
+.hc-rx-by {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-top: 0.25rem;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+.hc-rx-by .hc-person-link {
+	font-size: 0.8rem;
+}
+.hc-rx-act {
+	text-align: right;
+	white-space: nowrap;
+}
+/* On a phone each item is a small block: name and status, the bar, then
+   the reorder point and the step. */
+@media (max-width: 767.98px) {
+	.hc-stock thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.hc-stock,
+	.hc-stock tbody {
+		display: block;
+	}
+	.hc-stock tr {
+		display: grid;
+		gap: 0.75rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"item  state"
+			"shelf shelf"
+			"point act";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.hc-stock > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.hc-stock > :not(caption) > * > * {
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.hc-stock .hc-stock-item {
+		grid-area: item;
+		min-width: 0;
+		white-space: normal;
+	}
+	.hc-stock .hc-stock-state {
+		grid-area: state;
+	}
+	.hc-stock .hc-stock-shelf {
+		grid-area: shelf;
+	}
+	.hc-stock .hc-stock-point {
+		grid-area: point;
+		font-size: 0.8rem;
+		color: var(--hc-quiet);
+	}
+	.hc-stock .hc-stock-point::before {
+		content: "Reorder at ";
+	}
+	.hc-stock .hc-stock-act {
+		grid-area: act;
+	}
+	.hc-stock .basalt-empty-row {
+		display: block;
+	}
+}
+
+/* On a phone each prescription is a block: patient and status, the
+   medicine and who wrote it, then the next step. */
+@media (max-width: 767.98px) {
+	.hc-rx thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.hc-rx,
+	.hc-rx tbody {
+		display: block;
+	}
+	.hc-rx tr {
+		display: grid;
+		gap: 0.75rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who state"
+			"med med"
+			"act act";
+		align-items: center;
+		padding: 1rem var(--basalt-pad-x);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.hc-rx > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.hc-rx.hc-table td:nth-child(n) {
+		padding: 0;
+		border: 0;
+	}
+	.hc-rx td:nth-child(1) {
+		grid-area: who;
+		min-width: 0;
+	}
+	.hc-rx td:nth-child(3) {
+		grid-area: state;
+	}
+	.hc-rx .hc-rx-med {
+		grid-area: med;
+	}
+	.hc-rx .hc-rx-act {
+		grid-area: act;
+		text-align: left;
+	}
+	.hc-rx .hc-rx-act:empty {
+		display: none;
+	}
+}
+
+/* The reorder dialog: one line per item, the tick and name on the left,
+   the quantity on the right. */
+.hc-reorder-legend {
+	float: none;
+	font-size: inherit;
+}
+.hc-reorder-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hc-reorder-item {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hc-reorder-item:first-child {
+	border-top: 0;
+	padding-top: 0.25rem;
+}
+.hc-reorder-item .form-check {
+	min-width: 0;
+	margin: 0;
+}
+.hc-reorder-item .form-check-label {
+	display: flex;
+	flex-direction: column;
+	font-weight: 600;
+}
+.hc-reorder-item .form-check-label small {
+	font-weight: 500;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+}
+.hc-reorder-qty {
+	flex: none;
+	width: 9rem;
+}
+.hc-reorder-err {
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	color: var(--basalt-danger);
+}
+.hc-count-field {
+	max-width: 14rem;
+}
+
+/* Wards & Beds: two wards, a card per bed. */
+.hc-wards {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.hc-ward {
+	padding: 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+.hc-ward-name {
+	display: flex;
+	gap: 0.75rem;
+	align-items: baseline;
+	margin: 0 0 0.75rem;
+	font-size: 0.77rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-ward-name small {
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: none;
+	letter-spacing: 0;
+}
+.hc-ward-beds {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-bed-card) {
+	--tone: var(--basalt-copy-muted);
+}
+.hc-bed-card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-height: 5rem;
+	padding: 0.65rem 0.75rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+	text-align: left;
+	font: inherit;
+	font-size: 0.77rem;
+	color: var(--hc-quiet);
+	cursor: pointer;
+}
+.hc-bed-card b {
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+}
+.hc-bed-card span {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.hc-bed-card.is-taken {
+	--tone: var(--basalt-series-4);
+}
+.hc-bed-card.is-watch {
+	--tone: var(--basalt-danger);
+}
+.hc-bed-card.is-home {
+	--tone: var(--basalt-success);
+}
+.hc-bed-card.is-clean {
+	--tone: var(--basalt-warning);
+	border-style: dashed;
+}
+.hc-bed-card.is-taken,
+.hc-bed-card.is-watch,
+.hc-bed-card.is-home,
+.hc-bed-card.is-clean {
+	border-color: color-mix(in srgb, var(--tone) 55%, var(--basalt-edge-strong));
+	background: color-mix(in srgb, var(--tone) 12%, var(--basalt-plane));
+}
+.hc-bed-card:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+@container (max-width: 44rem) {
+	.hc-wards {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Emergency: the triage band, then the queue with a live wait. Each
+   level is a tile that filters the queue; its tone is a soft tint and a
+   thin straight bar inside the left edge, inset from top and bottom. */
+.hc-triage {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+/* Level 2 sits between the danger of level 1 and the warning of level 3. */
+.hc-tone-urgent {
+	--tone: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-warning));
+}
+.hc-triage-tile {
+	position: relative;
+	flex: 1 1 9rem;
+	display: grid;
+	gap: 0 0.6rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.6rem 0.8rem 0.6rem 1.1rem;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	text-align: left;
+	background: color-mix(in srgb, var(--tone) 12%, var(--basalt-plane));
+	transition: border-color 170ms ease;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: 0.4rem;
+		width: 3px;
+		border-radius: 2px;
+		background: var(--tone);
+	}
+	&:hover {
+		border-color: color-mix(in srgb, var(--tone) 45%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--tone);
+		background: color-mix(in srgb, var(--tone) 22%, var(--basalt-plane));
+	}
+}
+.hc-triage b {
+	display: grid;
+	place-items: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--tone) 18%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 1.5px var(--tone);
+	font-size: 0.77rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--tone) 42%, var(--basalt-copy));
+}
+.hc-triage span {
+	font-size: 0.77rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hc-triage em {
+	font-size: 1.1rem;
+	font-style: normal;
+	font-weight: 750;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+@container (max-width: 56rem) {
+	.hc-triage {
+		flex-wrap: nowrap;
+		gap: 0.4rem;
+	}
+	.hc-triage-tile {
+		flex: 1 1 0;
+		min-width: 0;
+		padding-right: 0.6rem;
+		grid-template-columns: auto auto;
+		justify-content: space-between;
+	}
+	.hc-triage span {
+		display: none;
+	}
+}
+@container (max-width: 36rem) {
+	.hc-triage-tile {
+		gap: 0.25rem;
+		padding: 0.5rem 0.4rem 0.5rem 0.9rem;
+	}
+	.hc-triage-tile b {
+		width: 1.2rem;
+		height: 1.2rem;
+		font-size: 0.67rem;
+	}
+	.hc-triage-tile em {
+		font-size: 0.95rem;
+	}
+}
+/* Emergency wait lanes: a lane per level, its target as a line, the
+   time past it hatched; each patient a dot at their wait that turns red
+   and pulses once over. */
+.hc-lanes {
+	--hc-lane-label: 9.5rem;
+	display: grid;
+	gap: 0.6rem;
+	padding: 1.5rem var(--basalt-pad-x) 0;
+}
+.hc-lane {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: var(--hc-lane-label) minmax(0, 1fr);
+	align-items: center;
+}
+.hc-lane-name {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	& > span {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: 50%;
+		font-size: 0.75rem;
+		font-weight: 800;
+		color: #fff;
+		background: var(--tone);
+	}
+	& small {
+		display: block;
+		font-size: 0.71rem;
+		font-weight: 500;
+		color: var(--hc-quiet);
+	}
+}
+.hc-lane-track {
+	position: relative;
+	height: 3rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--tone) 7%, var(--basalt-plane-alt));
+}
+.hc-lane-target {
+	position: absolute;
+	top: -0.3rem;
+	bottom: -0.3rem;
+	width: 2px;
+	background: var(--tone);
+}
+.hc-lane-late {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 0 12px 12px 0;
+	background: repeating-linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--basalt-danger) 10%, transparent) 0 6px,
+		transparent 6px 12px
+	);
+}
+.hc-lane-none {
+	position: absolute;
+	top: 50%;
+	left: 1rem;
+	display: none;
+	font-size: 0.8rem;
+	color: var(--hc-quiet);
+	transform: translateY(-50%);
+}
+.hc-lane-track.is-empty .hc-lane-none {
+	display: block;
+}
+.hc-lane-dot {
+	position: absolute;
+	top: 50%;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	padding: 0;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	font-size: 0.7rem;
+	font-weight: 800;
+	color: #fff;
+	/* Darkened so white initials stay readable on every lane color. */
+	background: color-mix(in srgb, var(--tone) 58%, #000);
+	transform: translate(-50%, -50%);
+	transition:
+		left 900ms cubic-bezier(0.22, 1, 0.36, 1),
+		transform 170ms ease;
+
+	&:hover,
+	&:focus-visible {
+		z-index: 2;
+		outline: none;
+		transform: translate(-50%, -50%) scale(1.15);
+	}
+	&.is-late {
+		background: color-mix(in srgb, var(--basalt-danger) 58%, #000);
+		animation: hc-lane-pulse 1.6s ease-out infinite;
+	}
+}
+@keyframes hc-lane-pulse {
+	from {
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--basalt-danger) 50%, transparent);
+	}
+	to {
+		box-shadow: 0 0 0 10px transparent;
+	}
+}
+.hc-lane-axis {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: var(--hc-lane-label) minmax(0, 1fr);
+	margin-top: 0.3rem;
+
+	& > div {
+		position: relative;
+		height: 1rem;
+		font-size: 0.7rem;
+		color: var(--hc-quiet);
+	}
+	& span {
+		position: absolute;
+		white-space: nowrap;
+		transform: translateX(-50%);
+	}
+}
+.hc-lane-read {
+	min-height: 1.5rem;
+	margin: 1.25rem 0 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.hc-lane-over {
+	color: var(--basalt-danger);
+}
+@media (max-width: 575.98px) {
+	.hc-lanes {
+		--hc-lane-label: 2rem;
+	}
+	.hc-lane-name > div {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-lane-dot {
+		transition: none;
+	}
+	.hc-lane-dot.is-late {
+		animation: none;
+	}
+}
+
+/* A queue row found from its dot flashes once. */
+.hc-er-row.is-found {
+	animation: hc-er-found 1.4s ease-out;
+}
+@keyframes hc-er-found {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 16%, transparent);
+	}
+}
+
+/* The queue: one row a patient, the level's tone as a thin straight bar
+   inside the first cell. The row opens the quick view. */
+.hc-er tbody td {
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+}
+.hc-er-row {
+	cursor: pointer;
+}
+.hc-er-levelcell {
+	position: relative;
+	white-space: nowrap;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.75rem;
+		bottom: 0.75rem;
+		left: 0.6rem;
+		width: 3px;
+		border-radius: 2px;
+		background: var(--tone);
+	}
+}
+.hc-er-level {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.hc-er-level b {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--tone) 18%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 1.5px var(--tone);
+	font-size: 0.77rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--tone) 42%, var(--basalt-copy));
+}
+.hc-er-level small {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--hc-quiet);
+}
+td.hc-er-no {
+	font-size: 0.85rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--hc-quiet);
+}
+.hc-er-why {
+	display: block;
+	margin-left: calc(26px + 0.4rem);
+}
+.hc-er-with {
+	white-space: nowrap;
+}
+.hc-er-assign.btn {
+	padding: 0;
+	border: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+td.hc-er-wait {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.95rem;
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+th.hc-er-wait {
+	text-align: right;
+}
+td.hc-er-wait.is-late {
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+}
+@container (max-width: 62rem) {
+	.hc-er .hc-er-level small,
+	.hc-er .hc-er-no {
+		display: none;
+	}
+}
+@container (max-width: 50rem) {
+	.hc-er .hc-er-with {
+		display: none;
+	}
+}
+@container (max-width: 36rem) {
+	.hc-er .hc-rest-acts > .btn,
+	.hc-er .basalt-row-actions > a,
+	.hc-er .hc-er-level,
+	.hc-er th:first-child > * {
+		display: none;
+	}
+	.hc-er .hc-er-levelcell,
+	.hc-er th:first-child {
+		width: 1.25rem;
+		padding-right: 0;
+		font-size: 0;
+	}
+	.hc-er-why {
+		white-space: normal;
+	}
+}
+
+/* Telehealth: the live call. */
+.hc-call {
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+}
+.hc-call-stage {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.3rem;
+	min-height: 18rem;
+	border-radius: 14px;
+	background-color: #0b1120;
+	background-image: linear-gradient(160deg, color-mix(in srgb, var(--basalt-hue) 55%, #0b1120), #0b1120);
+	color: #ffffff;
+}
+[data-basalt-gradients="off"] .hc-call-stage {
+	background-image: none;
+}
+.hc-call-face {
+	width: 88px;
+	height: 88px;
+	font-size: 1.8rem;
+	box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.12);
+}
+.hc-call-name {
+	margin-top: 0.5rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+}
+.hc-call-meta {
+	font-size: 0.8rem;
+	color: rgba(255, 255, 255, 0.7);
+}
+.hc-call-self {
+	position: absolute;
+	right: 0.85rem;
+	bottom: 0.85rem;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.14);
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+.hc-call-bars {
+	position: absolute;
+	left: 0.85rem;
+	bottom: 0.85rem;
+	display: flex;
+	gap: 3px;
+	align-items: flex-end;
+	height: 1.1rem;
+}
+.hc-call-bars i {
+	width: 4px;
+	height: 40%;
+	border-radius: 2px;
+	background: var(--basalt-success);
+	animation: hc-voice 900ms ease-in-out infinite;
+}
+.hc-call-bars i:nth-child(2) {
+	animation-delay: 110ms;
+}
+.hc-call-bars i:nth-child(3) {
+	animation-delay: 240ms;
+}
+.hc-call-bars i:nth-child(4) {
+	animation-delay: 360ms;
+}
+.hc-call-bars i:nth-child(5) {
+	animation-delay: 480ms;
+}
+@keyframes hc-voice {
+	0%,
+	100% {
+		height: 30%;
+	}
+	50% {
+		height: 100%;
+	}
+}
+.hc-call-tools {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.hc-claim-mark {
+	width: 72px;
+	height: 72px;
+	border-radius: 20px;
+	font-size: 1.6rem;
+	background: var(--basalt-hue-soft);
+	color: var(--basalt-hue);
+}
+
+/* The analytics band: a small chart per tile with its takeaway above it. */
+.hc-insight.card {
+	padding: 1.1rem 1.25rem 1rem;
+}
+.hc-insight-head {
+	margin-bottom: 0.75rem;
+}
+.hc-insight-title {
+	margin: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-insight-take {
+	margin: 0.3rem 0 0;
+	overflow: hidden;
+	font-size: 0.92rem;
+	font-weight: 600;
+	line-height: 1.35;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hc-insight-chart {
+	position: relative;
+	height: 9rem;
+}
+.hc-insight-chart.is-ring {
+	height: 7.5rem;
+}
+
+/* The wide insight: one chart across most of the card and, beside it,
+   the figures a director reads first, set in plain type. */
+.hc-insight-wide.card {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+	padding: 1.25rem 1.5rem;
+
+	& .hc-insight-chart {
+		height: 12rem;
+	}
+}
+.hc-insight-facts {
+	display: grid;
+	gap: 1.1rem;
+	align-content: center;
+	margin: 0;
+	padding-left: 2rem;
+	border-left: 1px solid var(--basalt-edge);
+
+	& dt {
+		font-size: 0.81rem;
+		font-weight: 600;
+		color: var(--basalt-copy-muted);
+	}
+	& dd {
+		margin: 0;
+	}
+	& .hc-insight-fact {
+		font-size: 1.6rem;
+		font-weight: 750;
+		line-height: 1.15;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	& .hc-insight-note {
+		font-size: 0.81rem;
+		color: var(--basalt-copy-body);
+	}
+}
+@media (max-width: 991.98px) {
+	.hc-insight-wide.card {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.hc-insight-facts {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		padding: 1.25rem 0 0;
+		border-top: 1px solid var(--basalt-edge);
+		border-left: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.hc-insight-facts {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.hc-insight-key {
+	display: flex;
+	gap: 0.3rem 1rem;
+	flex-wrap: wrap;
+	margin: 0.75rem 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.77rem;
+	color: var(--hc-quiet);
+}
+.hc-insight-key li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.hc-insight-key b {
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+/* Today, step by step: a short timeline with the current step lit. */
+.hc-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hc-steps li {
+	position: relative;
+	display: grid;
+	gap: 0 1rem;
+	grid-template-columns: 3.4rem minmax(0, 1fr);
+	padding: 0.5rem 0 0.5rem 1.4rem;
+}
+.hc-steps li::before {
+	content: "";
+	position: absolute;
+	top: 1.05rem;
+	left: 0.3rem;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--basalt-edge-strong);
+}
+.hc-steps li.is-done::before {
+	background: var(--basalt-success);
+}
+.hc-steps li.is-now::before {
+	background: var(--basalt-hue);
+	box-shadow: 0 0 0 4px var(--basalt-hue-soft);
+}
+.hc-steps li + li::after {
+	content: "";
+	position: absolute;
+	top: -0.6rem;
+	left: 0.62rem;
+	width: 2px;
+	height: 1.3rem;
+	background: var(--basalt-edge);
+}
+/* A step's name and note wrap inside their column, never past the card. */
+.hc-steps .hc-who-name,
+.hc-steps .hc-who-meta {
+	white-space: normal;
+}
+.hc-money-figs {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0;
+}
+.hc-money-figs dt {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-money-figs dd {
+	margin: 0.1rem 0 0;
+	font-size: 1.2rem;
+	font-weight: 750;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+}
+.hc-money-figs dd small {
+	margin-left: 0.3rem;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--hc-quiet);
+}
+.hc-money-chart {
+	position: relative;
+	height: 15rem;
+}
+@container (max-width: 36rem) {
+	.hc-money-figs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.hc-wait-chart {
+	position: relative;
+	height: 15rem;
+}
+
+/* On a phone the quiet lines wrap instead of running under the next column. */
+.hc-next .hc-who-meta,
+.hc-team .hc-waits-meta {
+	white-space: normal;
+}
+@container (max-width: 30rem) {
+	.hc-table .hc-num {
+		white-space: normal;
+	}
+	.hc-table .hc-who-name,
+	.hc-table .hc-who-meta {
+		white-space: normal;
+	}
+}
+
+/* Check-in: the find box with its suggestions, the patient's card with
+   their insurance, a short form for someone new, and today's estimate as
+   one bar split between the insurer and the patient. */
+.hc-ci-set {
+	min-height: 18rem;
+}
+.hc-ci-find {
+	position: relative;
+
+	& > .bi {
+		position: absolute;
+		top: 0.7rem;
+		left: 0.85rem;
+		color: var(--hc-quiet);
+		pointer-events: none;
+	}
+	& > .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.hc-ci-hits {
+	position: absolute;
+	top: calc(100% + 0.3rem);
+	right: 0;
+	left: 0;
+	z-index: 5;
+	margin: 0;
+	padding: 0.3rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	list-style: none;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.hc-ci-hit {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.5rem 0.65rem;
+	border-radius: 9px;
+	cursor: pointer;
+
+	&:hover,
+	&[aria-selected="true"] {
+		background: var(--basalt-plane-alt);
+	}
+	&.is-new {
+		margin-top: 0.25rem;
+		border-top: 1px solid var(--basalt-edge);
+		border-radius: 0 0 9px 9px;
+		color: var(--basalt-hue);
+	}
+}
+.hc-ci-hit-text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+
+	& b {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& small {
+		font-size: 0.77rem;
+		color: var(--hc-quiet);
+	}
+}
+.hc-ci-hit.is-new .hc-ci-hit-text b {
+	color: var(--basalt-hue);
+}
+.hc-ci-hit-plus {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+}
+.hc-ci-hit-tag {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+}
+.hc-ci-card,
+.hc-ci-new {
+	margin-top: 1rem;
+	padding: 1.1rem 1.2rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	animation: hc-ci-in 260ms ease both;
+}
+@keyframes hc-ci-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+.hc-ci-card-head {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+
+	& > div {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+	}
+	& b {
+		font-size: 1.05rem;
+		color: var(--basalt-copy);
+	}
+	& small {
+		font-size: 0.8rem;
+		color: var(--hc-quiet);
+	}
+}
+.hc-ci-facts {
+	display: grid;
+	gap: 0.75rem 1.25rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 1rem 0;
+
+	& dt {
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--hc-quiet);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+@media (max-width: 575.98px) {
+	.hc-ci-facts {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.hc-ci-allergy {
+	font-weight: 650;
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+}
+.hc-ci-insurance {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.8rem 0.9rem;
+	border-radius: 10px;
+	background: var(--basalt-plane-alt);
+}
+.hc-ci-ins-text {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.1rem 0.6rem;
+	align-items: baseline;
+
+	& b {
+		color: var(--basalt-copy);
+	}
+	& small {
+		font-size: 0.8rem;
+		color: var(--hc-quiet);
+	}
+}
+.hc-ci-ins-label {
+	flex-basis: 100%;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-ci-state {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+
+	&.is-on {
+		color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-success) 13%, transparent);
+	}
+	&.is-off {
+		color: color-mix(in srgb, var(--basalt-danger) 65%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-danger) 12%, transparent);
+	}
+}
+.hc-ci-ins-edit {
+	margin-top: 0.75rem;
+}
+.hc-ci-today,
+.hc-ci-booked,
+.hc-ci-warn {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0.9rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--basalt-hue);
+	}
+}
+.hc-ci-today.is-none {
+	color: var(--hc-quiet);
+
+	& .bi {
+		color: inherit;
+	}
+}
+.hc-ci-booked {
+	margin: 0 0 1rem;
+	padding: 0.7rem 0.9rem;
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--basalt-hue) 8%, transparent);
+}
+.hc-ci-warn {
+	margin: 0 0 1rem;
+
+	& .bi {
+		color: var(--basalt-warning);
+	}
+}
+.hc-ci-new-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-hue);
+}
+.hc-ci-cost-lead {
+	margin: 0 0 0.9rem;
+	font-size: 1rem;
+	color: var(--basalt-copy);
+
+	& b {
+		font-size: 1.6rem;
+		font-weight: 800;
+	}
+}
+.hc-ci-split {
+	display: flex;
+	gap: 3px;
+	height: 0.8rem;
+	overflow: hidden;
+	border-radius: 6px;
+
+	& .is-insurer {
+		background: var(--basalt-series-1);
+	}
+	& .is-patient {
+		background: var(--basalt-series-5);
+	}
+	& > span {
+		animation: hc-ci-grow 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+}
+@keyframes hc-ci-grow {
+	from {
+		flex-grow: 0;
+	}
+}
+.hc-ci-key {
+	display: inline-block;
+	width: 0.6rem;
+	height: 0.6rem;
+	margin-right: 0.4rem;
+	border-radius: 3px;
+
+	&.is-insurer {
+		background: var(--basalt-series-1);
+	}
+	&.is-patient {
+		background: var(--basalt-series-5);
+	}
+}
+.hc-ci-sum {
+	margin: 1rem 0 0;
+
+	& > div {
+		display: flex;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+	& dd {
+		margin: 0;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& small {
+		font-weight: 500;
+		color: var(--hc-quiet);
+	}
+}
+.hc-ci-fine {
+	margin: 0.75rem 0 0;
+	font-size: 0.77rem;
+	color: var(--hc-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-ci-card,
+	.hc-ci-new,
+	.hc-ci-split > span {
+		animation: none;
+	}
+}
+
+/* Booking: the next free times as a grid of slots to pick from, and the
+   summary above the estimate. */
+.hc-bk-title {
+	margin: 1.4rem 0 0.6rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-bk-slots {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 575.98px) {
+	.hc-bk-slots {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.hc-bk-slot {
+	display: flex;
+	flex-direction: column;
+	padding: 0.65rem 0.8rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	cursor: pointer;
+	transition:
+		border-color 130ms ease,
+		background-color 130ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+	}
+	&:has(:checked) {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+		box-shadow: inset 0 0 0 1px var(--basalt-hue);
+	}
+	&:has(:focus-visible) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.hc-bk-slot-day {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--hc-quiet);
+}
+.hc-bk-slot-time {
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.hc-bk-slot-who {
+	font-size: 0.75rem;
+	color: var(--basalt-copy-body);
+}
+.hc-bk-sum {
+	display: grid;
+	gap: 0.75rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+
+	& dt {
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--hc-quiet);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* A date field's message shows once the field inside its calendar wrapper is flagged. */
+.basalt-datepicker:has(.is-invalid) + .invalid-feedback {
+	display: block;
+}
+
+/* Booking's reminder: the template picked, when it goes out, and the
+   text as the patient will read it. */
+.hc-bk-remind-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	align-items: flex-start;
+	margin-top: 0.6rem;
+	padding-left: 2.5rem;
+
+	& .form-select {
+		max-width: 22rem;
+	}
+}
+.hc-bk-when {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--hc-quiet);
+}
+.hc-bk-text {
+	max-width: 26rem;
+	margin: 0;
+	padding: 0.7rem 0.9rem;
+	border-radius: 14px 14px 14px 4px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.hc-bk-edit {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+/* Appointment details: a way into each part of the patient's record, one
+   tile per part with its own icon color, what is in it and an arrow, so
+   each reads as a door. A part with news today says so in the danger
+   color. A first visit shows what to collect instead. */
+.hc-ad-record {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+
+	&.is-first {
+		display: flex;
+		gap: 0.75rem 1.5rem;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+	@media (max-width: 1599.98px) {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	/* Two a row, with the way to the full record across the bottom. */
+	@media (max-width: 767.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+
+		& .is-full {
+			grid-column: 1 / -1;
+		}
+	}
+	@media (max-width: 575.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.hc-ad-record-title {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-copy));
+	}
+}
+/* The default tone, kept weightless so a tone class wins. */
+:where(.hc-ad-record-link) {
+	--tone: var(--basalt-hue);
+}
+.hc-ad-record-link {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	transition:
+		border-color 170ms ease,
+		transform 170ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--tone) 50%, var(--basalt-edge));
+		transform: translateY(-2px);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&.is-full {
+		color: var(--hc-link);
+		border-style: dashed;
+		box-shadow: none;
+	}
+}
+.hc-ad-record-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--tone) 75%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+}
+.hc-ad-record-text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+
+	& b {
+		overflow: hidden;
+		font-size: 0.92rem;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+}
+/* A block, not a flex row, so a note too long for the tile ends in an
+   ellipsis; the live dot sits inline in front of it. */
+.hc-ad-record-note {
+	display: block;
+	overflow: hidden;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: var(--hc-quiet);
+
+	&.is-live {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+	}
+	&.is-live::before {
+		content: "";
+		display: inline-block;
+		width: 0.4rem;
+		height: 0.4rem;
+		margin-right: 0.3rem;
+		vertical-align: 0.1em;
+		border-radius: 50%;
+		background: var(--basalt-danger);
+		animation: hc-breathe-dot 1.6s ease-in-out infinite;
+	}
+}
+.hc-ad-record-go {
+	flex: none;
+	color: var(--hc-quiet);
+	transition: transform 170ms ease;
+
+	.hc-ad-record-link:hover & {
+		color: var(--tone);
+		transform: translateX(2px);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-ad-record-link,
+	.hc-ad-record-go {
+		transition: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-ad-record-note.is-live::before {
+		animation: none;
+	}
+}
+.hc-ad-intake {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		font-size: 0.875rem;
+	}
+	& .form-check-input {
+		margin: 0;
+	}
+}
+
+/* Visit lists (Appointments, Telehealth): the template's list kit, as on
+   Companies. Search, Filters and the count share one ruled row; heads
+   sort; a row tints on hover and opens its quick view. */
+.hc-vl-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: var(--basalt-pad-row-y) var(--basalt-pad-x) 0.5rem;
+	padding-top: var(--basalt-pad-row-y);
+	border-top: 1px solid var(--basalt-edge);
+}
+.hc-vl-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	@media (max-width: 767.98px) {
+		flex: 1 1 100%;
+	}
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--hc-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.hc-vl-applied {
+	flex: 0 1 auto;
+}
+.hc-vl-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--hc-quiet);
+}
+.hc-vl-filter-btn.btn {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	background-color: var(--basalt-plane);
+
+	&.is-on {
+		border-color: var(--basalt-hue-border);
+		color: var(--basalt-copy);
+	}
+}
+.hc-vl-filter-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.3rem;
+	height: 1.3rem;
+	margin-left: 0.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.hc-vl-panel.dropdown-menu {
+	width: min(24rem, calc(100vw - 2rem));
+	padding: 1.1rem 1.1rem 0.85rem;
+	border-radius: 14px;
+}
+.hc-vl-group {
+	min-width: 0;
+	margin: 0 0 1.1rem;
+	padding: 0;
+	border: 0;
+}
+.hc-vl-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.hc-vl-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.hc-vl-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.24rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .hc-vl-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:focus-visible:not(:checked) + .hc-vl-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.hc-vl-panel-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn-link {
+		padding-left: 0;
+		font-weight: 600;
+		text-decoration: none;
+	}
+}
+
+/* The table: rows with room, one kind of thing per column, nothing wraps. */
+.hc-vl-table {
+	& th,
+	& td {
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: var(--basalt-pad-row-y);
+		white-space: nowrap;
+	}
+	& thead th {
+		padding-top: 0.5rem;
+		padding-bottom: 0.75rem;
+		border-bottom-color: var(--basalt-edge-strong);
+	}
+	& .hc-who-meta {
+		display: block;
+	}
+}
+.hc-vl-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+[aria-sort] .hc-vl-sort {
+	color: var(--basalt-copy);
+}
+.hc-vl-idle {
+	opacity: 0.55;
+}
+.hc-vl-sort:hover .hc-vl-idle {
+	opacity: 1;
+}
+.hc-vl-row {
+	cursor: pointer;
+
+	&:hover > td {
+		background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	}
+}
+.hc-vl-time {
+	width: 5.5rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.hc-vl-why-name {
+	display: block;
+	color: var(--basalt-copy);
+}
+.hc-vl-act {
+	width: 1%;
+	text-align: right;
+}
+.hc-vl-more.btn {
+	display: block;
+	margin: 0.25rem auto 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+/* Narrow cards drop the reason and then the provider, which the quick view still shows. */
+@container (max-width: 52rem) {
+	.hc-vl-table .hc-vl-why {
+		display: none;
+	}
+}
+@container (max-width: 34rem) {
+	.hc-vl-table .hc-vl-with,
+	.hc-vl-table .hc-vl-state {
+		display: none;
+	}
+}
+
+/* The visit's quick view: a status line, then the facts as a ruled list. */
+.hc-vd.offcanvas {
+	--bs-offcanvas-width: 448px;
+	/* The drawer sits outside the page root, so it takes the page's two mixes here. */
+	--hc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--hc-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+@media (max-width: 575.98px) {
+	.hc-vd.offcanvas {
+		--bs-offcanvas-width: min(400px, 92vw);
+	}
+	.hc-vd .basalt-drawer-nav {
+		display: none;
+	}
+}
+.hc-vd-state {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0 0 0.75rem;
+}
+.hc-vd-length {
+	font-size: 0.85rem;
+	color: var(--hc-quiet);
+}
+.hc-vd-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		align-items: center;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--hc-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+	& dd a:not([class]) {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--hc-link);
+	}
+	& dd a:not([class]):hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+
+/* Telehealth: the waiting room rows end with their action; the id on the call stays light. */
+.hc-th-waits li {
+	padding: 0.8rem 0;
+}
+.hc-call-meta a {
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+/* A calendar inside a card: room under the card head before its toolbar. */
+/* A calendar's Today and arrows sit in its card head, beside the dates. */
+.hc-cal-nav {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.hc-card-head + .hc-calendar {
+	margin-top: 1.25rem;
+}
+
+/* Entrances on the list and detail pages, played once as each block
+   first comes into view (healthcare.js sets is-entering, and is-unseen
+   holds the first frame until then). Every one ends where the page
+   already rests, and none plays for visitors who ask for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+	.is-entering.is-unseen,
+	.is-entering.is-unseen *,
+	.is-entering.is-unseen *::before {
+		animation-play-state: paused;
+	}
+	/* Rows, cards and list items rise in a step after one another. */
+	.hc-rise {
+		animation: hc-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) calc(100ms + var(--enter-i, 0) * 25ms) backwards;
+	}
+	/* The claim's path: each line runs to the next stop and the stop
+	   lands as the line reaches it, Sent first and Paid last. */
+	.hc-cd-path.is-entering .hc-cd-step {
+		--step-at: calc(var(--enter-i, 0) * 130ms + 120ms);
+
+		&::before {
+			transform-origin: left center;
+			animation: hc-grow-x 150ms linear calc(var(--step-at) - 140ms) backwards;
+		}
+		& .hc-cd-step-dot {
+			animation: hc-pop 340ms cubic-bezier(0.22, 1, 0.36, 1) var(--step-at) backwards;
+		}
+		& > :not(.hc-cd-step-dot) {
+			animation: hc-fade 360ms ease-out calc(var(--step-at) + 60ms) backwards;
+		}
+	}
+	/* Providers: the week's bars stand up a day after another, and the
+	   body and its departments settle onto the stage. */
+	[data-hc-dept-stats].is-entering .hc-stat-days s {
+		transform-origin: center bottom;
+		animation: hc-grow-y 520ms cubic-bezier(0.22, 1, 0.36, 1) calc(150ms + var(--enter-i, 0) * 60ms) backwards;
+	}
+	.hc-stage.is-entering {
+		& .hc-figure {
+			animation: hc-settle 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+		}
+		& .hc-orb {
+			animation:
+				hc-drift var(--drift, 6s) ease-in-out var(--phase, 0s) infinite,
+				hc-settle 560ms cubic-bezier(0.22, 1, 0.36, 1) calc(200ms + var(--enter-i, 0) * 60ms) backwards;
+		}
+	}
+	/* The schedule fills in a day after another, each day from the top. */
+	.hc-calendar.is-entering .fc-timegrid-event-harness {
+		animation: hc-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) calc(100ms + var(--enter-i, 0) * 25ms) backwards;
+	}
+	/* Telehealth: the caller comes on screen, then the call's details. */
+	.hc-call.is-entering .hc-call-stage > * {
+		animation: hc-rise 480ms cubic-bezier(0.22, 1, 0.36, 1) calc(120ms + var(--enter-i, 0) * 70ms) backwards;
+	}
+	.hc-call.is-entering .hc-call-stage > .hc-call-face {
+		animation: hc-pop 520ms cubic-bezier(0.22, 1, 0.36, 1) 80ms backwards;
+	}
+	/* Supplies: each shelf fills from empty, then its reorder mark shows. */
+	.hc-stock-row.hc-rise .hc-stock-bar {
+		& i {
+			transform-origin: left center;
+			animation: hc-grow-x 700ms cubic-bezier(0.22, 1, 0.36, 1) calc(160ms + var(--enter-i, 0) * 40ms) backwards;
+		}
+		& b {
+			animation: hc-fade 300ms ease-out calc(700ms + var(--enter-i, 0) * 40ms) backwards;
+		}
+	}
+	/* Emergency: a lane's target drops in, the time past it fills in
+	   from the target outwards, and the dots run out along the lane. */
+	.hc-lanes.is-entering {
+		& .hc-lane-target {
+			transform-origin: center top;
+			animation: hc-grow-y 360ms ease-out calc(var(--enter-i, 0) * 80ms) backwards;
+		}
+		& .hc-lane-late {
+			transform-origin: left center;
+			animation: hc-grow-x 800ms cubic-bezier(0.22, 1, 0.36, 1) calc(200ms + var(--enter-i, 0) * 80ms) backwards;
+		}
+		& .hc-lane-dot {
+			transition-delay: calc(var(--enter-i, 0) * 80ms);
+			animation: hc-fade 300ms ease-out calc(var(--enter-i, 0) * 80ms) backwards;
+		}
+	}
+}
+@keyframes hc-rise {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+@keyframes hc-fade {
+	from {
+		opacity: 0;
+	}
+}
+@keyframes hc-pop {
+	from {
+		opacity: 0;
+		transform: scale(0.6);
+	}
+}
+@keyframes hc-grow-x {
+	from {
+		transform: scaleX(0);
+	}
+}
+@keyframes hc-grow-y {
+	from {
+		transform: scaleY(0);
+	}
+}
+/* Individual translate and scale, so a chip's own drift keeps running. */
+@keyframes hc-settle {
+	from {
+		opacity: 0;
+		translate: 0 8px;
+		scale: 0.96;
+	}
+}
+
+/* The home page's entrance: the monitor card leads the page. Each trace
+   opens with its name, its figure large and one short line, then the
+   trace itself, a little taller. */
+.hc-card.is-hero {
+	& .hc-card-head {
+		padding-top: 1.75rem;
+	}
+	& .hc-card-title {
+		font-size: 1.45rem;
+	}
+	& .hc-trace-sub {
+		display: none;
+	}
+	& .hc-trace-name {
+		font-size: 0.75rem;
+	}
+	& .hc-monitor-body {
+		padding-top: 1.25rem;
+		padding-bottom: 0.75rem;
+	}
+	& .hc-trace-read strong {
+		font-size: 2.1rem;
+	}
+}
+@container (min-width: 48rem) {
+	.hc-card.is-hero {
+		& .hc-trace {
+			grid-template-columns: 11rem minmax(0, 1fr);
+			grid-template-areas:
+				"label art"
+				"read art";
+			gap: 0.3rem 2rem;
+			padding: 0.8rem 0;
+		}
+		& .hc-trace-label {
+			grid-area: label;
+			align-self: end;
+		}
+		& .hc-trace-read {
+			grid-area: read;
+			align-self: start;
+			align-items: flex-start;
+			text-align: left;
+		}
+		& .hc-trace-read strong {
+			font-size: 2.85rem;
+			line-height: 1;
+			letter-spacing: -0.03em;
+		}
+		& .hc-trace-read small {
+			margin-top: 0.4rem;
+			font-size: 0.8rem;
+		}
+		/* The four traces share the window's height left under the header,
+		   so the whole monitor fits on screen at any desktop size: roomy on
+		   a tall window, never shorter than 4rem, never taller than 9rem. */
+		& .hc-trace-art {
+			grid-area: art;
+			height: clamp(4rem, calc((100dvh - 24.25rem) / 4 - 1.6rem), 9rem);
+		}
+		& .hc-trace-scale {
+			margin: 0.5rem 0 0 13rem;
+		}
+	}
+}
+/* Phones: name and figure, then the trace under them. */
+@container (max-width: 48rem) {
+	.hc-card.is-hero .hc-trace {
+		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-areas:
+			"label label"
+			"read read"
+			"art art";
+		padding: 0.9rem 0 0.5rem;
+	}
+	.hc-card.is-hero .hc-trace-read {
+		justify-content: flex-start;
+	}
+}
+
+@keyframes hc-ring-fill {
+	from {
+		stroke-dasharray: 0 100;
+	}
+}
+
+/* The wave (healthcare.js wave()): each monitor row tints in its own tone
+   while its reading lifts, one row after another; rows of the rest of
+   today tint in the palette color the same way. Off with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+	.hc-monitor-body.is-waving .hc-trace {
+		animation: hc-wave-tint 420ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--wave-i, 0) * 45ms);
+	}
+	.hc-monitor-body.is-waving .hc-trace-read {
+		animation: hc-wave-lift 420ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--wave-i, 0) * 45ms);
+	}
+	.hc-rest.is-waving tbody tr {
+		--tone: var(--basalt-hue);
+	}
+	.hc-rest.is-waving tbody tr > td {
+		animation: hc-wave-tint 400ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--wave-i, 0) * 45ms);
+	}
+}
+@keyframes hc-wave-tint {
+	35% {
+		background-color: color-mix(in srgb, var(--tone, var(--basalt-hue)) 10%, transparent);
+	}
+}
+@keyframes hc-wave-lift {
+	35% {
+		transform: translateY(-4px);
+	}
+}

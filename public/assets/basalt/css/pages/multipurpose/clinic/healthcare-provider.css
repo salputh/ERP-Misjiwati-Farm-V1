@@ -1,0 +1,142 @@
+/* Provider details (provider-details.html): one provider as a
+   person. Namespaced .hpv-*; the header, tiles, tables and calendar come
+   from healthcare.css and the template. */
+
+/* What waits on them: one row each, an icon tile, what to do and where. */
+.hpv-waits {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x) var(--basalt-pad-x);
+	list-style: none;
+}
+.hpv-wait {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.75rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	transition: border-color 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue-border);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.hpv-wait-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	color: var(--hc-link);
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.hpv-wait-text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+
+	& b {
+		font-size: 0.9rem;
+	}
+	& span {
+		font-size: 0.8rem;
+		color: var(--hc-quiet);
+	}
+}
+.hpv-wait-go {
+	color: var(--hc-quiet);
+}
+.hpv-wait-none {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 65%, var(--basalt-copy));
+}
+
+/* Time off ahead, one line each, inside the facts. */
+.hpv-off {
+	display: grid;
+	gap: 0.3rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& b {
+		font-weight: 600;
+	}
+}
+.hpv-off-none {
+	color: var(--hc-quiet);
+}
+
+/* Hours and time off beside training and contact, ruled rows each side. */
+.hpv-about {
+	display: grid;
+	gap: 0 2.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	align-items: start;
+	padding: 0.5rem 0 var(--basalt-pad-x);
+
+	& .hpv-facts {
+		padding: 0 var(--basalt-pad-x);
+	}
+	& .hpv-facts:first-child {
+		padding-right: 0;
+	}
+	& .hpv-facts:last-child {
+		padding-left: 0;
+	}
+}
+@media (max-width: 991.98px) {
+	.hpv-about {
+		grid-template-columns: minmax(0, 1fr);
+
+		& .hpv-facts:first-child,
+		& .hpv-facts:last-child {
+			padding: 0 var(--basalt-pad-x);
+		}
+	}
+}
+
+/* Training and contact as label and value rows. */
+.hpv-facts {
+	display: grid;
+	align-content: start;
+	gap: 0;
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-x);
+
+	& div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7rem minmax(0, 1fr);
+		padding: 0.7rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& div:first-child {
+		border-top: 0;
+	}
+	& dt {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--hc-quiet);
+	}
+	& dd {
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+}
+.hpv-calendar {
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-x);
+}

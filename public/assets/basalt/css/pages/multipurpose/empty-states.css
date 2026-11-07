@@ -1,0 +1,699 @@
+/* Empty states (empty-states.html): the showcase itself under .es-*,
+   meaning the filter chips, the card grid, the code snippets and the gray
+   stage each demo sits on, plus the small demo-only pieces. The empty state
+   types on show are styled in basalt.css. Every color is a --basalt-* token,
+   mixed so small text holds 4.5:1 in each palette, light and dark. */
+
+.es-page {
+	/* Quiet text is the muted token leaned toward the body color. Primary as
+     text leans the same way, since the raw token is meant for fills and a
+     few palettes put it under 4.5:1. Bootstrap's secondary text color is a
+     fixed gray, so it is pointed at the quiet mix too. */
+	--es-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--es-accent-text: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--bs-secondary-color: var(--es-quiet);
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The filter row: chips, then the live count under them. A pressed chip
+   inverts to body color on card color. */
+.es-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.es-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .es-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.es-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.es-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--es-quiet);
+}
+
+/* Twelve tracks. Under 1200px each card takes the row; from there cards
+   pair up, and a full-width card or one left alone spans the row. */
+.es-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.es-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.es-card {
+		grid-column: span 6;
+	}
+	.es-card-full,
+	.es-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A showcase card. Child selectors throughout, because the demos inside
+   are cards as well. The kind tag reads above the title although it comes
+   after it in the markup, so the title is announced first. */
+.es-card.basalt-box > .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.es-card.basalt-box > .card-body {
+		padding: 1.25rem;
+	}
+}
+.es-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.es-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.es-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--es-quiet);
+}
+.es-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--es-quiet);
+}
+
+/* The code snippet is pinned to the foot of the card under a rule, with
+   room above it whatever the demo ends with, and a copy button sitting in
+   the top corner of the block. */
+.es-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.es-card > .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.es-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.es-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* The stage is the page color behind a demo, so each card sits on what it
+   would sit on for real. In a pair, the shorter stage grows to match its
+   neighbor and keeps its demo in the middle. */
+.es-stage {
+	min-width: 0;
+	padding: 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-canvas);
+
+	& .card {
+		color: var(--basalt-copy-body);
+	}
+	& .dropdown-toggle {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.es-card > .card-body > .es-stage {
+	display: flex;
+	flex: 1 0 auto;
+	flex-direction: column;
+	justify-content: center;
+}
+@media (max-width: 575.98px) {
+	.es-stage {
+		padding: 1rem;
+	}
+}
+
+/* Bits several demos share: monospace values, links, toolbars, labels. */
+.es-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.es-page .card-link {
+	font-weight: 600;
+	text-decoration-color: color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+	text-underline-offset: 0.2em;
+	color: var(--es-accent-text);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.es-toolbar {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.es-toolbar .btn .bi,
+.es-page .dropdown-item .bi {
+	margin-right: 0.4rem;
+}
+.es-page .form-check-label {
+	color: var(--basalt-copy-body);
+}
+
+/* No results demo: the search field with its icon, category chips, the
+   count line, the result cards, highlighted matches and example searches. */
+.es-search-bar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.es-field {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 0;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		color: var(--es-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.35rem;
+		background-color: var(--basalt-plane);
+	}
+	& .form-control::placeholder {
+		color: var(--es-quiet);
+		opacity: 1;
+	}
+}
+.es-cats {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+
+	& .es-cat[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.es-cat {
+	padding: 0.4rem 0.8rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.es-search-count {
+	margin: 0.85rem 0 1rem;
+	font-size: 0.8rem;
+	color: var(--es-quiet);
+}
+.es-results {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.es-results[hidden],
+.es-results-item[hidden] {
+	display: none;
+}
+.es-results-item {
+	display: grid;
+	column-gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-rows: auto auto;
+	align-items: center;
+	padding: 0.7rem 0.85rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+}
+.es-results-icon {
+	display: grid;
+	grid-row: span 2;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 9px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+.es-results-name {
+	min-width: 0;
+	font-weight: 600;
+	font-size: 0.88rem;
+	color: var(--basalt-copy);
+}
+.es-results-cat {
+	grid-column: 2;
+	font-size: 0.76rem;
+	color: var(--es-quiet);
+}
+.es-results-price {
+	grid-column: 3;
+	grid-row: 1 / span 2;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+}
+.es-results mark,
+.es-page .basalt-empty-title mark {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 32%, var(--basalt-plane));
+}
+.es-try {
+	padding: 0.2rem 0.6rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Panels the demos fill in: the import report, the loaded content, the
+   offline status and the sample rows. New rows slide in. */
+.es-import,
+.es-loaded,
+.es-live,
+.es-samples {
+	display: grid;
+	gap: 1rem;
+}
+.es-import[hidden],
+.es-loaded[hidden],
+.es-live[hidden],
+.es-samples[hidden] {
+	display: none;
+}
+.es-import .btn,
+.es-loaded .btn,
+.es-samples .btn {
+	justify-self: start;
+}
+.es-import-head {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.es-import-file {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.es-import-state {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--es-quiet);
+}
+.es-import-list {
+	margin: 0;
+	padding: 0 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.65rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.86rem;
+		color: var(--basalt-copy-body);
+	}
+	& li:last-child {
+		border-bottom: 0;
+	}
+	& li.is-new {
+		animation: es-in 320ms ease both;
+	}
+}
+@keyframes es-in {
+	from {
+		transform: translateY(4px);
+		opacity: 0;
+	}
+}
+.es-progress {
+	height: 0.5rem;
+	border-radius: 999px;
+	background: var(--basalt-plane-alt);
+
+	& .progress-bar {
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+		transition: width 200ms linear;
+	}
+}
+.es-loaded-ok {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+/* In a card: the notes demo, with its small form and the list it grows. */
+.es-notes {
+	border-radius: 14px;
+}
+.es-notes-head {
+	border-bottom-color: var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+.es-notes-title {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.es-notes-form {
+	display: grid;
+	gap: 0.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+	& .form-label {
+		margin: 0;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& .form-control::placeholder {
+		color: var(--es-quiet);
+		opacity: 1;
+	}
+}
+.es-notes-btns {
+	display: flex;
+	gap: 0.5rem;
+}
+.es-notes-list {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: flex-start;
+		justify-content: space-between;
+		padding: 0.7rem 0.85rem;
+		border-radius: 10px;
+		font-size: 0.86rem;
+		color: var(--basalt-copy-body);
+		background: var(--basalt-canvas);
+	}
+}
+.es-linkbtn {
+	--bs-btn-color: var(--es-accent-text);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+	font-weight: 600;
+}
+
+/* In a dropdown: the stage is tall enough for the open menu, and the open
+   toggle keeps its hover look instead of Bootstrap's gray fill. */
+.es-card > .card-body > .es-stage-top {
+	justify-content: flex-start;
+	min-height: 21rem;
+}
+.es-page .btn-outline-secondary.show {
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-border-color: var(--basalt-hue);
+}
+.es-menu {
+	width: 17rem;
+	padding: 0.3rem;
+	border-radius: 12px;
+	box-shadow: var(--basalt-card-shadow);
+
+	& .dropdown-item {
+		display: flex;
+		align-items: center;
+		padding: 0.5rem 0.7rem;
+		border-radius: 8px;
+		font-size: 0.86rem;
+		color: var(--basalt-copy-body);
+	}
+	& .dropdown-item:hover,
+	& .dropdown-item:focus {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	& .dropdown-item:active {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* Inline: a list group row with the message and action on one line. */
+.es-list {
+	border-radius: 12px;
+}
+.es-list-row {
+	display: flex;
+	gap: 0.3rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	border-color: var(--basalt-edge);
+	font-size: 0.88rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+.es-list-label {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Table row: the table keeps its header above the one spanning row. */
+.es-table {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+
+	& .table {
+		--bs-table-bg: var(--basalt-plane);
+		--bs-table-color: var(--basalt-copy-body);
+	}
+	& th {
+		font-size: 0.77rem;
+		font-weight: 650;
+		color: var(--es-quiet);
+		background: var(--basalt-plane);
+	}
+	& thead th {
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+	}
+}
+
+/* Basics: the plain card and the utilities-only version. */
+.es-plain {
+	border-radius: 14px;
+}
+.es-util-icon {
+	color: var(--es-quiet);
+}
+.es-util-title {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.es-chip,
+	.es-code summary .bi,
+	.es-progress .progress-bar {
+		transition: none;
+	}
+	.es-import-list li.is-new {
+		animation: none;
+	}
+}
+@media print {
+	.es-filter,
+	.es-code,
+	.es-toolbar {
+		display: none;
+	}
+	.es-card.is-hidden {
+		display: block;
+	}
+}

@@ -1,0 +1,1440 @@
+/* Basalt - the patient record (patient-chart.html)
+   Every tab after Overview: labs, imaging, medications, history, family
+   and insurance. Namespaced under .hcr-*; normal ranges take the palette
+   accent, out-of-range values the danger token. */
+
+.hc-head .basalt-hero-actions {
+	flex-wrap: wrap;
+}
+
+/* A tab's heading row and the cards inside it. */
+.hcr-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.hcr-head-actions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.hcr-title {
+	margin: 0 0 0.2rem;
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hcr-sub {
+	margin: 0;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.hcr-out {
+	color: color-mix(in srgb, var(--basalt-danger) 75%, var(--basalt-copy));
+}
+.hcr-card {
+	margin-bottom: 1.5rem;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.hcr-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.hcr-panel-title {
+	margin: 0 0 0.2rem;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hcr-pair {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	& > .hcr-card {
+		margin-bottom: 0;
+	}
+}
+.hcr-pair {
+	margin-bottom: 1.5rem;
+}
+@media (min-width: 1200px) {
+	.hcr-pair {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.hcr-pair-wide {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	}
+}
+.hcr-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.hcr-chip {
+	padding: 0.3rem 0.8rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 9%, var(--basalt-plane));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.hcr-flag {
+	display: inline-block;
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	&.is-out {
+		color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-danger) 12%, transparent);
+	}
+	&.is-ok {
+		color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-success) 12%, transparent);
+	}
+}
+.hcr-source {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+}
+
+/* Labs: the bigger-picture note, then a card per panel with a range bar
+   per test. The bar's green band is the normal range; the value is a
+   bubble on it, red when outside. */
+.hcr-insight {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+	padding: 1rem 1.2rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-hue) 25%, var(--basalt-edge));
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane));
+
+	& > div {
+		flex: 1;
+		min-width: 0;
+	}
+}
+.hcr-insight-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.2rem;
+	height: 2.2rem;
+	border-radius: 10px;
+	color: var(--basalt-on-hue, #fff);
+	background: linear-gradient(135deg, var(--basalt-hue), var(--basalt-series-5));
+}
+:root[data-basalt-gradients="off"] .hcr-insight-mark {
+	background: var(--basalt-hue);
+}
+.hcr-insight-title {
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hcr-insight-text {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+@media (max-width: 575.98px) {
+	.hcr-insight {
+		flex-wrap: wrap;
+	}
+}
+/* A panel folds under its head. Folded, the head still shows a dot per
+   test, red for out of range, so the panels to open stand out. */
+.hcr-panel {
+	margin-bottom: 1rem;
+	padding: 0;
+	overflow: hidden;
+
+	& > .hcr-tests {
+		padding: 0.25rem var(--basalt-pad-x) var(--basalt-pad-head);
+	}
+}
+.hcr-panel-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	width: 100%;
+	padding: 1rem var(--basalt-pad-x);
+	border: 0;
+	text-align: left;
+	background: transparent;
+
+	/* A light wash on hover; the ring is for the keyboard only and stays thin. */
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-copy) 2.5%, var(--basalt-plane));
+	}
+	&:focus-visible {
+		outline: 1px solid var(--basalt-hue-border);
+		outline-offset: -1px;
+	}
+}
+.hcr-panel-chevron {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 1.8rem;
+	height: 1.8rem;
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+	transition: transform 200ms ease;
+}
+.hcr-panel.is-open .hcr-panel-chevron {
+	transform: rotate(90deg);
+}
+.hcr-panel-text {
+	display: flex;
+	flex: 1 1 14rem;
+	flex-direction: column;
+	min-width: 0;
+
+	& .hcr-panel-title {
+		margin: 0;
+	}
+}
+.hcr-panel-dots {
+	display: inline-flex;
+	gap: 4px;
+
+	& i {
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--basalt-hue) 35%, var(--basalt-plane));
+	}
+	& i.is-out {
+		background: var(--basalt-danger);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hcr-panel-chevron {
+		transition: none;
+	}
+}
+.hcr-tests {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hcr-test {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	padding: 1rem 1.1rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	text-align: left;
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		box-shadow: var(--basalt-card-shadow);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&:hover .hcr-test-link {
+		opacity: 1;
+	}
+}
+.hcr-test-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.hcr-test-name {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hcr-test-link {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-hue);
+	opacity: 0.7;
+	transition: opacity 170ms ease;
+}
+.hcr-test-range {
+	margin: 0.1rem 0 2.4rem;
+	font-size: 0.77rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.hcr-test-on {
+	margin-top: 0.4rem;
+	font-size: 0.75rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.hcr-test.is-out .hcr-test-on {
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+}
+/* The track is the whole scale; the band on it is normal, drawn in the
+   palette's accent so it is the first thing read. */
+.hcr-range {
+	position: relative;
+	height: 0.5rem;
+	border-radius: 999px;
+	background: var(--basalt-edge);
+}
+.hcr-range-band {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-plane));
+}
+/* In range the value is a quiet ink bubble; out of range it turns red.
+   Both read on every palette, light or dark. */
+.hcr-range-mark {
+	position: absolute;
+	top: 50%;
+	width: 0.85rem;
+	height: 0.85rem;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--basalt-copy);
+	transform: translate(-50%, -50%);
+	animation: hcr-slide 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+	& b {
+		position: absolute;
+		bottom: calc(100% + 0.4rem);
+		left: 50%;
+		padding: 0.1rem 0.5rem;
+		border-radius: 7px;
+		font-size: 0.8rem;
+		font-weight: 800;
+		white-space: nowrap;
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+		transform: translateX(-50%);
+	}
+	& b::after {
+		content: "";
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		border: 5px solid transparent;
+		border-top-color: var(--basalt-copy);
+		transform: translateX(-50%);
+	}
+}
+.hcr-range.is-out .hcr-range-mark {
+	background: var(--basalt-danger);
+
+	& b {
+		color: #fff;
+		background: color-mix(in srgb, var(--basalt-danger) 88%, #000);
+	}
+	& b::after {
+		border-top-color: color-mix(in srgb, var(--basalt-danger) 88%, #000);
+	}
+}
+@keyframes hcr-slide {
+	from {
+		left: 0;
+		opacity: 0;
+	}
+}
+.hcr-range-ends {
+	position: relative;
+	height: 1.1rem;
+	margin-top: 0.3rem;
+	font-size: 0.71rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+	& span {
+		position: absolute;
+		transform: translateX(-50%);
+	}
+}
+
+/* One test's own page: back link, the latest value beside three facts,
+   then every result over the normal band and the table. */
+.hcr-back {
+	margin-bottom: 1rem;
+	border: 0;
+}
+.hcr-test-top {
+	display: grid;
+	gap: 1.25rem 2.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: center;
+	margin-bottom: 1.5rem;
+	padding: 1.25rem var(--basalt-pad-x);
+}
+@media (min-width: 992px) {
+	.hcr-test-top {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+}
+.hcr-latest-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.hcr-latest-value {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0.1rem 0 2.3rem;
+	font-size: 1.9rem;
+	font-weight: 800;
+	line-height: 1.15;
+	color: var(--basalt-copy);
+
+	& small {
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+}
+.hcr-latest-state {
+	margin-left: 0.6rem;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy-body);
+}
+.hcr-test-top.is-out .hcr-latest-state {
+	color: color-mix(in srgb, var(--basalt-danger) 72%, var(--basalt-copy));
+}
+.hcr-latest-bar {
+	max-width: 30rem;
+}
+.hcr-facts {
+	display: flex;
+	margin: 0;
+
+	& > div {
+		padding: 0.25rem 1.5rem;
+		border-left: 1px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		padding-left: 0;
+		border-left: 0;
+	}
+	& dt {
+		font-size: 0.77rem;
+		font-weight: 500;
+		white-space: nowrap;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-size: 1.25rem;
+		font-weight: 800;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+}
+@media (min-width: 992px) {
+	.hcr-facts > div:first-child {
+		padding-left: 1.5rem;
+		border-left: 1px solid var(--basalt-edge);
+	}
+}
+@media (max-width: 575.98px) {
+	.hcr-facts > div {
+		padding: 0.25rem 0.9rem;
+	}
+	.hcr-facts dd {
+		font-size: 1.05rem;
+	}
+}
+.hcr-trend-card {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.hcr-trend-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.hcr-compare {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& .form-select {
+		width: 14rem;
+	}
+}
+.hcr-trend {
+	position: relative;
+	height: 20rem;
+}
+.hcr-table-wrap {
+	margin-top: 1.25rem;
+
+	& summary {
+		width: max-content;
+		font-weight: 600;
+		color: var(--basalt-hue);
+		cursor: pointer;
+	}
+	& .hcr-table {
+		margin: 0.75rem 0 0;
+	}
+}
+.hcr-table {
+	margin: 0;
+	font-size: 0.875rem;
+
+	& th {
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+}
+
+/* Imaging: a card per study, the picture on top. */
+.hcr-scans {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hcr-scan {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+.hcr-scan-pic {
+	position: relative;
+	display: block;
+	padding: 0;
+	border: 0;
+	background: #05070b;
+
+	& img {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 4 / 3;
+		transition: transform 300ms ease;
+	}
+	&:hover img {
+		transform: scale(1.03);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.hcr-scan-zoom {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.45);
+}
+.hcr-scan-body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 0.3rem;
+	align-items: flex-start;
+	padding: 1rem 1.2rem 1.2rem;
+}
+.hcr-scan-title {
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hcr-scan-report {
+	flex: 1;
+	margin: 0.25rem 0 0.5rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.hcr-scan-actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+/* Medications: a lane per medicine across the years, a segment per dose;
+   the ones still taken run to now and stay lucent. */
+.hcr-medtime {
+	position: relative;
+	padding: 1.6rem 0 0;
+}
+.hcr-medtime-axis {
+	position: absolute;
+	inset: 0 0 auto 11rem;
+	height: 1.2rem;
+	font-size: 0.71rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+	& span {
+		position: absolute;
+		transform: translateX(-50%);
+	}
+	& .is-now {
+		font-weight: 700;
+		color: var(--basalt-hue);
+		transform: translateX(-100%);
+	}
+}
+.hcr-medrow {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 10rem minmax(0, 1fr);
+	align-items: center;
+	padding: 0.3rem 0;
+
+	&.is-past {
+		opacity: 0.6;
+	}
+}
+.hcr-medrow-name {
+	overflow: hidden;
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hcr-medrow-track {
+	position: relative;
+	height: 1.7rem;
+	border-radius: 6px;
+	background: repeating-linear-gradient(90deg, var(--basalt-plane-alt) 0 1px, transparent 1px calc(100% / 7.77));
+}
+.hcr-dose {
+	position: absolute;
+	top: 0.1rem;
+	bottom: 0.1rem;
+	display: flex;
+	align-items: center;
+	min-width: 0.4rem;
+	padding: 0 0.5rem;
+	overflow: hidden;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--tone) 55%, var(--basalt-plane));
+	animation: hcr-grow 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+	& i {
+		overflow: hidden;
+		font-size: 0.71rem;
+		font-style: normal;
+		font-weight: 700;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	&.is-step {
+		box-shadow: inset 2px 0 0 var(--basalt-plane);
+	}
+	&.is-live {
+		border-radius: 6px 0 0 6px;
+		background: var(--tone);
+
+		& i {
+			color: #fff;
+		}
+	}
+}
+@keyframes hcr-grow {
+	from {
+		clip-path: inset(0 100% 0 0);
+	}
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+@media (max-width: 767.98px) {
+	.hcr-medtime-axis {
+		left: 6.5rem;
+	}
+	.hcr-medrow {
+		gap: 0.5rem;
+		grid-template-columns: 6rem minmax(0, 1fr);
+	}
+	.hcr-dose i {
+		display: none;
+	}
+}
+.hcr-medlist,
+.hcr-allergies,
+.hcr-runs,
+.hcr-places {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hcr-medlist li {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		border-top: 0;
+		padding-top: 0;
+	}
+	& > div:first-child {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+	& b {
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.hcr-med-actions {
+	display: flex;
+	flex: none;
+	gap: 0.4rem;
+}
+.hcr-stop {
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+
+	&:hover {
+		color: var(--basalt-danger);
+		background: color-mix(in srgb, var(--basalt-danger) 9%, transparent);
+	}
+}
+.hcr-allergies li {
+	display: grid;
+	gap: 0.8rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		border-top: 0;
+		padding-top: 0;
+	}
+	& div {
+		display: flex;
+		flex-direction: column;
+	}
+	& b {
+		color: color-mix(in srgb, var(--basalt-danger) 72%, var(--basalt-copy));
+	}
+	& div span {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.hcr-allergy-mark {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	color: var(--basalt-danger);
+	background: color-mix(in srgb, var(--basalt-danger) 12%, transparent);
+}
+
+/* Prescribe: the checks under the medicine, worst first in red. */
+.hcr-checks {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+
+	&:empty {
+		display: none;
+	}
+}
+.hcr-check {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	padding: 0.6rem 0.8rem;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+
+	&.is-stop {
+		background: color-mix(in srgb, var(--basalt-danger) 11%, transparent);
+
+		& .bi {
+			color: var(--basalt-danger);
+		}
+	}
+	&.is-warn {
+		background: color-mix(in srgb, var(--basalt-warning) 15%, transparent);
+
+		& .bi {
+			color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+		}
+	}
+	&.is-ok {
+		background: color-mix(in srgb, var(--basalt-success) 11%, transparent);
+
+		& .bi {
+			color: var(--basalt-success);
+		}
+	}
+}
+/* Dialog extras: a quiet note under a field, a subheading between groups,
+   and a list of choices as bordered rows (specialists, operations). */
+.hcr-form-note {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+}
+.hcr-form-group {
+	margin: 1.5rem 0 0.75rem;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hcr-pick-list {
+	display: grid;
+	gap: 0.6rem;
+}
+.hcr-pick {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: start;
+	padding: 0.8rem 0.95rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	cursor: pointer;
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease;
+
+	& .form-check-input {
+		margin: 0.2rem 0 0;
+	}
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-hue) 40%, var(--basalt-edge));
+	}
+	&:has(:checked) {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	}
+}
+.hcr-pick-text {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-width: 0;
+
+	& b {
+		font-size: 0.92rem;
+		color: var(--basalt-copy);
+	}
+	& > span {
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.hcr-pick-why {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	margin-top: 0.3rem;
+	color: var(--basalt-copy-muted);
+}
+.hcr-pick-side {
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-hue);
+}
+@media (max-width: 575.98px) {
+	.hcr-pick {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.hcr-pick-side {
+		grid-column: 2;
+	}
+}
+.hcr-req-what {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* History: her life as a strip of dots, the places, then every event. */
+.hcr-life-track {
+	position: relative;
+	height: 3.4rem;
+	margin: 0 0.8rem;
+	border-bottom: 2px solid var(--basalt-edge);
+}
+.hcr-life-year {
+	position: absolute;
+	bottom: -1.5rem;
+	font-size: 0.71rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	transform: translateX(-50%);
+}
+.hcr-life-dot {
+	position: absolute;
+	bottom: 0.5rem;
+	width: 1rem;
+	height: 1rem;
+	padding: 0;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--tone);
+	transform: translateX(-50%);
+	transition: transform 170ms ease;
+
+	&:nth-child(even) {
+		bottom: 1.6rem;
+	}
+	&:hover,
+	&:focus-visible {
+		z-index: 1;
+		outline: none;
+		transform: translateX(-50%) scale(1.35);
+	}
+}
+.hcr-life-key {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1.1rem;
+	margin: 2.2rem 0 0;
+	padding: 0;
+	font-size: 0.77rem;
+	list-style: none;
+	color: var(--basalt-copy-body);
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& i {
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 50%;
+		background: var(--tone);
+	}
+}
+
+/* The strip's key doubles as its filter: the picked kind gets a soft pill. */
+.hcr-key-button {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: -0.25rem -0.55rem;
+	padding: 0.25rem 0.5rem;
+	border: 0;
+	border-radius: 999px;
+	color: inherit;
+	background: none;
+	transition: background-color 150ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 7%, transparent);
+	}
+	&[aria-pressed="true"] {
+		font-weight: 700;
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.hcr-life-dot.is-faded {
+	opacity: 0.18;
+}
+.hcr-places {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+
+/* A place with events is a button that narrows the list to it. */
+.hcr-place {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	padding: 0.8rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	text-align: left;
+	color: inherit;
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease;
+
+	& b {
+		overflow: hidden;
+		font-size: 0.9rem;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		color: var(--basalt-copy);
+	}
+	& .hcr-place-text > span {
+		overflow: hidden;
+		font-size: 0.77rem;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+}
+.hcr-place-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+button.hcr-place {
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-hue) 40%, var(--basalt-edge));
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.hcr-place-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+}
+.hcr-waiting {
+	margin: 1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	&:empty {
+		display: none;
+	}
+	& i {
+		margin-right: 0.4rem;
+		color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+	}
+	& b {
+		color: var(--basalt-copy);
+	}
+}
+.hcr-events {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hcr-event {
+	position: relative;
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 6.5rem 2.2rem minmax(0, 1fr) auto;
+	align-items: start;
+	padding: 0.8rem 0.6rem;
+	border-radius: 10px;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 2.6rem;
+		bottom: -0.8rem;
+		left: calc(7.6rem + 1.1rem);
+		width: 2px;
+		background: var(--basalt-edge);
+	}
+	&:last-child::before {
+		display: none;
+	}
+	&.is-found {
+		animation: hcr-found 1.4s ease-out;
+	}
+}
+@keyframes hcr-found {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 15%, transparent);
+	}
+}
+.hcr-event-when {
+	padding-top: 0.4rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.hcr-event-dot {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 2.2rem;
+	height: 2.2rem;
+	border-radius: 50%;
+	color: var(--tone);
+	background: color-mix(in srgb, var(--tone) 15%, var(--basalt-plane));
+}
+.hcr-event-what {
+	margin: 0.3rem 0 0;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	& a {
+		color: inherit;
+	}
+}
+.hcr-event-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	align-items: flex-end;
+	padding-top: 0.4rem;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+@media (max-width: 767.98px) {
+	.hcr-event {
+		grid-template-columns: 2.2rem minmax(0, 1fr);
+	}
+	.hcr-event::before {
+		left: 1.7rem;
+	}
+	.hcr-event-when {
+		grid-column: 2;
+		padding: 0;
+	}
+	.hcr-event-dot {
+		grid-row: 1 / span 2;
+	}
+	.hcr-event-meta {
+		grid-column: 2;
+		align-items: flex-start;
+	}
+}
+
+/* Family: the tree, what runs in the family, the genes. */
+.hcr-tree svg {
+	display: block;
+	width: 100%;
+	max-width: 30rem;
+	height: auto;
+	margin: 0 auto;
+	overflow: visible;
+}
+.hcr-tree-line {
+	fill: none;
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1.5;
+}
+.hcr-person {
+	cursor: default;
+	outline: none;
+}
+.hcr-person-fill {
+	fill: var(--basalt-plane-alt);
+}
+.hcr-person-edge {
+	fill: none;
+	stroke: var(--basalt-copy-muted);
+	stroke-width: 1.5;
+}
+.hcr-person.is-self .hcr-person-edge {
+	stroke: var(--basalt-hue);
+	stroke-width: 3;
+}
+.hcr-person:hover .hcr-person-edge,
+.hcr-person:focus-visible .hcr-person-edge {
+	stroke: var(--basalt-copy);
+	stroke-width: 2.5;
+}
+.hcr-person-gone {
+	stroke: var(--basalt-copy);
+	stroke-width: 1.5;
+}
+.hcr-person-name {
+	font-size: 11px;
+	font-weight: 700;
+	text-anchor: middle;
+	fill: var(--basalt-copy);
+}
+.hcr-person-rel {
+	font-size: 9.5px;
+	text-anchor: middle;
+	fill: var(--basalt-copy-muted);
+}
+.hcr-person-arrow {
+	fill: var(--basalt-hue);
+}
+.hcr-tree-read {
+	min-height: 1.4rem;
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	text-align: center;
+	color: var(--basalt-copy-body);
+}
+.hcr-tree + .hcr-tree-read + .hcr-life-key {
+	justify-content: center;
+	margin-top: 1rem;
+}
+.hcr-runs li {
+	display: grid;
+	gap: 0.8rem;
+	grid-template-columns: 0.65rem minmax(0, 1fr);
+	padding: 0.85rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		border-top: 0;
+		padding-top: 0;
+	}
+	& div {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+	}
+	& b {
+		color: var(--basalt-copy);
+	}
+	& div > span:not(.hcr-sub) {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+/* The same dot as the tree's key, so each condition matches its people. */
+.hcr-runs-mark {
+	width: 0.65rem;
+	height: 0.65rem;
+	margin-top: 0.4rem;
+	border-radius: 50%;
+	background: var(--tone);
+}
+/* Beside the tree the right column stacks two cards; the last one stretches
+   so both columns end level. */
+.hcr-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+
+	& > .hcr-card {
+		margin-bottom: 0;
+	}
+	& > .hcr-card:last-child {
+		flex: 1;
+	}
+}
+.hcr-genes {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		padding: 0.85rem 1rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+	}
+	& li.is-act {
+		border-color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-warning) 7%, var(--basalt-plane));
+	}
+	& div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.2rem 1rem;
+		align-items: baseline;
+		justify-content: space-between;
+		margin-bottom: 0.3rem;
+	}
+	& b {
+		color: var(--basalt-copy);
+	}
+	& p {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.hcr-gene-result {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+}
+.is-act .hcr-gene-result {
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+
+/* Insurance: the plan as a card, this year's spending as two meters. */
+.hcr-plan-card {
+	padding: 1.3rem 1.4rem;
+	border-radius: 16px;
+	color: #fff;
+	background: linear-gradient(135deg, var(--basalt-hue), color-mix(in srgb, var(--basalt-series-1) 70%, #000));
+}
+:root[data-basalt-gradients="off"] .hcr-plan-card {
+	background: var(--basalt-hue);
+}
+.hcr-plan-name {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 800;
+}
+.hcr-plan-tier {
+	margin: 0 0 1.2rem;
+	font-size: 0.85rem;
+	opacity: 0.85;
+}
+.hcr-plan-facts,
+.hcr-plan-terms {
+	display: grid;
+	gap: 0.6rem 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+
+	& dt {
+		font-size: 0.71rem;
+		font-weight: 600;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		opacity: 0.8;
+	}
+	& dd {
+		margin: 0;
+		font-weight: 650;
+	}
+}
+.hcr-plan-terms {
+	margin-top: 1.2rem;
+	color: var(--basalt-copy);
+
+	& dt {
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+		opacity: 1;
+	}
+}
+.hcr-meter {
+	margin-bottom: 1.5rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+.hcr-meter-head {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 0.4rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+
+	& small {
+		font-weight: 500;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+}
+.hcr-meter-bar {
+	display: block;
+	height: 0.7rem;
+	margin-bottom: 0.4rem;
+	border-radius: 999px;
+	background: var(--basalt-plane-alt);
+
+	& > span {
+		display: block;
+		width: var(--w);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-hue);
+		animation: hcr-fill 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+}
+@keyframes hcr-fill {
+	from {
+		width: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hcr-range-mark,
+	.hcr-dose,
+	.hcr-meter-bar > span,
+	.hcr-event.is-found {
+		animation: none;
+	}
+	.hcr-scan-pic img,
+	.hcr-life-dot,
+	.hcr-test {
+		transition: none;
+	}
+}

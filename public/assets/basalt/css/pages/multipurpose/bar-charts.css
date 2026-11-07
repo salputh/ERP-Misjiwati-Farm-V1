@@ -1,0 +1,339 @@
+/**
+ * Styles for bar-charts.html, all under .bars-*.
+ * Nothing here carries a color of its own: legends, swatches and chips
+ * read the --basalt-* tokens, the same ones bar-charts.js reads for the
+ * canvases, so the page follows the palette as one piece.
+ */
+
+/* The page root defines the one derived color the page needs: muted text
+   pulled 18% toward the body color, which keeps small gray type above
+   4.5:1 on the lightest palettes. */
+.bars-page {
+	--bars-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The filter row holds the chips on the left and the live count on the
+   right; on narrow screens the count wraps under the chips. */
+.bars-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+
+	@media print {
+		display: none;
+	}
+}
+.bars-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--bars-quiet);
+}
+
+/* Chips are pill buttons; the pressed one inverts to body color. The same
+   chip is reused by the week picker, slightly smaller. */
+.bars-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.bars-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	.bars-chips &[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+	.bars-picker & {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.77rem;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.bars-picker {
+	margin-bottom: 1rem;
+}
+
+/* A twelve-column grid. Under 1200px every card takes the full row; from
+   there on cards pair up, with wide/narrow and full-width exceptions. */
+.bars-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.bars-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+		@media print {
+			display: block;
+		}
+	}
+	@media (min-width: 1200px) {
+		grid-column: span 6;
+	}
+}
+@media (min-width: 1200px) {
+	.bars-card-full {
+		grid-column: span 12;
+	}
+	.bars-card-wide {
+		grid-column: span 8;
+	}
+	.bars-card-narrow {
+		grid-column: span 4;
+	}
+}
+
+/* A filtered grid gives up the 8/4 rhythm and shows plain halves; the odd
+   card left at the end of such a set is stretched across its row. */
+@media (min-width: 1200px) {
+	.bars-grid.is-filtered {
+		.bars-card-wide,
+		.bars-card-narrow,
+		.bars-card-full-in-all {
+			grid-column: span 6;
+		}
+		.bars-card.is-alone {
+			grid-column: span 12;
+		}
+	}
+}
+
+/* Each card is a column: head, optional legend or picker, the chart
+   pushed to the bottom, then the config snippet. */
+.bars-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+
+/* The head is written title-first for screen readers but shown with the
+   kind tag on top, hence the reversed column. */
+.bars-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.bars-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bars-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--bars-quiet);
+}
+.bars-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--bars-quiet);
+}
+
+/* The legend is HTML rather than Chart.js's own, so it wraps instead of
+   overlapping the plot. Series colors come in through --bars-c. */
+.bars-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--bars-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.bars-key-box {
+	width: 11px;
+	height: 11px;
+	border-radius: 3px;
+	background: var(--bars-c, var(--basalt-series-1));
+}
+.bars-key-box-soft {
+	background: color-mix(in srgb, var(--bars-c, var(--basalt-series-1)) 58%, var(--basalt-plane));
+}
+.bars-key-tick {
+	width: 3px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+.bars-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2px dashed var(--basalt-copy);
+}
+.bars-c1 {
+	--bars-c: var(--basalt-series-1);
+}
+.bars-c2 {
+	--bars-c: var(--basalt-series-2);
+}
+.bars-c3 {
+	--bars-c: var(--basalt-series-3);
+}
+.bars-c4 {
+	--bars-c: var(--basalt-series-4);
+}
+.bars-cok {
+	--bars-c: var(--basalt-success);
+}
+.bars-cbad {
+	--bars-c: var(--basalt-danger);
+}
+
+/* The chart box fixes the canvas height; a canvas that has not been drawn
+   yet is capped at the box width so it cannot widen a narrow card. */
+.bars-chart {
+	position: relative;
+	height: 260px;
+	margin-top: auto;
+}
+.bars-chart-tall {
+	height: 300px;
+}
+@media (max-width: 575.98px) {
+	.bars-chart,
+	.bars-chart-tall {
+		height: 230px;
+	}
+}
+.bars-card canvas {
+	display: block;
+	max-width: 100%;
+}
+
+/* Small multiples: two to a row, four from desktop width, each with a
+   name and latest value above a short chart sitting on a baseline. */
+.bars-multiples {
+	display: grid;
+	gap: 1.5rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (min-width: 1200px) {
+		gap: 1.5rem 2rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.bars-multiple-head {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	margin-bottom: 0.6rem;
+}
+.bars-multiple-name {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.bars-multiple-value {
+	font-size: 0.77rem;
+	color: var(--bars-quiet);
+}
+.bars-multiple-chart {
+	position: relative;
+	height: 110px;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+
+/* The config snippet is a details element under a hairline; its chevron
+   turns when open and the code block scrolls sideways if it must. */
+.bars-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+	@media print {
+		display: none;
+	}
+}

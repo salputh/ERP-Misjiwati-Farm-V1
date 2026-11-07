@@ -1,0 +1,716 @@
+/* Basalt - Activities (activities.html)
+   Namespaced under .act-*
+   Built from shared parts: the page header, styled selects,
+   segmented controls, the datepicker, avatars, status pills, empty
+   states, the side panel and the dialog parts.
+   This file lays out the four tiles, the activity log and the quick
+   view. Three type sizes: the card title, body text (--act-fs-body)
+   and one small size (--act-fs-small). */
+
+.act-page,
+.act-drawer,
+.act-dialog {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--act-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary as text: on its own it is under 4.5:1 in a few light palettes. */
+	--act-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--act-danger-text: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+	--act-line: var(--basalt-edge);
+	--act-fs-body: 0.875rem;
+	--act-fs-small: 0.77rem;
+}
+
+/* One color per activity type, from the chart ramp. */
+.act-tone-1 {
+	--act-tone: var(--basalt-series-1);
+}
+.act-tone-2 {
+	--act-tone: var(--basalt-series-2);
+}
+.act-tone-3 {
+	--act-tone: var(--basalt-series-3);
+}
+.act-tone-5 {
+	--act-tone: var(--basalt-series-5);
+}
+
+.act-quiet {
+	color: var(--act-quiet);
+}
+.act-link {
+	border-radius: 3px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--act-link);
+}
+.act-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.act-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Four tiles
+   Plain cards, each with a small colored mark. Four across from
+   tablet width, two by two on a phone. */
+.act-band {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 1.75rem 0 1.5rem;
+}
+.act-tile {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+	padding: 1.1rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: var(--basalt-radius-lg, 14px);
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 130ms ease,
+		background-color 130ms ease;
+}
+.act-tile:hover {
+	border-color: color-mix(in srgb, var(--act-tone) 45%, var(--basalt-edge));
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.act-tile:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.act-tile-late {
+	--act-tone: var(--basalt-danger);
+}
+.act-tile-today {
+	--act-tone: var(--basalt-warning);
+}
+.act-tile-week {
+	--act-tone: var(--basalt-series-1);
+}
+.act-tile-done {
+	--act-tone: var(--basalt-success);
+}
+.act-tile-late.is-clear {
+	--act-tone: var(--basalt-success);
+}
+/* The tiles ripple left to right once the page settles and again
+   whenever the counts change: each lifts and its edge lights in its tone. */
+.act-band.is-waving .act-tile {
+	animation: act-wave 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.act-band.is-waving .act-tile:nth-child(2) {
+	animation-delay: 90ms;
+}
+.act-band.is-waving .act-tile:nth-child(3) {
+	animation-delay: 180ms;
+}
+.act-band.is-waving .act-tile:nth-child(4) {
+	animation-delay: 270ms;
+}
+@keyframes act-wave {
+	35% {
+		border-color: var(--act-tone);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--act-tone) 18%, transparent);
+		transform: translateY(-6px);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.act-band.is-waving .act-tile {
+		animation: none;
+	}
+}
+.act-tile-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--act-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--act-tone) 14%, var(--basalt-plane));
+}
+.act-tile-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.act-tile-value {
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.15;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.act-tile-label {
+	margin-top: 0.1rem;
+	font-size: var(--act-fs-small);
+	line-height: 1.35;
+	color: var(--act-quiet);
+}
+/* Below desktop width the marks go first, so the labels never squeeze. */
+@media (max-width: 1199.98px) {
+	.act-tile-icon {
+		display: none;
+	}
+}
+@media (max-width: 767.98px) {
+	.act-band {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.act-tile {
+		gap: 0.75rem;
+		padding: 0.9rem 1rem;
+	}
+}
+
+/* The log card */
+.act-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.act-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--act-line);
+}
+.act-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.act-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--act-fs-body);
+	color: var(--act-quiet);
+}
+
+.act-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-head);
+}
+.act-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 12rem;
+}
+.act-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--act-quiet);
+	pointer-events: none;
+}
+.act-search .form-control {
+	padding-left: 2.4rem;
+}
+.act-toolbar .form-control,
+.act-toolbar .form-select {
+	font-size: var(--act-fs-body);
+}
+.act-toolbar-selects {
+	display: contents;
+}
+.act-toolbar-select {
+	flex: 0 1 11.5rem;
+	min-width: 9.5rem;
+}
+
+/* The table
+   Activity, Related to, When, Owner, then the row's actions. */
+.act-table-wrap {
+	overflow: hidden;
+}
+.act-table-wrap[hidden] {
+	display: none;
+}
+.act-table {
+	--bs-table-bg: transparent;
+	table-layout: fixed;
+}
+.act-table .act-col-rel {
+	width: 17rem;
+}
+.act-table .act-col-when {
+	width: 11.5rem;
+}
+.act-table .act-col-owner {
+	width: 10.5rem;
+}
+.act-table .act-col-open {
+	width: 8.5rem;
+}
+.act-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 1rem;
+	border-color: var(--act-line);
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.act-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.act-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+	text-align: right;
+}
+.act-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--act-quiet);
+}
+.act-table tbody:last-of-type tr:last-child > * {
+	border-bottom: 0;
+}
+
+/* Group headings: Overdue, Later today, Coming up, Done */
+.act-table .act-group-head > * {
+	padding-top: 1.1rem;
+	padding-bottom: 0.5rem;
+	font-size: var(--act-fs-body);
+	font-weight: 700;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.act-group-count {
+	display: inline-block;
+	margin-left: 0.5rem;
+	padding: 0 0.5rem;
+	border-radius: 99px;
+	font-size: var(--act-fs-small);
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--act-quiet);
+	background: var(--basalt-plane-alt);
+}
+.act-group[data-act-group="late"] .act-group-name {
+	color: var(--act-danger-text);
+}
+
+.act-row[data-act-id] {
+	cursor: pointer;
+}
+.act-row[data-act-id]:hover > * {
+	background: var(--basalt-wash);
+}
+.act-row.is-open > * {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+.act-what {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.act-what-text {
+	min-width: 0;
+}
+.act-chip {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--act-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--act-tone) 14%, var(--basalt-plane));
+}
+.act-row-title,
+.act-row-meta {
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.act-row-title {
+	font-size: var(--act-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.act-row-meta {
+	margin-top: 0.25rem;
+	font-size: var(--act-fs-small);
+	color: var(--act-quiet);
+}
+.act-row-rel-inline {
+	display: none;
+}
+.act-row-link {
+	border-radius: 3px;
+	text-decoration: none;
+	color: inherit;
+}
+.act-row-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.act-row-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+.act-rel {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	min-width: 0;
+	font-size: var(--act-fs-body);
+}
+.act-rel-kind {
+	flex: none;
+	font-size: var(--act-fs-small);
+	font-weight: 600;
+	color: var(--act-quiet);
+}
+.act-rel-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.act-when-cell {
+	display: block;
+	overflow: hidden;
+	font-size: var(--act-fs-body);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.act-when-cell.is-late {
+	font-weight: 600;
+	color: var(--act-danger-text);
+}
+.act-owner {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	max-width: 100%;
+	font-size: var(--act-fs-body);
+}
+.act-owner-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.act-owner .basalt-avatar {
+	flex: none;
+}
+/* Keeps the icons in line on rows that have no Mark done button. */
+.act-spacer {
+	display: inline-block;
+	width: 34px;
+	height: 34px;
+}
+
+/* A quiet footer opens the rest of Done. */
+.act-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--act-line);
+}
+.act-card-note {
+	margin: 0;
+	font-size: var(--act-fs-small);
+	color: var(--act-quiet);
+}
+
+/* Empty, no results */
+.act-empty {
+	max-width: 30rem;
+	margin: 1.5rem auto;
+	text-align: center;
+}
+.act-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.6rem;
+	border-radius: 14px;
+	font-size: var(--basalt-fs-card-title);
+	color: var(--act-link);
+	background: var(--basalt-hue-soft);
+}
+.act-empty .basalt-empty-title {
+	font-size: var(--basalt-fs-section);
+}
+.act-empty .basalt-empty-text {
+	font-size: var(--act-fs-body);
+	color: var(--act-quiet);
+}
+.act-empty .basalt-empty-actions {
+	justify-content: center;
+}
+
+/* Medium cards: Owner shows just the avatar; Related moves into the
+   quiet line when there is less room still. */
+@container (max-width: 1000px) {
+	.act-table .act-col-owner {
+		width: 4.5rem;
+	}
+	.act-owner-name {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+@container (max-width: 820px) {
+	.act-table .act-col-rel,
+	.act-row-rel {
+		display: none;
+	}
+	.act-row-rel-inline {
+		display: inline;
+	}
+	.act-table .act-col-when {
+		width: 11.5rem;
+	}
+}
+
+/* Narrow cards: each activity becomes a small record. The title on
+   top, the quiet line under it, then when and the actions. */
+@container (max-width: 620px) {
+	.act-card-head,
+	.act-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.act-toolbar {
+		flex-wrap: wrap;
+	}
+	.act-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.act-toolbar-selects {
+		display: flex;
+		gap: 0.5rem;
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.act-toolbar-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	.act-table {
+		table-layout: auto;
+	}
+	.act-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.act-table,
+	.act-table tbody,
+	.act-table td,
+	.act-table th {
+		display: block;
+		width: 100%;
+	}
+	.act-table tbody[hidden] {
+		display: none;
+	}
+	.act-table .act-group-head {
+		display: block;
+	}
+	.act-table .act-group-head > td {
+		display: none;
+	}
+	.act-table .act-group-head > th {
+		padding: 1rem var(--basalt-pad-x-narrow) 0.5rem;
+		border-bottom: 1px solid var(--act-line);
+	}
+	.act-table tbody tr.act-row {
+		display: grid;
+		gap: 0.6rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "what what" "when open";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--act-line);
+	}
+	.act-table tbody:last-of-type tr:last-child {
+		border-bottom: 0;
+	}
+	.act-table > :not(caption) > .act-row > *,
+	.act-table > :not(caption) > .act-row > :first-child,
+	.act-table > :not(caption) > .act-row > :last-child {
+		padding: 0;
+		border: 0;
+		background: transparent;
+	}
+	.act-row[data-act-id]:hover {
+		background: var(--basalt-wash);
+	}
+	.act-row.is-open {
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	}
+	.act-row-what {
+		grid-area: what;
+	}
+	.act-row-when {
+		grid-area: when;
+		padding-left: 2.95rem;
+	}
+	.act-table td.act-row-owner,
+	.act-table td.act-row-rel {
+		display: none;
+	}
+	.act-row-open {
+		grid-area: open;
+		width: auto;
+	}
+	.act-row-title,
+	.act-row-meta {
+		white-space: normal;
+	}
+}
+/* On a phone the title already opens the deal or company, so the row keeps
+   Mark done and the quick view and lets the open button go. */
+@media (max-width: 575.98px) {
+	.act-row-open a.btn-icon {
+		display: none;
+	}
+}
+
+/* The quick view */
+.act-drawer.offcanvas {
+	--bs-offcanvas-width: min(520px, 100vw);
+}
+.act-drawer .offcanvas-header {
+	gap: 0.75rem;
+	align-items: flex-start;
+	border-bottom: 1px solid var(--act-line);
+}
+.act-drawer .offcanvas-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.act-drawer .offcanvas-title:focus {
+	outline: none;
+}
+.act-drawer .offcanvas-title:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.act-drawer .basalt-drawer-sub {
+	margin-top: 0.3rem;
+	font-size: var(--act-fs-small);
+	color: var(--act-quiet);
+}
+.act-drawer .offcanvas-body {
+	padding: 1.5rem;
+}
+.act-d-top {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.act-d-top .basalt-status {
+	font-size: var(--act-fs-small);
+}
+.act-facts {
+	margin: 0;
+}
+.act-facts-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 7rem minmax(0, 1fr);
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--act-line);
+	font-size: var(--act-fs-body);
+}
+.act-facts-row:first-child {
+	border-top: 1px solid var(--act-line);
+}
+.act-facts dt {
+	font-weight: 600;
+	color: var(--act-quiet);
+}
+.act-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.act-facts .act-owner {
+	vertical-align: middle;
+}
+.act-d-heading {
+	margin: 1.75rem 0 0.6rem;
+	font-size: 1rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.act-d-notes {
+	margin: 0;
+	font-size: var(--act-fs-body);
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+
+/* Log activity */
+.act-form {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+}
+.act-field {
+	min-width: 0;
+}
+.act-when {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+}
+.act-form-state {
+	margin: -0.5rem 0 0;
+	font-size: var(--act-fs-small);
+	color: var(--act-quiet);
+}
+.act-form-state:empty {
+	display: none;
+}
+@media (max-width: 459.98px) {
+	.act-when {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

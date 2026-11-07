@@ -1,0 +1,1259 @@
+/*
+  Styles for post-editor.html, where one Fieldline blog post is written,
+  checked, scheduled and previewed. Every class here starts with .cp-
+  and every color comes from a --basalt-* token, so the palettes and
+  dark mode apply without extra rules. The shared pieces (detail
+  header, cards, segmented switch, selects, tag input, drop zone,
+  avatars, status pills, toasts) arrive from basalt.css; this sheet
+  only arranges them and draws the editor, the reader view, the
+  review steps and the search result mock-up.
+*/
+
+/* Page-wide tokens. Quiet text and links are mixed toward the body
+   color so they keep 4.5:1 contrast in the paler palettes. */
+.cp-page,
+.cp-dialog {
+	--cp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--cp-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--cp-error: color-mix(in srgb, var(--basalt-danger) 72%, var(--basalt-copy));
+	--cp-tone: var(--basalt-series-1);
+	--cp-radius: 14px;
+}
+
+/* A category borrows one of the five chart colors, matching the Blog list. */
+.cp-tone-1 {
+	--cp-tone: var(--basalt-series-1);
+}
+.cp-tone-2 {
+	--cp-tone: var(--basalt-series-2);
+}
+.cp-tone-3 {
+	--cp-tone: var(--basalt-series-3);
+}
+.cp-tone-4 {
+	--cp-tone: var(--basalt-series-4);
+}
+.cp-tone-5 {
+	--cp-tone: var(--basalt-series-5);
+}
+
+/* Panels that the script hides must stay hidden whatever display they use. */
+.cp-cover-frame[hidden],
+.cp-cover-drop[hidden],
+.cp-write[hidden],
+.cp-pop[hidden],
+.cp-preview[hidden],
+.cp-error[hidden] {
+	display: none;
+}
+
+/* The header puts the title on the left and the save controls on the
+   right, then stacks them on tablets and phones. */
+.basalt-hero-detail.cp-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+
+	@media (max-width: 767.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.cp-head {
+	& .basalt-hero-title {
+		overflow-wrap: anywhere;
+	}
+	& .basalt-hero-actions {
+		flex-wrap: nowrap;
+		align-self: end;
+		align-items: center;
+		margin: 0;
+	}
+	& .basalt-hero-actions .btn {
+		white-space: nowrap;
+	}
+}
+.cp-byline {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.cp-tags {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+.cp-tags-when {
+	font-size: 0.85rem;
+	color: var(--cp-quiet);
+}
+
+/* The save marker shows a green dot when saved and an amber one, with
+   darker text, while edits are pending. */
+.cp-saved {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0.5rem 0 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--cp-quiet);
+
+	&.is-dirty {
+		color: var(--basalt-copy);
+	}
+}
+.cp-saved-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--basalt-success);
+}
+.cp-saved.is-dirty .cp-saved-dot {
+	background: var(--basalt-warning);
+}
+@media (max-width: 767.98px) {
+	.cp-head .basalt-hero-actions {
+		justify-content: flex-start;
+	}
+	.cp-saved {
+		margin-right: auto;
+	}
+}
+
+/* Menu items carry a gap after their icon, and Delete reads in red. */
+.cp-page .dropdown-item {
+	& .bi {
+		margin-right: 0.6rem;
+	}
+	&.cp-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+	&.cp-danger-item:hover,
+	&.cp-danger-item:focus {
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* One column by default with the review on top. From 1200px the post
+   spans the left column while the side cards stack on the right, and
+   the last row stretches so both columns finish level. */
+.cp-layout {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-areas: "review" "story" "when" "details" "search" "notes" "history";
+
+	@media (min-width: 1200px) {
+		grid-template-columns: minmax(0, 1fr) minmax(20rem, 23rem);
+		grid-template-rows: repeat(5, auto) 1fr;
+		grid-template-areas:
+			"story review"
+			"story when"
+			"story details"
+			"story search"
+			"story notes"
+			"story history";
+	}
+}
+/* With the side panel folded away the post takes the full width; the
+   cards come back with a short fade when it opens again. */
+@media (min-width: 1200px) {
+	.cp-layout.is-side-hidden {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto;
+		grid-template-areas: "story";
+
+		& > .cp-card:not(.cp-card-story) {
+			display: none;
+		}
+	}
+	.cp-layout:not(.is-side-hidden) > .cp-card:not(.cp-card-story) {
+		animation: cp-side-in 260ms ease both;
+	}
+}
+@keyframes cp-side-in {
+	from {
+		opacity: 0;
+		transform: translateX(12px);
+	}
+}
+.cp-side-toggle[aria-pressed="true"] {
+	color: var(--basalt-hue);
+	border-color: color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+	background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+	.cp-layout:not(.is-side-hidden) > .cp-card:not(.cp-card-story) {
+		animation: none;
+	}
+}
+
+.cp-card-story {
+	grid-area: story;
+}
+.cp-card-review {
+	grid-area: review;
+}
+.cp-card-when {
+	grid-area: when;
+}
+.cp-card-details {
+	grid-area: details;
+}
+.cp-card-search {
+	grid-area: search;
+}
+.cp-card-notes {
+	grid-area: notes;
+}
+.cp-card-history {
+	grid-area: history;
+}
+
+/* Cards are flex columns so their last block can sink to the bottom. */
+.cp-card {
+	min-width: 0;
+}
+.cp-card.basalt-box > .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.cp-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+	& > .basalt-segmented {
+		flex: none;
+	}
+}
+.cp-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cp-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cp-quiet);
+}
+.cp-sub {
+	margin: 1.5rem 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--cp-quiet);
+}
+.cp-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.18em;
+		color: var(--cp-link);
+	}
+}
+
+/* Fields share one rhythm: a bold label, the control, then small help. */
+.cp-field {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+.cp-page .form-label,
+.cp-dialog .form-label {
+	display: block;
+	margin-bottom: 0.4rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cp-page .form-control::placeholder,
+.cp-dialog .form-control::placeholder {
+	color: var(--cp-quiet);
+	opacity: 1;
+}
+.cp-label-row {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.cp-count {
+	font-size: 0.77rem;
+	color: var(--cp-quiet);
+
+	&.is-over {
+		font-weight: 600;
+		color: var(--cp-error);
+	}
+}
+.cp-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cp-quiet);
+}
+.cp-hint {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cp-quiet);
+}
+.cp-error {
+	display: flex;
+	gap: 0.3rem;
+	align-items: flex-start;
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--cp-error);
+
+	&::before {
+		content: "\F333";
+		font-family: bootstrap-icons;
+		font-weight: 400;
+		line-height: 1.5;
+	}
+}
+
+/* The title field is set like a headline yet still looks editable. */
+.cp-page .cp-title-input {
+	padding: 0.6rem 0.85rem;
+	font-size: 1.35rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+
+	@media (max-width: 575.98px) {
+		font-size: 1.1rem;
+	}
+}
+.cp-summary {
+	min-height: 4.75rem;
+	overflow: hidden;
+	resize: none;
+}
+.cp-select {
+	max-width: 100%;
+}
+
+/* The cover is a tinted 12:5 frame; the photo fills it, and the icon
+   behind shows through when no photo loads. */
+.cp-cover {
+	margin-bottom: 1.5rem;
+}
+.cp-cover-frame {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: 12 / 5;
+	border-radius: var(--cp-radius);
+	overflow: hidden;
+	background: color-mix(in srgb, var(--cp-tone) 22%, var(--basalt-plane));
+}
+.cp-cover-fallback {
+	font-size: 2.5rem;
+	color: color-mix(in srgb, var(--cp-tone) 70%, var(--basalt-copy));
+}
+.cp-cover-img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.cp-cover-actions {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	display: flex;
+	gap: 0.4rem;
+}
+.cp-page .cp-cover-btn {
+	--bs-btn-bg: color-mix(in srgb, var(--basalt-plane) 92%, transparent);
+	--bs-btn-color: var(--basalt-copy);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-bg: var(--basalt-plane);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-border-color: var(--basalt-edge);
+	--bs-btn-active-bg: var(--basalt-plane);
+	--bs-btn-active-color: var(--basalt-copy);
+	white-space: nowrap;
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--basalt-copy) 18%, transparent);
+}
+.cp-field-alt {
+	margin: 1rem 0 0;
+}
+
+/* The story field, the Write panel and the editor all grow, so the
+   writing area takes whatever height the side column leaves. */
+.cp-field-story,
+.cp-write {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+}
+.cp-editor {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: var(--cp-radius);
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue-border);
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+}
+
+/* Toolbar buttons are quiet until hovered; pressed or open ones take a
+   primary tint with a thin ring. */
+.cp-toolbar {
+	display: flex;
+	gap: 0.1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	border-radius: var(--cp-radius) var(--cp-radius) 0 0;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 70%, var(--basalt-plane));
+}
+.cp-toolbar-sep {
+	width: 1px;
+	height: 20px;
+	margin: 0 0.2rem;
+	background: var(--basalt-edge-strong);
+}
+.cp-toolbar-spacer {
+	flex: 1 1 auto;
+}
+.cp-tool {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 32px;
+	height: 32px;
+	padding: 0 0.4rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 110ms ease,
+		color 110ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+	&[aria-pressed="true"],
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+	}
+}
+.cp-toolbar-select {
+	height: 32px;
+	padding: 0 1.8rem 0 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+
+/* The writing surface shows its placeholder only while it is empty. */
+.cp-editor-body {
+	flex: 1 1 auto;
+	min-height: 320px;
+	padding: 1.5rem 1.75rem;
+	outline: 0;
+	overflow-wrap: anywhere;
+
+	&[contenteditable][data-placeholder]:empty::before {
+		content: attr(data-placeholder);
+		color: var(--cp-quiet);
+		pointer-events: none;
+	}
+	@media (max-width: 575.98px) {
+		padding: 1.25rem 1rem;
+	}
+}
+.cp-editor-foot {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.cp-stats {
+	display: flex;
+	gap: 0.2rem 1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cp-quiet);
+}
+
+/* In full screen the editor floats over a scrim, and on wide screens
+   its text keeps a readable measure. */
+.cp-editor.is-full {
+	position: fixed;
+	inset: 1.5rem;
+	z-index: 1085;
+	box-shadow: 0 0 0 100vmax var(--basalt-scrim);
+
+	& .cp-editor-body {
+		min-height: 0;
+		padding-inline: max(1.75rem, calc((100% - 46rem) / 2));
+		overflow: auto;
+	}
+	@media (max-width: 575.98px) {
+		inset: 0.5rem;
+	}
+}
+
+/* The link panel drops down from the toolbar inside the editor. */
+.cp-pop {
+	position: absolute;
+	left: 0.5rem;
+	z-index: 5;
+	width: min(420px, calc(100% - 1rem));
+	padding: 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+
+	& .form-label {
+		margin-bottom: 0.3rem;
+		font-size: 0.8rem;
+	}
+}
+.cp-pop-row {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+
+	& .form-control {
+		flex: 1 1 180px;
+		min-width: 0;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* Body text, shared by the editor and the reader view. Lists, quotes
+   and links pick up the category color. */
+.cp-prose {
+	font-size: 1rem;
+	line-height: 1.75;
+	color: var(--basalt-copy);
+
+	& > :first-child {
+		margin-top: 0;
+	}
+	& > :last-child {
+		margin-bottom: 0;
+	}
+	& p {
+		margin: 0 0 1rem;
+	}
+	& h3 {
+		margin: 1.75rem 0 0.6rem;
+		font-size: 1.25rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+	& h4 {
+		margin: 1.25rem 0 0.5rem;
+		font-size: 1.05rem;
+		font-weight: 650;
+	}
+	& ul,
+	& ol {
+		margin: 0 0 1rem;
+		padding-left: 1.4rem;
+	}
+	& li + li {
+		margin-top: 0.3rem;
+	}
+	& li::marker {
+		font-weight: 700;
+		color: color-mix(in srgb, var(--cp-tone) 75%, var(--basalt-copy));
+	}
+	& blockquote {
+		position: relative;
+		margin: 1.5rem 0;
+		padding: 0.25rem 0 0.25rem 1.25rem;
+		font-size: 1.1rem;
+		font-style: italic;
+		color: var(--basalt-copy);
+	}
+	/* The quote bar is drawn, not a border, so its ends can be rounded. */
+	& blockquote::before {
+		content: "";
+		position: absolute;
+		top: 0.3rem;
+		bottom: 0.3rem;
+		left: 0;
+		width: 4px;
+		border-radius: 4px;
+		background: var(--cp-tone);
+	}
+	& a {
+		text-decoration: underline;
+		text-decoration-color: var(--cp-tone);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The Preview panel: an address bar with a width switch, over a stage
+   that holds the article as the blog renders it. */
+.cp-preview {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+}
+.cp-preview-bar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.6rem 0.6rem 0.6rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-bottom: 0;
+	border-radius: var(--cp-radius) var(--cp-radius) 0 0;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 70%, var(--basalt-plane));
+}
+.cp-preview-url {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cp-quiet);
+
+	& span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+.cp-stage {
+	flex: 1 1 auto;
+	padding: 2rem 1.5rem 2.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 0 0 var(--cp-radius) var(--cp-radius);
+	background: var(--basalt-canvas);
+}
+.cp-read {
+	max-width: 46rem;
+	margin: 0 auto;
+	border-radius: var(--cp-radius);
+	overflow: hidden;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	transition: max-width 200ms ease;
+}
+.cp-read-cover {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: 16 / 7;
+	margin: 0;
+	overflow: hidden;
+	font-size: 2.5rem;
+	color: color-mix(in srgb, var(--cp-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cp-tone) 22%, var(--basalt-plane));
+
+	& img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
+.cp-read-inner {
+	padding: 2rem 2.5rem 2.5rem;
+}
+.cp-read-cat {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.75rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--cp-tone) 55%, var(--basalt-copy));
+}
+.cp-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--cp-tone);
+}
+.cp-read-title {
+	margin: 0 0 0.75rem;
+	font-size: 2rem;
+	font-weight: 800;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.cp-read-lede {
+	margin: 0 0 1.5rem;
+	font-size: 1.1rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.cp-read-by {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin: 0 0 1.75rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& p {
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+	}
+}
+.cp-read-author {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cp-read-meta {
+	font-size: 0.8rem;
+	color: var(--cp-quiet);
+}
+.cp-prose-read {
+	font-size: 1.05rem;
+}
+.cp-read-tags {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 2rem 0 0;
+
+	&:empty {
+		display: none;
+	}
+}
+.cp-read-tag {
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--cp-tone) 14%, var(--basalt-plane));
+}
+
+/* The Phone width, and real phones, get a narrower article with
+   tighter padding and a smaller headline. */
+.cp-stage.is-phone {
+	& .cp-read {
+		max-width: 390px;
+	}
+	& .cp-read-inner {
+		padding: 1.5rem 1.25rem 2rem;
+	}
+	& .cp-read-title {
+		font-size: 1.5rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.cp-stage {
+		padding: 1rem 0.75rem 1.5rem;
+	}
+	.cp-read-inner {
+		padding: 1.5rem 1.25rem 2rem;
+	}
+	.cp-read-title {
+		font-size: 1.5rem;
+	}
+}
+
+/* Four numbered markers joined by a line that turns green behind
+   finished steps; the current step glows amber, or green once live. */
+.cp-steps {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cp-step {
+	position: relative;
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: center;
+	font-size: 0.77rem;
+	text-align: center;
+	color: var(--cp-quiet);
+
+	& + .cp-step::before {
+		content: "";
+		position: absolute;
+		top: 14px;
+		right: calc(50% + 18px);
+		left: calc(-50% + 18px);
+		height: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge-strong);
+	}
+	&.is-done + .cp-step::before {
+		background: var(--basalt-success);
+	}
+	/* A green line grows from the left the first time the steps are on
+	   screen, each one a beat behind the one before. */
+	.cp-steps.is-waiting &.is-done + .cp-step::before {
+		transform: scaleX(0);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.cp-steps.is-drawing &.is-done + .cp-step::before {
+			transform-origin: left;
+			animation: cp-trail-grow 600ms ease-out calc(var(--cp-trail-at, 0) * 300ms) both;
+		}
+	}
+	@media (max-width: 359.98px) {
+		font-size: 0.7rem;
+	}
+}
+@keyframes cp-trail-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+.cp-step-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	font-size: 0.77rem;
+	font-weight: 700;
+	color: var(--cp-quiet);
+	background: var(--basalt-plane-alt);
+}
+.cp-step.is-done .cp-step-mark {
+	color: var(--basalt-plane);
+	background: var(--basalt-success);
+}
+.cp-step.is-now .cp-step-mark {
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 24%, var(--basalt-plane));
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-warning) 14%, transparent);
+}
+.cp-step.is-now.is-live .cp-step-mark {
+	color: var(--basalt-plane);
+	background: var(--basalt-success);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-success) 16%, transparent);
+}
+.cp-step.is-done,
+.cp-step.is-now {
+	color: var(--basalt-copy);
+}
+.cp-step.is-now {
+	font-weight: 700;
+}
+
+/* Readiness checks pair an icon column with the label and its note. */
+.cp-checks {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cp-check {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: 1.25rem minmax(0, 1fr);
+	align-items: baseline;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	& > .bi {
+		font-size: 1rem;
+	}
+	&.is-ok > .bi {
+		color: var(--basalt-success);
+	}
+	&.is-todo > .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+	}
+}
+.cp-check-note {
+	display: block;
+	font-size: 0.8rem;
+	color: var(--cp-quiet);
+}
+.cp-review-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		flex: 1 1 auto;
+		white-space: nowrap;
+	}
+}
+
+/* Side-card controls stop at a comfortable width when the cards span
+   the whole page. */
+.cp-card-when .cp-when,
+.cp-card-when .cp-error,
+.cp-card-details .cp-field,
+.cp-card-search .cp-field,
+.cp-card-search .cp-serp,
+.cp-card-details .cp-facts {
+	max-width: 32rem;
+}
+
+/* Publishing sets date and time side by side, with the switches below. */
+.cp-when {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+}
+.cp-switches {
+	display: grid;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+
+	& .form-check {
+		margin: 0;
+	}
+	& .form-check-label {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Filed-under facts are label and value rows split by hairlines. */
+.cp-facts {
+	display: grid;
+	margin: 0.25rem 0 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 6rem minmax(0, 1fr);
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+	}
+	& dt {
+		font-weight: 400;
+		font-size: 0.875rem;
+		color: var(--cp-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The search card mimics a results page: site row, blue title, snippet. */
+.cp-slug .input-group-text {
+	color: var(--cp-quiet);
+	background: var(--basalt-plane-alt);
+}
+.cp-serp {
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-canvas);
+}
+.cp-serp-site {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	font-size: 0.8rem;
+
+	& > span:last-child {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+}
+.cp-serp-icon {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	color: var(--cp-link);
+	background: var(--basalt-hue-soft);
+}
+.cp-serp-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cp-serp-url {
+	overflow-wrap: anywhere;
+	color: var(--cp-quiet);
+}
+.cp-serp-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.05rem;
+	font-weight: 600;
+	line-height: 1.35;
+	overflow-wrap: anywhere;
+	color: var(--cp-link);
+}
+.cp-serp-text {
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+
+/* Notes read like chat bubbles under an avatar; a request for changes
+   is tinted amber. The reply form sits at the foot of the card. */
+.cp-notes {
+	display: grid;
+	gap: 1.25rem;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+.cp-note {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr);
+}
+.cp-note-who {
+	display: flex;
+	gap: 0.1rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0 0 0.3rem;
+	font-size: 0.875rem;
+}
+.cp-note-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cp-note-when {
+	font-size: 0.8rem;
+	color: var(--cp-quiet);
+}
+.cp-note-text {
+	margin: 0;
+	padding: 0.7rem 0.9rem;
+	border-radius: 4px 12px 12px 12px;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.cp-note.is-ask .cp-note-text {
+	background: color-mix(in srgb, var(--basalt-warning) 14%, var(--basalt-plane));
+}
+.cp-note-flag {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cp-reply {
+	margin-top: auto;
+
+	& textarea {
+		resize: vertical;
+	}
+}
+.cp-reply-foot {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.75rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* History is a timeline: tinted round icons joined by a thin rail. */
+.cp-history {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cp-event {
+	position: relative;
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.25rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.25rem;
+		bottom: 0.25rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+}
+.cp-event-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--cp-ev) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cp-ev) 16%, var(--basalt-plane));
+}
+.cp-ev-1 {
+	--cp-ev: var(--basalt-series-1);
+}
+.cp-ev-2 {
+	--cp-ev: var(--basalt-series-2);
+}
+.cp-ev-3 {
+	--cp-ev: var(--basalt-series-3);
+}
+.cp-ev-4 {
+	--cp-ev: var(--basalt-series-4);
+}
+.cp-ev-5 {
+	--cp-ev: var(--basalt-series-5);
+}
+.cp-event-text {
+	margin: 0.3rem 0 0.1rem;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.cp-event-when {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cp-quiet);
+}
+
+/* Both dialogs use roomier padding and a heading with a line under it. */
+.cp-dialog {
+	& .modal-header {
+		align-items: flex-start;
+		padding: 1.5rem 1.5rem 1.25rem;
+	}
+	& .modal-body {
+		padding: 1.5rem;
+	}
+	& .modal-footer {
+		gap: 0.5rem;
+		padding: 1.1rem 1.5rem 1.35rem;
+	}
+	& .modal-footer > .btn {
+		margin: 0;
+		white-space: nowrap;
+	}
+}
+.cp-dialog-heading {
+	min-width: 0;
+}
+.cp-dialog-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+}
+.cp-dialog-sub {
+	margin: 0.25rem 0 0;
+	font-size: 0.85rem;
+	color: var(--cp-quiet);
+}
+
+/* Reduced motion and print both drop the editor and article transitions. */
+@media (prefers-reduced-motion: reduce), print {
+	.cp-read,
+	.cp-editor {
+		transition: none;
+	}
+}

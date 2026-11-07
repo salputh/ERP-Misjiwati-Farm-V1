@@ -33,7 +33,7 @@ enum JenisAktivitas: string
     }
 
     /**
-     * Nama warna template HexaDash, dipakai sebagai tag-{warna} dan dot-{warna}.
+     * Nama warna status Basalt, dipakai sebagai bg-{warna}-subtle, text-{warna}, dan bg-{warna}.
      */
     public function warna(): string
     {

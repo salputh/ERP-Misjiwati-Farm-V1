@@ -1,0 +1,234 @@
+/* The top bar sticks to the top of the page column. Its side padding is the
+   same as the page content's, so the search box lines up with the cards
+   below it. --basalt-header-bg is the surface the unread marks cut into. */
+.basalt-topbar {
+	--basalt-header-bg: var(--basalt-plane);
+	position: sticky;
+	top: 0;
+	z-index: 1028;
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 72px;
+	padding: 0.5rem 1.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background-color: var(--basalt-header-bg);
+
+	@media (max-width: 575.98px) {
+		padding: 0.5rem 1rem;
+	}
+
+	/* Icon buttons are square and quiet. */
+	.btn-icon {
+		width: 40px;
+		height: 40px;
+		padding: 0;
+	}
+}
+
+/* The start holds the menu button and the search box and takes the spare
+   width. The end holds three groups of controls, spaced exactly as one
+   row: tools, the inbox trays, and the account. */
+.basalt-topbar-start {
+	display: flex;
+	gap: 0.5rem;
+	flex: 1 1 auto;
+	align-items: center;
+	min-width: 0;
+}
+.basalt-topbar-end,
+.basalt-topbar-tools,
+.basalt-topbar-inbox {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+}
+.basalt-topbar-menubtn {
+	color: var(--basalt-copy-muted);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The search box shows from tablet width up. On phones only its icon
+   button shows; tapping it lays the box across the bar, and Esc or leaving
+   the field closes it again. */
+.basalt-topbar {
+	.basalt-topbar-find {
+		display: none;
+		max-width: 22rem;
+
+		@media (min-width: 768px) {
+			display: flex;
+		}
+	}
+	.basalt-find .form-control {
+		height: 40px;
+		background-color: color-mix(in srgb, var(--basalt-copy) 5%, transparent);
+	}
+}
+@media (max-width: 767.98px) {
+	.basalt-topbar.is-searching {
+		.basalt-topbar-find {
+			position: absolute;
+			inset: 50% 1rem auto;
+			z-index: 2;
+			transform: translateY(-50%);
+			display: flex;
+			/* Its width comes from the insets: a width of its own would push it
+			   past the right edge and scroll the page sideways. */
+			width: auto;
+			max-width: none;
+
+			.form-control {
+				border-color: var(--basalt-hue);
+				background-color: var(--basalt-plane);
+			}
+		}
+		.basalt-find-hint {
+			display: none;
+		}
+	}
+}
+
+/* Anything unread is one small dot: red for notifications, the palette
+   color for messages. The dot is painted over the badge's own fill, so the
+   badges keep their utility classes. */
+.basalt-topbar {
+	.basalt-pip,
+	.basalt-tally {
+		top: 9px;
+		right: 9px;
+		width: 8px;
+		min-width: 0;
+		height: 8px;
+		padding: 0;
+		border: 0;
+		font-size: 0;
+		background-image: linear-gradient(var(--basalt-hue), var(--basalt-hue));
+		box-shadow: 0 0 0 2px var(--basalt-header-bg);
+	}
+	.basalt-pip {
+		background-image: linear-gradient(var(--basalt-danger), var(--basalt-danger));
+	}
+	.basalt-me .basalt-avatar {
+		width: 34px;
+		height: 34px;
+		font-size: 0.75rem;
+	}
+}
+
+/* Three header looks for one bar, chosen by data-basalt-header on <html>
+   from the Appearance panel, or fixed in a build by writing the attribute
+   into the page. Without it the bar is Hairline: plain, with a fine line
+   underneath. data-basalt-header-sticky="off" lets the bar scroll away
+   with the page. --basalt-header-h is the height the bar covers at the top
+   of the window, for anything else that has to stay clear of it. */
+:root {
+	--basalt-header-h: 72px;
+}
+[data-basalt-header="floating"] {
+	--basalt-header-h: 86px;
+}
+[data-basalt-header="grouped"] {
+	--basalt-header-h: 76px;
+}
+[data-basalt-header-sticky="off"] {
+	--basalt-header-h: 0px;
+
+	.basalt-topbar {
+		position: relative;
+		top: auto;
+	}
+}
+
+/* Floating: a detached bar with a fine border and a soft shadow. */
+[data-basalt-header="floating"] {
+	.basalt-topbar {
+		--basalt-header-bg: var(--basalt-plane);
+		top: 0.75rem;
+		min-height: 62px;
+		margin: 0.75rem 1.5rem 0;
+		padding: 0.375rem 0.5rem 0.375rem 0.75rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 14px;
+		box-shadow:
+			0 1px 2px color-mix(in srgb, var(--basalt-copy) 5%, transparent),
+			0 12px 28px -20px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+	}
+	.basalt-topbar-find {
+		max-width: 25rem;
+	}
+}
+
+/* Grouped: a little taller, with the account in a quiet box of its own. */
+[data-basalt-header="grouped"] {
+	.basalt-topbar {
+		--basalt-header-bg: var(--basalt-plane);
+		min-height: 76px;
+	}
+	.basalt-topbar-find {
+		max-width: 21rem;
+	}
+	.basalt-me {
+		padding: 0.3rem 0.75rem 0.3rem 0.3rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		background-color: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+
+		.basalt-avatar {
+			border-radius: 9px;
+		}
+
+		/* Below 992px the name is hidden, so the box hugs the avatar evenly. */
+		@media (max-width: 991.98px) {
+			padding: 0.3rem;
+		}
+	}
+}
+[data-basalt-header="floating"] .basalt-find .form-control,
+[data-basalt-header="grouped"] .basalt-find .form-control {
+	border-color: var(--basalt-edge-strong);
+	background-color: var(--basalt-plane);
+}
+
+/* From tablet width up, fine rules part the groups: before the inbox and
+   the account in Hairline and Grouped, and in Floating only before the
+   account, which then sits closer. */
+@media (min-width: 768px) {
+	.basalt-topbar-inbox {
+		margin-left: 0.75rem;
+		padding-left: 0.75rem;
+		border-left: 1px solid var(--basalt-edge);
+	}
+	.basalt-topbar .basalt-me {
+		margin-left: 0.75rem;
+	}
+	[data-basalt-header="floating"] {
+		.basalt-topbar-inbox {
+			margin-left: 0;
+			padding-left: 0;
+			border-left: 0;
+		}
+		.basalt-topbar .basalt-me {
+			margin-left: 0;
+		}
+		.basalt-topbar-account {
+			margin-left: 0.5rem;
+			padding-left: 0.5rem;
+			border-left: 1px solid var(--basalt-edge);
+		}
+	}
+}
+@media (max-width: 575.98px) {
+	[data-basalt-header="floating"] {
+		--basalt-header-h: 74px;
+
+		.basalt-topbar {
+			top: 0.5rem;
+			margin: 0.5rem 0.75rem 0;
+		}
+	}
+}

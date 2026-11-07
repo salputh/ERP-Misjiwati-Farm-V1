@@ -1,0 +1,478 @@
+/* A file-and-folder tree that follows the ARIA tree pattern (tree, treeitem,
+   group). assets/basalt/js/components/trees.js gives it roving focus, type-to-find, selection, tri-state
+   checkboxes, filtering, folders that load on demand, rename in place and
+   drag-to-move; Basalt.tree is its handle. tree-and-sortable.html shows
+   every mode, and the docs, knowledge base and file manager reuse it. */
+
+/* The panel and the status line share one sunken fill and one hairline. */
+$well: color-mix(in srgb, var(--basalt-canvas) 55%, var(--basalt-plane));
+$hairline: 1px solid var(--basalt-edge);
+
+/* Rows that animate keep still for visitors who ask for less motion. */
+@mixin unless-calm {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+/* The panel is a sunken well that a tree can sit in. */
+.basalt-tree-panel {
+	min-width: 0;
+	padding: 0.5rem;
+	border: $hairline;
+	border-radius: 14px;
+	background: $well;
+}
+
+/* Every level drops the list bullets and steps in by one indent, with a thin
+   guide line running down the left of each open folder. Keyboard focus rings
+   the row alone, never the whole subtree beneath it. */
+.basalt-tree {
+	--basalt-tree-indent: 1.4rem;
+	--basalt-tree-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--basalt-tree-accent: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	position: relative;
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+
+	ul {
+		position: relative;
+		margin: 0;
+		padding: 0 0 0 var(--basalt-tree-indent);
+		list-style: none;
+
+		&::before {
+			content: "";
+			position: absolute;
+			top: 0.1rem;
+			bottom: 0.3rem;
+			left: calc(var(--basalt-tree-indent) / 2 + 0.3rem);
+			border-left: 1px solid var(--basalt-edge-strong);
+		}
+	}
+
+	[role="group"][hidden] {
+		display: none;
+	}
+
+	[role="treeitem"] {
+		outline: 0;
+
+		&:focus-visible {
+			box-shadow: none;
+		}
+
+		&:focus-visible > .basalt-tree-row {
+			box-shadow: inset 0 0 0 2px var(--basalt-hue);
+		}
+
+		&[hidden] {
+			display: none;
+		}
+	}
+}
+
+/* A row is one line of grip, caret, box, icon, name and figures. */
+.basalt-tree-row {
+	position: relative;
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-height: 2.15rem;
+	padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 130ms ease,
+		color 130ms ease;
+	-webkit-user-select: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	@include unless-calm {
+		transition: none;
+	}
+}
+
+/* Folders read a shade heavier; the selected row takes the hue and its
+   quiet parts follow along. */
+.basalt-tree {
+	[aria-expanded] > .basalt-tree-row {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	[aria-selected="true"] > .basalt-tree-row {
+		font-weight: 600;
+		color: var(--basalt-tree-accent);
+		background: var(--basalt-hue-soft);
+
+		.basalt-tree-meta,
+		.basalt-tree-icon {
+			color: inherit;
+		}
+	}
+}
+
+/* The grip shows on hover or focus, and always where there is no hover. */
+.basalt-tree-grip {
+	flex-shrink: 0;
+	width: 0.8rem;
+	margin-right: -0.25rem;
+	font-size: 0.8rem;
+	color: var(--basalt-tree-quiet);
+	opacity: 0;
+	cursor: grab;
+	transition: opacity 130ms ease;
+	touch-action: none;
+
+	@include unless-calm {
+		transition: none;
+	}
+
+	@media print {
+		display: none;
+	}
+}
+
+.basalt-tree-row:hover .basalt-tree-grip,
+.basalt-tree [role="treeitem"]:focus-visible > .basalt-tree-row .basalt-tree-grip {
+	opacity: 1;
+}
+
+@media (hover: none) {
+	.basalt-tree-grip {
+		opacity: 1;
+	}
+}
+
+/* Folders get a caret that turns when open; files get a blank of the same size. */
+.basalt-tree-caret,
+.basalt-tree-spacer {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	font-size: 0.71rem;
+	color: var(--basalt-tree-quiet);
+}
+
+.basalt-tree-caret .bi {
+	transition: transform 170ms ease;
+
+	@include unless-calm {
+		transition: none;
+	}
+}
+
+.basalt-tree [aria-expanded="true"] > .basalt-tree-row .basalt-tree-caret .bi {
+	transform: rotate(90deg);
+}
+
+/* The checkbox is drawn from tokens, so its mark always matches on-hue. */
+.basalt-tree-check {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.05rem;
+	height: 1.05rem;
+	border: 1.5px solid color-mix(in srgb, var(--basalt-copy-muted) 70%, transparent);
+	border-radius: 5px;
+	background: var(--basalt-plane);
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+
+	@include unless-calm {
+		transition: none;
+	}
+}
+
+/* A ticked box draws its check from two borders; a half-ticked one draws a bar. */
+.basalt-tree {
+	[aria-checked="true"] > .basalt-tree-row .basalt-tree-check,
+	[aria-checked="mixed"] > .basalt-tree-row .basalt-tree-check {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-hue);
+	}
+
+	[aria-checked="true"] > .basalt-tree-row .basalt-tree-check::after {
+		content: "";
+		transform: translateY(-1px) rotate(45deg);
+		width: 0.3rem;
+		height: 0.56rem;
+		border: solid var(--basalt-on-hue);
+		border-width: 0 2px 2px 0;
+	}
+
+	[aria-checked="mixed"] > .basalt-tree-row .basalt-tree-check::after {
+		content: "";
+		width: 0.5rem;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--basalt-on-hue);
+	}
+}
+
+.basalt-tree-icon {
+	flex-shrink: 0;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--basalt-tree-quiet);
+}
+
+.basalt-tree-icon-folder {
+	color: var(--basalt-hue);
+}
+
+.basalt-tree-label {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+/* A folder's tally pill pushes right; any figure after it sits beside it. */
+.basalt-tree-count {
+	margin-left: auto;
+	padding: 0.05rem 0.5rem;
+	border-radius: 999px;
+	border: $hairline;
+	font-size: 0.7rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+
+.basalt-tree-meta {
+	margin-left: auto;
+	padding-left: 0.75rem;
+	font-size: 0.75rem;
+	font-weight: 400;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-tree-quiet);
+}
+
+.basalt-tree-count + .basalt-tree-meta {
+	margin-left: 0;
+}
+
+/* Search hits are marked in a pale warning tint. */
+.basalt-tree mark {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 30%, var(--basalt-plane));
+}
+
+/* An open folder with nothing in it says so; the script adds .is-empty. */
+.basalt-tree [role="group"] {
+	&.is-empty::after {
+		content: "Empty folder";
+		display: block;
+		padding: 0.3rem 0.6rem 0.3rem 2rem;
+		font-size: 0.77rem;
+		font-style: italic;
+		color: var(--basalt-tree-quiet);
+	}
+}
+
+/* While a lazy folder loads it shows shimmering bars; if loading fails the
+   row turns red and offers a retry. */
+.basalt-tree-skeleton {
+	padding: 0.3rem 0.6rem 0.3rem 2rem;
+
+	span {
+		display: block;
+		height: 0.6rem;
+		border-radius: 999px;
+		background: linear-gradient(
+			90deg,
+			var(--basalt-plane-alt) 0%,
+			var(--basalt-wash) 50%,
+			var(--basalt-plane-alt) 100%
+		);
+		background-size: 200% 100%;
+		animation: basalt-tree-shimmer 1.2s linear infinite;
+
+		@include unless-calm {
+			animation: none;
+		}
+	}
+
+	&:nth-child(2) span {
+		width: 72%;
+	}
+
+	&:nth-child(3) span {
+		width: 55%;
+	}
+}
+
+@keyframes basalt-tree-shimmer {
+	to {
+		background-position: -200% 0;
+	}
+}
+
+.basalt-tree-row-error {
+	&,
+	&:hover {
+		color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	}
+}
+
+.basalt-tree-retry {
+	margin-left: auto;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-decoration: underline;
+}
+
+/* Renaming swaps the label for a compact field that fills the row. */
+.basalt-tree-rename.form-control {
+	flex: 1;
+	min-width: 8rem;
+	height: 1.75rem;
+	padding: 0.1rem 0.4rem;
+	font-size: 0.85rem;
+}
+
+/* During a drag the whole tree shows the closed hand and hover stops
+   painting; the dragged item fades and the target folder is outlined. */
+.basalt-tree {
+	&.is-dragging,
+	&.is-dragging .basalt-tree-row {
+		cursor: grabbing;
+	}
+
+	&.is-dragging .basalt-tree-row:hover {
+		background: transparent;
+	}
+
+	[role="treeitem"].is-dragged > .basalt-tree-row {
+		opacity: 0.4;
+	}
+}
+
+.basalt-tree-row.is-drop-inside {
+	background: var(--basalt-hue-soft);
+	box-shadow: inset 0 0 0 1.5px var(--basalt-hue);
+}
+
+/* The drop line marks where an item lands between rows, a ring at its start. */
+.basalt-tree-drop {
+	position: absolute;
+	z-index: 2;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--basalt-hue);
+	pointer-events: none;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: -3px;
+		left: -4px;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-hue);
+		background: var(--basalt-plane);
+	}
+}
+
+/* The ghost is a pill carrying the item's name that follows the pointer. */
+.basalt-tree-ghost {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1085;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.4rem 0.75rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	pointer-events: none;
+}
+
+/* A dropped item flashes once in its new place. */
+.basalt-tree [role="treeitem"].is-moved > .basalt-tree-row {
+	animation: basalt-tree-flash 1.2s ease;
+
+	@include unless-calm {
+		animation: none;
+	}
+}
+
+@keyframes basalt-tree-flash {
+	0%,
+	30% {
+		background: var(--basalt-hue-soft);
+	}
+	100% {
+		background: transparent;
+	}
+}
+
+/* Keyboard users move items with the buttons beside the tree, and the status
+   line reports each move. */
+.basalt-tree-tools {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	@media print {
+		display: none;
+	}
+}
+
+.basalt-tree-status {
+	display: flex;
+	gap: 0.65rem;
+	align-items: baseline;
+	padding: 0.75rem 0.9rem;
+	border: $hairline;
+	border-radius: 12px;
+	font-size: 0.8rem;
+	background: $well;
+
+	> .bi {
+		flex-shrink: 0;
+		color: var(--basalt-hue);
+	}
+
+	.btn {
+		flex-shrink: 0;
+	}
+}
+
+.basalt-tree-status-text {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	color: var(--basalt-copy-body);
+}
+
+/* Printed trees lose their motion along with the drag handles. */
+@media print {
+	.basalt-tree-row {
+		transition: none;
+		animation: none;
+	}
+}

@@ -1,0 +1,1037 @@
+/* Basalt - Investing (investing.html)
+   Namespaced under .pfo-*
+   Each type keeps one chart color in the ring, its list and the holding
+   marks (stocks, funds, crypto); gains and losses read in the success and
+   danger tokens pulled toward the body color. */
+
+.pfo-page {
+	--pfo-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--pfo-up: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+	--pfo-down: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--pfo-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pfo-page canvas {
+	display: block;
+	max-width: 100%;
+}
+
+/* Cards share one head. */
+.pfo-card.card {
+	overflow: hidden;
+}
+.pfo-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.pfo-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.pfo-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pfo-quiet);
+}
+
+/* The value card: total, today's move, three figures, the chart and the strip. */
+.pfo-value-head {
+	display: flex;
+	gap: 1.5rem 3rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.pfo-label {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pfo-total {
+	margin: 0.3rem 0 0.2rem;
+	font-size: 2.6rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pfo-today {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--pfo-up);
+
+	&.is-down {
+		color: var(--pfo-down);
+	}
+}
+/* The three figures sit plain beside each other, each led by a small
+   icon in its own chart color. */
+.pfo-figures {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& > div {
+		position: relative;
+		padding: 0.75rem 1.1rem 0.75rem 3.6rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 14px;
+		background: var(--basalt-plane);
+	}
+	.bi {
+		position: absolute;
+		top: 50%;
+		left: 0.8rem;
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 50%;
+		font-size: 1rem;
+		color: var(--basalt-plane);
+		background: var(--tone);
+		transform: translateY(-50%);
+	}
+	& dt {
+		font-size: 0.81rem;
+		font-weight: 500;
+		color: var(--pfo-quiet);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-size: 1.05rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+
+		&.is-up {
+			color: var(--pfo-up);
+		}
+		&.is-down {
+			color: var(--pfo-down);
+		}
+	}
+}
+.pfo-range-bar {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.5rem var(--basalt-pad-x) 0;
+}
+.pfo-span {
+	margin: 0;
+	font-size: 0.81rem;
+	color: var(--pfo-quiet);
+}
+.pfo-chart {
+	position: relative;
+	height: 18rem;
+	padding: 1rem var(--basalt-pad-x) 0;
+}
+
+/* Shared head for the treemap and candle cards: title and line on the
+   left, a key or a figure on the right. */
+.pfo-head {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-end;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.pfo-desc {
+	margin: 0.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--pfo-quiet);
+}
+
+/* Sixty trading days: closing days up are the full primary, days down a
+   light shade of it; wicks share the candle's color. */
+.pfo-candle-sum {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 700;
+	line-height: 1.2;
+	text-align: right;
+	color: var(--basalt-copy);
+
+	& small {
+		display: block;
+		font-size: 0.8rem;
+		font-weight: 400;
+		color: var(--pfo-quiet);
+	}
+}
+.pfo-candle-side {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	align-items: flex-end;
+}
+.pfo-candle-plot {
+	position: relative;
+	height: 17rem;
+	padding: 1.25rem var(--basalt-pad-x) 0;
+}
+.pfo-candles {
+	display: block;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	transition: opacity 0.4s ease-out;
+
+	&.is-drawn {
+		opacity: 1;
+	}
+}
+.pfo-candle-grid {
+	stroke: var(--basalt-edge);
+	stroke-width: 1;
+}
+.pfo-candle-tick {
+	font-size: 11px;
+	fill: var(--pfo-quiet);
+}
+.pfo-candle {
+	--pfo-candle: var(--basalt-hue);
+
+	& line {
+		stroke: var(--pfo-candle);
+		stroke-width: 1.25;
+	}
+	& rect {
+		fill: var(--pfo-candle);
+	}
+	&.is-down {
+		--pfo-candle: color-mix(in srgb, var(--basalt-hue) 38%, var(--basalt-plane));
+	}
+	&.is-on rect {
+		stroke: var(--basalt-copy);
+		stroke-width: 1.5;
+	}
+}
+.pfo-candles {
+	cursor: crosshair;
+	touch-action: pan-y;
+
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+		border-radius: 6px;
+	}
+}
+.pfo-candle-cross {
+	stroke: var(--basalt-copy);
+	stroke-width: 1;
+	stroke-dasharray: 3 3;
+	opacity: 0.45;
+	pointer-events: none;
+}
+
+/* The day under the pointer: a small card beside its candle, flipped to the
+   left side when the candle is near the right edge. */
+.pfo-candle-tip {
+	position: absolute;
+	top: 1rem;
+	left: calc(var(--basalt-pad-x) + var(--pfo-tip-x, 0px) + 12px);
+	z-index: 2;
+	min-width: 11rem;
+	padding: 0.6rem 0.75rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	pointer-events: none;
+
+	&.is-left {
+		transform: translateX(calc(-100% - 24px));
+	}
+	& b {
+		display: block;
+		margin-bottom: 0.35rem;
+		font-weight: 700;
+	}
+	& dl {
+		display: grid;
+		gap: 0.15rem 0;
+		margin: 0;
+	}
+	& dl > div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--pfo-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+	}
+}
+.pfo-candle-tip-move {
+	display: block;
+	margin-top: 0.4rem;
+	padding-top: 0.35rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-weight: 700;
+	color: var(--basalt-hue);
+
+	&.is-down {
+		color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	}
+}
+
+/* The six largest holdings under the candles. */
+.pfo-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 1rem 0 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-x);
+	list-style: none;
+}
+.pfo-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	padding: 0.3rem 0.7rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font: inherit;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease;
+
+	& b {
+		font-weight: 700;
+	}
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge));
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.pfo-chip-move {
+	font-size: 0.75rem;
+	color: var(--pfo-quiet);
+}
+
+/* What you own, by size: three columns of blocks, each column and block as
+   big as its value; three shades of the primary tell the kinds apart. On a
+   narrow card the columns become rows. */
+.pfo-tree-card {
+	container-type: inline-size;
+}
+.pfo-tree-key {
+	display: flex;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.8rem;
+	color: var(--pfo-quiet);
+
+	& li {
+		display: flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.pfo-tree-swatch,
+.pfo-tree-block {
+	--pfo-shade: var(--basalt-hue);
+
+	&.is-fund {
+		--pfo-shade: var(--basalt-hue-deep);
+
+		/* In dark mode the deep shade is darker than the accent, so its words
+		   take the light copy color. Mono's deep shade is a light gray and
+		   keeps the dark ink. */
+		[data-bs-theme="dark"]:not([data-basalt-palette="mono"]) & {
+			--pfo-ink: var(--basalt-copy);
+		}
+	}
+	&.is-crypto {
+		--pfo-shade: color-mix(in srgb, var(--basalt-hue) 28%, var(--basalt-plane));
+		--pfo-ink: var(--basalt-copy);
+	}
+}
+.pfo-tree-swatch {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 3px;
+	background: var(--pfo-shade);
+}
+.pfo-tree {
+	display: flex;
+	gap: 6px;
+	height: 21rem;
+	margin: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.pfo-tree-column {
+	display: flex;
+	flex: var(--pfo-grow, 1) 1 0;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pfo-tree-block {
+	display: flex;
+	flex: var(--pfo-grow, 1) 1 0;
+	flex-direction: column;
+	gap: 0.15rem;
+	min-height: 0;
+	overflow: hidden;
+	padding: 0.7rem 0.85rem;
+	border-radius: 10px;
+	color: var(--pfo-ink, var(--basalt-on-hue));
+	background: var(--pfo-shade);
+	container-type: size;
+	transition: filter 150ms ease;
+
+	&:hover {
+		filter: brightness(1.08);
+	}
+}
+.pfo-tree-ticker {
+	font-size: 0.95rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+.pfo-tree-value {
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.pfo-tree-move {
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+@container (max-height: 3.9rem) {
+	.pfo-tree-move {
+		display: none;
+	}
+}
+@container (max-height: 2.6rem) {
+	.pfo-tree-value {
+		display: none;
+	}
+}
+@container (max-width: 7rem) {
+	.pfo-tree-move {
+		display: none;
+	}
+}
+@container (max-width: 40rem) {
+	.pfo-tree {
+		flex-direction: column;
+		height: 30rem;
+	}
+	/* Rows of up to three, so the five small holdings stay readable. */
+	.pfo-tree-column {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	.pfo-tree-block {
+		flex-basis: 28%;
+	}
+}
+
+/* The strip: the whole year, with the shown stretch as a window on it. */
+.pfo-brush {
+	position: relative;
+	height: 3.5rem;
+	margin: 1rem var(--basalt-pad-x) var(--basalt-pad-x);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--basalt-edge) 35%, transparent);
+	cursor: pointer;
+	touch-action: none;
+	user-select: none;
+
+	& canvas {
+		position: absolute;
+		inset: 0.3rem 0;
+		width: 100%;
+		height: calc(100% - 0.7rem);
+		pointer-events: none;
+	}
+}
+.pfo-brush-window {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--pfo-from, 50%);
+	right: calc(100% - var(--pfo-to, 100%));
+	border: 1.5px solid var(--basalt-series-1);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--basalt-series-1) 14%, transparent);
+	cursor: grab;
+}
+.pfo-brush.is-dragging .pfo-brush-window {
+	cursor: grabbing;
+}
+.pfo-brush-edge {
+	position: absolute;
+	top: 50%;
+	width: 0.6rem;
+	height: 1.75rem;
+	padding: 0;
+	border: 1.5px solid var(--basalt-series-1);
+	border-radius: 4px;
+	background: var(--basalt-plane);
+	transform: translate(-50%, -50%);
+	cursor: ew-resize;
+
+	&.is-from {
+		left: 0;
+	}
+	&.is-to {
+		left: 100%;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+@media (max-width: 575.98px) {
+	.pfo-chart,
+	.pfo-candle-plot {
+		height: 14rem;
+	}
+	.pfo-candle-sum {
+		text-align: left;
+	}
+	.pfo-candle-side {
+		align-items: flex-start;
+	}
+	.pfo-candle-tip {
+		min-width: 9.5rem;
+	}
+	/* Two chips a row; the move is enough on a phone. */
+	.pfo-chips {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.pfo-chip {
+		justify-content: space-between;
+	}
+	/* The whole-portfolio chip takes its own row, so the six holdings pair up. */
+	.pfo-chip[data-pfo-chip="all"] {
+		grid-column: 1 / -1;
+	}
+	.pfo-chip-value {
+		display: none;
+	}
+	.pfo-total {
+		font-size: 2.1rem;
+	}
+}
+
+/* List bar: search, filters and a count. */
+.pfo-listbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.25rem var(--basalt-pad-x) 0.75rem;
+}
+.pfo-listbar-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 10rem;
+	max-width: 24rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--pfo-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.pfo-listbar-select.form-select {
+	width: auto;
+	flex: none;
+}
+.pfo-listbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	color: var(--pfo-quiet);
+}
+
+/* Holdings */
+/* The table never shrinks to the card height: every row shows, and it
+   only scrolls sideways if the columns cannot fit. */
+.pfo-table-wrap {
+	flex: none;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.pfo-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: inherit;
+	margin: 0;
+}
+.pfo-table th,
+.pfo-table td {
+	padding: 0.9rem var(--basalt-pad-x);
+	vertical-align: middle;
+	border-color: var(--basalt-edge);
+}
+.pfo-table th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--pfo-quiet);
+}
+.pfo-table td:not(:first-child),
+.pfo-table th:not(:first-child) {
+	padding-left: 0.75rem;
+}
+.pfo-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+.pfo-num {
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	text-align: right;
+}
+.pfo-table th.pfo-num .pfo-sort {
+	flex-direction: row-reverse;
+}
+.pfo-strong {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pfo-hold {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	color: inherit;
+	text-decoration: none;
+
+	&:hover .pfo-hold-name {
+		text-decoration: underline;
+	}
+}
+.pfo-hold-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 3.25rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.66rem;
+	font-weight: 800;
+	letter-spacing: 0.035em;
+	color: color-mix(in srgb, var(--tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 15%, transparent);
+}
+.pfo-hold-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.pfo-hold-name {
+	overflow: hidden;
+	font-size: 0.9rem;
+	font-weight: 600;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: var(--basalt-copy);
+}
+.pfo-hold-sub {
+	font-size: 0.81rem;
+	white-space: nowrap;
+	color: var(--pfo-quiet);
+}
+.pfo-move {
+	display: block;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--pfo-up);
+
+	&.is-down {
+		color: var(--pfo-down);
+	}
+}
+.pfo-gain {
+	font-weight: 600;
+	color: var(--pfo-up);
+
+	&.is-down {
+		color: var(--pfo-down);
+	}
+}
+.pfo-col-spark {
+	width: 8rem;
+}
+.pfo-spark {
+	display: block;
+	width: 7rem;
+	height: 2rem;
+
+	& polyline {
+		fill: none;
+		stroke: var(--pfo-up);
+		stroke-width: 1.75;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		vector-effect: non-scaling-stroke;
+	}
+	&.is-down polyline {
+		stroke: var(--pfo-down);
+	}
+}
+@media (max-width: 767.98px) {
+	.pfo-col-spark,
+	.pfo-col-gain {
+		display: none;
+	}
+}
+@media (max-width: 575.98px) {
+	.pfo-col-price {
+		display: none;
+	}
+}
+
+.pfo-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	white-space: nowrap;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.pfo-sort-idle {
+	opacity: 0.55;
+}
+
+/* Allocation: the ring with its list under it. */
+.pfo-mix {
+	display: grid;
+	gap: 1.5rem;
+	padding: 1.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.pfo-ring-box {
+	position: relative;
+	width: 100%;
+	max-width: 13rem;
+	margin: 0 auto;
+	aspect-ratio: 1;
+}
+.pfo-ring {
+	display: block;
+	width: 100%;
+	height: 100%;
+	transform: rotate(-90deg);
+}
+.pfo-ring-track {
+	fill: none;
+	stroke: color-mix(in srgb, var(--basalt-edge) 60%, transparent);
+	stroke-width: 22;
+}
+.pfo-ring-seg {
+	fill: none;
+	stroke: var(--tone);
+	stroke-width: 22;
+	transition:
+		opacity 170ms ease,
+		stroke-width 170ms ease;
+}
+.pfo-mix.is-lit .pfo-ring-seg:not(.is-on) {
+	opacity: 0.3;
+}
+.pfo-mix.is-lit .pfo-ring-seg.is-on {
+	stroke-width: 26;
+}
+.pfo-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+.pfo-ring-label {
+	margin: 0;
+	font-size: 0.81rem;
+	color: var(--pfo-quiet);
+}
+.pfo-ring-value {
+	margin: 0.1rem 0 0;
+	font-size: 1.35rem;
+	font-weight: 750;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pfo-mix-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pfo-mix-row {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.7rem 0.5rem;
+	border-top: 1px solid var(--basalt-edge);
+	border-radius: 6px;
+	transition: background-color 170ms ease;
+
+	&.is-on {
+		background: color-mix(in srgb, var(--basalt-edge) 45%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.pfo-key {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 3px;
+	background: var(--tone);
+}
+.pfo-mix-name,
+.pfo-mix-value {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pfo-mix-value {
+	align-items: flex-end;
+	font-variant-numeric: tabular-nums;
+}
+.pfo-mix-sub {
+	font-size: 0.81rem;
+	font-weight: 400;
+	color: var(--pfo-quiet);
+}
+
+/* Moving most today: under the allocation list, a mark, the name and
+   what the move made or cost, then the day's change in a pill. */
+.pfo-movers {
+	margin-top: auto;
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+.pfo-card.h-100 {
+	display: flex;
+	flex-direction: column;
+}
+.pfo-sub-title {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pfo-movers-list {
+	display: grid;
+	gap: 0.85rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pfo-mover {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+}
+.pfo-mover-pct {
+	padding: 0.2rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.81rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--pfo-up);
+	background: color-mix(in srgb, var(--basalt-success) 13%, transparent);
+
+	&.is-down {
+		color: var(--pfo-down);
+		background: color-mix(in srgb, var(--basalt-danger) 12%, transparent);
+	}
+}
+
+/* Watchlist */
+.pfo-watch {
+	margin: 0;
+	padding: 0 0 0.5rem;
+	list-style: none;
+}
+.pfo-watch-row {
+	display: grid;
+	grid-template-columns: auto minmax(10rem, 1.2fr) 7rem minmax(10rem, 1.5fr) auto;
+	gap: 0 1.25rem;
+	align-items: center;
+	padding: 0.75rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+.pfo-watch-price {
+	font-size: 0.9rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.pfo-watch-track {
+	position: relative;
+	display: block;
+	height: 6px;
+	border-radius: 999px;
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--basalt-danger) 35%, transparent),
+		color-mix(in srgb, var(--basalt-success) 35%, transparent)
+	);
+
+	/* Flat mode: one plain track. */
+	:root[data-basalt-gradients="off"] & {
+		background: var(--basalt-edge);
+	}
+}
+.pfo-watch-dot {
+	position: absolute;
+	top: 50%;
+	left: calc(var(--value) * 1%);
+	width: 0.85rem;
+	height: 0.85rem;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--basalt-copy);
+	transform: translate(-50%, -50%);
+}
+.pfo-watch-ends {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.3rem;
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--pfo-quiet);
+}
+.pfo-alert.is-on {
+	color: var(--basalt-hue);
+}
+.pfo-watch-empty {
+	padding: 1.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+@media (max-width: 767.98px) {
+	.pfo-watch-row {
+		grid-template-columns: auto 1fr auto auto;
+		gap: 0.5rem 1rem;
+	}
+	.pfo-watch-range {
+		grid-column: 2 / -1;
+		grid-row: 2;
+	}
+}
+
+/* A holding's sparkline answers the pointer: a dot on the day, and its
+   date and price beside the line, inside the row so no wrapper clips it. */
+.pfo-spark-wrap {
+	position: relative;
+	display: inline-block;
+	cursor: crosshair;
+}
+.pfo-spark-dot {
+	position: absolute;
+	top: calc(var(--y) * 100%);
+	left: calc(var(--x) * 100%);
+	width: 8px;
+	height: 8px;
+	margin: -4px 0 0 -4px;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--basalt-copy);
+	pointer-events: none;
+}
+.pfo-spark-tip {
+	position: absolute;
+	top: 50%;
+	right: calc(100% + 0.5rem);
+	z-index: 2;
+	padding: 0.2rem 0.5rem;
+	border-radius: 6px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+	transform: translateY(-50%);
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pfo-candles,
+	.pfo-chip {
+		transition: none;
+	}
+	.pfo-tree-block {
+		transition: none;
+	}
+}

@@ -114,6 +114,6 @@ class Sesi extends Model
      */
     public function ikon(): string
     {
-        return preg_match('/iPhone|Android|Mobile/', (string) $this->user_agent) ? 'uil-mobile-android' : 'uil-desktop';
+        return preg_match('/iPhone|Android|Mobile/', (string) $this->user_agent) ? 'bi-phone' : 'bi-display';
     }
 }

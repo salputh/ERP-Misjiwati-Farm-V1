@@ -1,0 +1,623 @@
+/*
+ * Layout for security.html, every class under the .scy- prefix. The page
+ * header, cards, status pills, dialogs, drawer and busy buttons come from
+ * basalt.css; this sheet arranges the password form beside its rule list,
+ * the strength gauge, the rows for methods, passkeys and sign-ins, the
+ * set-up and code dialogs, and the sign-in drawer. Colors are tokens only.
+ */
+
+/*
+ * Small gray copy is the muted token pulled toward body text, which keeps it
+ * at 4.5:1 on the paler palettes and on a hovered row.
+ */
+.scy-page,
+.scy-dialog,
+.scy-drawer {
+	--scy-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* Cards stack in a single column and share one heading layout. */
+.scy-stack {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.scy-card {
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		padding: 1.75rem;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.scy-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+.scy-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+}
+
+/* Titles take focus when a link jumps to them, but only show it for the keyboard. */
+.scy-card-title {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+.scy-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--scy-quiet);
+}
+
+.scy-card-tools {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Button labels in card tools, row ends and the password actions never wrap. */
+.scy-card-tools .btn,
+.scy-item-end .btn,
+.scy-password-actions .btn {
+	white-space: nowrap;
+}
+
+/* The password form sits beside its rules from 1200px and above them below that. */
+.scy-password {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1200px) {
+	.scy-password {
+		gap: 3rem;
+		grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+	}
+}
+
+.scy-password-fields {
+	display: grid;
+	gap: 1.25rem;
+	align-content: start;
+	min-width: 0;
+}
+
+.scy-field {
+	min-width: 0;
+}
+
+.scy-password-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding-top: 0.25rem;
+}
+
+.scy-reveal {
+	min-width: 2.75rem;
+}
+
+/* The gauge lights one to four bars, each level in its own tone. */
+.scy-meter {
+	margin-top: 0.65rem;
+
+	&[data-level="1"] {
+		--scy-meter-tone: var(--basalt-danger);
+	}
+	&[data-level="2"] {
+		--scy-meter-tone: var(--basalt-warning);
+	}
+	&[data-level="3"] {
+		--scy-meter-tone: var(--basalt-info);
+	}
+	&[data-level="4"] {
+		--scy-meter-tone: var(--basalt-success);
+	}
+}
+
+.scy-meter-bars {
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+
+	& span {
+		height: 0.3rem;
+		border-radius: 999px;
+		background: var(--basalt-edge-strong);
+		transition: background-color 200ms ease;
+	}
+}
+
+.scy-meter[data-level="1"] .scy-meter-bars span:nth-child(-n + 1),
+.scy-meter[data-level="2"] .scy-meter-bars span:nth-child(-n + 2),
+.scy-meter[data-level="3"] .scy-meter-bars span:nth-child(-n + 3),
+.scy-meter[data-level="4"] .scy-meter-bars span {
+	background: var(--scy-meter-tone);
+}
+
+.scy-meter-label {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--scy-quiet);
+
+	& b {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The rule list: an empty ring per rule that turns into a green check once met. */
+.scy-rules {
+	align-self: start;
+	min-width: 0;
+	padding: 1.25rem 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+}
+
+@media (min-width: 1200px) {
+	.scy-rules {
+		padding: 1.5rem 1.75rem;
+	}
+}
+
+.scy-rules-title {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.scy-rules-list {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.6rem;
+		align-items: flex-start;
+		font-size: 0.875rem;
+		line-height: 1.45;
+		color: var(--scy-quiet);
+	}
+
+	& .bi {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+		font-size: 0.95rem;
+		color: var(--basalt-copy-faint);
+	}
+
+	/* The glyphs are Bootstrap Icons' circle and check-circle-fill code points. */
+	& .bi::before {
+		content: "\F28A";
+	}
+	& li.is-met {
+		color: var(--basalt-copy);
+	}
+	& li.is-met .bi {
+		color: var(--basalt-success);
+	}
+	& li.is-met .bi::before {
+		content: "\F26A";
+	}
+}
+
+/* Between tablet and desktop the rules split into two columns to keep the card short. */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.scy-rules-list {
+		column-gap: 1.5rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.scy-rules-note {
+	margin: 1rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--scy-quiet);
+}
+
+/* Method, passkey and sign-in rows: icon tile, text, then whatever sits at the end. */
+.scy-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.scy-item {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	&.is-in-use .scy-item-icon {
+		color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.scy-item-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+
+.scy-item-body {
+	flex: 1 1 14rem;
+	min-width: 0;
+}
+
+.scy-item-title {
+	margin: 0;
+	overflow: hidden;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.scy-item-meta {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--scy-quiet);
+}
+
+.scy-item-end {
+	display: flex;
+	gap: 0.5rem;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: flex-end;
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* On a phone the row's end drops under its text, lined up past the icon. */
+@media (max-width: 575.98px) {
+	.scy-item-end {
+		flex: 1 1 100%;
+		justify-content: flex-start;
+		padding-left: 3.5rem;
+	}
+}
+
+/*
+ * Sign-in rows are clickable. Their hover wash bleeds a little past the text,
+ * while the drawn dividers stay in line with the rows on the other cards.
+ */
+.scy-list-rows {
+	margin-top: -1rem;
+
+	& .scy-item {
+		position: relative;
+		margin: 0 -0.75rem;
+		padding-left: 0.75rem;
+		padding-right: 0.75rem;
+		border-top: 0;
+		border-radius: 10px;
+		cursor: pointer;
+		transition: background-color 150ms ease;
+
+		&:first-child {
+			padding-top: 1rem;
+		}
+
+		&:last-child {
+			margin-bottom: -1rem;
+			padding-bottom: 1rem;
+		}
+
+		&:hover {
+			background: var(--basalt-wash);
+		}
+	}
+
+	& .scy-item + .scy-item::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 0.75rem;
+		left: 0.75rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+
+	& .scy-item-title {
+		white-space: normal;
+	}
+
+	& .scy-item-pill {
+		display: flex;
+		justify-content: flex-end;
+		min-width: 6.5rem;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.scy-list-rows .scy-item-pill {
+		min-width: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.scy-meter-bars span,
+	.scy-list-rows .scy-item {
+		transition: none;
+	}
+}
+
+/* With no passkeys saved, a centered note stands in for the list. */
+.scy-empty {
+	padding: 1rem 1rem 0.5rem;
+	text-align: center;
+
+	& > .bi {
+		font-size: 1.6rem;
+		color: var(--scy-quiet);
+	}
+}
+
+.scy-empty-title {
+	margin: 0.5rem 0 0.25rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.scy-empty-text {
+	max-width: 40ch;
+	margin: 0 auto;
+	font-size: 0.85rem;
+	color: var(--scy-quiet);
+}
+
+/* Dialog fields: a hint line, a phone input with its send button, and the code box. */
+.scy-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--scy-quiet);
+}
+
+.scy-inline {
+	display: flex;
+	gap: 0.5rem;
+
+	& .form-control {
+		min-width: 0;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.scy-field-code {
+	margin-top: 1.25rem;
+}
+
+.scy-code-input {
+	max-width: 11rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 1.1rem;
+	letter-spacing: 0.3em;
+}
+
+/* The drawn QR code with its typed-in key wrapping beside or below it. */
+.scy-qr {
+	display: flex;
+	gap: 1.25rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.scy-qr-code {
+	flex-shrink: 0;
+	width: 9.5rem;
+	height: 9.5rem;
+	padding: 0.5rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+
+	& rect {
+		fill: var(--basalt-copy);
+	}
+}
+
+.scy-qr-key {
+	flex: 1 1 12rem;
+	min-width: 0;
+}
+
+.scy-qr-label {
+	margin: 0 0 0.3rem;
+	font-size: 0.8rem;
+	color: var(--scy-quiet);
+}
+
+.scy-qr-value {
+	margin: 0 0 0.75rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.95rem;
+	letter-spacing: 0.035em;
+	color: var(--basalt-copy);
+}
+
+/* Backup codes print two to a row; a spent code is struck through and tagged. */
+.scy-codes {
+	counter-reset: scy-code;
+	display: grid;
+	gap: 0.65rem 1.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: baseline;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.9rem;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+
+	& li.is-used .scy-codes-code {
+		text-decoration: line-through;
+		color: var(--scy-quiet);
+	}
+}
+
+@media (max-width: 359.98px) {
+	.scy-codes {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.scy-codes-used {
+	font-family: inherit;
+	font-size: 0.71rem;
+	color: var(--scy-quiet);
+}
+
+/* Making a new set asks first, in a bordered box under the codes. */
+.scy-regen {
+	margin-top: 1rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+}
+
+.scy-regen-text {
+	display: flex;
+	gap: 0.6rem;
+	margin: 0 0 0.75rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+
+	& .bi {
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-copy));
+	}
+}
+
+.scy-regen-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.scy-regen-open {
+	margin-top: 0.5rem;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* The sign-in drawer lists its facts as label and value pairs. */
+.scy-facts {
+	display: grid;
+	gap: 0;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 8rem) minmax(0, 1fr);
+		padding: 0.75rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+
+	& > div:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--scy-quiet);
+	}
+
+	& dd {
+		min-width: 0;
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+.scy-drawer .basalt-drawer-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+.scy-drawer-hint {
+	font-size: 0.85rem;
+	color: var(--scy-quiet);
+}

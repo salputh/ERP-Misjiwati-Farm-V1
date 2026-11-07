@@ -1,0 +1,615 @@
+/* Basalt - Budgets
+   Namespaced under .bgt-*
+   The year card (where all budgets will end, with the
+   spending line), one tile per budget with a pace mark
+   and a month-by-month strip, the budget drawer and the
+   new/edit budget dialog. The page header, status pills,
+   segmented switch, drawer, dialog and toasts are the
+   shared components. */
+
+/* The drawer and dialog sit outside the page container, so they get
+   the same tokens. */
+.bgt-page,
+.bgt-drawer,
+.bgt-dialog {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on tinted panels. */
+	--bgt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--bgt-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--bgt-track: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+	--bgt-spent: var(--basalt-series-1);
+	--bgt-plan: var(--basalt-series-3);
+}
+
+/* Legend */
+.bgt-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.bgt-legend li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+}
+.bgt-legend-line {
+	width: 1rem;
+	height: 0;
+	border-top: 3px solid var(--bgt-spent);
+	border-radius: 2px;
+}
+.bgt-legend-line-forecast {
+	border-top-style: dashed;
+	border-top-width: 2px;
+}
+.bgt-legend-line-plan {
+	border-top-color: var(--bgt-plan);
+	border-top-width: 2px;
+}
+.bgt-legend-line-limit {
+	border-top: 2px dashed color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-plane));
+}
+
+/* The year so far
+   A soft palette wash with the words on the left and the spending line
+   on a plain panel to the right, once the card itself is wide enough. */
+.bgt-year {
+	container-type: inline-size;
+	margin-bottom: 2.25rem;
+}
+.bgt-year.basalt-box {
+	background: var(--basalt-grad-soft);
+}
+.bgt-year.basalt-box > .card-body {
+	display: grid;
+	gap: 1.75rem;
+	grid-template-columns: minmax(0, 1fr);
+	padding: 1.75rem;
+}
+@container (min-width: 820px) {
+	.bgt-year.basalt-box > .card-body {
+		gap: 2.5rem;
+		grid-template-columns: minmax(17rem, 2fr) minmax(0, 3fr);
+		padding: 2.25rem;
+	}
+}
+.bgt-year-main {
+	align-self: center;
+	min-width: 0;
+}
+.bgt-year-title {
+	margin: 1rem 0 0.5rem;
+	font-size: clamp(1.45rem, 1.1rem + 1.2vw, 2rem);
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.bgt-year-lede {
+	max-width: 44ch;
+	margin: 0 0 1.75rem;
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.bgt-link {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--bgt-link) 40%, transparent);
+	text-underline-offset: 3px;
+	color: var(--bgt-link);
+	background: none;
+}
+.bgt-link:hover {
+	text-decoration-color: currentColor;
+}
+.bgt-link:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.bgt-year-figs {
+	display: grid;
+	gap: 1rem 2.5rem;
+	grid-template-columns: repeat(2, minmax(0, max-content));
+	margin: 0;
+}
+.bgt-year-fig dt {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--bgt-quiet);
+}
+.bgt-year-fig dd {
+	margin: 0;
+}
+.bgt-year-value {
+	margin-top: 0.2rem;
+	font-size: 1.6rem;
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.bgt-year-note {
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--bgt-quiet);
+}
+.bgt-year-chart {
+	min-width: 0;
+	padding: 1.25rem 1.25rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+}
+.bgt-year-chart .bgt-legend {
+	margin-bottom: 1rem;
+}
+.bgt-trend {
+	position: relative;
+	height: 250px;
+}
+.bgt-trend canvas {
+	display: block;
+	max-width: 100%;
+}
+
+/* Every budget */
+.bgt-list-head {
+	margin-bottom: 1.25rem;
+}
+.bgt-list-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bgt-list-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--bgt-quiet);
+}
+.bgt-pace-key {
+	display: inline-block;
+	width: 2px;
+	height: 0.9rem;
+	margin: 0 0.3rem -0.15rem;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+	opacity: 0.55;
+}
+
+/* One column on phones, two from 576px, four from 1400px: with an even
+   number of tiles, every row ends level. */
+.bgt-tiles {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 576px) {
+	.bgt-tiles {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (min-width: 1400px) {
+	.bgt-tiles {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.bgt-tile.basalt-box {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	padding: 1.5rem;
+	cursor: pointer;
+	transition:
+		box-shadow 0.2s ease,
+		border-color 0.2s ease;
+}
+.bgt-tile.basalt-box:hover {
+	border-color: color-mix(in srgb, var(--bgt-tone) 45%, var(--basalt-edge));
+}
+.bgt-tile-top {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+.bgt-tile-top .basalt-status {
+	white-space: nowrap;
+}
+/* Quick view and full page at the right edge; the icons' own padding
+   sits past it, so the glyphs line up with the text below. */
+.bgt-tile-actions {
+	margin: 0 -0.45rem 0 auto;
+}
+.bgt-tile-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--bgt-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--bgt-tone) 16%, var(--basalt-plane));
+}
+.bgt-tile-name {
+	margin: 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+/* The name goes to the full page; a click elsewhere on the tile opens
+   the quick view. */
+.bgt-tile-open {
+	border-radius: 3px;
+	text-decoration: none;
+	color: inherit;
+}
+.bgt-tile-open:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.bgt-tile-open:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.bgt-tile-owner {
+	margin: 0.25rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--bgt-quiet);
+}
+.bgt-tile-spent {
+	margin: 1.25rem 0 0.6rem;
+	line-height: 1.2;
+}
+.bgt-tile-amount {
+	font-size: 1.4rem;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.bgt-tile-of {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--bgt-quiet);
+}
+
+/* Used: a bar with a mark where spending should be by today. */
+.bgt-used {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+}
+.bgt-meter {
+	position: relative;
+	height: 8px;
+	border-radius: 999px;
+	background: var(--bgt-track);
+}
+.bgt-meter-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--bgt-used, 0%);
+	border-radius: inherit;
+	background: var(--bgt-tone);
+	transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.bgt-meter-pace {
+	position: absolute;
+	top: -5px;
+	bottom: -5px;
+	left: var(--bgt-pace);
+	width: 2px;
+	margin-left: -1px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+	opacity: 0.55;
+}
+.bgt-used-pct {
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Each month's spending, the current month paler, against a dashed
+   monthly budget line. */
+.bgt-spark {
+	position: relative;
+	display: flex;
+	gap: 3px;
+	align-items: flex-end;
+	height: 3.25rem;
+	margin-top: 1.5rem;
+}
+.bgt-spark::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: var(--bgt-limit);
+	left: 0;
+	border-top: 1.5px dashed color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-plane));
+}
+.bgt-spark-bar {
+	flex: 1 1 0;
+	height: var(--bgt-h);
+	border-radius: 3px 3px 1px 1px;
+	background: color-mix(in srgb, var(--bgt-tone) 75%, var(--basalt-plane));
+}
+.bgt-spark-bar.is-now {
+	background: color-mix(in srgb, var(--bgt-tone) 32%, var(--basalt-plane));
+}
+.bgt-spark-bar {
+	transition: opacity 130ms ease;
+}
+.bgt-spark.is-reading .bgt-spark-bar {
+	opacity: 0.4;
+}
+.bgt-spark.is-reading .bgt-spark-bar.is-lit {
+	opacity: 1;
+}
+.bgt-spark-axis {
+	display: flex;
+	justify-content: space-between;
+	margin: 0.3rem 0 1.25rem;
+	font-size: 0.71rem;
+	color: var(--bgt-quiet);
+}
+/* While a bar is read, its month and amount take the axis line. */
+.bgt-spark-read {
+	display: none;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+
+	&.is-over {
+		color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+	}
+}
+.bgt-spark.is-reading + .bgt-spark-axis {
+	justify-content: center;
+
+	& > span {
+		display: none;
+	}
+	& > .bgt-spark-read {
+		display: inline;
+	}
+}
+
+.bgt-tile-foot {
+	display: flex;
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin: auto 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+}
+@media (min-width: 1400px) {
+	.bgt-tile-foot {
+		flex-direction: column;
+	}
+}
+.bgt-tile-fc {
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.bgt-tile-gap {
+	white-space: nowrap;
+	color: var(--bgt-quiet);
+}
+.bgt-tile-gap.is-over {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+
+/* The payroll note: a quiet, dashed cell that ends the last row. */
+.bgt-tile-note.basalt-box {
+	--bgt-tone: var(--basalt-copy-muted);
+	gap: 0.25rem;
+	align-items: flex-start;
+	justify-content: center;
+	border-style: dashed;
+	border-color: var(--basalt-edge-strong);
+	background: transparent;
+	box-shadow: none;
+	cursor: auto;
+}
+.bgt-tile-note.basalt-box:hover {
+	border-color: var(--basalt-edge-strong);
+}
+.bgt-tile-note .bgt-tile-icon {
+	margin-bottom: 0.75rem;
+}
+.bgt-tile-note .bgt-tile-owner {
+	margin-bottom: 1.25rem;
+}
+
+@media (max-width: 575.98px) {
+	.bgt-year.basalt-box > .card-body {
+		gap: 1.5rem;
+		padding: 1.25rem;
+	}
+	.bgt-year-chart {
+		padding: 1rem 0.75rem 0.75rem;
+	}
+	.bgt-year-figs {
+		gap: 1rem 1.75rem;
+	}
+	.bgt-trend {
+		height: 220px;
+	}
+	.bgt-tile.basalt-box {
+		padding: 1.25rem;
+	}
+}
+
+/* Budget drawer */
+.bgt-drawer {
+	--bs-offcanvas-width: 480px;
+}
+.bgt-drawer .offcanvas-body {
+	padding: 1.5rem;
+}
+.bgt-drawer-owner {
+	color: var(--bgt-quiet);
+}
+.bgt-drawer-owner a {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--bgt-link);
+}
+.bgt-drawer-owner a:hover {
+	text-decoration: underline;
+}
+.bgt-drawer-lead {
+	margin: 0.75rem 0 0;
+	font-size: 0.92rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.bgt-drawer-lead strong {
+	color: var(--basalt-copy);
+}
+.bgt-drawer-section {
+	margin-top: 1.75rem;
+}
+.bgt-drawer-heading {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bgt-drawer-bar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.bgt-drawer-bar .bgt-drawer-heading {
+	margin: 0;
+}
+.bgt-months {
+	position: relative;
+	height: 190px;
+}
+.bgt-months canvas {
+	display: block;
+	max-width: 100%;
+}
+.bgt-drawer .bgt-legend {
+	margin-top: 0.75rem;
+}
+.bgt-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--bgt-tone);
+}
+.bgt-legend-swatch-today {
+	background: color-mix(in srgb, var(--bgt-tone) 45%, transparent);
+}
+
+.bgt-rank {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.bgt-rank-item {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.bgt-rank-item:first-child {
+	padding-top: 0;
+}
+.bgt-rank-item:last-child {
+	border-bottom: 0;
+}
+.bgt-rank-name {
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.bgt-rank-value {
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.bgt-rank-of {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--bgt-quiet);
+}
+.bgt-rank-bar {
+	grid-column: 1 / -1;
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--bgt-track);
+}
+.bgt-rank-bar span {
+	display: block;
+	width: var(--bgt-w);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--bgt-tone);
+}
+.bgt-rank-item.is-over .bgt-rank-bar span {
+	background: var(--basalt-danger);
+}
+.bgt-rank-note {
+	grid-column: 1 / -1;
+	font-size: 0.77rem;
+	color: var(--bgt-quiet);
+}
+
+/* Dialog */
+.bgt-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--bgt-quiet);
+}
+.bgt-dialog .form-select {
+	width: auto;
+	min-width: 16rem;
+	max-width: 100%;
+}
+.bgt-amount {
+	max-width: 14rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bgt-meter-fill,
+	.bgt-tile.basalt-box {
+		transition: none;
+	}
+}
+
+@media print {
+	.bgt-meter-fill {
+		transition: none;
+	}
+}

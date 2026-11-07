@@ -1,0 +1,519 @@
+/* Basalt - Payment Methods (payment-methods.html)
+   Namespaced under .acl-*
+   The header, cards, drawer, status pills, segmented control and
+   toasts are the shared components from basalt.css; this file lays
+   out the four figures, the methods list, the fees and bank cards and
+   the settings panel. Every color is a --basalt-* token. */
+
+.acl-page,
+.acl-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--acl-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary as text: on its own it is under 4.5:1 in a few light palettes. */
+	--acl-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--acl-line: var(--basalt-edge);
+	--acl-fs-body: 0.875rem;
+	--acl-fs-small: 0.77rem;
+}
+.acl-page .basalt-status,
+.acl-drawer .basalt-status {
+	font-size: var(--acl-fs-small);
+}
+
+/* One color per method, from the chart ramp. */
+.acl-tone-1 {
+	--acl-tone: var(--basalt-series-1);
+}
+.acl-tone-2 {
+	--acl-tone: var(--basalt-series-2);
+}
+.acl-tone-3 {
+	--acl-tone: var(--basalt-series-3);
+}
+.acl-tone-4 {
+	--acl-tone: var(--basalt-series-4);
+}
+.acl-tone-5 {
+	--acl-tone: var(--basalt-series-5);
+}
+.acl-tone-6 {
+	--acl-tone: var(--basalt-series-6);
+}
+.acl-tone-7 {
+	--acl-tone: var(--basalt-series-7);
+}
+.acl-tone-8 {
+	--acl-tone: var(--basalt-series-8);
+}
+/* Pills that take a chart color lean their text toward the text color,
+   as some ramp colors are pale in the lighter palettes. */
+.basalt-status[class*="acl-tone-"] {
+	--stp-tone: var(--acl-tone);
+	color: color-mix(in srgb, var(--acl-tone) 40%, var(--basalt-copy));
+}
+
+/* Cards */
+.acl-card.card {
+	container-type: inline-size;
+	margin-bottom: 1.5rem;
+	overflow: hidden;
+}
+.acl-card-side.card {
+	margin-bottom: 0;
+}
+.acl-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--acl-line);
+}
+.acl-card-head-plain {
+	padding-bottom: 1.25rem;
+	border-bottom: 0;
+}
+.acl-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.acl-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--acl-fs-body);
+	color: var(--acl-quiet);
+}
+
+.acl-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-head);
+}
+.acl-search {
+	position: relative;
+	flex: 0 1 22rem;
+	min-width: 12rem;
+}
+.acl-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--acl-quiet);
+	pointer-events: none;
+}
+.acl-search .form-control {
+	padding-left: 2.4rem;
+	font-size: var(--acl-fs-body);
+}
+
+/* The table
+   One line per cell. As the card narrows, the currencies, then the
+   money taken, step out; the side panel shows both. */
+.acl-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.acl-table-wrap[hidden] {
+	display: none;
+}
+.acl-table {
+	--bs-table-bg: transparent;
+	font-size: var(--acl-fs-body);
+}
+.acl-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.5rem;
+	border-color: var(--acl-line);
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.acl-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.acl-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+}
+.acl-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--acl-quiet);
+}
+.acl-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.acl-table tbody tr {
+	cursor: pointer;
+}
+.acl-table tbody tr:hover > * {
+	background: var(--basalt-wash);
+}
+.acl-quiet {
+	display: block;
+	font-size: var(--acl-fs-small);
+	line-height: 1.45;
+	color: var(--acl-quiet);
+}
+td .acl-quiet {
+	display: inline;
+	font-size: var(--acl-fs-body);
+}
+.acl-strong {
+	display: block;
+	font-size: var(--acl-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* A tile: its icon on a pale wash of its own ramp color. */
+.acl-tile {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--acl-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--acl-tone) 16%, var(--basalt-plane));
+}
+
+.acl-table td.acl-col-act {
+	width: 1%;
+}
+.acl-table .acl-col-orders,
+.acl-table .acl-col-amount {
+	text-align: right;
+}
+.acl-table tbody tr.is-off .acl-name-text {
+	color: var(--basalt-copy-body);
+}
+.acl-name {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.acl-name-text {
+	font-weight: 600;
+}
+.acl-share {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.acl-share-track {
+	display: block;
+	width: 4.5rem;
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.acl-share-bar {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--acl-tone);
+}
+@container (max-width: 1000px) {
+	.acl-table .acl-col-cur {
+		display: none;
+	}
+}
+@container (max-width: 840px) {
+	.acl-table .acl-col-amount {
+		display: none;
+	}
+	.acl-share-track {
+		display: none;
+	}
+}
+/* Phone-sized cards: each method on two short lines. */
+@container (max-width: 600px) {
+	.acl-card-head {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.acl-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.acl-table,
+	.acl-table tbody,
+	.acl-table tr,
+	.acl-table td {
+		display: block;
+		width: 100%;
+	}
+	.acl-table tbody tr {
+		display: grid;
+		gap: 0.5rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"name mode act"
+			"fee  share act";
+		align-items: center;
+		padding: 1rem var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--acl-line);
+	}
+	.acl-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.acl-table > :not(caption) > * > *,
+	.acl-table > :not(caption) > * > :first-child,
+	.acl-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.acl-table tbody tr:hover > * {
+		background: none;
+	}
+	.acl-table tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.acl-table td.acl-col-name {
+		grid-area: name;
+	}
+	.acl-table td.acl-col-mode {
+		grid-area: mode;
+		justify-self: end;
+	}
+	.acl-table td.acl-col-fee {
+		grid-area: fee;
+		padding-left: 2.75rem;
+		color: var(--acl-quiet);
+	}
+	.acl-table td.acl-col-share {
+		grid-area: share;
+		justify-self: end;
+	}
+	.acl-table td.acl-col-act {
+		grid-area: act;
+		width: auto;
+	}
+	.acl-table .acl-col-orders {
+		display: none;
+	}
+}
+
+/* Ranked lists */
+.acl-bars {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	list-style: none;
+}
+.acl-bars-row {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"name  count"
+		"track track"
+		"note  note";
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--acl-line);
+}
+.acl-bars-row:first-child {
+	padding-top: 0;
+}
+.acl-bars-row:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.acl-bars-name {
+	grid-area: name;
+	overflow: hidden;
+	font-size: var(--acl-fs-body);
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.acl-bars-count {
+	grid-area: count;
+	font-size: var(--acl-fs-body);
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.acl-bars-track {
+	display: block;
+	grid-area: track;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.acl-bars-bar {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--acl-tone);
+}
+.acl-bars-note {
+	grid-area: note;
+	font-size: var(--acl-fs-small);
+	color: var(--acl-quiet);
+}
+@container (max-width: 600px) {
+	.acl-bars {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Where the money goes */
+.acl-bank {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+}
+.acl-bank-acct {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--acl-line);
+	border-radius: 12px;
+}
+.acl-bank-acct .acl-tile {
+	width: 2.5rem;
+	height: 2.5rem;
+	font-size: 1.05rem;
+}
+.acl-bank-btn {
+	align-self: flex-start;
+	white-space: nowrap;
+}
+.acl-facts {
+	margin: 0 0 1.5rem;
+}
+.acl-facts > div {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	padding: 0.75rem 0;
+	border-bottom: 1px solid var(--acl-line);
+}
+.acl-facts > div:first-child {
+	padding-top: 0;
+}
+.acl-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.acl-facts dt {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--acl-quiet);
+}
+.acl-facts dd {
+	margin: 0;
+	font-size: var(--acl-fs-body);
+	line-height: 1.5;
+	color: var(--basalt-copy);
+}
+.acl-card-side.card {
+	display: flex;
+	flex-direction: column;
+}
+@container (max-width: 600px) {
+	.acl-bank {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Side panel */
+.acl-drawer {
+	--bs-offcanvas-width: 460px;
+}
+.acl-drawer .offcanvas-header > .acl-tile {
+	width: 2.5rem;
+	height: 2.5rem;
+	font-size: 1.05rem;
+}
+.acl-drawer .offcanvas-title {
+	white-space: nowrap;
+}
+.acl-r-hint {
+	margin: 0.75rem 0 0;
+}
+.acl-drawer .acl-facts {
+	margin-bottom: 0;
+}
+.acl-stats {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+}
+.acl-stats > div {
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--acl-line);
+	border-radius: 12px;
+}
+.acl-stats dt {
+	font-size: var(--acl-fs-small);
+	font-weight: 500;
+	color: var(--acl-quiet);
+}
+.acl-stats dd {
+	margin: 0.2rem 0 0;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.acl-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.acl-chips li {
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--acl-line);
+	border-radius: 999px;
+	font-size: var(--acl-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+/* Drawer header on a phone
+   The subtitle stays on one line, and the tile and the "1 of N" count
+   step out so the title keeps its room beside the arrows. */
+.acl-drawer .basalt-drawer-sub {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+@media (max-width: 479.98px) {
+	.acl-drawer .offcanvas-header > [aria-hidden="true"]:first-child,
+	.acl-drawer .basalt-drawer-pos {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.acl-table tbody tr {
+		transition: none;
+	}
+}
+@media print {
+	.acl-toolbar,
+	.acl-col-act {
+		display: none;
+	}
+}

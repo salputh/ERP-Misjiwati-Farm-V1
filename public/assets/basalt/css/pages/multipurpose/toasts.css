@@ -1,0 +1,638 @@
+/*
+ * Styles that belong to toasts.html alone, all under the .ts- prefix: the
+ * group chips, the card grid, the kind tag, the folding snippets and the props
+ * the demos use. The toasts themselves (Bootstrap's .toast on the theme, plus
+ * .basalt-notice and .basalt-notice-pile) are styled in basalt.css. Colors
+ * are --basalt-* tokens or mixes of them, mixed to keep text at 4.5:1 or
+ * better in all palettes and both themes.
+ */
+
+/* The page wrapper owns two local tokens: quiet gray copy and a readable accent. */
+.ts-page {
+	/* The muted token pulled toward body text, for small gray copy. */
+	--ts-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* The primary hue leaning toward body text, so links stay legible on tints. */
+	--ts-accent-text: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+
+	& kbd {
+		display: inline-block;
+		padding: 0.05rem 0.4rem;
+		border: 1px solid var(--basalt-edge-strong);
+		border-bottom-width: 2px;
+		border-radius: 5px;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.71rem;
+		line-height: 1.4;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The chip row above the grid stacks its buttons over the running count. */
+.ts-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+
+.ts-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ts-quiet);
+}
+
+.ts-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .ts-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+
+.ts-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Every card fills the row until 1200px, where they start pairing up. */
+.ts-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.ts-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+
+@media (min-width: 1200px) {
+	.ts-card {
+		grid-column: span 6;
+	}
+
+	.ts-card-full,
+	.ts-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Each card body is a column, so the snippet can sink to the bottom edge. */
+.ts-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+
+@media (max-width: 575.98px) {
+	.ts-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+/* The kind tag follows the title in source order, so it is read second, but shows above it. */
+.ts-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+
+.ts-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.ts-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ts-quiet);
+}
+
+.ts-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--ts-quiet);
+}
+
+/* The folding snippet closes every card; whatever the demo ends with keeps its distance. */
+.ts-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+
+.ts-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+.ts-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+
+.ts-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* In-card toasts stack on the left; a dismissed one leaves a dashed note with a text button. */
+.ts-inline {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.ts-empty {
+	width: 100%;
+	margin: 0;
+	padding: 0.9rem 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	font-size: 0.85rem;
+	color: var(--ts-quiet);
+}
+
+.ts-link {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--ts-accent-text);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The stack's console: labeled button rows over a footer with a right-aligned hint. */
+.ts-console {
+	display: grid;
+	gap: 1.25rem;
+}
+
+.ts-console-label {
+	margin: 0 0 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	color: var(--ts-quiet);
+}
+
+.ts-console-buttons {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.ts-send {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+
+.ts-console-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+.ts-console-hint {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--ts-quiet);
+}
+
+@media (max-width: 767.98px) {
+	.ts-console-hint {
+		flex-basis: 100%;
+		margin-left: 0;
+	}
+}
+
+/* A segmented picker made of Bootstrap's .btn-check radios; the checked option inverts. */
+.ts-seg {
+	display: inline-flex;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	padding: 0.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-canvas);
+
+	& .btn-check:checked + .ts-seg-opt {
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+
+	& .btn-check:focus-visible:not(:checked) + .ts-seg-opt {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.ts-seg-opt {
+	padding: 0.4rem 0.8rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/*
+ * Undo rows and the loading demo's file line share one tile: icon, name over
+ * meta, then trailing cells. A row brought back by Undo flashes the hue tint.
+ */
+.ts-rows {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.ts-row,
+.ts-promise-file {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr) auto auto;
+	align-items: center;
+	padding: 0.6rem 0.6rem 0.6rem 0.7rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		background-color 600ms ease,
+		border-color 600ms ease;
+}
+
+.ts-row {
+	&[hidden] {
+		display: none;
+	}
+
+	&.is-back {
+		border-color: var(--basalt-hue-border);
+		background: var(--basalt-hue-soft);
+		transition: none;
+	}
+}
+
+.ts-row-swatch,
+.ts-promise-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+
+.ts-row-main,
+.ts-promise-main {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.ts-row-name,
+.ts-promise-name {
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.ts-row-meta,
+.ts-promise-meta {
+	font-size: 0.77rem;
+	color: var(--ts-quiet);
+}
+
+.ts-row-price {
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+}
+
+.ts-row-remove {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	color: var(--ts-quiet);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+		background: var(--basalt-danger-soft);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+.ts-undo .ts-empty {
+	margin-top: 0.5rem;
+}
+
+.ts-promise {
+	display: grid;
+	gap: 1rem;
+}
+
+/* The file line has no trailing cells, so it keeps only the icon and text columns. */
+.ts-promise-file {
+	grid-template-columns: 2.25rem minmax(0, 1fr);
+}
+
+/* Placement draws a tiny screen whose nine dashed spots double as radio labels. */
+.ts-place {
+	display: flex;
+	gap: 1.25rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .ts-screen {
+		flex: 1 1 16rem;
+		max-width: 24rem;
+	}
+}
+
+.ts-screen {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--basalt-canvas);
+}
+
+.ts-screen-bar {
+	display: block;
+	height: 1.1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane-alt);
+}
+
+.ts-screen-grid {
+	position: relative;
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(3, 2.6rem);
+	padding: 0.6rem;
+}
+
+/* The real radio stays in the tab order but out of sight; its label is the spot. */
+.ts-spot-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.ts-spot {
+	width: 3.2rem;
+	height: 1.35rem;
+	border: 1.5px dashed var(--basalt-edge-strong);
+	border-radius: 6px;
+	color: var(--basalt-copy);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	/* Columns run start, center, end; rows run top, middle, bottom. */
+	&:nth-of-type(3n + 1) {
+		justify-self: start;
+	}
+	&:nth-of-type(3n + 2) {
+		justify-self: center;
+	}
+	&:nth-of-type(3n) {
+		justify-self: end;
+	}
+	&:nth-of-type(-n + 3) {
+		align-self: start;
+	}
+	&:nth-of-type(n + 4):nth-of-type(-n + 6) {
+		align-self: center;
+	}
+	&:nth-of-type(n + 7) {
+		align-self: end;
+	}
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-wash);
+	}
+}
+
+.ts-spot-input:checked + .ts-spot {
+	border-style: solid;
+	border-color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-plane));
+}
+
+.ts-spot-input:focus-visible + .ts-spot {
+	outline: 2px solid var(--basalt-copy);
+	outline-offset: 2px;
+}
+
+.ts-place-side {
+	display: grid;
+	gap: 0.6rem;
+	flex: 1 1 10rem;
+	justify-items: start;
+}
+
+.ts-place-label {
+	margin: 0;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	color: var(--ts-quiet);
+}
+
+.ts-place-classes {
+	margin: 0;
+}
+
+.ts-page .ts-place-classes code {
+	padding: 0.2rem 0.4rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+}
+
+/* Bootstrap toast headers carry a small tinted mark before the title. */
+.ts-mark {
+	display: inline-grid;
+	place-items: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	margin-right: 0.5rem;
+	border-radius: 6px;
+	font-size: 0.77rem;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+
+/* Readers who ask for less motion get every hover and flash without a fade. */
+@media (prefers-reduced-motion: reduce) {
+	.ts-chip,
+	.ts-code summary .bi,
+	.ts-seg-opt,
+	.ts-row,
+	.ts-row-remove,
+	.ts-spot {
+		transition: none;
+	}
+}
+
+/* On paper the chips and snippets go, and every card prints whatever the filter. */
+@media print {
+	.ts-filter,
+	.ts-code {
+		display: none;
+	}
+
+	.ts-card.is-hidden {
+		display: block;
+	}
+}

@@ -1,0 +1,1360 @@
+/*
+ * Styles for meeting-details.html, where one meeting is shown and edited.
+ * Classes start with .mdt- and colors come from --basalt-* tokens, so the
+ * palettes and the dark theme carry through untouched. The detail header,
+ * cards, status pills, avatars, segmented controls, empty states, dialogs
+ * and toasts are the shared ones from basalt.css.
+ */
+
+/* Small gray text is the muted token pulled toward the body color, which
+   keeps its contrast on the lighter palettes and on tinted cards. */
+.mdt-page {
+	--mdt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--mdt-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--mdt-warn: color-mix(in srgb, var(--basalt-warning) 46%, var(--basalt-copy));
+	--mdt-line: var(--basalt-edge);
+}
+
+/* A meeting kind wears the same chart color it has on Meetings; agenda
+   items, chapters and files step through the ramp in turn. */
+.mdt-tone-video {
+	--mdt-tone: var(--basalt-series-1);
+}
+.mdt-tone-room {
+	--mdt-tone: var(--basalt-series-3);
+}
+.mdt-tone-phone {
+	--mdt-tone: var(--basalt-series-5);
+}
+.mdt-series-1 {
+	--mdt-tone: var(--basalt-series-1);
+}
+.mdt-series-2 {
+	--mdt-tone: var(--basalt-series-2);
+}
+.mdt-series-3 {
+	--mdt-tone: var(--basalt-series-3);
+}
+.mdt-series-4 {
+	--mdt-tone: var(--basalt-series-4);
+}
+.mdt-series-5 {
+	--mdt-tone: var(--basalt-series-5);
+}
+.mdt-series-6 {
+	--mdt-tone: var(--basalt-series-6);
+}
+.mdt-series-7 {
+	--mdt-tone: var(--basalt-series-7);
+}
+.mdt-series-8 {
+	--mdt-tone: var(--basalt-series-8);
+}
+
+/* Anything the script hides, and an edit list with no rows, takes no room. */
+.mdt-head .basalt-hero-actions .btn[hidden],
+.mdt-notice[hidden],
+.mdt-card[hidden],
+.mdt-card-head .btn[hidden],
+.mdt-form[hidden],
+.mdt-error[hidden],
+.mdt-editlist:empty,
+.mdt-more[hidden],
+.mdt-editor[hidden] {
+	display: none;
+}
+
+/* Button labels stay on one line wherever they sit. */
+.mdt-head .basalt-hero-actions .btn,
+.mdt-card-head .btn,
+.mdt-empty .basalt-empty-actions .btn,
+.mdt-form-foot .btn,
+.mdt-editor-actions .btn {
+	white-space: nowrap;
+}
+
+/* Links and link-like buttons underline on hover and take the hue ring
+   on keyboard focus. */
+.mdt-link:hover,
+.mdt-linkbtn:hover,
+.mdt-person-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.mdt-chip:focus-visible,
+.mdt-link:focus-visible,
+.mdt-linkbtn:focus-visible,
+.mdt-person-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* The header sets the name block beside the actions, both resting on the
+   last line of text; on phones the actions drop below. */
+.basalt-hero-detail.mdt-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.mdt-head {
+	& .basalt-hero-title:focus {
+		outline: 0;
+	}
+	& .basalt-hero-actions {
+		flex-wrap: nowrap;
+		align-self: end;
+		align-items: center;
+		margin: 0;
+	}
+}
+.mdt-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.5rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+
+	& .btn.disabled {
+		opacity: 0.4;
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.mdt-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.mdt-pager {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+
+/* State pills and the linked customer or project wrap under the title. */
+.mdt-tags {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+.mdt-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.2rem 0.7rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	& .bi {
+		color: var(--mdt-quiet);
+	}
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The more menu spaces its icons, and Cancel meeting reads as a warning. */
+.mdt-page .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+.mdt-page .dropdown-item.mdt-danger-item {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+
+	&:hover,
+	&:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* A canceled meeting says why in one slim line above the cards. */
+.mdt-notice {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	& > .bi {
+		flex: none;
+		color: var(--mdt-quiet);
+	}
+	& > span {
+		flex: 1 1 16rem;
+	}
+}
+
+/* meeting-details.js sorts the cards into rows. On wide screens a pair
+   splits two thirds to one third and both cards end level. */
+.mdt-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+.mdt-row {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.mdt-row-pair {
+		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+		align-items: stretch;
+	}
+}
+.mdt-card {
+	min-width: 0;
+}
+.mdt-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.mdt-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Each card opens with a title and a line under it, its button on the right. */
+.mdt-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex-shrink: 0;
+	}
+}
+.mdt-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.mdt-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--mdt-quiet);
+}
+.mdt-sub {
+	display: flex;
+	gap: 0.25rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.mdt-count {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--mdt-quiet);
+}
+.mdt-quiet {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--mdt-quiet);
+}
+
+/* Inline links, link buttons and the small icon buttons used across cards. */
+.mdt-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--mdt-link);
+}
+.mdt-linkbtn {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	overflow-wrap: anywhere;
+	color: var(--mdt-link);
+	background: none;
+}
+.mdt-copy {
+	flex-shrink: 0;
+	padding: 0.2rem 0.4rem;
+	border: 0;
+	color: var(--mdt-quiet);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.mdt-empty {
+	padding: 1.5rem 1rem;
+}
+
+/* The When card is washed with the kind's color and has a straight accent
+   bar inside its left edge; the tear-off date leaf is the one playful touch. */
+.mdt-when {
+	overflow: hidden;
+}
+.mdt-when.basalt-box .mdt-when-body {
+	position: relative;
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	padding: 1.75rem var(--basalt-pad-x);
+	background:
+		radial-gradient(110% 120% at 0% 0%, color-mix(in srgb, var(--mdt-tone) 14%, transparent), transparent 60%),
+		var(--basalt-plane);
+}
+:root[data-basalt-gradients="off"] .mdt-when.basalt-box .mdt-when-body {
+	background: var(--basalt-plane);
+}
+.mdt-when-body::before {
+	content: "";
+	position: absolute;
+	top: 1.25rem;
+	bottom: 1.25rem;
+	left: 0;
+	width: 4px;
+	border-radius: 0 4px 4px 0;
+	background: var(--mdt-tone);
+}
+@media (min-width: 992px) {
+	.mdt-when.basalt-box .mdt-when-body {
+		gap: 2rem;
+		grid-template-columns: minmax(0, 1fr) minmax(17rem, 21rem);
+	}
+	.mdt-when-side {
+		padding-left: 2rem;
+		border-left: 1px solid var(--mdt-line);
+	}
+}
+@media (max-width: 991.98px) {
+	.mdt-when-side {
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--mdt-line);
+	}
+}
+.mdt-when-main {
+	display: flex;
+	gap: 1.5rem;
+	align-items: flex-start;
+	min-width: 0;
+}
+.mdt-when-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.mdt-when-state {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.75rem;
+}
+.mdt-when-count {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--mdt-quiet);
+}
+.mdt-when-about {
+	margin: 0.4rem 0 0;
+	font-size: 0.95rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.mdt-when-on {
+	margin: 0.6rem 0 0;
+	font-size: 0.875rem;
+	color: var(--mdt-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The date leaf: weekday band on top, the day large, the month below. */
+.mdt-leaf {
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	align-items: center;
+	width: 5rem;
+	border: 1px solid color-mix(in srgb, var(--mdt-tone) 30%, var(--basalt-edge));
+	border-radius: 14px;
+	overflow: hidden;
+	text-align: center;
+	background: var(--basalt-plane);
+	box-shadow: 0 6px 18px -10px color-mix(in srgb, var(--mdt-tone) 60%, transparent);
+}
+.mdt-leaf-day {
+	align-self: stretch;
+	padding: 0.3rem 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--mdt-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mdt-tone) 20%, var(--basalt-plane));
+}
+.mdt-leaf-num {
+	padding-top: 0.3rem;
+	font-size: 2rem;
+	font-weight: 750;
+	line-height: 1;
+	color: var(--basalt-copy);
+}
+.mdt-leaf-mon {
+	padding: 0.2rem 0 0.5rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--mdt-quiet);
+}
+@media (max-width: 575.98px) {
+	.mdt-when-main {
+		gap: 1rem;
+		flex-direction: column;
+	}
+	.mdt-leaf {
+		width: 3.75rem;
+	}
+	.mdt-leaf-num {
+		font-size: 1.5rem;
+	}
+}
+
+/* While the meeting runs, a bar between start and end shows time gone. */
+.mdt-progress {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-top: 1.25rem;
+}
+.mdt-progress-at {
+	flex-shrink: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--mdt-quiet);
+}
+.mdt-progress-track {
+	position: relative;
+	flex: 1 1 auto;
+	height: 8px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--mdt-tone) 18%, var(--basalt-plane-alt));
+}
+.mdt-progress-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: inherit;
+	background: var(--mdt-tone);
+}
+
+/* Where it happens and who set it up, each behind a small tinted tile. */
+.mdt-facts {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		min-width: 0;
+		font-size: 0.9rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.mdt-facts-text {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+.mdt-type {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	color: color-mix(in srgb, var(--mdt-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mdt-tone) 18%, var(--basalt-plane));
+}
+
+/* The side column holds your reply or everyone's calendar, with a hint
+   that turns to a warning when something clashes. */
+.mdt-when-side {
+	& .mdt-sub {
+		margin-bottom: 0.9rem;
+	}
+	& > .btn {
+		margin-top: 1.1rem;
+		white-space: nowrap;
+	}
+}
+.mdt-hint {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	margin: 0.9rem 0 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--mdt-quiet);
+
+	& .bi {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	}
+}
+.mdt-hint.is-warn,
+.mdt-hint:has(.bi-exclamation-circle) {
+	color: var(--basalt-copy);
+}
+.mdt-hint.is-warn .bi,
+.mdt-hint .bi-exclamation-circle {
+	color: var(--mdt-warn);
+}
+
+/* The outcome leads with the summary, then decisions beside action items. */
+.mdt-summary {
+	margin: 0 0 1.75rem;
+	font-size: 1.05rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+.mdt-outcome-cols {
+	display: grid;
+	gap: 1.75rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 768px) {
+	.mdt-outcome-cols {
+		gap: 2.5rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.mdt-decisions,
+.mdt-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mdt-decisions {
+	& li {
+		display: flex;
+		gap: 0.65rem;
+		align-items: flex-start;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--mdt-line);
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--basalt-copy);
+	}
+	& li:first-child {
+		padding-top: 0;
+	}
+	& li:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& .bi {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-copy));
+	}
+}
+
+/* An action item is a checkbox, the task, then owner and due date; done
+   ones are struck through. */
+.mdt-step {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--mdt-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& .form-check-input {
+		flex-shrink: 0;
+		margin: 0.1rem 0 0;
+		cursor: pointer;
+	}
+}
+.mdt-step-text {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.mdt-step-task {
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+.mdt-step.is-done .mdt-step-task {
+	text-decoration: line-through;
+	color: var(--mdt-quiet);
+}
+.mdt-step-meta {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--mdt-quiet);
+
+	& .basalt-avatar {
+		width: 1.4rem;
+		height: 1.4rem;
+		font-size: 0.5rem;
+	}
+}
+
+/* The outcome and agenda editors open inside their card: labeled fields,
+   rows that can be added and removed, and a footer of buttons. */
+.mdt-field {
+	min-width: 0;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	border: 0;
+}
+.mdt-label,
+.mdt-field > legend.mdt-label {
+	display: block;
+	float: none;
+	width: auto;
+	margin: 0 0 0.6rem;
+	padding: 0;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.mdt-label-small {
+	margin-bottom: 0.3rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--mdt-quiet);
+}
+.mdt-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+}
+.mdt-editlist {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+.mdt-editrow {
+	display: grid;
+	gap: 0.6rem;
+	align-items: end;
+}
+.mdt-editrow-one {
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+}
+.mdt-editrow-step {
+	grid-template-columns: minmax(0, 1fr) minmax(9rem, 12rem) 10rem auto;
+}
+.mdt-editrow-step,
+.mdt-editlist-steps {
+	gap: 1rem;
+}
+.mdt-editrow-agenda {
+	grid-template-columns: minmax(0, 1fr) 7.5rem auto;
+	align-items: center;
+}
+.mdt-editrow-error {
+	grid-column: 1 / -1;
+	margin-top: 0;
+}
+@media (max-width: 767.98px) {
+	.mdt-editrow-step {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--mdt-line);
+
+		& .mdt-editrow-task {
+			grid-column: 1 / -1;
+		}
+	}
+}
+
+/* The minutes field keeps its unit inside the box, on the right. */
+.mdt-mins {
+	position: relative;
+
+	& .form-control {
+		padding-right: 2.6rem;
+	}
+	& span {
+		position: absolute;
+		top: 50%;
+		right: 0.8rem;
+		transform: translateY(-50%);
+		font-size: 0.8rem;
+		color: var(--mdt-quiet);
+		pointer-events: none;
+	}
+}
+.mdt-form-sum {
+	margin: 1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--mdt-quiet);
+
+	&.is-warn {
+		font-weight: 600;
+		color: var(--mdt-warn);
+	}
+}
+.mdt-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--mdt-line);
+}
+
+/* The recording player: a round play button, then a track split into one
+   segment per chapter with the unplayed part washed out. */
+.mdt-player {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-bottom: 1.75rem;
+}
+.mdt-player-play {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	border: 0;
+	border-radius: 50%;
+	font-size: 1.6rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+	box-shadow: 0 8px 20px -10px var(--basalt-hue);
+	transition: transform 150ms ease;
+
+	&:hover {
+		transform: scale(1.05);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.mdt-player-main {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.mdt-player-track {
+	--mdt-played: 0%;
+	position: relative;
+	display: flex;
+	gap: 3px;
+	height: 12px;
+	cursor: pointer;
+}
+.mdt-player-seg {
+	height: 100%;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--mdt-tone) 75%, var(--basalt-plane));
+}
+.mdt-player-track::after {
+	content: "";
+	position: absolute;
+	inset: 0 auto 0 var(--mdt-played);
+	right: 0;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--basalt-plane) 55%, transparent);
+	pointer-events: none;
+}
+.mdt-player-head {
+	position: absolute;
+	top: 50%;
+	z-index: 1;
+	transform: translate(-50%, -50%);
+	width: 16px;
+	height: 16px;
+	border: 3px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--basalt-copy);
+	pointer-events: none;
+}
+.mdt-player-time {
+	margin: 0.65rem 0 0;
+	font-size: 0.8rem;
+	color: var(--mdt-quiet);
+
+	& span {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.mdt-player-play {
+		transition: none;
+	}
+}
+
+/* Chapters list under the player; the one playing is tinted. */
+.mdt-chapters {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li + li {
+		border-top: 1px solid var(--mdt-line);
+	}
+}
+.mdt-chapter {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto 3.5rem minmax(0, 1fr) auto;
+	align-items: center;
+	width: 100%;
+	padding: 0.8rem 0.5rem;
+	border: 0;
+	border-radius: 8px;
+	font: inherit;
+	font-size: 0.9rem;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&.is-on {
+		background: color-mix(in srgb, var(--mdt-tone) 12%, var(--basalt-plane));
+	}
+	&.is-on .mdt-chapter-title {
+		font-weight: 650;
+	}
+}
+.mdt-chapter-dot {
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 50%;
+	background: var(--mdt-tone);
+}
+.mdt-chapter-at,
+.mdt-chapter-len {
+	font-size: 0.8rem;
+	color: var(--mdt-quiet);
+}
+@media (max-width: 575.98px) {
+	.mdt-chapter {
+		gap: 0.6rem;
+		grid-template-columns: auto 3rem minmax(0, 1fr);
+	}
+	.mdt-chapter-len {
+		display: none;
+	}
+}
+
+/* The agenda: a bar of item lengths over a numbered list with start times.
+   Items already covered fade; the one under way is tinted. */
+.mdt-bar {
+	display: flex;
+	gap: 3px;
+	height: 10px;
+	margin-bottom: 1.25rem;
+}
+.mdt-bar-seg {
+	border-radius: 3px;
+	background: var(--mdt-tone);
+
+	&.is-done {
+		opacity: 0.35;
+	}
+}
+.mdt-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mdt-item {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) 4.5rem 3.75rem;
+	align-items: center;
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--mdt-line);
+
+	&:first-child {
+		padding-top: 0.25rem;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.mdt-item-n {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--mdt-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mdt-tone) 20%, var(--basalt-plane));
+}
+.mdt-item-text {
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-width: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.mdt-item-at,
+.mdt-item-mins {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--mdt-quiet);
+}
+.mdt-item-mins {
+	text-align: right;
+}
+.mdt-item.is-done .mdt-item-text {
+	font-weight: 500;
+	color: var(--mdt-quiet);
+}
+.mdt-item.is-now {
+	margin: 0 -0.75rem;
+	padding-right: 0.75rem;
+	padding-left: 0.75rem;
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--mdt-tone) 10%, var(--basalt-plane));
+}
+@media (max-width: 575.98px) {
+	.mdt-item {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+	.mdt-item-at {
+		display: none;
+	}
+}
+
+/* Replies show as one stacked bar with a legend, then the list of people. */
+.mdt-replies {
+	display: flex;
+	gap: 3px;
+	height: 10px;
+	margin-bottom: 0.75rem;
+}
+.mdt-replies-seg {
+	flex-basis: 0;
+	border-radius: 3px;
+}
+.mdt-replies-success {
+	background: var(--basalt-success);
+}
+.mdt-replies-warning {
+	background: var(--basalt-warning);
+}
+.mdt-replies-wait {
+	background: color-mix(in srgb, var(--basalt-copy-muted) 45%, var(--basalt-plane));
+}
+.mdt-replies-no {
+	background: color-mix(in srgb, var(--basalt-copy-muted) 20%, var(--basalt-plane));
+}
+.mdt-legend {
+	display: flex;
+	gap: 0.3rem 1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--mdt-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.mdt-legend-dot {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+}
+.mdt-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mdt-person {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--mdt-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& .basalt-status {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+}
+.mdt-person-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.mdt-person-name {
+	align-self: flex-start;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.mdt-person-meta {
+	font-size: 0.8rem;
+	color: var(--mdt-quiet);
+}
+.mdt-person-rest {
+	font-size: 0.85rem;
+	color: var(--mdt-quiet);
+}
+.mdt-more {
+	margin-top: 1.25rem;
+	white-space: nowrap;
+}
+
+/* Notes read as plain prose; the same rules style the text being edited. */
+.mdt-prose {
+	font-size: 0.95rem;
+	line-height: 1.7;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+
+	& > :first-child {
+		margin-top: 0;
+	}
+	& > :last-child {
+		margin-bottom: 0;
+	}
+	& p {
+		margin: 0 0 0.9rem;
+	}
+	& h3 {
+		margin: 1.5rem 0 0.5rem;
+		font-size: var(--basalt-fs-section, 1.05rem);
+		font-weight: 650;
+	}
+	& ul,
+	& ol {
+		margin: 0 0 0.9rem;
+		padding-left: 1.3rem;
+	}
+	& li + li {
+		margin-top: 0.3rem;
+	}
+	& li::marker {
+		color: var(--mdt-quiet);
+	}
+}
+
+/* The notes editor is one framed box: toolbar, writing area, then a footer
+   with the word count and the buttons. */
+.mdt-editor {
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue-border);
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.mdt-editor {
+		transition: none;
+	}
+}
+.mdt-toolbar {
+	display: flex;
+	gap: 0.1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	border-radius: 12px 12px 0 0;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 70%, var(--basalt-plane));
+}
+.mdt-toolbar-sep {
+	width: 1px;
+	height: 20px;
+	margin: 0 0.2rem;
+	background: var(--basalt-edge-strong);
+}
+.mdt-tool {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 32px;
+	height: 32px;
+	padding: 0 0.4rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--basalt-copy-body);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[aria-pressed="true"] {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+	}
+}
+.mdt-editor-body {
+	min-height: 12rem;
+	padding: 1.25rem 1.5rem;
+	outline: 0;
+	cursor: text;
+
+	&:focus,
+	&:focus-visible {
+		outline: 0;
+		box-shadow: none;
+	}
+	&[data-placeholder]:empty::before {
+		content: attr(data-placeholder);
+		color: var(--mdt-quiet);
+		pointer-events: none;
+	}
+}
+.mdt-editor-foot {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.85rem 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.mdt-editor-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--mdt-quiet);
+}
+.mdt-editor-actions {
+	display: flex;
+	gap: 0.5rem;
+}
+@media (max-width: 575.98px) {
+	.mdt-editor-body {
+		padding: 1rem;
+	}
+}
+
+/* Files: a tinted type icon, the name as a button, and size and sharer
+   below. The Add file label shows the ring for its hidden input. */
+.mdt-upload {
+	cursor: pointer;
+}
+.mdt-card-head:has(input[type="file"]:focus-visible) .mdt-upload {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.mdt-file {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--mdt-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.mdt-file-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--mdt-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mdt-tone) 18%, var(--basalt-plane));
+}
+.mdt-file-text {
+	display: flex;
+	gap: 0.2rem;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+.mdt-file-name {
+	align-self: flex-start;
+	max-width: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-align: left;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.mdt-file-meta {
+	font-size: 0.8rem;
+	color: var(--mdt-quiet);
+}
+
+/* The move dialog puts day and time side by side, one above the other on
+   the narrowest phones, with the clash check underneath. */
+.mdt-move-when {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-bottom: 1.25rem;
+}
+.mdt-move-label {
+	margin-bottom: 0.5rem;
+}
+.mdt-move-busy {
+	min-height: 1.3rem;
+	margin: 1.25rem 0 0;
+	font-size: 0.85rem;
+	color: var(--mdt-quiet);
+
+	&.is-warn {
+		font-weight: 600;
+		color: var(--mdt-warn);
+	}
+}
+@media (max-width: 420px) {
+	.mdt-move-when {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* On paper the buttons and the play control have nothing to do. */
+@media print {
+	.mdt-head .basalt-hero-actions,
+	.mdt-card-head .btn,
+	.mdt-player-play {
+		display: none;
+	}
+	.mdt-editor {
+		transition: none;
+	}
+}

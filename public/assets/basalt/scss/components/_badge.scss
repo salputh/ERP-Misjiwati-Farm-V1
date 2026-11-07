@@ -1,0 +1,13 @@
+/* Badges are pinned to a compact table size; an icon inside shrinks to
+   match and keeps a hair of room before the label. */
+.badge {
+	padding: 0.35em 0.55em;
+	border-radius: 6px;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+}
+.badge i {
+	margin-right: 0.1rem;
+	font-size: 0.75rem;
+}

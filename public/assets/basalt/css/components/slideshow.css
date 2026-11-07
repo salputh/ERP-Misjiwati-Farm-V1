@@ -1,0 +1,174 @@
+/* Compiles to assets/basalt/css/components/slideshow.css, linked after basalt.css by
+   the pages that use it. */
+/* A slideshow is a row of slides that scrolls and snaps, so touch,
+   trackpads and the scrollbar-free track all swipe it with no script.
+   assets/basalt/js/components/slideshow.js adds what scrolling cannot: arrows, a dot per position, a
+   "2 / 5" count, moving on by itself, and labels for screen readers.
+   --basalt-slides-per sets how many slides show at once and
+   --basalt-slides-gap the space between them; slideshow.html shows
+   every arrangement. */
+.basalt-slides {
+	--basalt-slides-per: 1;
+	--basalt-slides-gap: 0px;
+	position: relative;
+	min-width: 0;
+}
+
+.basalt-slides-track {
+	display: flex;
+	gap: var(--basalt-slides-gap);
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scroll-behavior: smooth;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+}
+.basalt-slides-track::-webkit-scrollbar {
+	display: none;
+}
+.basalt-slides-track:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+.basalt-slides-item {
+	flex: 0 0 calc((100% - (var(--basalt-slides-per) - 1) * var(--basalt-slides-gap)) / var(--basalt-slides-per));
+	min-width: 0;
+	scroll-snap-align: start;
+}
+
+/* Round arrows on the slides' sides. */
+.basalt-slides-arrow {
+	position: absolute;
+	top: 50%;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: 0;
+	border-radius: 50%;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-plane) 90%, transparent);
+	box-shadow: 0 4px 14px rgba(20, 16, 40, 0.18);
+	transform: translateY(-50%);
+	backdrop-filter: blur(6px);
+	transition:
+		opacity 170ms ease,
+		transform 170ms ease;
+}
+.basalt-slides-arrow:hover {
+	transform: translateY(-50%) scale(1.06);
+}
+.basalt-slides-arrow:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.basalt-slides-arrow:disabled {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.basalt-slides-prev {
+	left: 0.9rem;
+}
+
+.basalt-slides-next {
+	right: 0.9rem;
+}
+
+/* A dot per position; the current one stretches into a pill. */
+.basalt-slides-dots {
+	display: flex;
+	gap: 0.4rem;
+	justify-content: center;
+	margin-top: 1rem;
+}
+
+.basalt-slides-dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: var(--basalt-edge-strong);
+	transition:
+		width 200ms ease,
+		background-color 200ms ease;
+}
+.basalt-slides-dot[aria-current="true"] {
+	width: 1.4rem;
+	background: var(--basalt-hue);
+}
+.basalt-slides-dot:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+.basalt-slides-count {
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: #fff;
+	background: rgba(20, 16, 40, 0.72);
+}
+
+/* Over a photo the dots and the count sit on the picture itself. */
+.basalt-slides-on-photo .basalt-slides-dots {
+	position: absolute;
+	bottom: 1rem;
+	left: 50%;
+	margin: 0;
+	transform: translateX(-50%);
+}
+.basalt-slides-on-photo .basalt-slides-dot {
+	background: rgba(255, 255, 255, 0.6);
+}
+.basalt-slides-on-photo .basalt-slides-dot[aria-current="true"] {
+	background: #fff;
+}
+.basalt-slides-on-photo .basalt-slides-count {
+	position: absolute;
+	right: 0.9rem;
+	bottom: 0.8rem;
+}
+
+/* A thin bar that fills while a slideshow waits to move on by itself. */
+.basalt-slides-progress {
+	height: 3px;
+	margin-top: 0.75rem;
+	overflow: hidden;
+	border-radius: 3px;
+	background: var(--basalt-edge);
+}
+.basalt-slides-progress > span {
+	display: block;
+	width: 100%;
+	height: 100%;
+	background: var(--basalt-hue);
+	transform: scaleX(0);
+	transform-origin: left;
+}
+.basalt-slides-progress.is-running > span {
+	animation: basalt-slides-wait var(--basalt-slides-wait, 6s) linear both;
+}
+.basalt-slides-progress.is-paused > span {
+	animation-play-state: paused;
+}
+
+@keyframes basalt-slides-wait {
+	to {
+		transform: scaleX(1);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-slides-track {
+		scroll-behavior: auto;
+	}
+	.basalt-slides-arrow,
+	.basalt-slides-dot {
+		transition: none;
+	}
+}

@@ -1,0 +1,34 @@
+/* A few Bootstrap pieces keep light-theme colors of their own after the dark
+   tokens land: inputs sit on the wash with dark-theme copy, and table text
+   and trail separators pick up the dark copy tones. */
+@mixin on-dark {
+	[data-bs-theme="dark"] & {
+		@content;
+	}
+}
+
+.form-control {
+	@include on-dark {
+		border-color: var(--basalt-edge);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-wash);
+	}
+
+	&::placeholder {
+		@include on-dark {
+			color: var(--basalt-copy-muted);
+		}
+	}
+}
+
+.table {
+	@include on-dark {
+		color: var(--basalt-copy);
+	}
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+	@include on-dark {
+		color: var(--basalt-copy-muted);
+	}
+}

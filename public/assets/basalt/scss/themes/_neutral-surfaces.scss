@@ -1,0 +1,26 @@
+@use "sass:map";
+@use "tokens";
+@use "light" as day;
+
+/* Two switches on <html> overrule the surface half of whichever palette is
+   active, while hue, accent, status colors and the chart ramp stay with it.
+   They come after every palette block on purpose: the specificity is equal,
+   so source order decides.
+
+   neutral  strips the tint from page, surfaces and borders. Text keeps its
+            faint tint, which stops the grays from looking dead; add `copy`
+            to its sets in _tokens.scss for a fully neutral page.
+   plain    goes further: the page matches the cards, which stand apart by
+            their hairline alone, with no shadow.
+
+   Plain is listed second so it wins the same tie over neutral. The dark set
+   adds the scheme attribute, and the shadow it inherits from light is kept. */
+@each $mode, $sets in tokens.$surfaces {
+	:root[data-basalt-surfaces="#{$mode}"] {
+		@include day.tokens(map.get($sets, light));
+
+		&[data-bs-theme="dark"] {
+			@include day.tokens(map.get($sets, dark));
+		}
+	}
+}

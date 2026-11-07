@@ -1,0 +1,372 @@
+/* Mixed charts (mixed-charts.html): everything under .mixed-*. The filter
+   chips, the twelve-track card grid, the card heads, the showpiece figures,
+   the chart boxes, the HTML legends and the config snippets. Colors are the
+   --basalt-* tokens, so the legend swatches track the palette exactly as the
+   canvases do (mixed-charts.js reads the same tokens). */
+
+.mixed-page {
+	/* Small gray text: the muted token nudged toward the body color so it
+     clears 4.5:1 on the lighter palettes as well. */
+	--mixed-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The filter row: chips on the left, the live count on the right. A pressed
+   chip inverts to body color on card color. */
+.mixed-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+}
+.mixed-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .mixed-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.mixed-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.mixed-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--mixed-quiet);
+}
+
+/* The grid has twelve tracks. Under 1200px each card takes them all; from
+   there cards pair up as halves, with a few at 8/4 or full width. A filtered
+   view drops the 8/4 rhythm for plain halves, and a card left alone on the
+   last row stretches across it. */
+.mixed-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.mixed-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	/* An undrawn chart still has the browser's 300px canvas, which must never
+     push a narrow card or the page past the screen edge. */
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.mixed-card {
+		grid-column: span 6;
+	}
+	.mixed-card-full {
+		grid-column: span 12;
+	}
+	.mixed-card-wide {
+		grid-column: span 8;
+	}
+	.mixed-card-narrow {
+		grid-column: span 4;
+	}
+	.mixed-grid.is-filtered {
+		& .mixed-card-wide,
+		& .mixed-card-narrow,
+		& .mixed-card-full-in-all {
+			grid-column: span 6;
+		}
+		& .mixed-card.is-alone {
+			grid-column: span 12;
+		}
+	}
+}
+
+/* Inside a card: the kind tag reads above the title although it follows it
+   in the markup, so screen readers hear the title first. */
+.mixed-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+.mixed-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.mixed-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.mixed-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--mixed-quiet);
+}
+.mixed-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--mixed-quiet);
+}
+
+/* The two showpiece figures on the hero card, each behind a short rule. */
+.mixed-stats {
+	display: grid;
+	gap: 1rem 2.5rem;
+	grid-template-columns: repeat(2, max-content);
+	margin: 0 0 1.35rem;
+
+	& > div {
+		padding-left: 0.85rem;
+		border-left: 2px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		border-left-color: var(--basalt-series-1);
+	}
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--mixed-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.35rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Chart boxes grow to fill the card, so a card next to a taller neighbor
+   hands the spare height to its chart instead of leaving it empty; the
+   canvas is positioned so it can never hold the box open. */
+.mixed-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 260px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+}
+.mixed-chart-tall {
+	min-height: 300px;
+}
+.mixed-chart-hero {
+	min-height: 340px;
+}
+@media (max-width: 575.98px) {
+	.mixed-chart {
+		min-height: 240px;
+	}
+	.mixed-chart-tall {
+		min-height: 280px;
+	}
+	.mixed-chart-hero {
+		min-height: 300px;
+	}
+}
+
+/* Legends are HTML so they wrap instead of colliding on the canvas. Each
+   item carries its series hue in --mixed-c and shows it as a line, a band,
+   a bar or a dot. */
+.mixed-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--mixed-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.mixed-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--mixed-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.mixed-key-line-dashed {
+	border-top-style: dashed;
+}
+.mixed-key-line-dotted {
+	border-top-style: dotted;
+	border-top-width: 3px;
+}
+.mixed-key-band {
+	width: 18px;
+	height: 10px;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--mixed-c, var(--basalt-series-1)) 20%, transparent);
+}
+.mixed-ct .mixed-key-band {
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+	box-shadow: inset 0 1.5px 0 color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+}
+.mixed-key-bar {
+	width: 10px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--mixed-c, var(--basalt-series-1));
+}
+.mixed-key-bar-soft {
+	background: color-mix(in srgb, var(--mixed-c, var(--basalt-series-1)) 40%, transparent);
+}
+.mixed-key-dot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--mixed-c, var(--basalt-series-1));
+}
+.mixed-key-dot-soft {
+	background: color-mix(in srgb, var(--mixed-c, var(--basalt-series-1)) 50%, transparent);
+}
+.mixed-c1 {
+	--mixed-c: var(--basalt-series-1);
+}
+.mixed-c2 {
+	--mixed-c: var(--basalt-series-2);
+}
+.mixed-c3 {
+	--mixed-c: var(--basalt-series-3);
+}
+.mixed-c4 {
+	--mixed-c: var(--basalt-series-4);
+}
+.mixed-c5 {
+	--mixed-c: var(--basalt-series-5);
+}
+.mixed-c6 {
+	--mixed-c: var(--basalt-series-6);
+}
+.mixed-c8 {
+	--mixed-c: var(--basalt-series-8);
+}
+.mixed-cd {
+	--mixed-c: var(--basalt-danger);
+}
+.mixed-cw {
+	--mixed-c: var(--basalt-warning);
+}
+.mixed-cr {
+	--mixed-c: color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+} /* The faint gray the canvases draw reference lines in. */
+.mixed-ct {
+	--mixed-c: var(--basalt-copy);
+}
+
+/* The config snippet folds under a rule at the foot of the card; the
+   chevron turns when it opens. */
+.mixed-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mixed-chip,
+	.mixed-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.mixed-filter,
+	.mixed-code {
+		display: none;
+	}
+	.mixed-card.is-hidden {
+		display: block;
+	}
+}

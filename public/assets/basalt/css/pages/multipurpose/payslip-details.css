@@ -1,0 +1,456 @@
+/* Basalt - Payslip Details (payslip-details.html)
+   One payslip. Namespaced under .psd-*; every color is a
+   --basalt-* token, so palettes and dark mode carry through.
+   Built from shared parts: the detail header, cards, status pills,
+   avatars, styled selects and toasts. This file lays them out and
+   styles what belongs to this page: the payslip lines, the net pay
+   split, the year so far and the person. */
+
+.psd-page {
+	/* Small gray text, pulled toward the body color so it keeps its
+     contrast in every palette. */
+	--psd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--psd-line: var(--basalt-edge);
+	--psd-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+}
+
+/* Header */
+.basalt-hero-detail.psd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.psd-head .basalt-hero-actions {
+	display: flex;
+	gap: 0.5rem;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.psd-head .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+.psd-tags {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.85rem;
+}
+.psd-tags .basalt-status {
+	padding: 0.25rem 0.7rem;
+	font-size: 0.77rem;
+}
+.psd-when {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.84rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.psd-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.3rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+.psd-pager .btn.disabled {
+	opacity: 0.4;
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.psd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.psd-pager {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+
+/* Grid: rows of two cards that end level */
+.psd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.psd-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		align-items: stretch;
+	}
+}
+
+/* Cards */
+.psd-card {
+	min-width: 0;
+}
+.psd-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.psd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.psd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.psd-card-head > div {
+	min-width: 0;
+}
+.psd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.psd-card-title:focus {
+	outline: none;
+}
+.psd-card-title:focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.psd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--psd-quiet);
+}
+.psd-card-desc:empty {
+	display: none;
+}
+.psd-card-desc strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.psd-sub {
+	margin: 1.75rem 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--psd-quiet);
+}
+.psd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--psd-link);
+}
+.psd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.psd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Facts */
+.psd-facts {
+	display: grid;
+	gap: 0;
+	margin: 0;
+	font-size: 0.875rem;
+}
+.psd-facts > div {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 9rem minmax(0, 1fr);
+	padding: 0.75rem 0;
+	border-bottom: 1px solid var(--psd-line);
+}
+.psd-facts > div:first-child {
+	padding-top: 0;
+}
+.psd-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.psd-facts dt {
+	font-weight: 500;
+	color: var(--psd-quiet);
+}
+.psd-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+@media (max-width: 399.98px) {
+	.psd-facts > div {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Header actions */
+.psd-month {
+	width: auto;
+	min-width: 9rem;
+}
+.psd-head .basalt-hero-actions .btn {
+	white-space: nowrap;
+}
+@media (max-width: 575.98px) {
+	.psd-head .basalt-hero-actions {
+		flex-wrap: wrap;
+	}
+}
+
+/* The payslip */
+.psd-group {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 1.5rem 0 0.5rem;
+}
+.psd-group:first-child {
+	margin-top: 0;
+}
+.psd-group .psd-sub {
+	margin: 0;
+}
+.psd-lines {
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+}
+.psd-lines li,
+.psd-total,
+.psd-netline {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+}
+.psd-lines li {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--psd-line);
+	color: var(--basalt-copy-body);
+}
+.psd-lines li span:last-child,
+.psd-total span:last-child,
+.psd-netline span:last-child {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.psd-total {
+	margin: 0;
+	padding: 0.6rem 0 0;
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.psd-netline {
+	margin: auto 0 0;
+	padding-top: 1.25rem;
+	border-top: 2px solid var(--basalt-edge-strong);
+	font-size: 1rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.psd-slip {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+.psd-slip .psd-lines + .psd-total {
+	margin-bottom: 0.25rem;
+}
+.psd-slip > .psd-total:last-of-type {
+	margin-bottom: 1.5rem;
+}
+
+/* Payment: the net pay and where gross goes */
+.psd-net-label {
+	margin: 0;
+	font-size: 0.84rem;
+	font-weight: 600;
+	color: var(--psd-quiet);
+}
+.psd-net-amount {
+	margin: 0.1rem 0 0;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.psd-split {
+	display: flex;
+	gap: 2px;
+	height: 10px;
+	margin: 1.1rem 0 0.85rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.psd-split > span {
+	display: block;
+	height: 100%;
+}
+.psd-split-net {
+	background: var(--basalt-series-1);
+}
+.psd-split-tax {
+	background: var(--basalt-series-3);
+}
+.psd-split-ded {
+	background: var(--basalt-series-5);
+}
+.psd-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.5rem;
+	padding: 0 0 1.5rem;
+	border-bottom: 1px solid var(--psd-line);
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.psd-legend li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+}
+.psd-legend i {
+	display: inline-block;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 3px;
+}
+.psd-legend strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+/* Year to date */
+.psd-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.psd-table {
+	margin: 0;
+	font-size: 0.875rem;
+}
+.psd-table th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--psd-quiet);
+	background: transparent;
+}
+.psd-table td,
+.psd-table th {
+	padding: 0.5rem 0.5rem;
+	white-space: nowrap;
+	background: transparent;
+}
+.psd-table td:first-child,
+.psd-table th:first-child {
+	padding-left: 0;
+}
+.psd-table td:last-child,
+.psd-table th:last-child {
+	padding-right: 0;
+}
+.psd-table td {
+	border-color: var(--psd-line);
+	color: var(--basalt-copy-body);
+}
+.psd-table tr.is-current td {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.psd-table tfoot td {
+	padding-top: 0.75rem;
+	border-bottom: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.psd-table .basalt-status {
+	margin-left: 0.5rem;
+}
+@media (max-width: 399.98px) {
+	.psd-col-tax {
+		display: none;
+	}
+}
+
+/* Employee */
+.psd-person {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.psd-person-name {
+	display: block;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.psd-person-role {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.84rem;
+	color: var(--psd-quiet);
+}
+.psd-changes {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.psd-changes li {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--psd-line);
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.psd-changes li:first-child {
+	padding-top: 0;
+}
+.psd-changes li:last-child {
+	border-bottom: 0;
+}
+.psd-changes-none {
+	color: var(--psd-quiet);
+}
+.psd-changes strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+@media print {
+	.psd-head .basalt-hero-actions,
+	.psd-card-head .btn {
+		display: none;
+	}
+}

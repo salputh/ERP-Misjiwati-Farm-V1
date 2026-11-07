@@ -1,24 +1,23 @@
 @props(['periode', 'gabungan'])
 
-{{-- Angka gabungan seluruh kandang pada periode terpilih (HexaDash: List), label di kiri dan angka di kanan. --}}
-<x-kartu judul="Farm / Gabungan" :subjudul="$periode->nama" class="mb-25">
-    <div class="list-box">
-        <ul>
-            <li class="list-box__item d-flex justify-content-between gap-3">
+{{-- Angka gabungan seluruh kandang pada periode terpilih , label di kiri dan angka di kanan. --}}
+<x-kartu judul="Farm / Gabungan" :subjudul="$periode->nama" class="mb-4">
+    <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between gap-3">
                 <span>Populasi chick-in</span>
-                <span class="fw-500 color-dark text-end">@angka($periode->totalDocChickIn()) ekor</span>
+                <span class="fw-medium text-body text-end">@angka($periode->totalDocChickIn()) ekor</span>
             </li>
-            <li class="list-box__item d-flex justify-content-between gap-3">
+            <li class="list-group-item d-flex justify-content-between gap-3">
                 <span>Kandang berjalan</span>
-                <span class="fw-500 color-dark text-end">{{ $periode->kandangPeriode->count() }} kandang</span>
+                <span class="fw-medium text-body text-end">{{ $periode->kandangPeriode->count() }} kandang</span>
             </li>
-            <li class="list-box__item d-flex justify-content-between gap-3">
+            <li class="list-group-item d-flex justify-content-between gap-3">
                 <span>Pakan diberikan</span>
-                <span class="fw-500 color-dark text-end">@angka($gabungan['pakan']['terpakai']) zak</span>
+                <span class="fw-medium text-body text-end">@angka($gabungan['pakan']['terpakai']) zak</span>
             </li>
-            <li class="list-box__item d-flex justify-content-between gap-3">
+            <li class="list-group-item d-flex justify-content-between gap-3">
                 <span>Stok gudang tercatat</span>
-                <span class="fw-500 color-dark text-end">
+                <span class="fw-medium text-body text-end">
                     @isset($gabungan['pakan']['sisa'])
                         @angka($gabungan['pakan']['sisa'], 1) zak
                     @else
@@ -26,9 +25,9 @@
                     @endisset
                 </span>
             </li>
-            <li class="list-box__item d-flex justify-content-between gap-3">
+            <li class="list-group-item d-flex justify-content-between gap-3">
                 <span>Panen gabungan</span>
-                <span class="fw-500 color-dark text-end">
+                <span class="fw-medium text-body text-end">
                     @if ($gabungan['panen'])
                         @angka($gabungan['panen']['total']['ekor']) ekor
                     @else
@@ -36,9 +35,9 @@
                     @endif
                 </span>
             </li>
-            <li class="list-box__item d-flex justify-content-between gap-3">
+            <li class="list-group-item d-flex justify-content-between gap-3">
                 <span>RHPP resmi</span>
-                <span class="fw-500 color-dark text-end">
+                <span class="fw-medium text-body text-end">
                     @if ($gabungan['rhpp'])
                         Rp @angka($gabungan['rhpp']['rekap']['bersih'])
                     @else
@@ -46,11 +45,10 @@
                     @endif
                 </span>
             </li>
-            <li class="list-box__item d-flex justify-content-between gap-3">
+            <li class="list-group-item d-flex justify-content-between gap-3">
                 <span>Biaya bersama</span>
-                <span class="fw-500 color-dark text-end">Belum ada ledger level farm</span>
+                <span class="fw-medium text-body text-end">Belum ada ledger level farm</span>
             </li>
         </ul>
-    </div>
-    <a class="btn btn-outline-primary color-primary btn-sm btn-squared w-100 mt-20" href="{{ route('dashboard', ['periode' => $periode->id]) }}">Lihat ringkasan gabungan</a>
+    <a class="btn btn-outline-primary text-primary btn-sm w-100 mt-3" href="{{ route('dashboard', ['periode' => $periode->id]) }}">Lihat ringkasan gabungan</a>
 </x-kartu>

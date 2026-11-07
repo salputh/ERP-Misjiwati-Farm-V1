@@ -1,0 +1,455 @@
+/**
+ * Pie charts page (pie-charts.html), namespaced under .pies-*.
+ * Every color is a --basalt-* token, so the HTML legends and swatches
+ * follow the palette the same way the canvases do; pie-charts.js reads
+ * the same tokens and mixes the same grays.
+ */
+
+.pies-page {
+	/* Small gray text: the muted token pulled a little toward the body
+     color, so it clears 4.5:1 on the lighter palettes too. */
+	--pies-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	/* The gray slice for "everything else"; pie-charts.js mixes the same. */
+	--pies-gray: color-mix(in srgb, var(--pies-quiet) 45%, var(--basalt-plane));
+}
+
+/* The filter row sits above the grid: chips on the left, a count on the
+   right, wrapping on narrow screens. It is not printed. */
+.pies-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+	@media print {
+		display: none;
+	}
+}
+.pies-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	/* The pressed chip turns solid. */
+	& .pies-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.pies-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.pies-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--pies-quiet);
+}
+
+/* Twelve columns; a card spans the lot until desktop width, where the
+   span classes pair and third them. */
+.pies-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.pies-card {
+	grid-column: span 12;
+	min-width: 0;
+	&.is-hidden {
+		display: none;
+		@media print {
+			display: block;
+		}
+	}
+}
+@media (min-width: 1200px) {
+	.pies-card {
+		grid-column: span 6;
+	}
+	.pies-card-full {
+		grid-column: span 12;
+	}
+	.pies-card-third,
+	.pies-card-narrow {
+		grid-column: span 4;
+	}
+	.pies-card-wide {
+		grid-column: span 8;
+	}
+	/* A filtered view pairs the cards, and an odd one out takes the row. */
+	.pies-grid.is-filtered .pies-card {
+		grid-column: span 6;
+	}
+	.pies-grid.is-filtered .pies-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Each card is a column with the chart pushed to the bottom; it is also
+   a container, so the select-a-slice layout answers to the card's width. */
+.pies-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	container-type: inline-size;
+	height: 100%;
+	padding: 1.5rem;
+}
+/* The kind pill comes after the title in the markup, so the title is read
+   first, but column-reverse draws the pill above it. */
+.pies-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.pies-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pies-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pies-quiet);
+}
+.pies-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--pies-quiet);
+}
+
+/* A canvas that has not been drawn keeps the browser's 300px default width,
+   which would push a narrow card past the screen edge until it is drawn. */
+.pies-card canvas {
+	display: block;
+	max-width: 100%;
+}
+.pies-chart {
+	position: relative;
+	height: 240px;
+	margin-top: auto;
+	@media (max-width: 575.98px) {
+		height: 220px;
+	}
+}
+.pies-chart-tall {
+	height: 280px;
+	@media (max-width: 575.98px) {
+		height: 250px;
+	}
+}
+.pies-chart-pair {
+	height: 200px;
+	margin-top: 0;
+	@media (max-width: 575.98px) {
+		height: 150px;
+	}
+}
+.pies-chart-small {
+	height: 190px;
+	margin-top: 0;
+}
+
+/* The legend is HTML rather than canvas, so it wraps instead of colliding. */
+.pies-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--pies-quiet);
+	list-style: none;
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.pies-key-dot {
+	flex-shrink: 0;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--pies-c, var(--basalt-series-1));
+}
+/* A dot takes its color from the series class on its row or button. */
+.pies-c1 {
+	--pies-c: var(--basalt-series-1);
+}
+.pies-c2 {
+	--pies-c: var(--basalt-series-2);
+}
+.pies-c3 {
+	--pies-c: var(--basalt-series-3);
+}
+.pies-c4 {
+	--pies-c: var(--basalt-series-4);
+}
+.pies-c5 {
+	--pies-c: var(--basalt-series-5);
+}
+.pies-c6 {
+	--pies-c: var(--basalt-series-6);
+}
+.pies-cg {
+	--pies-c: var(--pies-gray);
+}
+/* Four shades of the eighth series color, as the custom-colors pie draws them. */
+.pies-s1 {
+	--pies-c: var(--basalt-series-8);
+}
+.pies-s2 {
+	--pies-c: color-mix(in srgb, var(--basalt-series-8) 70%, var(--basalt-plane));
+}
+.pies-s3 {
+	--pies-c: color-mix(in srgb, var(--basalt-series-8) 46%, var(--basalt-plane));
+}
+.pies-s4 {
+	--pies-c: color-mix(in srgb, var(--basalt-series-8) 26%, var(--basalt-plane));
+}
+
+/* Select a slice: the pie and its side panel stack in a narrow card, sit
+   side by side from 620px, and the panel splits in two from 1000px. */
+.pies-select {
+	display: grid;
+	gap: 1.5rem;
+	margin-top: auto;
+	@container (min-width: 620px) {
+		gap: 2.5rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+	}
+	@container (min-width: 1000px) {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+	}
+	& .pies-chart {
+		margin-top: 0;
+	}
+}
+.pies-select-side {
+	@container (min-width: 1000px) {
+		display: grid;
+		gap: 2.5rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: start;
+	}
+}
+.pies-picks {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+	@container (min-width: 1000px) {
+		margin-bottom: 0;
+	}
+}
+.pies-pick {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-edge-strong);
+		font-weight: 600;
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.pies-pick-name {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.pies-pick-value {
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pies-detail-name {
+	margin: 0 0 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--pies-quiet);
+}
+.pies-detail-value {
+	margin: 0 0 1rem;
+	font-size: 1.75rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+/* One ruled row per figure, label left and value right. */
+.pies-detail-rows {
+	margin: 0;
+	& div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.85rem;
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--pies-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Two periods: two pies side by side, each with a caption under it. */
+.pies-pair {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-top: auto;
+}
+/* The figures in the paired and legend cards drop the browser's margins. */
+.pies-pair-item,
+.pies-legends-item {
+	margin: 0;
+}
+.pies-pair-caption {
+	margin-top: 0.75rem;
+	font-size: 0.8rem;
+	text-align: center;
+	color: var(--pies-quiet);
+	& span {
+		display: block;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Legend positions: four small pies, two up from 400px of card width. */
+.pies-legends {
+	display: grid;
+	gap: 1.75rem 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: auto;
+	@container (min-width: 400px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.pies-legends-caption {
+	margin-top: 0.5rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.75rem;
+	text-align: center;
+	color: var(--pies-quiet);
+}
+
+/* The config snippet folds under a rule at the foot of the card; it is
+   left out of print. */
+.pies-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+	@media print {
+		display: none;
+	}
+}

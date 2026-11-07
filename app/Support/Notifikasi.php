@@ -39,7 +39,7 @@ class Notifikasi
             'judul' => 'Pemanen '.$orang['nama'].' belum terdaftar',
             'isi' => Format::angka($orang['berat_kg'], 2).' kg panen belum masuk payroll pemanen. Daftarkan namanya di Master Data.',
             'warna' => 'warning',
-            'ikon' => 'uil-user-exclamation',
+            'ikon' => 'bi-person-exclamation',
             'tautan' => route('master-data', ['periode' => $periode->id]).'#pemanen',
         ], $lembar['nama_belum_terdaftar']);
 
@@ -48,7 +48,7 @@ class Notifikasi
                 'judul' => 'Berat panen belum teralokasi',
                 'isi' => Format::angka($lembar['berat_tanpa_nama'], 2).' kg belum punya nama pemanen. Lengkapi nama dan krat mulai di data panen.',
                 'warna' => 'warning',
-                'ikon' => 'uil-weight',
+                'ikon' => 'bi-speedometer2',
                 'tautan' => route('panen.rekap', ['periode' => $periode->id]),
             ];
         }

@@ -4,18 +4,18 @@
 
         @if ($pesan)
             <div class="col-12">
-                <x-peringatan warna="success" bisaDitutup="true" class="mb-25">{{ $pesan }}</x-peringatan>
+                <x-peringatan warna="success" bisaDitutup="true" class="mb-4">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
         @if ($this->periode && ! $this->periode->tertutup())
             @foreach ($this->kandangBelumAdaSlip as $belum)
-                <div class="col-12 mb-25" wire:key="belum-ada-slip-{{ $belum['periode_kandang']->id }}">
+                <div class="col-12 mb-4" wire:key="belum-ada-slip-{{ $belum['periode_kandang']->id }}">
                     <x-kartu :judul="'Slip gaji '.$belum['periode_kandang']->kandang->nama.' belum dibuat'" :subjudul="$belum['orang']">
                         <x-slot:ekstra>
-                            <x-tombol ikon="uil-plus" wire:click="buatSlip({{ $belum['periode_kandang']->id }})" wire:loading.attr="disabled" wire:target="buatSlip">Buat slip {{ $belum['periode_kandang']->kandang->nama }}</x-tombol>
+                            <x-tombol ikon="bi-plus-lg" wire:click="buatSlip({{ $belum['periode_kandang']->id }})" wire:loading.attr="disabled" wire:target="buatSlip">Buat slip {{ $belum['periode_kandang']->kandang->nama }}</x-tombol>
                         </x-slot:ekstra>
-                        <p class="fs-14 color-light mb-0">
+                        <p class="text-body-secondary mb-0">
                             Pendapatan bagi hasil, bonus pasar, dan premi diambil otomatis dari bagi hasil kandangnya. Pinjaman terisi dari pinjaman atas nama ABK di kas operasional. Cicilan kasbon tidak dipotong otomatis; potong lewat tombol Potong di halaman Kasbon ABK setelah disepakati dengan ABK. Uang makan diambil dari transaksi Pinjaman Makan atas nama tiap ABK di kas operasional; tanpa transaksi itu ABK dipotong uang makan bawaan master data setelah RHPP keluar. Hari kerja dan gaji pokok joker terisi dari data karyawan. Premi panen, premi geomembran, penghasilan kotoran, dan potongan lain diisi lewat tombol ubah di tiap slip.
                         </p>
                     </x-kartu>
@@ -25,17 +25,18 @@
 
         @if ($this->lembar)
             {{-- Identitas dan saringan kandang --}}
-            <div class="col-12 mb-25">
-                <div class="card card-default card-md">
-                    <div class="card-header">
-                        <div class="card-extra">
-                            <ul class="card-tab-links nav-tabs nav" role="tablist">
+            <div class="col-12 mb-4">
+                <section class="card basalt-box db-card">
+<div class="db-card-body">
+<header class="db-card-head">
+<div class="d-flex flex-wrap align-items-center gap-2">
+                            <ul class="nav nav-pills nav-sm" role="tablist">
                                 <li>
                                     <a
                                         href="{{ route('payroll.abk', ['periode' => $this->periode->id]) }}"
                                         role="tab"
                                         wire:click.prevent="pilihKandang"
-                                        @class(['active' => ! $this->terpilih])
+                                        @class(['nav-link', 'active' => ! $this->terpilih])
                                         aria-selected="{{ $this->terpilih ? 'false' : 'true' }}"
                                     >Semua kandang</a>
                                 </li>
@@ -45,15 +46,14 @@
                                             href="{{ route('payroll.abk', ['periode' => $this->periode->id, 'kandang' => $pilihan->id]) }}"
                                             role="tab"
                                             wire:click.prevent="pilihKandang({{ $pilihan->id }})"
-                                            @class(['active' => $pilihan->is($this->terpilih)])
+                                            @class(['nav-link', 'active' => $pilihan->is($this->terpilih)])
                                             aria-selected="{{ $pilihan->is($this->terpilih) ? 'true' : 'false' }}"
                                         >{{ $pilihan->kandang->nama }}</a>
                                     </li>
                                 @endforeach
                             </ul>
                         </div>
-                    </div>
-                    <div class="card-body">
+</header>
                         <x-info class="mb-0">
                             <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
                             @if ($this->periode->notaPanen->isNotEmpty())
@@ -63,24 +63,25 @@
                                         @angka($jumlah) {{ $jabatan }}{{ $loop->last ? '' : ', ' }}
                                     @endforeach</x-info.butir>
                         </x-info>
-                    </div>
-                </div>
+                    
+</div>
+</section>
             </div>
 
             {{-- Angka utama --}}
-            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['total']['pendapatan'])" label="Total pendapatan" ikon="uil-bill" warna="primary">
+            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['total']['pendapatan'])" label="Total pendapatan" ikon="bi-receipt" warna="primary">
                 <small>Rp @angka($this->lembar['total']['pendapatan'])</small>
             </x-dashboard.kartu>
 
-            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['total']['potongan'])" label="Total potongan" ikon="uil-minus-circle" warna="warning">
+            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['total']['potongan'])" label="Total potongan" ikon="bi-dash-circle" warna="warning">
                 <small>Rp @angka($this->lembar['total']['potongan'])</small>
             </x-dashboard.kartu>
 
-            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['total']['bersih'])" label="Pendapatan bersih dibayarkan" ikon="uil-wallet" warna="success">
+            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['total']['bersih'])" label="Pendapatan bersih dibayarkan" ikon="bi-wallet2" warna="success">
                 <small>Rp @angka($this->lembar['total']['bersih'])</small>
             </x-dashboard.kartu>
 
-            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->lembar['total']['orang']).' orang'" label="Karyawan dibayar" ikon="uil-users-alt" warna="info">
+            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->lembar['total']['orang']).' orang'" label="Karyawan dibayar" ikon="bi-people" warna="info">
                 <small>rata-rata bersih Rp @angka($this->lembar['total']['bersih'] / $this->lembar['total']['orang']) per orang</small>
             </x-dashboard.kartu>
 
@@ -98,7 +99,7 @@
             @endforeach
 
             <div class="col-lg-12">
-                <p class="fs-13 color-light mb-0">
+                <p class="small text-body-secondary mb-0">
                     Pendapatan bagi hasil, bonus pasar, dan premi pemeliharaan ABK adalah bagian rata dari angka kandangnya di halaman Bagi hasil; premi tetap ditambahkan di atasnya. Komponen lain dan potongan dicatat per orang.
                 </p>
             </div>
@@ -125,7 +126,7 @@
                 <x-peringatan warna="info">Pendapatan bagi hasil, bonus pasar, premi pemeliharaan, dan premi tetap dihitung dari halaman Bagi hasil, tidak diisi di sini.</x-peringatan>
             @endif
 
-            <h6 class="fs-14 fw-500 mb-15">Pendapatan</h6>
+            <h6 class="fw-medium mb-3">Pendapatan</h6>
             <div class="row">
                 <div class="col-md-4">
                     <x-masukan id="slip-hari-kerja" label="Hari kerja" tipe="number" min="0" max="366" step="1" wire:model="isian.hari_kerja" :kesalahan="$errors->first('isian.hari_kerja')" />
@@ -149,14 +150,14 @@
                 </div>
             </div>
 
-            <h6 class="fs-14 fw-500 mb-15">Potongan</h6>
+            <h6 class="fw-medium mb-3">Potongan</h6>
             <div class="row">
                 <div class="col-md-4">
                     {{-- Uang makan tidak diketik: mengikuti transaksi Pinjaman Makan atas nama orang ini di kas operasional. --}}
-                    <div class="form-group mb-25">
-                        <span class="il-gray fs-14 fw-500 align-center mb-10 d-block">Uang makan (Rp)</span>
-                        <div class="form-control ih-medium ip-gray radius-xs b-light px-15 d-flex align-items-center bg-normal" aria-readonly="true">@angka($uangMakanSlip['jumlah'] ?? 0)</div>
-                        <small class="d-block mt-1 fs-13 color-light">
+                    <div class="mb-3 mb-4">
+                        <span class="form-label fw-medium mb-2 d-block">Uang makan (Rp)</span>
+                        <div class="form-control px-3 d-flex align-items-center bg-body-secondary" aria-readonly="true">@angka($uangMakanSlip['jumlah'] ?? 0)</div>
+                        <small class="d-block mt-1 small text-body-secondary">
                             @if ($uangMakanSlip['dari_kas'] ?? false)
                                 Dari kas operasional: @angka($uangMakanSlip['transaksi']) transaksi Pinjaman Makan atas nama {{ $namaSlip }}.
                             @elseif (isset($uangMakanSlip['bawaan']))
@@ -179,7 +180,7 @@
             </div>
 
             @if ($kasbonSlip)
-                <h6 class="fs-14 fw-500 mb-15">Cicilan kasbon</h6>
+                <h6 class="fw-medium mb-3">Cicilan kasbon</h6>
                 <div class="row">
                     @foreach ($kasbonSlip as $idPotongan => $kasbon)
                         <div class="col-md-6" wire:key="slip-kasbon-{{ $slipId }}-{{ $idPotongan }}">
@@ -187,7 +188,7 @@
                         </div>
                     @endforeach
                 </div>
-                <p class="fs-13 color-light mb-0">Potongan yang lebih kecil dari rencana membuat sisanya dibagi ke slip periode berikutnya. Potongan baru dibuat atau dibatalkan di halaman <a href="{{ route('kasbon.abk', ['periode' => $this->periode->id]) }}">Kasbon ABK</a>.</p>
+                <p class="small text-body-secondary mb-0">Potongan yang lebih kecil dari rencana membuat sisanya dibagi ke slip periode berikutnya. Potongan baru dibuat atau dibatalkan di halaman <a href="{{ route('kasbon.abk', ['periode' => $this->periode->id]) }}">Kasbon ABK</a>.</p>
             @endif
 
             <x-slot:footer>

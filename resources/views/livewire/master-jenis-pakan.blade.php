@@ -1,11 +1,11 @@
-<div class="col-12 mb-25">
+<div class="col-12 mb-4">
     <x-kartu judul="Daftar jenis pakan" subjudul="Kelola kode, harga, dan berat tiap jenis pakan." badan="p-0">
         <x-slot:ekstra>
             <x-tombol wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-jenis-pakan">Tambah jenis pakan</x-tombol>
         </x-slot:ekstra>
 
-        {{-- Tabel template (HexaDash: Basic Table, Basic Usage) --}}
-        <div class="table4 p-25">
+        {{-- Tabel template  --}}
+        <div class="tabel-data">
             @if ($pesan)
                 <x-peringatan warna="success">{{ $pesan }}</x-peringatan>
             @endif
@@ -14,23 +14,23 @@
             @enderror
 
             <div class="table-responsive">
-                <table class="table mb-0">
+                <table class="table mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">No.</span></th>
-                            <th><span class="userDatatable-title">Kode jenis pakan</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Harga/kg</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Kg/zak</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Aksi</span></th>
+                        <tr>
+                            <th>No.</th>
+                            <th>Kode jenis pakan</th>
+                            <th class="text-end">Harga/kg</th>
+                            <th class="text-end">Kg/zak</th>
+                            <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->daftar as $jenisPakan)
                             <tr wire:key="jenis-pakan-{{ $jenisPakan->id }}">
-                                <td><div class="userDatatable-content">{{ $loop->iteration }}</div></td>
-                                <td><div class="userDatatable-content fw-500">{{ $jenisPakan->kode }}</div></td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td><div class="fw-medium">{{ $jenisPakan->kode }}</div></td>
                                 <td class="text-end">
-                                    <div class="userDatatable-content">
+                                    <div>
                                         @isset($jenisPakan->harga_per_kg)
                                             Rp @angka($jenisPakan->harga_per_kg)
                                         @else
@@ -38,7 +38,7 @@
                                         @endisset
                                     </div>
                                 </td>
-                                <td class="text-end"><div class="userDatatable-content">@angka($jenisPakan->kg_per_zak, 2)</div></td>
+                                <td class="text-end">@angka($jenisPakan->kg_per_zak, 2)</td>
                                 <td>
                                     <x-aksi.ikon :aksi="[
                                         ['kelas' => 'edit', 'label' => 'Ubah jenis pakan '.$jenisPakan->kode, 'click' => 'ubah('.$jenisPakan->id.')', 'modal' => '#modal-jenis-pakan'],
@@ -48,7 +48,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center color-light">Belum ada jenis pakan.</td>
+                                <td colspan="5" class="text-center text-body-secondary">Belum ada jenis pakan.</td>
                             </tr>
                         @endforelse
                     </tbody>

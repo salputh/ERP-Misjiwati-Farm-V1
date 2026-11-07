@@ -1,0 +1,1126 @@
+/*
+ * Styles for data-grids.html, all under the .dt- prefix. The grids keep
+ * Bootstrap's own .table classes; this sheet points their variables at the
+ * --basalt-* tokens and dresses what surrounds them: the kind chips, card
+ * toolbars, sort buttons, row selection, expanders, filters and the pager.
+ */
+
+/* Three page-wide colors, each nudged toward the text color until it reads
+   at 4.5:1 in every palette. --dt-quiet stays legible on hovered and striped
+   rows; --dt-link fixes the light palettes where the hue alone is too pale;
+   --dt-fill is the filled hue for buttons, the current page and checked
+   toggles, which falls just short against its own label in Verdant and
+   Pastel Pop light without the nudge. */
+.dt-page {
+	--dt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--dt-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--dt-fill: color-mix(in srgb, var(--basalt-hue) 85%, var(--basalt-copy));
+}
+
+/* The kind chips wrap in a row, with the table count on a line beneath. */
+.dt-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+
+.dt-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.dt-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* A pressed chip inverts to text-colored ink on the plane. */
+.dt-chips .dt-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dt-chip {
+		transition: none;
+	}
+}
+
+.dt-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--dt-quiet);
+}
+
+/* Cards sit on a twelve-column grid and fill the row until desktop width,
+   where they pair up; wide cards and a filtered view keep the full row. */
+.dt-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.dt-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+
+@media (min-width: 1200px) {
+	.dt-card {
+		grid-column: span 6;
+	}
+	.dt-card-full,
+	.dt-grid.is-filtered .dt-card {
+		grid-column: span 12;
+	}
+}
+
+/* Each card body is a column, so the code snippet can drop to its foot. */
+.dt-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+
+@media (max-width: 575.98px) {
+	.dt-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+/* The kind pill is drawn above the title yet follows it in the source, so
+   assistive tech announces the title first. */
+.dt-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+
+.dt-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.dt-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--dt-quiet);
+}
+
+.dt-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--dt-quiet);
+}
+
+/* Toolbars wrap freely; the item marked as the end is pushed right until a
+   phone, where everything stacks from the left. */
+.dt-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+
+.dt-toolbar-end {
+	margin-left: auto;
+}
+
+.dt-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--dt-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+.dt-select {
+	width: auto;
+	min-width: 9rem;
+}
+
+@media (max-width: 575.98px) {
+	.dt-toolbar-end {
+		margin-left: 0;
+	}
+	.dt-search {
+		flex: 1 1 100%;
+		max-width: none;
+	}
+	.dt-select {
+		flex: 1 1 auto;
+	}
+}
+
+/* Inputs, selects and checkboxes take the page surface and the palette. */
+.dt-page .form-control,
+.dt-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+
+.dt-page .form-control:focus,
+.dt-page .form-select:focus-visible {
+	border-color: var(--basalt-hue);
+}
+
+.dt-page .form-control::placeholder {
+	color: var(--dt-quiet);
+	opacity: 1;
+}
+
+.dt-page .form-check-label {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+
+/* An unchecked box needs an edge of 3:1 against the card to read as a
+   control; checked and half-checked boxes fill with the hue. */
+.dt-page .form-check-input {
+	border-color: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+}
+
+.dt-page .form-check-input:checked,
+.dt-page .form-check-input:indeterminate {
+	border-color: var(--basalt-hue);
+	background-color: var(--basalt-hue);
+}
+
+/* The bulk bar is a tinted strip that only exists while rows are chosen. */
+.dt-bulk {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+	padding: 0.6rem 0.6rem 0.6rem 1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn-outline-secondary {
+		--bs-btn-bg: var(--basalt-plane);
+	}
+}
+
+.dt-bulk-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.dt-bulk-all.btn-link {
+	--bs-btn-color: var(--dt-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	padding: 0 0 0 0.5rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	vertical-align: baseline;
+}
+
+/* The filter panel lines its fields up on their bottom edge and lets the
+   count and reset float to the far end. */
+.dt-filters {
+	display: flex;
+	gap: 1rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-bottom: 1.5rem;
+}
+
+.dt-filters-field {
+	flex: 0 1 11rem;
+	min-width: 9rem;
+}
+.dt-filters-field-range {
+	flex-basis: 13rem;
+}
+.dt-filters-field-range .form-range {
+	display: block;
+	height: 1.9rem;
+}
+.dt-filters-field-switch {
+	flex: 0 0 auto;
+	min-width: 0;
+	padding-bottom: 0.3rem;
+}
+
+.dt-filters-label {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& output {
+		color: var(--basalt-copy);
+	}
+}
+
+.dt-filters-end {
+	display: flex;
+	gap: 0.75rem 1rem;
+	align-items: center;
+	margin-left: auto;
+}
+
+@media (max-width: 575.98px) {
+	.dt-filters-end {
+		margin-left: 0;
+	}
+	.dt-filters-field {
+		flex: 1 1 100%;
+	}
+}
+
+/* The scroller bleeds out by the cell padding so the first column's text
+   lines up with the card title. It is positioned so visually hidden header
+   text stays inside it rather than widening the card on a phone. */
+.dt-scroll {
+	position: relative;
+	margin: 0 -0.75rem;
+	padding: 0;
+}
+
+/* Bootstrap's table variables, pointed at the palette. */
+.dt-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	--bs-table-striped-bg: color-mix(in srgb, var(--basalt-copy) 4%, transparent);
+	--bs-table-striped-color: var(--basalt-copy-body);
+	--bs-table-active-bg: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	--bs-table-active-color: var(--basalt-copy);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+
+	/* Headers are small muted capitals over a firmer rule. */
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--dt-quiet);
+	}
+
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& td {
+		white-space: nowrap;
+	}
+	& .form-check-input {
+		margin: 0;
+		cursor: pointer;
+	}
+}
+
+/* Compact rows tighten every cell but keep the outer edges aligned. */
+.dt-table.table-sm {
+	& > :not(caption) > * > * {
+		padding: 0.4rem 0.6rem;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0.75rem;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0.75rem;
+	}
+}
+
+/* Text inside cells: a strong first line, a quieter second line, links.
+   .dt-mono comes after .dt-link because the invoice number wears both and
+   takes the mono color and weight. */
+.dt-strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.dt-sub {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--dt-quiet);
+}
+.dt-quiet {
+	color: var(--dt-quiet);
+}
+
+.dt-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--dt-link);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.dt-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.dt-check {
+	width: 2.5rem;
+}
+
+/* A sortable header is a bare button that borrows the header's type; its
+   arrow brightens once that column drives the order. */
+.dt-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .bi {
+		font-size: 0.7rem;
+		opacity: 0.5;
+	}
+}
+
+th[aria-sort="ascending"] .dt-sort,
+th[aria-sort="descending"] .dt-sort {
+	color: var(--basalt-copy);
+}
+
+th[aria-sort="ascending"] .dt-sort .bi,
+th[aria-sort="descending"] .dt-sort .bi {
+	opacity: 1;
+}
+
+/* Over a right-aligned column the arrow goes first, so the label sits
+   flush with the figures below it. */
+.text-end > .dt-sort {
+	flex-direction: row-reverse;
+}
+
+/* A customer's initials in a tinted circle beside the name. */
+.dt-person {
+	display: inline-flex;
+	gap: 0.7rem;
+	align-items: center;
+}
+
+.dt-avatar {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+
+/* Status pills are a soft tint of their tone with a dot. The label mixes
+   the tone toward the body text, because the shared 72% mix falls under
+   4.5:1 in several light palettes. */
+.dt-page .basalt-status {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--stp-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--stp-tone);
+	}
+}
+
+/* Search hits get a warm highlighter wash. */
+.dt-mark {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 30%, transparent);
+}
+
+/* An empty result is a centered message with a way back. */
+.dt-empty {
+	padding: 2.5rem 1rem;
+	text-align: center;
+	white-space: normal;
+}
+
+.dt-empty-title {
+	margin: 0 0 0.25rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.dt-empty-text {
+	margin: 0 0 1rem;
+	font-size: 0.85rem;
+	color: var(--dt-quiet);
+}
+
+/* Expandable rows: a square toggle whose chevron turns down when open, and
+   a shaded detail row listing the invoice lines. */
+.dt-expander-col {
+	width: 2.75rem;
+}
+
+.dt-expander {
+	display: inline-grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	& .bi {
+		font-size: 0.75rem;
+		transition: transform 170ms ease;
+	}
+	&[aria-expanded="true"] .bi {
+		transform: rotate(90deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dt-expander .bi {
+		transition: none;
+	}
+}
+
+.dt-table-expand > tbody > tr.is-open > * {
+	border-bottom-color: transparent;
+}
+
+.dt-detail > td {
+	--bs-table-bg: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+	white-space: normal;
+}
+
+.dt-table > tbody > .dt-detail > td {
+	padding: 1rem 1.25rem 1.25rem;
+}
+
+.dt-lines {
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		padding: 0.3rem 0;
+		border-bottom: 1px dashed var(--basalt-edge-strong);
+	}
+
+	& li:last-child {
+		border-bottom: 0;
+	}
+}
+
+.dt-lines-qty {
+	color: var(--dt-quiet);
+}
+.dt-lines-amt {
+	min-width: 4.5rem;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+.dt-detail-meta {
+	display: flex;
+	gap: 0.25rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 0.75rem 0 0;
+	font-size: 0.77rem;
+	color: var(--dt-quiet);
+}
+
+/* The stock log never scrolls on its own: it grows with the page and its
+   header pins just under the sticky top bar. `clip` rounds the corners
+   without turning the box into a scroll container that would trap the
+   header. */
+.dt-scroll-sticky {
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	overflow: clip;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* A firm rule and a soft shadow under the pinned header tell it apart
+   from the rows passing beneath. */
+.dt-table-sticky > thead > tr > th {
+	--bs-table-bg: var(--basalt-plane);
+	position: sticky;
+	top: var(--basalt-header-h, 72px);
+	z-index: 1;
+	background: var(--basalt-plane);
+	box-shadow:
+		inset 0 -1px 0 var(--basalt-edge-strong),
+		0 12px 24px -18px var(--basalt-scrim);
+}
+
+.dt-table-sticky > tbody > tr > * {
+	padding-top: 0.6rem;
+	padding-bottom: 0.6rem;
+}
+
+/* On a phone the log is wider than the screen and scrolls sideways, so the
+   header travels with it instead of pinning. */
+@media (max-width: 575.98px) {
+	.dt-scroll-sticky {
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+	.dt-table-sticky > thead > tr > th {
+		position: static;
+	}
+}
+
+.dt-move {
+	font-weight: 600;
+}
+.dt-move-in {
+	color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+}
+.dt-move-out {
+	color: var(--basalt-copy-body);
+}
+
+/* A row being edited is tinted, its fields get room to breathe, and a
+   saved row flashes green once. */
+.dt-table-subs {
+	& tr.is-editing {
+		--bs-table-bg: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	}
+	& .form-select {
+		min-width: 7rem;
+	}
+	& [name="plan"] {
+		min-width: 9.25rem;
+	}
+	& [name="every"] {
+		min-width: 6.5rem;
+	}
+	& [name="next"] {
+		width: 8.75rem;
+	}
+	& tr.is-editing > td:not(:first-child):not(:last-child) {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+
+	/* One to six units is a single digit, so the stepper closes up. */
+	& .dt-num {
+		gap: 0;
+		vertical-align: middle;
+	}
+	& .dt-num .basalt-stepper-input {
+		width: 1.75rem;
+	}
+
+	& tr.is-saved > * {
+		animation: dt-saved 1.4s ease;
+	}
+}
+
+@keyframes dt-saved {
+	from {
+		box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--basalt-success) 16%, transparent);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dt-table-subs tr.is-saved > * {
+		animation: none;
+	}
+}
+
+.dt-actions {
+	display: inline-flex;
+	gap: 0.4rem;
+	justify-content: flex-end;
+}
+.dt-pause {
+	min-width: 4.75rem;
+}
+
+/* Filled buttons and checked toggles use the nudged hue; an open dropdown
+   toggle stays washed rather than turning solid. */
+.dt-page .btn-primary {
+	--bs-btn-bg: var(--dt-fill);
+	--bs-btn-border-color: var(--dt-fill);
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-active-color: var(--basalt-on-hue);
+}
+
+.dt-page .btn-check:checked + .btn-outline-secondary {
+	border-color: var(--dt-fill);
+	color: var(--basalt-on-hue);
+	background-color: var(--dt-fill);
+}
+
+.dt-page .btn-outline-secondary.dropdown-toggle.show {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-wash);
+}
+
+/* Bootstrap fades a disabled button and gives outline buttons a fixed
+   gray, which sinks the label under 4.5:1. A muted but legible label on a
+   faint fill still says "not now" in every palette; each table page
+   carries the same rule. */
+:root .dt-page .btn:disabled,
+:root .dt-page .btn.disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--bs-btn-disabled-bg: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	--bs-btn-disabled-border-color: var(--basalt-edge);
+	opacity: 1;
+}
+
+/* The column chooser, the industry dot and the three-step skill meter. */
+.dt-colmenu {
+	min-width: 11rem;
+	padding: 0.5rem 0.9rem;
+
+	& .form-check {
+		margin: 0.3rem 0;
+	}
+}
+
+.dt-type {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	&::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--dt-tone, var(--basalt-series-1));
+	}
+}
+
+.dt-tone-1 {
+	--dt-tone: var(--basalt-series-1);
+}
+.dt-tone-2 {
+	--dt-tone: var(--basalt-series-2);
+}
+.dt-tone-3 {
+	--dt-tone: var(--basalt-series-3);
+}
+.dt-tone-4 {
+	--dt-tone: var(--basalt-series-4);
+}
+.dt-tone-5 {
+	--dt-tone: var(--basalt-series-5);
+}
+
+.dt-meter {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.dt-meter-bars {
+	display: inline-flex;
+	gap: 2px;
+
+	& i {
+		width: 4px;
+		height: 0.75rem;
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+	}
+
+	& i.is-on {
+		background: var(--basalt-copy-body);
+	}
+}
+
+/* Row labels and the footer total read as headings; each row's share of
+   the quarter is a thin bar with its percentage. */
+.dt-table-totals {
+	& > tbody > tr > th {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	& > tfoot > tr > * {
+		border-top: 1px solid var(--basalt-edge-strong);
+		border-bottom: 0;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+.dt-share-col {
+	width: 9rem;
+}
+.dt-share {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+
+.dt-share-bar {
+	flex: 1 1 auto;
+	min-width: 3.5rem;
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+}
+
+.dt-share-fill {
+	display: block;
+	width: var(--dt-share, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-1);
+}
+
+.dt-share-pct {
+	min-width: 2.5rem;
+	font-size: 0.8rem;
+	text-align: right;
+	color: var(--dt-quiet);
+}
+
+/* Under a table: the page size, the range shown and the pager, plus the
+   one-line notes and the stock log's "show all" row. */
+.dt-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+}
+
+.dt-foot-per {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.dt-foot-size {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.dt-foot-size .form-select {
+	width: auto;
+	min-width: 4.5rem;
+}
+.dt-foot-label {
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--dt-quiet);
+}
+.dt-note {
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--dt-quiet);
+}
+
+.dt-more {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+
+	& .dt-note {
+		margin: 0;
+	}
+}
+
+/* Pager squares are bordered with chevrons at either end; the current page
+   fills with the text color, like a pressed chip. */
+.dt-page .pagination {
+	--bs-pagination-color: var(--basalt-copy-body);
+	--bs-pagination-bg: var(--basalt-plane);
+	--bs-pagination-border-color: var(--basalt-edge-strong);
+	--bs-pagination-hover-color: var(--basalt-copy);
+	--bs-pagination-hover-bg: var(--basalt-wash);
+	--bs-pagination-hover-border-color: var(--basalt-edge-strong);
+	--bs-pagination-focus-color: var(--basalt-copy);
+	--bs-pagination-focus-bg: var(--basalt-wash);
+	--bs-pagination-focus-box-shadow: 0 0 0 0.2rem var(--basalt-hue-border);
+	--bs-pagination-active-color: var(--basalt-plane);
+	--bs-pagination-active-bg: var(--basalt-copy);
+	--bs-pagination-active-border-color: var(--basalt-copy);
+	--bs-pagination-disabled-color: var(--dt-quiet);
+	--bs-pagination-disabled-bg: var(--basalt-plane);
+	--bs-pagination-disabled-border-color: var(--basalt-edge);
+	--bs-pagination-border-radius: 8px;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& .page-link {
+		min-width: 2rem;
+		margin-left: 0;
+		border-radius: 8px;
+		font-weight: 600;
+		text-align: center;
+		color: var(--bs-pagination-color);
+
+		&:hover {
+			color: var(--bs-pagination-hover-color);
+		}
+	}
+
+	& .active > .page-link {
+		border-color: var(--bs-pagination-active-border-color);
+		color: var(--bs-pagination-active-color);
+		background-color: var(--bs-pagination-active-bg);
+	}
+
+	& .disabled > .page-link {
+		color: var(--bs-pagination-disabled-color);
+	}
+
+	/* The ellipsis between page runs is plain text, not a button. */
+	& .dt-gap > .page-link {
+		border-color: transparent;
+		background: transparent;
+	}
+}
+
+/* The "Show code" disclosure closes every card, divided off by a rule. */
+.dt-code {
+	margin-top: 1.5rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+	}
+
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dt-code summary .bi {
+		transition: none;
+	}
+}
+
+/* However tall the table, the snippet rests on the card's floor, and the
+   space above it moves onto whatever comes just before. */
+.dt-card .card-body > .dt-code {
+	margin-top: auto;
+}
+.dt-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.5rem;
+}
+
+/* Counts use the shared .basalt-stepper; any other number box here loses
+   the browser's spin arrows as well. */
+.dt-page input[type="number"] {
+	appearance: textfield;
+}
+
+.dt-page input[type="number"]::-webkit-outer-spin-button,
+.dt-page input[type="number"]::-webkit-inner-spin-button {
+	margin: 0;
+	-webkit-appearance: none;
+}
+
+/* A stepper inside a phone-width cell takes a narrower box; no count on
+   this page passes three digits. */
+@media (max-width: 575.98px) {
+	.dt-page td .basalt-stepper {
+		gap: 0;
+	}
+	.dt-page td .basalt-stepper-input {
+		width: 2rem;
+	}
+}
+
+/* On paper every table prints in full, without controls or snippets. */
+@media print {
+	.dt-filter,
+	.dt-code,
+	.dt-toolbar,
+	.dt-filters,
+	.dt-foot nav {
+		display: none;
+	}
+	.dt-card.is-hidden {
+		display: block;
+	}
+	.dt-scroll-sticky {
+		max-height: none;
+		overflow: visible;
+	}
+}

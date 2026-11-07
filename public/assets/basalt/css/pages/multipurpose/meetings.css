@@ -1,0 +1,1146 @@
+/* Meetings (meetings.html). Everything here is .mt-*. The page is
+   built from shared parts: the plain page header, tabs, styled
+   selects, segmented controls, avatars, status pills, empty states and
+   the side panel. What follows lays them out and styles only what is
+   this page's own: the lead card, the five-day strip, the meeting
+   tables and the two side panels. */
+
+.mt-page,
+.mt-sheet,
+.mt-plan {
+	/* Small gray text is the muted token pulled toward the body color, so
+     it clears 4.5:1 on the lighter palettes and on tinted rows. */
+	--mt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--mt-warn: color-mix(in srgb, var(--basalt-warning) 46%, var(--basalt-copy));
+	--mt-line: var(--basalt-edge);
+}
+
+/* Each kind of meeting owns one chart color; the icon tiles, the strip
+   and the legend all read it from --mt-tone. */
+.mt-tone-video {
+	--mt-tone: var(--basalt-series-1);
+}
+.mt-tone-room {
+	--mt-tone: var(--basalt-series-3);
+}
+.mt-tone-phone {
+	--mt-tone: var(--basalt-series-5);
+}
+
+/* The lead card is one card in two halves that end level: the meeting
+   on now, washed with its kind's color, and a quiet column of to-dos. */
+.mt-now.card {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(20rem, 27rem);
+	margin-bottom: 2rem;
+	overflow: hidden;
+}
+.mt-now-main {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.75rem var(--basalt-pad-x);
+	background:
+		radial-gradient(
+			120% 90% at 0% 0%,
+			color-mix(in srgb, var(--mt-tone, var(--basalt-hue)) 14%, transparent),
+			transparent 62%
+		),
+		var(--basalt-plane);
+
+	& > .basalt-empty {
+		margin: auto;
+	}
+}
+:root[data-basalt-gradients="off"] .mt-now-main {
+	background: var(--basalt-plane);
+}
+.mt-now-state {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 1.1rem;
+}
+.mt-now-when {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--mt-quiet);
+}
+.mt-now-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	min-width: 0;
+
+	& .mt-type {
+		background: color-mix(in srgb, var(--mt-tone) 22%, var(--basalt-plane));
+	}
+}
+.mt-now-titles {
+	min-width: 0;
+}
+.mt-now-title {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+
+	& a {
+		border-radius: 4px;
+		text-decoration: none;
+		color: inherit;
+
+		&:hover {
+			text-decoration: underline;
+			text-underline-offset: 4px;
+			text-decoration-thickness: 2px;
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+			box-shadow: none;
+		}
+	}
+}
+.mt-now-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--mt-quiet);
+}
+.mt-now-about {
+	max-width: 38rem;
+	margin: 1rem 0 0;
+	font-size: 0.95rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Start and end times either side of a bar that fills as it runs. */
+.mt-now-time {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	max-width: 34rem;
+	margin-top: 1.5rem;
+}
+.mt-now-at {
+	flex-shrink: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--mt-quiet);
+}
+.mt-now-track {
+	position: relative;
+	flex: 1 1 auto;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--mt-tone) 18%, var(--basalt-plane-alt));
+}
+.mt-now-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: 999px;
+	background: var(--mt-tone);
+}
+
+.mt-now-foot {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1.75rem;
+}
+.mt-now-people {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.mt-now-going {
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--mt-quiet);
+}
+.mt-now-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.mt-now-side {
+	padding: 1.75rem var(--basalt-pad-x);
+	border-left: 1px solid var(--mt-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 55%, var(--basalt-plane));
+}
+.mt-now-sidetitle {
+	margin: 0 0 1rem;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Each to-do is an icon tile in its own color, two lines and a button. */
+.mt-todo {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mt-todo-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 1rem 0;
+	border-bottom: 1px solid var(--mt-line);
+
+	&:first-child {
+		padding-top: 0.25rem;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.mt-todo-reply {
+	--mt-tone: var(--basalt-series-2);
+}
+.mt-todo-notes {
+	--mt-tone: var(--basalt-series-4);
+}
+.mt-todo-clash {
+	--mt-tone: var(--basalt-warning);
+}
+.mt-todo-done {
+	--mt-tone: var(--basalt-success);
+}
+.mt-todo-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--mt-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mt-tone) 18%, var(--basalt-plane));
+}
+.mt-todo-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.mt-todo-title {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.mt-todo-sub {
+	font-size: 0.8rem;
+	color: var(--mt-quiet);
+}
+
+/* Under the extra-large width the two halves stack; on phones the
+   buttons share a full row and a to-do's button drops under its text. */
+@media (max-width: 1199.98px) {
+	.mt-now.card {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.mt-now-side {
+		border-top: 1px solid var(--mt-line);
+		border-left: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.mt-now-main,
+	.mt-now-side {
+		padding: 1.5rem var(--basalt-pad-x-narrow);
+	}
+	.mt-now-title {
+		font-size: 1.3rem;
+	}
+	.mt-now-head .mt-type {
+		display: none;
+	}
+	.mt-now-actions {
+		width: 100%;
+	}
+	.mt-now-actions .btn {
+		flex: 1 1 auto;
+	}
+}
+@media (max-width: 399.98px) {
+	.mt-todo-item {
+		grid-template-columns: 2.25rem minmax(0, 1fr);
+	}
+	.mt-todo-item .btn {
+		grid-column: 2;
+		justify-self: start;
+	}
+}
+
+/* The tabs, and the card each panel holds. Cards are containers, so
+   their tables answer to the card's width. */
+.mt-tabs {
+	margin-bottom: 1rem;
+}
+.mt-panels > .tab-pane:focus-visible {
+	border-radius: 12px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 4px;
+}
+.mt-card.card {
+	container: mt-card / inline-size;
+	overflow: hidden;
+}
+
+.mt-cardhead {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.mt-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.mt-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--mt-quiet);
+}
+@container mt-card (max-width: 440px) {
+	.mt-cardhead {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The five-day strip: a pressable tile per working day. */
+.mt-week {
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	border-bottom: 1px solid var(--mt-line);
+}
+.mt-days {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.mt-day {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column;
+	container: mt-day / inline-size;
+	min-width: 0;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--mt-line);
+	border-radius: 12px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+		box-shadow: 0 0 0 1px var(--basalt-hue);
+	}
+	/* The pressed tile is its own marker; only an unpressed tile the
+     keyboard rests on gets a ring. */
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible:not([aria-pressed="true"]) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&.is-today .mt-day-name {
+		color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	}
+}
+.mt-day-head,
+.mt-day-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	min-width: 0;
+}
+.mt-day-name {
+	font-size: 0.95rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+.mt-day-date,
+.mt-day-hours {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--mt-quiet);
+}
+.mt-day-count {
+	font-size: 0.8rem;
+	white-space: nowrap;
+}
+.mt-day-n {
+	font-weight: 700;
+}
+
+/* The track runs from 8:00 to 18:00; each meeting is a block in its
+   kind's color, so free time reads at a glance, and a thin line marks
+   the time now. */
+.mt-day-track {
+	position: relative;
+	display: block;
+	height: 0.5rem;
+	border-radius: 999px;
+	background: var(--basalt-plane-alt);
+}
+.mt-day-seg {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	min-width: 4px;
+	border-radius: 999px;
+	background: var(--mt-tone);
+}
+.mt-day-seg.is-done {
+	opacity: 0.35;
+}
+.mt-day-now {
+	position: absolute;
+	top: -0.25rem;
+	bottom: -0.25rem;
+	width: 2px;
+	margin-left: -1px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+
+.mt-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 1rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--mt-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.mt-legend-dot {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--mt-tone);
+}
+
+/* Tiles tighten as the card narrows; a narrow tile keeps the day, the
+   date, the track and the count. */
+@container mt-card (max-width: 640px) {
+	.mt-day {
+		gap: 0.5rem;
+		padding: 0.7rem 0.6rem;
+	}
+	.mt-days {
+		gap: 0.5rem;
+	}
+}
+@container mt-card (max-width: 440px) {
+	.mt-week {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.mt-days {
+		gap: 0.3rem;
+	}
+	.mt-day {
+		padding: 0.6rem 0.4rem;
+	}
+	.mt-day-name {
+		font-size: 0.85rem;
+	}
+}
+@container mt-day (max-width: 150px) {
+	.mt-day-head {
+		gap: 0.1rem;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.mt-day-hours {
+		display: none;
+	}
+}
+@container mt-day (max-width: 64px) {
+	.mt-day-word {
+		display: none;
+	}
+}
+
+/* The three tables share one look: a quiet uppercase head, fixed
+   widths for the side columns, and the buttons flush right. */
+.mt-table {
+	--bs-table-bg: transparent;
+	table-layout: auto;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 1rem;
+		border-color: var(--mt-line);
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& thead th {
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--mt-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& .mt-time {
+		width: 8.5rem;
+		white-space: nowrap;
+	}
+	& .mt-who {
+		width: 10rem;
+	}
+	& .mt-you,
+	& .mt-notes {
+		width: 9.5rem;
+	}
+	& .mt-calcell {
+		width: 17rem;
+	}
+	& .mt-act {
+		width: 1%;
+		text-align: right;
+		white-space: nowrap;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.mt-act-pair .btn + .btn {
+	margin-left: 0.5rem;
+}
+.mt-act > .btn + .basalt-row-actions {
+	margin-left: 0.5rem;
+	vertical-align: middle;
+}
+
+/* A day's heading row is a pale band: the day on the left, how much of
+   it is booked on the right. A free day shows a compact empty state. */
+.mt-dayrow > th {
+	padding-top: 0.7rem;
+	padding-bottom: 0.7rem;
+	font-size: 0.85rem;
+	font-weight: 700;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 60%, var(--basalt-plane));
+}
+.mt-dayrow-in {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+.mt-dayrow-sum {
+	font-weight: 400;
+	color: var(--mt-quiet);
+}
+.mt-row-empty > td {
+	padding: 0;
+}
+.mt-row-empty .basalt-empty {
+	margin: 1rem auto;
+}
+
+/* A row is a link to its meeting. The one on now carries a straight
+   bar inside its left edge; declined and canceled ones fade. */
+.mt-row {
+	cursor: pointer;
+
+	&:hover > * {
+		background: var(--basalt-wash);
+	}
+	& > :first-child {
+		position: relative;
+	}
+	&.is-live > :first-child::before {
+		content: "";
+		position: absolute;
+		top: 0.75rem;
+		bottom: 0.75rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-danger);
+	}
+	&.is-declined .mt-what-title,
+	&.is-canceled .mt-what-title {
+		color: var(--mt-quiet);
+	}
+	&.is-canceled .mt-what-title {
+		text-decoration: line-through;
+	}
+}
+
+.mt-time-at {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: 700;
+}
+.mt-time-len {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--mt-quiet);
+}
+
+.mt-what {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.mt-what-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.mt-what-title {
+	align-self: flex-start;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.mt-what-sub {
+	font-size: 0.8rem;
+	color: var(--mt-quiet);
+}
+
+/* The icon tile for a kind of meeting; the panel head uses the large one. */
+.mt-type {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--mt-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mt-tone) 16%, var(--basalt-plane));
+}
+.mt-type-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+}
+
+/* In Your reply, the calendar column says free or names the clash. */
+.mt-cal {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: flex-start;
+	font-size: 0.85rem;
+	color: var(--mt-quiet);
+
+	& .bi {
+		margin-top: 0.1rem;
+	}
+}
+.mt-cal-clash {
+	color: var(--mt-warn);
+}
+.mt-cal-link {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: inherit;
+	background: none;
+}
+
+/* Narrower cards first drop the people column, then turn each row into
+   a stacked record: the time keeps its own column on the left, the
+   meeting sits beside it, and the reply and buttons share the line
+   under it. */
+@container mt-card (max-width: 900px) {
+	.mt-table-next .mt-who {
+		display: none;
+	}
+	.mt-table .mt-time {
+		width: 7.5rem;
+	}
+	.mt-table .mt-you,
+	.mt-table .mt-notes {
+		width: 8rem;
+	}
+	.mt-table .mt-calcell {
+		width: 13rem;
+	}
+}
+@container mt-card (max-width: 640px) {
+	.mt-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.mt-table,
+	.mt-table tbody {
+		display: block;
+	}
+	.mt-dayrow {
+		display: block;
+	}
+	.mt-dayrow > th {
+		display: block;
+	}
+	.mt-row-empty,
+	.mt-row-empty > td {
+		display: block;
+	}
+	.mt-row {
+		display: grid;
+		gap: 0.9rem 0.75rem;
+		grid-template-columns: 5.25rem minmax(0, 1fr) auto;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--mt-line);
+	}
+	.mt-table tbody .mt-row:last-child {
+		border-bottom: 0;
+	}
+	.mt-table > :not(caption) > .mt-row > * {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.mt-row > .mt-time {
+		grid-row: 1 / span 3;
+		align-self: start;
+	}
+	.mt-row > :nth-child(2) {
+		grid-column: 2 / -1;
+	}
+	.mt-row > .mt-you,
+	.mt-row > .mt-notes {
+		grid-row: 2;
+		grid-column: 2;
+	}
+	.mt-row > .mt-act {
+		grid-row: 2;
+		grid-column: 3;
+	}
+	.mt-row > .mt-who {
+		grid-row: 3;
+		grid-column: 2 / -1;
+	}
+	.mt-table-reply .mt-calcell {
+		grid-row: 2;
+		grid-column: 2 / -1;
+	}
+	.mt-table-reply .mt-act {
+		grid-row: 3;
+		grid-column: 2 / -1;
+	}
+	.mt-row.is-live > :first-child::before {
+		display: none;
+	}
+	.mt-row.is-live {
+		box-shadow: inset 3px 0 0 var(--basalt-danger);
+	}
+	.mt-row:hover > * {
+		background: none;
+	}
+	.mt-row:hover {
+		background: var(--basalt-wash);
+	}
+}
+@container mt-card (max-width: 440px) {
+	.mt-row {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.mt-dayrow > th {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.mt-row {
+		column-gap: 0.6rem;
+		grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+	}
+	.mt-what .mt-type {
+		display: none;
+	}
+}
+
+/* Past opens with a search box and the notes select; a status line
+   under them says how many rows the filters left. */
+.mt-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--mt-line);
+}
+.mt-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 12rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--mt-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.mt-toolbar-select {
+	flex: 0 0 auto;
+	width: 12rem;
+}
+.mt-status {
+	margin: 0;
+	padding: 0.75rem var(--basalt-pad-x) 0;
+	font-size: 0.8rem;
+	color: var(--mt-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+[data-mt-past-empty] .basalt-empty,
+[data-mt-reply-empty] .basalt-empty {
+	margin: 2rem auto;
+}
+@container mt-card (max-width: 560px) {
+	.mt-toolbar {
+		flex-wrap: wrap;
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.mt-search {
+		flex: 1 1 100%;
+		max-width: 28rem;
+	}
+}
+@container mt-card (max-width: 440px) {
+	.mt-status {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The quick-view panel: a status line, the facts, then sections for
+   the reply, the agenda or the notes, and the people. */
+.mt-sheet .offcanvas-header {
+	gap: 0.9rem;
+}
+.mt-sheet-state {
+	margin: 0 0 0.75rem;
+}
+.mt-sheet-about {
+	margin: 0 0 1rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+}
+.mt-sheet-line {
+	margin: -0.25rem 0 0.75rem;
+	font-size: 0.875rem;
+	color: var(--mt-quiet);
+}
+.mt-sheet-hint {
+	margin: 0.65rem 0 0;
+	font-size: 0.8rem;
+	color: var(--mt-quiet);
+}
+.mt-sheet-more {
+	margin: 0.75rem 0 0;
+	font-size: 0.85rem;
+	color: var(--mt-quiet);
+}
+.mt-sheet-notes {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+}
+.mt-sheet-sub {
+	margin: 1.25rem 0 0.6rem;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.mt-facts {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.65rem;
+		align-items: flex-start;
+		min-width: 0;
+	}
+	& .bi {
+		margin-top: 0.1rem;
+		color: var(--mt-quiet);
+	}
+	& span {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+}
+
+.mt-agenda {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.7rem 0;
+		border-bottom: 1px solid var(--mt-line);
+		font-size: 0.875rem;
+
+		&:first-child {
+			padding-top: 0;
+		}
+		&:last-child {
+			padding-bottom: 0;
+			border-bottom: 0;
+		}
+	}
+}
+.mt-agenda-n {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.mt-agenda-mins {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--mt-quiet);
+}
+
+.mt-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mt-person {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--mt-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.mt-person-text {
+	display: flex;
+	gap: 0.1rem;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+.mt-person-name {
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+a.mt-person-name:hover {
+	text-decoration: underline;
+}
+.mt-person-meta {
+	font-size: 0.77rem;
+	color: var(--mt-quiet);
+}
+
+.mt-steps {
+	display: grid;
+	gap: 0.85rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+	}
+}
+.mt-steps-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.mt-steps-task {
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.mt-steps-who {
+	font-size: 0.77rem;
+	color: var(--mt-quiet);
+}
+
+/* The recording is one wide button with a play disc. */
+.mt-rec {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--mt-line);
+	border-radius: 12px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+}
+.mt-rec-play {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-size: 1.1rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.mt-rec-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+}
+.mt-rec-title {
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.mt-rec-meta {
+	font-size: 0.8rem;
+	color: var(--mt-quiet);
+}
+
+/* The planning panel: day and time side by side, labels with a little
+   air above them, and a hint that turns amber when someone is busy. */
+.mt-plan-when {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.mt-plan-label {
+	display: block;
+	margin: 1.25rem 0 0.5rem;
+}
+.mt-plan-hint {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--mt-quiet);
+
+	&.is-warn {
+		color: var(--mt-warn);
+	}
+}

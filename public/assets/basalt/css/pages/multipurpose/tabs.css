@@ -1,0 +1,704 @@
+/*
+ * Styles that belong to tabs.html alone, all under the .tb- prefix: the
+ * group chips, the card grid, the folding snippets and the props each demo
+ * leans on. The tabs being shown off (Bootstrap's nav tinted to the palette
+ * and the .basalt-tabs upgrades) are styled in basalt.css. Every color is a
+ * --basalt-* token or a mix of them, mixed so small text holds 4.5:1 in all
+ * palettes and both themes.
+ */
+
+/* The page wrapper owns three local tokens the rules below share. */
+.tb-page {
+	--tb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--tb-fill: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	--tb-focus: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+
+	& kbd {
+		padding: 0.1rem 0.3rem;
+		border: 1px solid var(--basalt-edge-strong);
+		border-bottom-width: 2px;
+		border-radius: 5px;
+		font:
+			600 0.71rem/1 "Chivo Mono",
+			monospace;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+	}
+
+	/* A disabled outline button keeps full strength and turns dashed instead of fading. */
+	& .btn-outline-secondary:disabled {
+		--bs-btn-disabled-opacity: 1;
+		--bs-btn-disabled-color: var(--tb-quiet);
+		--bs-btn-disabled-bg: transparent;
+		--bs-btn-disabled-border-color: var(--basalt-edge-strong);
+		border-style: dashed;
+	}
+}
+
+/* The chip row above the grid stacks its buttons over the running count. */
+.tb-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+
+.tb-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--tb-quiet);
+}
+
+.tb-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .tb-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+
+.tb-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Cards fill the row on small screens and pair up from 1200px. */
+.tb-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.tb-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+
+@media (min-width: 1200px) {
+	.tb-card {
+		grid-column: span 6;
+	}
+
+	.tb-card-full,
+	.tb-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Each card body is a column, so the snippet can sink to the bottom edge. */
+.tb-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+
+@media (max-width: 575.98px) {
+	.tb-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+/* The heading block reverses, so the tag pills read above the title. */
+.tb-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+
+.tb-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.tb-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tb-quiet);
+}
+
+.tb-card-meta {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.tb-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--tb-quiet);
+}
+
+.tb-card-origin {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.71rem;
+	color: var(--tb-quiet);
+
+	& .bi {
+		font-size: 0.8rem;
+	}
+}
+
+/* The folding snippet closes every card; whatever sits above it keeps its distance. */
+.tb-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+
+.tb-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+.tb-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+
+.tb-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* Radio-button segments switch what a demo shows; the checked one takes the fill. */
+.tb-seg {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+
+	& .btn {
+		border-radius: 999px;
+		font-weight: 600;
+		font-size: 0.77rem;
+	}
+
+	& .btn-check:checked + .btn {
+		border-color: var(--tb-fill);
+		color: var(--basalt-on-hue);
+		background-color: var(--tb-fill);
+	}
+}
+
+.tb-seg-label {
+	margin-right: 0.25rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--tb-quiet);
+}
+
+/* Panel copy is shared by most demos and stays at a readable measure. */
+.tb-panels {
+	padding-top: 1.25rem;
+}
+
+.tb-text {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+.tb-hint {
+	margin: 0.9rem 0 0;
+	font-size: 0.8rem;
+	color: var(--tb-quiet);
+}
+
+/* Order and product rows: id, name with a subline, then the amount. */
+.tb-rows {
+	display: grid;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.9rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.7rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+}
+
+.tb-rows-id {
+	font:
+		600 0.77rem/1 "Chivo Mono",
+		monospace;
+	color: var(--tb-quiet);
+}
+
+.tb-rows-main {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.tb-rows-name {
+	overflow: hidden;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.tb-rows-sub {
+	font-size: 0.77rem;
+	color: var(--tb-quiet);
+}
+
+.tb-rows-val {
+	font:
+		600 0.84rem/1 "Chivo Mono",
+		monospace;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+/* The range demo prints its figures label-under-number. */
+.tb-figs {
+	display: flex;
+	gap: 1rem 2.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& div {
+		display: flex;
+		gap: 0.3rem;
+		flex-direction: column-reverse;
+	}
+
+	& dt {
+		font-size: 0.76rem;
+		font-weight: 600;
+		color: var(--tb-quiet);
+	}
+
+	& dd {
+		margin: 0;
+		font:
+			700 1.5rem/1 "Chivo Mono",
+			monospace;
+		color: var(--basalt-copy);
+	}
+}
+
+.tb-seg-demo {
+	display: grid;
+	gap: 1.5rem;
+}
+
+.tb-seg-demo-row {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.tb-seg-demo-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Product tiles sit two across, and collapse to hairline rows in the list view. */
+.tb-products {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.3rem;
+		flex-direction: column;
+		padding: 0.9rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 10px;
+		background: var(--basalt-plane);
+	}
+}
+
+.tb-products-swatch {
+	display: grid;
+	place-items: center;
+	height: 3rem;
+	border-radius: 8px;
+	font-size: 1.25rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+
+.tb-products-name {
+	font-size: 0.86rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.tb-products-price {
+	font:
+		600 0.8rem/1 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy-body);
+}
+
+.tb-products-list {
+	gap: 0;
+	grid-template-columns: minmax(0, 1fr);
+
+	& li {
+		gap: 0.9rem;
+		flex-direction: row;
+		align-items: center;
+		padding: 0.6rem 0;
+		border: 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		border-radius: 0;
+		background: transparent;
+	}
+
+	& .tb-products-swatch {
+		flex-shrink: 0;
+		width: 2.5rem;
+		height: 2.5rem;
+		font-size: 1rem;
+	}
+
+	& .tb-products-name {
+		flex: 1 1 auto;
+	}
+}
+
+/* The overflow demo puts a width slider over a dashed, resizable frame. */
+.tb-frame-ctl {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+
+	& label {
+		margin: 0;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	& .form-range {
+		flex: 1 1 12rem;
+		max-width: 22rem;
+	}
+
+	/* The two thumb selectors stay apart: one engine drops a rule naming the other's pseudo-element. */
+	& .form-range:focus::-webkit-slider-thumb {
+		box-shadow:
+			0 0 0 1px var(--basalt-plane),
+			var(--tb-focus);
+	}
+	& .form-range:focus::-moz-range-thumb {
+		box-shadow:
+			0 0 0 1px var(--basalt-plane),
+			var(--tb-focus);
+	}
+
+	& output {
+		min-width: 3.5rem;
+		font:
+			600 0.77rem/1 "Chivo Mono",
+			monospace;
+		color: var(--tb-quiet);
+	}
+}
+
+.tb-frame {
+	min-width: min(100%, 17rem);
+	max-width: 100%;
+	padding: 0.5rem 1rem 1.25rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	transition: max-width 110ms linear;
+}
+
+/* When every closable tab is gone, a dashed placeholder takes the panel's place. */
+.tb-empty {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 2rem 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	text-align: center;
+
+	&[hidden] {
+		display: none;
+	}
+
+	& > .bi {
+		font-size: 1.4rem;
+		color: var(--tb-quiet);
+	}
+}
+
+.tb-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+
+	& .tb-hint {
+		margin: 0;
+	}
+}
+
+/* Vertical tabs with descriptions move beside their panel from tablet width. */
+.tb-vert {
+	display: grid;
+	gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+	.tb-vert {
+		gap: 2rem;
+		grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+		align-items: start;
+	}
+}
+
+.tb-vert-title {
+	margin: 0 0 0.3rem;
+	font-size: 1rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.tb-dl {
+	display: grid;
+	gap: 0;
+	margin: 1rem 0 0;
+
+	& div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.6rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.86rem;
+	}
+
+	& dt {
+		font-weight: 400;
+		color: var(--tb-quiet);
+	}
+
+	& dd {
+		margin: 0;
+		font-weight: 600;
+		text-align: right;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Hairline lists drop the rule under their final row. */
+.tb-rows li:last-child,
+.tb-products-list li:last-child,
+.tb-dl div:last-child {
+	border-bottom: 0;
+}
+
+/* The stock Bootstrap demos: stacked panels, side pills and a tabbed card header. */
+.tb-stack {
+	display: grid;
+	gap: 1.25rem;
+}
+
+.tb-vpills {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+
+	& .tab-content {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+
+@media (min-width: 576px) {
+	.tb-vpills {
+		flex-direction: row;
+		align-items: flex-start;
+	}
+
+	.tb-vpills > .nav {
+		flex: 0 0 11rem;
+	}
+}
+
+.tb-inner-card.card {
+	border-color: var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+
+.tb-inner-card .card-header {
+	border-bottom-color: var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+
+.tb-inner-card .card-header-tabs .nav-link.active {
+	border-bottom-color: var(--basalt-plane);
+	background: var(--basalt-plane);
+}
+
+.tb-nested {
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-top: 0;
+	border-radius: 0 0 12px 12px;
+}
+
+.tb-page .nav-tabs + .tab-content.tb-panels {
+	padding: 1.1rem 0 0;
+}
+
+/* Readers who ask for less motion get instant chips, chevrons and frame resizes. */
+@media (prefers-reduced-motion: reduce) {
+	.tb-chip,
+	.tb-code summary .bi,
+	.tb-frame {
+		transition: none;
+	}
+}
+
+/* On paper the controls go away and every card prints, filtered or not. */
+@media print {
+	.tb-filter,
+	.tb-code,
+	.tb-seg,
+	.tb-frame-ctl {
+		display: none;
+	}
+
+	.tb-card.is-hidden {
+		display: block;
+	}
+}

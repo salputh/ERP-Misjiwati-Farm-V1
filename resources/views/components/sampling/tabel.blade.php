@@ -52,22 +52,22 @@
                         @endif
                     </td>
                 @endforeach
-                <td class="fw-600">@angka($baris['total'])</td>
+                <td class="fw-semibold">@angka($baris['total'])</td>
             </tr>
         @endforeach
     </tbody>
     <tfoot>
         <tr>
             <th colspan="5">Subtotal (gram)</th>
-            <td class="fw-600">@angka($kelompok['subtotal'])</td>
+            <td class="fw-semibold">@angka($kelompok['subtotal'])</td>
         </tr>
         <tr>
             <th colspan="5">Total ekor tersampel</th>
-            <td class="fw-600">@angka($kelompok['ekor'])</td>
+            <td class="fw-semibold">@angka($kelompok['ekor'])</td>
         </tr>
         <tr>
             <th colspan="5">ABW per ekor (gram)</th>
-            <td class="fw-600">@angka($kelompok['abw'])</td>
+            <td class="fw-semibold">@angka($kelompok['abw'])</td>
         </tr>
         <tr>
             <th colspan="5">DG aktual</th>
@@ -78,7 +78,7 @@
             <td>
                 @angka($kelompok['dg_per_hari'])
                 @if ($kelompok['hari'] > 1)
-                    <span class="d-block fs-12 color-gray">jarak {{ $kelompok['hari'] }} hari</span>
+                    <span class="d-block small text-body-secondary">jarak {{ $kelompok['hari'] }} hari</span>
                 @endif
             </td>
         </tr>
@@ -88,7 +88,7 @@
         </tr>
         <tr>
             <th colspan="5">Selisih DG</th>
-            <td @class(['color-danger' => $kelompok['selisih_dg'] < 0, 'color-success' => $kelompok['selisih_dg'] > 0])>
+            <td @class(['text-danger' => $kelompok['selisih_dg'] < 0, 'text-success' => $kelompok['selisih_dg'] > 0])>
                 @isset($kelompok['selisih_dg'])
                     @kurung($kelompok['selisih_dg'])
                 @else

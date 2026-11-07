@@ -1,0 +1,624 @@
+/* Basalt - Return Details (return-details.html)
+   One return on a Marlo shop order. Namespaced under .rtd-*; the
+   header, cards, status pills, choice cards and dialogs are the
+   shared components from basalt.css. Every color is a --basalt-*
+   token, so palettes and dark mode carry through. */
+
+.rtd-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes. */
+	--rtd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--rtd-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--rtd-line: var(--basalt-edge);
+}
+
+/* One color per reason or product, from the chart ramp. */
+.rtd-tone-1 {
+	--rtd-tone: var(--basalt-series-1);
+}
+.rtd-tone-2 {
+	--rtd-tone: var(--basalt-series-2);
+}
+.rtd-tone-3 {
+	--rtd-tone: var(--basalt-series-3);
+}
+.rtd-tone-4 {
+	--rtd-tone: var(--basalt-series-4);
+}
+.rtd-tone-5 {
+	--rtd-tone: var(--basalt-series-5);
+}
+.rtd-tone-6 {
+	--rtd-tone: var(--basalt-series-6);
+}
+.rtd-tone-7 {
+	--rtd-tone: var(--basalt-series-7);
+}
+.rtd-tone-8 {
+	--rtd-tone: var(--basalt-series-8);
+}
+/* A reason pill takes its chart color; the text leans toward the text
+   color, as some ramp colors are pale in the lighter palettes. */
+.basalt-status[class*="rtd-tone-"] {
+	--stp-tone: var(--rtd-tone);
+	color: color-mix(in srgb, var(--rtd-tone) 40%, var(--basalt-copy));
+}
+
+/* Header: back link, claim number, state, actions */
+.basalt-hero-detail.rtd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.rtd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.rtd-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+.rtd-tags .basalt-status {
+	padding: 0.25rem 0.7rem;
+	font-size: 0.77rem;
+}
+.rtd-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.5rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+.rtd-pager .btn.disabled {
+	opacity: 0.4;
+}
+.rtd-page .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.rtd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.rtd-pager {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+
+/* Grid
+   Rows whose cards end level: what is coming back beside the refund,
+   then the timeline, the label and the shopper (the timeline takes a
+   row of its own when there is less room). Below desktop width every
+   card stacks in that reading order. */
+.rtd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 992px) {
+	.rtd-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.rtd-card-items,
+	.rtd-card-refund,
+	.rtd-card-steps {
+		grid-column: span 12;
+	}
+	.rtd-card-label,
+	.rtd-card-shopper {
+		grid-column: span 6;
+	}
+}
+@media (min-width: 1200px) {
+	.rtd-card-items {
+		grid-column: span 7;
+	}
+	.rtd-card-refund {
+		grid-column: span 5;
+	}
+}
+@media (min-width: 1400px) {
+	.rtd-card-steps,
+	.rtd-card-label,
+	.rtd-card-shopper {
+		grid-column: span 4;
+	}
+}
+
+/* Cards */
+.rtd-card {
+	container-type: inline-size;
+	min-width: 0;
+}
+.rtd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.rtd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.rtd-card-head > div {
+	min-width: 0;
+}
+.rtd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rtd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rtd-quiet);
+}
+.rtd-card-desc:empty {
+	display: none;
+}
+.rtd-card-head .rtd-link {
+	flex: none;
+	margin-top: 0.2rem;
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.rtd-quiet {
+	display: block;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--rtd-quiet);
+}
+.rtd-sku {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+}
+.rtd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--rtd-link);
+}
+.rtd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.rtd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+.rtd-copy {
+	padding: 0.1rem 0.3rem;
+	vertical-align: baseline;
+	color: var(--rtd-quiet);
+}
+.rtd-copy:hover {
+	color: var(--basalt-copy);
+}
+.rtd-hint {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--rtd-quiet);
+}
+@media (max-width: 575.98px) {
+	.rtd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The claim */
+.rtd-who {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	margin-bottom: 1.1rem;
+}
+.rtd-who-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rtd-who-name {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* The customer's words, at reading size, with a straight inset
+   bar in the color of the reason. */
+.rtd-quote {
+	position: relative;
+	margin: 0;
+	padding: 1.25rem 1.5rem 1.25rem 1.85rem;
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--rtd-tone) 9%, var(--basalt-plane));
+}
+.rtd-quote::before {
+	content: "";
+	position: absolute;
+	top: 1rem;
+	bottom: 1rem;
+	left: 0.7rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--rtd-tone);
+}
+:root[data-basalt-gradients="off"] .rtd-quote {
+	background: var(--basalt-plane-alt);
+}
+.rtd-quote p {
+	margin: 0;
+	font-size: 0.9375rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+.rtd-none {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--rtd-quiet);
+}
+
+/* Refund */
+/* A product's tile: its icon on a pale wash of its own ramp color. */
+.rtd-tile {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--rtd-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rtd-tone) 16%, var(--basalt-plane));
+}
+
+.rtd-sums {
+	display: grid;
+	gap: 0.6rem;
+	margin: 1.25rem 0 0;
+	padding: 1.1rem 1.2rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	background: var(--basalt-plane-alt);
+}
+.rtd-sums > div {
+	display: flex;
+	gap: 1.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.rtd-sums dt {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.rtd-sums dt small {
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--rtd-quiet);
+}
+.rtd-sums dd {
+	margin: 0;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rtd-sums .rtd-sums-total {
+	padding-top: 0.7rem;
+	border-top: 1px solid var(--basalt-edge-strong);
+}
+.rtd-sums .rtd-sums-total dt,
+.rtd-sums .rtd-sums-total dd {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.rtd-methods.basalt-choice-grid {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr));
+}
+.rtd-modal legend.form-label {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+}
+.rtd-facts.rtd-facts-after {
+	margin-top: 1.5rem;
+}
+.rtd-sent {
+	margin: 1.5rem 0 0;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.rtd-sent p {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+
+/* Facts: label and value */
+.rtd-facts {
+	display: grid;
+	margin: 0;
+}
+.rtd-facts > div {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rtd-line);
+}
+.rtd-facts > div:first-child {
+	padding-top: 0;
+}
+.rtd-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.rtd-facts dt {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--rtd-quiet);
+}
+.rtd-facts dd {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.rtd-facts .rtd-email {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+/* In a very narrow card each value goes under its label. */
+@container (max-width: 280px) {
+	.rtd-facts > div {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The items */
+.rtd-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+}
+.rtd-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+	border-bottom-color: var(--rtd-line);
+	color: var(--basalt-copy);
+}
+.rtd-table > :not(caption) > * > :first-child {
+	padding-left: 0;
+}
+.rtd-table > :not(caption) > * > :last-child {
+	padding-right: 0;
+}
+.rtd-table thead th {
+	padding-top: 0;
+	padding-bottom: 0.8rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--rtd-quiet);
+}
+.rtd-table tbody td {
+	white-space: nowrap;
+}
+.rtd-table tbody td:first-child {
+	width: 100%;
+	white-space: normal;
+}
+.rtd-product {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.rtd-product-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rtd-product-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rtd-facts-items {
+	margin-top: 1.5rem;
+}
+.rtd-quote {
+	margin-bottom: 1.5rem;
+}
+@container (max-width: 440px) {
+	.rtd-col-paid {
+		display: none;
+	}
+	.rtd-table .rtd-tile {
+		display: none;
+	}
+}
+
+/* Return label and timeline */
+.rtd-label-btn {
+	margin-top: 1.25rem;
+	white-space: nowrap;
+}
+
+.rtd-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rtd-step {
+	position: relative;
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.35rem;
+}
+.rtd-step:last-child {
+	padding-bottom: 0;
+}
+/* The line from one step to the next; filled once the step is done. */
+.rtd-step:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.3rem;
+	bottom: 0.3rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	border-radius: 1px;
+	background: var(--basalt-edge);
+}
+.rtd-step.is-done:not(:last-child)::before {
+	background: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-plane));
+}
+/* A filled line grows out of its marker the first time the steps are on
+   screen, each one a beat behind the one before. */
+.rtd-steps.is-waiting .rtd-step.is-done:not(:last-child)::before {
+	transform: scaleY(0);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.rtd-steps.is-drawing .rtd-step.is-done:not(:last-child)::before {
+		transform-origin: top;
+		animation: rtd-trail-grow 600ms ease-out both;
+	}
+	.rtd-steps.is-drawing .rtd-step.is-done:nth-child(2)::before {
+		animation-delay: 300ms;
+	}
+	.rtd-steps.is-drawing .rtd-step.is-done:nth-child(3)::before {
+		animation-delay: 600ms;
+	}
+	.rtd-steps.is-drawing .rtd-step.is-done:nth-child(4)::before {
+		animation-delay: 900ms;
+	}
+	@keyframes rtd-trail-grow {
+		from {
+			transform: scaleY(0);
+		}
+	}
+}
+.rtd-step-marker {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--rtd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.rtd-step.is-done .rtd-step-marker {
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 18%, var(--basalt-plane));
+}
+.rtd-step.is-declined .rtd-step-marker {
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.rtd-step.is-fresh .rtd-step-marker {
+	animation: rtd-pop 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rtd-step.is-next .rtd-step-marker {
+	color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+}
+.rtd-step-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.rtd-step-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rtd-step.is-todo .rtd-step-label {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+
+@keyframes rtd-pop {
+	0% {
+		transform: scale(0.6);
+	}
+	60% {
+		transform: scale(1.12);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* Shopper */
+.rtd-account {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+/* Return label dialog */
+.rtd-carriers.basalt-choices {
+	--basalt-choice-min: 120px;
+}
+.rtd-goes {
+	margin: 0 0 1.25rem;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.rtd-goes strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rtd-step.is-fresh .rtd-step-marker {
+		animation: none;
+	}
+}
+@media print {
+	.rtd-head .basalt-hero-actions,
+	.rtd-label-btn,
+	.rtd-copy {
+		display: none;
+	}
+}

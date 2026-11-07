@@ -1,0 +1,83 @@
+/* Breadcrumb extras, all shown on breadcrumbs.html: divider choices, a
+   compact trail for narrow boxes and a menu for skipped levels. */
+
+/* The quiet text tone the menu shares with the viewer. */
+$quiet-ink: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+/* A visible keyboard ring in the palette color. */
+@mixin keyboard-ring {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Divider choices for a breadcrumb trail, set on the nav or the list. */
+.breadcrumb-chevron {
+	--bs-breadcrumb-divider: "›";
+}
+.breadcrumb-arrow {
+	--bs-breadcrumb-divider: "→";
+}
+.breadcrumb-dot {
+	--bs-breadcrumb-divider: "·";
+}
+
+/* Two breadcrumb additions, both shown on breadcrumbs.html. A compact
+   trail in a narrow container keeps only the step back up ("‹ Knitwear"). */
+.basalt-breadcrumb-compact {
+	container-type: inline-size;
+}
+
+@container (max-width: 25rem) {
+	.basalt-breadcrumb-compact .breadcrumb-item {
+		display: none;
+
+		&:nth-last-child(2) {
+			display: block;
+			padding-left: 0;
+
+			&::before {
+				content: "\F284";
+				float: none;
+				padding-right: 0.3rem;
+				font-family: "bootstrap-icons";
+				font-size: 0.75em;
+				vertical-align: -0.05em;
+			}
+
+			.bi {
+				display: none;
+			}
+		}
+	}
+}
+
+/* A menu crumb opens a dropdown listing the pages beside that level. */
+.breadcrumb-item .dropdown {
+	display: inline-block;
+}
+
+.basalt-breadcrumb-menu {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0 0.1rem;
+	border-radius: 4px;
+	border: 0;
+	font: inherit;
+	color: $quiet-ink;
+	background: none;
+
+	&[aria-expanded="true"],
+	&:hover {
+		color: var(--basalt-copy);
+	}
+
+	&:focus-visible {
+		@include keyboard-ring;
+	}
+}
+
+.breadcrumb-item .basalt-breadcrumb-menu .bi {
+	margin-right: 0;
+	font-size: 0.7em;
+}

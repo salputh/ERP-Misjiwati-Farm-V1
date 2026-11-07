@@ -1,0 +1,223 @@
+/* The Explore button on the dashboards and the panel it opens; the
+   behavior is assets/basalt/js/components/area-explore.js. The button is a
+   warm yellow pill in the bottom corner, the one warm color on the page, so
+   it reads as a way onward rather than part of the dashboard. Phones do not
+   show it: the menu is the way around there. */
+$phone: 575.98px;
+$ink: #191430;
+
+.basalt-explore {
+	position: fixed;
+	right: 1.25rem;
+	bottom: 1.25rem;
+	z-index: 1040;
+	display: inline-flex;
+	gap: 0.55rem;
+	align-items: center;
+	padding: 0.7rem 1rem 0.7rem 0.8rem;
+	border: 0;
+	border-radius: 999px;
+	font-size: 0.84rem;
+	font-weight: 700;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: #2a1c00;
+	background: linear-gradient(120deg, #ffe36e 0%, #ffc83d 55%, #ffab1f 100%);
+	box-shadow: 0 4px 14px rgba(180, 120, 0, 0.18);
+	cursor: pointer;
+	opacity: 0;
+	transform: translateY(8px);
+	transition:
+		opacity 240ms ease,
+		transform 240ms ease,
+		box-shadow 150ms ease;
+
+	&.is-in {
+		opacity: 1;
+		transform: none;
+	}
+	/* Flat surfaces: one yellow, no gradient. */
+	:root[data-basalt-gradients="off"] & {
+		background: #ffc83d;
+	}
+	&:hover {
+		box-shadow: 0 6px 18px rgba(180, 120, 0, 0.26);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	.bi {
+		font-size: 1rem;
+		color: #5a3b00;
+	}
+
+	/* The count waits in a small dark note above the button. */
+	&::after {
+		content: attr(data-basalt-tip);
+		position: absolute;
+		right: 0;
+		bottom: calc(100% + 10px);
+		padding: 0.4rem 0.7rem;
+		border-radius: 8px;
+		font-size: 0.78rem;
+		font-weight: 500;
+		white-space: nowrap;
+		color: #fff;
+		background: $ink;
+		box-shadow: 0 6px 18px rgba(25, 20, 48, 0.2);
+		opacity: 0;
+		transform: translateY(4px);
+		pointer-events: none;
+		transition:
+			opacity 150ms ease,
+			transform 150ms ease;
+	}
+	&:hover::after,
+	&:focus-visible::after {
+		opacity: 1;
+		transform: none;
+	}
+	&[aria-expanded="true"]::after {
+		visibility: hidden;
+	}
+
+	@media (max-width: $phone) {
+		display: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+
+		&::after {
+			transition: none;
+		}
+	}
+}
+
+.basalt-explore-panel {
+	position: fixed;
+	right: 1.25rem;
+	bottom: 4.75rem;
+	z-index: 1045;
+	width: min(520px, calc(100vw - 2.5rem));
+	max-height: min(480px, calc(100vh - 7rem));
+	padding: 0.9rem 1rem;
+	overflow-y: auto;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	box-shadow:
+		0 18px 50px rgba(25, 20, 48, 0.18),
+		0 2px 6px rgba(25, 20, 48, 0.06);
+	scrollbar-width: thin;
+
+	&[hidden] {
+		display: none;
+	}
+	&:focus {
+		outline: none;
+	}
+
+	@media (max-width: $phone) {
+		display: none;
+	}
+}
+
+.basalt-explore-head {
+	display: flex;
+	gap: 0.75rem;
+	align-items: baseline;
+	margin-bottom: 0.65rem;
+}
+.basalt-explore-title {
+	margin: 0;
+	font-size: 0.97rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.basalt-explore-sum {
+	margin-left: auto;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.7rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-muted);
+}
+.basalt-explore-close {
+	align-self: center;
+	padding: 0.125rem 0.25rem;
+	border: 0;
+	border-radius: 6px;
+	font-size: 0.95rem;
+	line-height: 1;
+	color: var(--basalt-copy-muted);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Two columns of section groups; a short area keeps to one. */
+.basalt-explore-list {
+	columns: 2;
+	column-gap: 1.4rem;
+
+	&.is-short {
+		columns: 1;
+	}
+}
+.basalt-explore-group {
+	margin-bottom: 0.75rem;
+	break-inside: avoid;
+
+	h3 {
+		margin: 0 0 0.25rem;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.66rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--basalt-copy-muted);
+	}
+}
+.basalt-explore-link {
+	display: flex;
+	gap: 0.55rem;
+	align-items: center;
+	padding: 0.3rem 0.4rem;
+	border-radius: 8px;
+	font-size: 0.84rem;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	break-inside: avoid;
+
+	.bi {
+		width: 1rem;
+		font-size: 0.84rem;
+		text-align: center;
+		color: var(--basalt-copy-body);
+	}
+	small {
+		margin-left: auto;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.66rem;
+		color: var(--basalt-copy-muted);
+	}
+	&:hover,
+	&:focus-visible {
+		background: var(--basalt-wash);
+
+		.bi {
+			color: var(--basalt-hue);
+		}
+	}
+	&[aria-current="page"] {
+		font-weight: 600;
+		background: var(--basalt-wash);
+
+		.bi {
+			color: var(--basalt-hue);
+		}
+	}
+}

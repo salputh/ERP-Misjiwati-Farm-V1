@@ -1,0 +1,7 @@
+/* With `data-basalt-gradients="off"` on <html> the hero gradient becomes its
+   own primary and the soft wash becomes the bare card surface. Both tokens
+   already resolve per palette and per scheme, so one rule serves them all. */
+:root[data-basalt-gradients="off"] {
+	--basalt-grad: var(--basalt-hue);
+	--basalt-grad-soft: var(--basalt-plane);
+}

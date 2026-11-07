@@ -1,0 +1,2426 @@
+/*
+ * Chat (chat.html), every class under the .cht- prefix.
+ *
+ * The page is an app that fills the browser window: there is no admin
+ * sidebar, top bar or page header, and the workspace menu at the top of the
+ * channel list is the way back to the dashboard. Headers, avatars, count
+ * pills, the command menu, segmented controls, selects, suggestion lists,
+ * tag inputs, skeletons, empty states, drawers, dialogs, hold-to-confirm and
+ * toasts all come from basalt.css; this sheet places them and draws the
+ * parts only chat has, in the order they sit on screen: channel list, feed,
+ * composer, side panel, then the floating menus and the dialogs.
+ */
+
+/* The tokens are shared by the page and by the two pieces that render outside it, the message menu and the emoji picker. */
+.cht-page,
+.cht-menu,
+.cht-emoji {
+	/* The muted token leans toward body text so small gray copy keeps 4.5:1 on light palettes and on hovered or selected rows. */
+	--cht-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary alone falls under 4.5:1 as text in a few light palettes, so links use this mix. */
+	--cht-link: color-mix(in srgb, var(--basalt-hue) 58%, var(--basalt-copy));
+	--cht-danger-text: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+	--cht-selected: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+	--cht-hover: color-mix(in srgb, var(--basalt-copy) 5%, var(--basalt-plane));
+	--cht-mention-bg: color-mix(in srgb, var(--basalt-warning) 12%, var(--basalt-plane));
+	--cht-line: var(--basalt-edge);
+	/* The page uses four type sizes in all: the shared card title and section sizes, plus these two. */
+	--cht-fs-body: 0.9rem;
+	--cht-fs-small: 0.77rem;
+	/* Every pane's side padding comes from the shared spacing scale. */
+	--cht-x: var(--basalt-pad-x);
+}
+@media (max-width: 767.98px) {
+	.cht-page,
+	.cht-menu,
+	.cht-emoji {
+		--cht-x: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Shared controls inside the app are brought down to the chat's body size. */
+.cht-page .dropdown-menu {
+	--bs-dropdown-font-size: var(--cht-fs-body);
+}
+.cht-app {
+	& .btn,
+	& .form-control,
+	& .form-select {
+		--bs-btn-font-size: var(--cht-fs-body);
+		font-size: var(--cht-fs-body);
+	}
+	& .basalt-count-pill {
+		font-size: var(--cht-fs-small);
+	}
+}
+
+/* Key caps are outlined in hints and filled everywhere else on the page and in the menu. */
+.cht-kbd,
+.cht-page kbd:not(.cht-kbd):not(.basalt-command-esc),
+.cht-menu kbd {
+	border-radius: 5px;
+	font:
+		600 var(--cht-fs-small)/1.3 "Chivo Mono",
+		monospace;
+	box-shadow: none;
+}
+.cht-kbd {
+	padding: 0.05rem 0.4rem;
+	border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+	color: var(--cht-quiet);
+	background: transparent;
+}
+.cht-page kbd:not(.cht-kbd):not(.basalt-command-esc),
+.cht-menu kbd {
+	padding: 0.05rem 0.3rem;
+	border: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.cht-quiet {
+	color: var(--cht-quiet);
+}
+.cht-optional {
+	margin-left: 0.25rem;
+	font-weight: 400;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+
+/* The app owns the whole window; only the panes inside it scroll, never the page. */
+.cht-shell {
+	height: 100vh;
+	height: 100dvh;
+	min-height: 0;
+	overflow: hidden;
+}
+.cht-page {
+	height: 100%;
+}
+
+/* The app is three columns: channels, the open channel, and a side panel that only takes room on wide screens. */
+.cht-app {
+	--cht-rail: 288px;
+	position: relative;
+	display: grid;
+	grid-template-columns: var(--cht-rail) minmax(0, 1fr);
+	height: 100%;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+@media (min-width: 1200px) {
+	.cht-app.has-panel {
+		grid-template-columns: var(--cht-rail) minmax(0, 1fr) minmax(320px, 400px);
+	}
+}
+
+/* The channel list is its own column on a lightly tinted surface. */
+.cht-side {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	border-right: 1px solid var(--cht-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.cht-side-head {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem 0.75rem 0.75rem 0.5rem;
+}
+.cht-side-back.btn-icon {
+	flex: none;
+	color: var(--cht-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The workspace button opens the workspace menu and stays shaded while it is open. */
+.cht-ws {
+	flex: 1;
+	min-width: 0;
+}
+.cht-ws-btn {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover,
+	&[aria-expanded="true"] {
+		background: var(--cht-hover);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	& .cht-side-title .bi {
+		margin-left: 0.3rem;
+		font-size: 0.7rem;
+		color: var(--cht-quiet);
+		transition: rotate 170ms ease;
+	}
+	&[aria-expanded="true"] .cht-side-title .bi {
+		rotate: 180deg;
+	}
+}
+.cht-side-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}
+.cht-side-brand-text {
+	min-width: 0;
+}
+.cht-side-title {
+	display: flex;
+	align-items: center;
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.cht-side-sub {
+	display: block;
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--cht-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cht-quiet);
+}
+.cht-ws-menu.dropdown-menu {
+	min-width: 17.5rem;
+}
+.cht-ws-head {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.5rem 0.7rem 0.4rem;
+}
+.cht-ws-head-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.cht-ws-name {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cht-ws-app {
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+.cht-ws-menu .dropdown-item {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+
+/* The Dark mode item carries aria-pressed, and this small switch follows it. */
+.cht-switch {
+	position: relative;
+	flex: none;
+	width: 1.9rem;
+	height: 1.1rem;
+	margin-left: auto;
+	border-radius: 999px;
+	background: var(--basalt-edge-strong);
+	transition: background-color 170ms ease;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0.1rem;
+		left: 0.1rem;
+		width: 0.8rem;
+		height: 0.8rem;
+		border-radius: 50%;
+		background: var(--basalt-plane);
+		transition: translate 170ms ease;
+	}
+}
+[aria-pressed="true"] > .cht-switch {
+	background: var(--basalt-hue);
+
+	&::after {
+		translate: 0.8rem 0;
+	}
+}
+
+/* Your own avatar opens the status menu. */
+.cht-me-btn.btn {
+	--bs-btn-padding-x: 0.2rem;
+	--bs-btn-padding-y: 0.2rem;
+	border-radius: 999px;
+
+	&:hover {
+		background: var(--cht-hover);
+	}
+}
+.cht-me {
+	& .dropdown-item {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+	& .dropdown-header {
+		font-size: var(--cht-fs-small);
+		color: var(--cht-quiet);
+	}
+}
+.cht-dot.basalt-avatar-status-dot {
+	position: static;
+	display: inline-block;
+	width: 0.6rem;
+	height: 0.6rem;
+	border: 0;
+}
+
+/* Search fields carry an icon on the left and, in the sidebar, a key hint on the right. */
+.cht-search {
+	position: relative;
+	margin: 0.25rem 0.75rem 1rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.65rem;
+		translate: 0 -50%;
+		font-size: var(--cht-fs-body);
+		color: var(--cht-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2rem;
+		padding-right: 2rem;
+		border-radius: 9px;
+	}
+	& .form-control:focus ~ .cht-search-key {
+		opacity: 0;
+	}
+}
+.cht-search-key {
+	position: absolute;
+	top: 50%;
+	right: 0.5rem;
+	translate: 0 -50%;
+	pointer-events: none;
+}
+/* At the regular control height the sidebar's icon sits a little further in. */
+form.cht-search {
+	& > .bi {
+		left: 0.85rem;
+		font-size: 0.95rem;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.cht-search-dialog {
+	flex: 1 1 220px;
+	margin: 0;
+}
+.cht-search-panel {
+	margin: 0.5rem 0 0;
+}
+
+.cht-side-scroll {
+	flex: 1;
+	min-height: 0;
+	padding: 0 0.75rem 1.5rem;
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+.cht-views,
+.cht-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cht-views {
+	margin-bottom: 0.5rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid var(--cht-line);
+}
+
+/* Every row in the list, whether a channel, a view such as Mentions, or Browse, is this one button. */
+.cht-nav {
+	position: relative;
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	width: 100%;
+	min-height: 2.5rem;
+	padding: 0.4rem 0.65rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: var(--cht-fs-body);
+	text-align: left;
+	color: var(--cht-quiet);
+	background: transparent;
+
+	& > .bi {
+		flex: none;
+		width: 1rem;
+		font-size: 0.9rem;
+		text-align: center;
+	}
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--cht-hover);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&.is-unread {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	&.is-muted {
+		color: var(--cht-quiet);
+	}
+	&.is-active,
+	&.is-active:hover {
+		font-weight: 600;
+		color: var(--basalt-copy);
+		background: var(--cht-selected);
+	}
+	/* The open channel gets a short bar on its left edge. */
+	&.is-active::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-hue);
+	}
+}
+.cht-nav-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.cht-nav-end {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex: none;
+	align-items: center;
+	font-size: var(--cht-fs-small);
+}
+.cht-nav-preview {
+	font-style: italic;
+}
+.cht-nav-browse {
+	margin-top: 1rem;
+}
+.cht-nav-skel {
+	pointer-events: none;
+
+	& .basalt-skeleton-text {
+		flex: 1;
+		margin: 0;
+	}
+}
+.cht-skel-icon {
+	width: 1rem;
+	height: 1rem;
+}
+.cht-list-none {
+	padding: 0.4rem 0.65rem 0.6rem 2.35rem;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+
+/* Public and Private are groups that fold away under their own heading. */
+.cht-group {
+	margin-top: 1rem;
+}
+.cht-group-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.25rem;
+	padding: 0 0.1rem 0 0.2rem;
+}
+.cht-group-toggle {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.3rem;
+	border: 0;
+	border-radius: 6px;
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--cht-quiet);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--cht-hover);
+	}
+	& .bi {
+		font-size: 0.7rem;
+		transition: rotate 170ms ease;
+	}
+	&[aria-expanded="false"] .bi {
+		rotate: -90deg;
+	}
+}
+.cht-group-add.btn-icon {
+	width: 1.75rem;
+	height: 1.75rem;
+	font-size: 0.85rem;
+}
+
+/* The open channel stacks its header, banner, feed and composer in one column. */
+.cht-main {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	background: var(--basalt-plane);
+}
+.cht-head {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem var(--cht-x);
+	border-bottom: 1px solid var(--cht-line);
+}
+.cht-head-back {
+	display: none;
+}
+.cht-head-text {
+	flex: 1;
+	min-width: 0;
+}
+.cht-head-title {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0;
+	outline: none;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& > span:not(.basalt-skeleton) {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	& > .bi {
+		font-size: 1rem;
+		color: var(--cht-quiet);
+	}
+	& .cht-head-muted {
+		font-size: var(--cht-fs-body);
+	}
+}
+.cht-head-topic {
+	margin: 0.25rem 0 0;
+	overflow: hidden;
+	font-size: var(--cht-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cht-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.cht-skel-title {
+	width: 9rem;
+	height: 1.1rem;
+	margin: 0;
+}
+.cht-head-tools {
+	display: flex;
+	gap: 0.1rem;
+	flex: none;
+	align-items: center;
+
+	& .btn-icon {
+		position: relative;
+	}
+}
+/* The pinned count rides on the corner of its button. */
+.cht-head-count {
+	position: absolute;
+	top: 0;
+	right: -0.1rem;
+	min-width: 1rem;
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	line-height: 1rem;
+	color: var(--basalt-copy);
+}
+.cht-head-people.btn {
+	--bs-btn-padding-x: 0.3rem;
+	--bs-btn-padding-y: 0.2rem;
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-right: 0.25rem;
+	border: 1px solid var(--cht-line);
+	border-radius: 999px;
+	font-size: var(--cht-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background: var(--cht-hover);
+	}
+}
+.cht-head-faces .basalt-avatar {
+	width: 22px;
+	height: 22px;
+	margin-left: -7px;
+	border: 2px solid var(--basalt-plane);
+	font-size: 0.5rem;
+
+	&:first-child {
+		margin-left: 0;
+	}
+}
+
+/* A strip sits over archived channels and over channels you are only previewing. */
+.cht-banner {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.75rem var(--cht-x);
+	border-bottom: 1px solid var(--cht-line);
+	font-size: var(--cht-fs-body);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The feed scrolls on its own and keeps overscroll from reaching the page. */
+.cht-feed-wrap {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-height: 0;
+}
+.cht-feed {
+	flex: 1;
+	min-width: 0;
+	padding: 0.75rem 0 1.5rem;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+
+/* Day lines, the New line and plain dividers share one rule with a hairline beside the label. */
+.cht-day,
+.cht-new,
+.cht-divider {
+	position: relative;
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin: 1.5rem var(--cht-x) 0.5rem;
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	color: var(--cht-quiet);
+}
+.cht-day::before,
+.cht-day::after,
+.cht-new::after,
+.cht-divider::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--cht-line);
+}
+.cht-day {
+	&::before {
+		max-width: 1.25rem;
+	}
+	& > span {
+		padding: 0.1rem 0.65rem;
+		border: 1px solid var(--cht-line);
+		border-radius: 999px;
+		background: var(--basalt-plane);
+	}
+}
+/* New is drawn in the danger tone, with the line after the label instead of before. */
+.cht-new {
+	margin-top: 0.5rem;
+	color: var(--cht-danger-text);
+
+	&::after {
+		order: -1;
+		background: color-mix(in srgb, var(--basalt-danger) 60%, transparent);
+	}
+	& > span {
+		order: 1;
+		padding: 0.05rem 0.5rem;
+		border-radius: 999px;
+		font-size: var(--cht-fs-small);
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* A message is an avatar column beside a body; follow-ups by the same person tighten up. */
+.cht-msg {
+	position: relative;
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr);
+	padding: 0.7rem var(--cht-x);
+	outline: none;
+	transition: background-color 130ms ease;
+
+	&.is-grouped {
+		padding-top: 0.2rem;
+		padding-bottom: 0.3rem;
+	}
+	&:hover,
+	&:has(:focus-visible) {
+		background: var(--cht-hover);
+	}
+	&:focus-visible {
+		background: var(--cht-hover);
+		box-shadow: inset 3px 0 0 var(--basalt-hue);
+	}
+	&.is-cursor {
+		box-shadow: inset 3px 0 0 color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	}
+	&.is-mention {
+		background: var(--cht-mention-bg);
+		box-shadow: inset 3px 0 0 var(--basalt-warning);
+	}
+	&.is-mention:hover {
+		background: color-mix(in srgb, var(--basalt-warning) 17%, var(--basalt-plane));
+	}
+	&.is-sending .cht-msg-text {
+		color: var(--cht-quiet);
+	}
+	&.is-fresh {
+		animation: cht-arrive 380ms ease-out;
+	}
+	&.is-flash {
+		animation: cht-flash 1.6s ease-out;
+	}
+	&.is-target {
+		background: var(--cht-hover);
+	}
+}
+@keyframes cht-arrive {
+	from {
+		translate: 0 6px;
+		opacity: 0;
+	}
+	to {
+		translate: 0 0;
+		opacity: 1;
+	}
+}
+@keyframes cht-flash {
+	0%,
+	40% {
+		background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+	}
+	100% {
+		background: transparent;
+	}
+}
+
+/* A grouped follow-up shows its time in the avatar column, but only on hover or focus. */
+.cht-msg-side {
+	display: flex;
+	justify-content: center;
+	padding-top: 0.1rem;
+}
+.cht-msg-stamp {
+	visibility: hidden;
+	padding-top: 0.2rem;
+	font-size: var(--cht-fs-small);
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--cht-quiet);
+}
+.cht-msg:hover .cht-msg-stamp,
+.cht-msg:has(:focus-visible) .cht-msg-stamp {
+	visibility: visible;
+}
+.cht-msg-body {
+	min-width: 0;
+}
+.cht-msg-meta {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin-bottom: 0.25rem;
+}
+.cht-msg-name {
+	font-weight: 700;
+	font-size: var(--cht-fs-body);
+	color: var(--basalt-copy);
+}
+.cht-msg-time {
+	font-size: var(--cht-fs-small);
+	font-variant-numeric: tabular-nums;
+	color: var(--cht-quiet);
+}
+.cht-msg-flag {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+
+	& .bi {
+		font-size: 0.7rem;
+	}
+}
+.cht-app-badge.badge {
+	padding: 0.1rem 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.cht-bot {
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}
+
+/* The text people write, with its light formatting: paragraphs, bullets, quotes, code and links. */
+.cht-msg-text {
+	font-size: var(--cht-fs-body);
+	line-height: 1.55;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body);
+
+	& p {
+		margin: 0;
+	}
+	& p + p,
+	& p + ul,
+	& ul + p,
+	& blockquote + p,
+	& p + blockquote {
+		margin-top: 0.3rem;
+	}
+	& ul {
+		margin: 0.1rem 0;
+		padding-left: 1.2rem;
+	}
+	& li + li {
+		margin-top: 0.1rem;
+	}
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& blockquote {
+		margin: 0.25rem 0;
+		padding: 0.1rem 0 0.1rem 0.75rem;
+		border-left: 3px solid var(--basalt-edge-strong);
+		color: var(--basalt-copy-body);
+	}
+}
+.cht-msg-text code,
+.cht-result-text code {
+	padding: 0.05rem 0.3rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge);
+	font-size: var(--cht-fs-small);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.cht-pre {
+	max-width: 100%;
+	margin: 0.3rem 0;
+	padding: 0.6rem 0.75rem;
+	border-radius: 8px;
+	border: 1px solid var(--basalt-edge);
+	overflow-x: auto;
+	overflow-y: hidden;
+	background: var(--basalt-plane-alt);
+
+	& code {
+		padding: 0;
+		border: 0;
+		font-size: var(--cht-fs-small);
+		white-space: pre;
+		color: var(--basalt-copy);
+		background: none;
+	}
+}
+.cht-msg-text a {
+	text-underline-offset: 2px;
+	color: var(--cht-link);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.cht-msg-edited {
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+.cht-mention {
+	padding: 0 0.2rem;
+	border-radius: 4px;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+
+	&.is-me {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-warning) 26%, var(--basalt-plane));
+	}
+}
+.cht-chref {
+	padding: 0 0.1rem;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	color: var(--cht-link);
+	background: transparent;
+}
+button.cht-chref:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+/* Watched words and search matches get the same yellow marker. */
+.cht-hl,
+.cht-msg-text mark:not(.cht-hl),
+.cht-result-text mark {
+	padding: 0 0.1rem;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 30%, var(--basalt-plane));
+}
+
+/* Attachments are cards tinted by file type through --cht-tone. */
+.cht-attach {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 0.4rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.cht-attach-item {
+	--cht-tone: var(--cht-quiet);
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	width: 19rem;
+	min-width: 0;
+	max-width: 100%;
+	padding: 0.5rem 0.5rem 0.5rem 0.6rem;
+	border: 1px solid var(--cht-line);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+}
+.cht-attach-image {
+	--cht-tone: var(--basalt-series-4);
+}
+.cht-attach-pdf {
+	--cht-tone: var(--basalt-danger);
+}
+.cht-attach-doc {
+	--cht-tone: var(--basalt-info);
+}
+.cht-attach-sheet {
+	--cht-tone: var(--basalt-success);
+}
+.cht-attach-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.2rem;
+	height: 2.2rem;
+	border-radius: 8px;
+	font-size: 1.05rem;
+	color: var(--cht-tone);
+	background: color-mix(in srgb, var(--cht-tone) 14%, var(--basalt-plane));
+}
+.cht-attach-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+.cht-attach-name {
+	overflow: hidden;
+	font-size: var(--cht-fs-body);
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cht-attach-meta {
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+
+/* Your own reactions are tinted, and the add chip stays hidden until the message is hovered or focused. */
+.cht-reacts {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin-top: 0.4rem;
+}
+.cht-react {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	height: 1.65rem;
+	padding: 0 0.5rem;
+	border: 1px solid var(--cht-line);
+	border-radius: 999px;
+	font-size: var(--cht-fs-small);
+	line-height: 1;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: var(--cht-hover);
+	}
+	&.is-mine {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+		background: color-mix(in srgb, var(--basalt-hue) 11%, var(--basalt-plane));
+	}
+}
+.cht-react-e {
+	font-size: 0.9rem;
+}
+.cht-react-n {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+.cht-react-add {
+	color: var(--cht-quiet);
+	opacity: 0;
+	transition: opacity 130ms ease;
+}
+.cht-react-plus {
+	margin-left: -0.25rem;
+	font-size: 0.7rem;
+}
+.cht-msg:hover .cht-react-add,
+.cht-msg:has(:focus-visible) .cht-react-add,
+.cht-react-add:focus-visible {
+	opacity: 1;
+}
+
+/* The thread link under a message shows faces, a reply count and when the last reply came. */
+.cht-threadlink {
+	display: inline-flex;
+	gap: 0.25rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	max-width: 100%;
+	margin-top: 0.3rem;
+	padding: 0.25rem 0.5rem 0.25rem 0.3rem;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	font-size: var(--cht-fs-small);
+	text-align: left;
+	background: transparent;
+
+	&:hover,
+	&:focus-visible {
+		border-color: var(--cht-line);
+		background: var(--basalt-plane);
+	}
+}
+.cht-threadlink-faces {
+	display: inline-flex;
+
+	& .basalt-avatar {
+		width: 22px;
+		height: 22px;
+		margin-left: -6px;
+		border: 2px solid var(--basalt-plane);
+		font-size: 0.5rem;
+	}
+	& .basalt-avatar:first-child {
+		margin-left: 0;
+	}
+}
+.cht-threadlink-n {
+	font-weight: 700;
+	color: var(--cht-link);
+}
+.cht-threadlink-last {
+	color: var(--cht-quiet);
+}
+.cht-threadlink-go {
+	font-size: 0.7rem;
+	color: var(--cht-quiet);
+	opacity: 0;
+}
+.cht-threadlink:hover .cht-threadlink-go,
+.cht-threadlink:focus-visible .cht-threadlink-go {
+	opacity: 1;
+}
+
+/* The floating toolbar over a message only takes clicks while it shows. */
+.cht-msg-actions {
+	position: absolute;
+	top: -0.85rem;
+	right: var(--cht-x);
+	z-index: 2;
+	display: flex;
+	gap: 0.1rem;
+	padding: 0.1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 9px;
+	background: var(--basalt-plane);
+	opacity: 0;
+	box-shadow: var(--basalt-card-shadow);
+	pointer-events: none;
+	transition: opacity 110ms ease;
+
+	& button {
+		display: grid;
+		place-items: center;
+		width: 1.85rem;
+		height: 1.85rem;
+		border: 0;
+		border-radius: 6px;
+		color: var(--cht-quiet);
+		background: transparent;
+	}
+	& button:hover {
+		color: var(--basalt-copy);
+		background: var(--cht-hover);
+	}
+}
+.cht-msg:hover > .cht-msg-actions,
+.cht-msg:has(:focus-visible) > .cht-msg-actions,
+.cht-msg.is-target > .cht-msg-actions {
+	opacity: 1;
+	pointer-events: auto;
+}
+/* On the first message the toolbar drops inside so the feed's top edge does not clip it. */
+.cht-feed > .cht-msg:first-child .cht-msg-actions {
+	top: 0.2rem;
+}
+/* Without hover the toolbar appears with focus, and the add-reaction chip is always there. */
+@media (hover: none) {
+	.cht-msg-actions {
+		display: none;
+	}
+	.cht-msg:focus-within > .cht-msg-actions {
+		display: flex;
+	}
+	.cht-react-add {
+		opacity: 1;
+	}
+}
+
+/* System lines, such as a join or a topic change, are small and set in from the edge. */
+.cht-event {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.4rem var(--cht-x) 0.4rem calc(var(--cht-x) + 0.65rem);
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+
+	& span {
+		flex: 1;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	& span p {
+		display: inline;
+		margin: 0;
+	}
+}
+.cht-event-time {
+	flex: none;
+	font-size: var(--cht-fs-small);
+}
+
+/* A young channel opens with a welcome block. */
+.cht-intro {
+	padding: 1.5rem var(--cht-x) 0.75rem;
+}
+.cht-intro-icon {
+	display: grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin-bottom: 0.6rem;
+	border-radius: 12px;
+	font-size: 1.3rem;
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.cht-intro-title {
+	margin: 0 0 0.5rem;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cht-intro-text {
+	max-width: 40rem;
+	margin: 0;
+	font-size: var(--cht-fs-body);
+	color: var(--basalt-copy-body);
+}
+.cht-intro-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1rem;
+}
+
+/* Loading placeholders take the shape of messages. */
+.cht-msg-skel {
+	pointer-events: none;
+
+	& .cht-msg-body {
+		display: flex;
+		gap: 0.4rem;
+		flex-direction: column;
+		padding-top: 0.2rem;
+	}
+	& .basalt-skeleton-text {
+		margin: 0;
+	}
+}
+.cht-skel-avatar {
+	width: 32px;
+	height: 32px;
+}
+.cht-skel-name {
+	width: 9rem;
+	max-width: 60%;
+}
+.cht-skel-short {
+	width: 55%;
+}
+
+/* Empty, no-result and error states sit centered in a narrow column. */
+.cht-empty {
+	max-width: 26rem;
+	margin: 2rem auto;
+}
+.cht-empty-icon {
+	display: grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin: 0 auto 0.75rem;
+	border-radius: 14px;
+	font-size: 1.35rem;
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.basalt-empty-danger .cht-empty-icon {
+	color: var(--cht-danger-text);
+	background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+}
+.cht-panel .cht-empty {
+	margin: 1.5rem auto;
+	padding: 0 0.5rem;
+}
+
+/* The "3 new messages" pill floats at the bottom of the feed when they arrive out of view. */
+.cht-jump.btn {
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-bg: color-mix(in srgb, var(--basalt-hue) 82%, var(--basalt-shade));
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-hover-bg: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-shade));
+	--bs-btn-active-color: var(--basalt-on-hue);
+	--bs-btn-active-bg: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-shade));
+	position: absolute;
+	bottom: 0.75rem;
+	left: 50%;
+	z-index: 3;
+	translate: -50% 0;
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	border-radius: 999px;
+	box-shadow: var(--basalt-card-shadow);
+}
+.cht-jump[hidden] {
+	display: none;
+}
+
+/* The typing line has no height until someone types, then opens smoothly. */
+.cht-typing-line {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	height: 0;
+	padding: 0 calc(var(--cht-x) + 0.25rem);
+	overflow: hidden;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+	transition: height 170ms ease;
+
+	&.is-on {
+		height: 1.75rem;
+	}
+}
+.cht-typing {
+	&.basalt-typing {
+		padding: 0.3rem 0.5rem;
+		border-radius: 999px;
+	}
+	& .basalt-loading-dots {
+		--loading-dots-size: 0.3rem;
+	}
+}
+
+/* The composer: a toolbar, the text box and a bottom bar inside one bordered box that shows focus for all three. */
+.cht-composer {
+	position: relative;
+	padding: 0.5rem var(--cht-x) var(--cht-x);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cht-composer-box {
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 130ms ease,
+		box-shadow 130ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue-border);
+		box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 16%, transparent);
+	}
+}
+.cht-tools {
+	display: flex;
+	gap: 0.1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.3rem 0.4rem 0;
+}
+.cht-tools-sep {
+	width: 1px;
+	height: 1.1rem;
+	margin: 0 0.3rem;
+	background: var(--cht-line);
+}
+.cht-tool {
+	display: grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	border: 0;
+	border-radius: 7px;
+	font-size: 0.95rem;
+	color: var(--cht-quiet);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--cht-hover);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -1px;
+	}
+}
+.cht-input {
+	display: block;
+	width: 100%;
+	min-height: 2.6rem;
+	max-height: 13.75rem;
+	padding: 0.5rem 0.8rem;
+	border: 0;
+	font-size: var(--cht-fs-body);
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: transparent;
+	resize: none;
+}
+/* The surrounding box already shows focus, so the field itself does not. */
+.cht-composer-box .cht-input:focus-visible,
+.cht-edit .cht-input:focus-visible {
+	outline: 0;
+	box-shadow: none;
+}
+.cht-input {
+	&:focus {
+		outline: none;
+	}
+	&::placeholder {
+		color: var(--cht-quiet);
+		opacity: 1;
+	}
+}
+.cht-composer-bar {
+	display: flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0 0.4rem 0.4rem;
+}
+.cht-composer-hint {
+	flex: 1;
+	min-width: 0;
+	margin: 0 0.5rem;
+	overflow: hidden;
+	font-size: var(--cht-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cht-quiet);
+
+	& kbd {
+		padding: 0 0.25rem;
+		font-size: var(--cht-fs-small);
+	}
+}
+.cht-send.btn {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-left: auto;
+}
+
+/* Files picked for the next message sit above the bottom bar as removable chips. */
+.cht-files {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0 0.6rem 0.4rem;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cht-files-item {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	max-width: 100%;
+	padding: 0.2rem 0.25rem 0.2rem 0.5rem;
+	border: 1px solid var(--cht-line);
+	border-radius: 8px;
+	font-size: var(--cht-fs-small);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.cht-files-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.cht-files-size {
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+.cht-files-x.btn-icon,
+.cht-picked-x.btn-icon {
+	width: 1.5rem;
+	height: 1.5rem;
+	font-size: 0.75rem;
+}
+
+/* The @, # and / list opens above whichever box is being typed in. */
+.cht-suggest {
+	position: absolute;
+	right: var(--cht-x);
+	bottom: calc(100% - 0.25rem);
+	left: var(--cht-x);
+	z-index: 5;
+	max-height: 17rem;
+	padding: 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	overflow-y: auto;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.cht-reply .cht-suggest {
+	right: 0.75rem;
+	bottom: 100%;
+	left: 0.75rem;
+}
+.cht-suggest-head {
+	margin: 0.1rem 0.5rem 0.3rem;
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--cht-quiet);
+}
+.cht-suggest-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border-radius: 8px;
+	font-size: var(--cht-fs-body);
+	color: var(--basalt-copy);
+	cursor: pointer;
+
+	&.is-active {
+		background: var(--cht-selected);
+	}
+}
+.cht-suggest-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 7px;
+	color: var(--cht-quiet);
+	background: var(--basalt-plane-alt);
+}
+.cht-suggest-label {
+	font-weight: 600;
+	white-space: nowrap;
+}
+.cht-suggest-hint {
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--cht-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cht-quiet);
+}
+
+/* Editing in place swaps the text for a bordered box with its own Save and Cancel. */
+.cht-edit {
+	border: 1px solid var(--basalt-hue-border);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+}
+.cht-edit-bar {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 0 0.5rem 0.5rem;
+}
+.cht-edit-hint {
+	margin-right: auto;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+
+/* Where the composer would be, a read-only channel shows why and how to get in. */
+.cht-readonly {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.5rem var(--cht-x) var(--cht-x);
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--cht-line);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cht-readonly-text {
+	flex: 1 1 14rem;
+	min-width: 0;
+	margin: 0;
+	font-size: var(--cht-fs-body);
+	color: var(--basalt-copy-body);
+}
+
+/* The side panel. Its header matches the channel header's height so the two lines meet. */
+.cht-panel {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	border-left: 1px solid var(--cht-line);
+	background: var(--basalt-plane);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cht-panel-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem 0.75rem 0.75rem var(--cht-x);
+	border-bottom: 1px solid var(--cht-line);
+}
+.cht-panel-text {
+	flex: 1;
+	min-width: 0;
+}
+.cht-panel-title {
+	margin: 0;
+	outline: none;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cht-panel-sub {
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--cht-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cht-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.cht-panel-tabs {
+	padding: 0 var(--cht-x);
+	border-bottom: 1px solid var(--cht-line);
+}
+.cht-panel-tabs[hidden],
+.cht-panel-filters[hidden],
+.cht-members-tools[hidden] {
+	display: none;
+}
+.cht-tabs {
+	&.nav-underline {
+		--bs-nav-underline-gap: 1rem;
+		--bs-nav-link-font-size: var(--cht-fs-body);
+		flex-wrap: nowrap;
+	}
+	& .nav-link {
+		padding: 0.85rem 0;
+		white-space: nowrap;
+		color: var(--cht-quiet);
+	}
+	& .nav-link:hover {
+		color: var(--basalt-copy);
+	}
+	& .nav-link.active {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.cht-tabs-n {
+	font-size: var(--cht-fs-small);
+	font-weight: 600;
+	color: var(--cht-quiet);
+}
+.cht-panel-filters {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1rem var(--cht-x);
+	border-bottom: 1px solid var(--cht-line);
+}
+.cht-panel-filters .basalt-select,
+.cht-from {
+	flex: 1 1 8rem;
+	min-width: 0;
+}
+.cht-panel-body {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+.cht-panel-content {
+	padding: 1rem var(--cht-x) 1.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cht-panel-count {
+	margin: 0 0 0.75rem;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+
+/* A thread shows its first message without a hover tint, the replies under it, and the reply box last. */
+.cht-thread-parent {
+	padding-top: 0.5rem;
+
+	& .cht-msg {
+		padding-top: 0.8rem;
+		padding-bottom: 0.8rem;
+	}
+	& .cht-msg:hover {
+		background: transparent;
+	}
+}
+.cht-thread-count {
+	margin: 0.5rem var(--cht-x) 0.75rem;
+}
+.cht-thread {
+	& .cht-msg-actions {
+		right: 0.75rem;
+	}
+	& .cht-msg {
+		padding-left: var(--cht-x);
+		padding-right: var(--cht-x);
+	}
+}
+.cht-reply {
+	position: relative;
+	padding: 1rem var(--cht-x) var(--cht-x);
+	border-top: 1px solid var(--cht-line);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cht-input-reply {
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+
+	&:focus {
+		border-color: var(--basalt-hue-border);
+		box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 16%, transparent);
+	}
+}
+.cht-reply-bar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+.cht-reply-also {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	font-size: var(--cht-fs-small);
+	color: var(--basalt-copy-body);
+}
+.cht-input-edit {
+	border-radius: 10px;
+}
+
+/* The About tab lists label and value rows and ends with a copyable link. */
+.cht-about {
+	margin: 0 0 1rem;
+
+	& dt {
+		margin-bottom: 0.3rem;
+		font-size: var(--cht-fs-small);
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--cht-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: var(--cht-fs-body);
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy-body);
+	}
+}
+.cht-about-row {
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--cht-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.cht-about-link {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	& code {
+		flex: 1;
+		min-width: 0;
+		padding: 0.3rem 0.5rem;
+		border-radius: 6px;
+		overflow: hidden;
+		font-size: var(--cht-fs-small);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+}
+
+/* The Members tab puts the add field above one row per person. */
+.cht-members-tools {
+	padding: 1rem var(--cht-x) 0.25rem;
+}
+.cht-members-tools-label {
+	margin-bottom: 0.3rem;
+	font-size: var(--cht-fs-small);
+	font-weight: 600;
+}
+.cht-members-tools-msg {
+	margin: 0.3rem 0 0;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.cht-members-tools + .cht-panel-content {
+	padding-top: 0.5rem;
+}
+.cht-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cht-person {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.8rem 0;
+
+	& + .cht-person {
+		border-top: 1px solid var(--cht-line);
+	}
+}
+.cht-person-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+.cht-person-name {
+	font-size: var(--cht-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cht-person-meta {
+	overflow: hidden;
+	font-size: var(--cht-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cht-quiet);
+}
+.cht-person-remove.btn-icon {
+	width: 1.9rem;
+	height: 1.9rem;
+	font-size: 0.9rem;
+	opacity: 0.9;
+}
+
+/* Search, mentions, saved and pinned share these cards; each card is one button with an optional corner action. */
+.cht-results {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cht-result {
+	position: relative;
+	border: 1px solid var(--cht-line);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: var(--cht-hover);
+	}
+}
+.cht-result-go {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	width: 100%;
+	padding: 0.8rem 1rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: transparent;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.cht-result-head {
+	display: flex;
+	gap: 0.1rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding-right: 1.75rem;
+
+	& .basalt-avatar {
+		width: 22px;
+		height: 22px;
+		font-size: 0.5rem;
+	}
+}
+.cht-result-name {
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cht-result-where {
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+/* Three lines at most, then an ellipsis. */
+.cht-result-text {
+	display: -webkit-box;
+	overflow: hidden;
+	font-size: var(--cht-fs-body);
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+
+	& .cht-chref {
+		padding: 0;
+	}
+}
+.cht-result-x.btn-icon {
+	position: absolute;
+	top: 0.3rem;
+	right: 0.3rem;
+	width: 1.75rem;
+	height: 1.75rem;
+	font-size: 0.8rem;
+}
+.cht-result-skel {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	padding: 0.75rem;
+
+	& .basalt-skeleton-text {
+		margin: 0;
+	}
+}
+
+/* In the Files tab every file links back to the message it came with. */
+.cht-filelist {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cht-filelist-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.8rem 0.5rem;
+	border: 0;
+	border-radius: 8px;
+	text-align: left;
+	color: var(--cht-quiet);
+	background: transparent;
+
+	&:hover {
+		background: var(--cht-hover);
+	}
+}
+.cht-filelist-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.cht-filelist-name {
+	overflow: hidden;
+	font-size: var(--cht-fs-body);
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cht-filelist-meta {
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+
+/* Below 1200px the panel lies over the feed instead of squeezing it. */
+@media (max-width: 1199.98px) {
+	.cht-panel {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 6;
+		width: min(380px, 100%);
+		box-shadow: -12px 0 32px color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+	}
+	.cht-composer-hint {
+		display: none;
+	}
+}
+
+/*
+ * Tablets and phones show one pane at a time. Opening a channel slides it
+ * in and its back arrow returns to the list; a thread, search or details
+ * panel lies over the channel, which stays open underneath.
+ */
+@media (max-width: 991.98px) {
+	.cht-app {
+		grid-template-columns: minmax(0, 1fr);
+
+		&[data-view="list"] .cht-main,
+		&[data-view="list"] .cht-panel,
+		&[data-view="channel"] .cht-side,
+		&[data-view="channel"] .cht-panel,
+		&[data-view="panel"] .cht-side {
+			display: none;
+		}
+		&[data-view="channel"] .cht-main {
+			animation: cht-slide-in 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+		}
+		&[data-view="panel"] .cht-panel {
+			animation: cht-slide-in 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+		}
+		&[data-view="list"] .cht-side {
+			animation: cht-slide-back 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+		}
+	}
+	.cht-side {
+		border-right: 0;
+	}
+	.cht-panel {
+		width: min(400px, 100%);
+	}
+	.cht-head-back {
+		display: inline-grid;
+		place-items: center;
+	}
+}
+@keyframes cht-slide-in {
+	from {
+		translate: 2.5rem 0;
+		opacity: 0;
+	}
+}
+@keyframes cht-slide-back {
+	from {
+		translate: -1.5rem 0;
+		opacity: 0;
+	}
+}
+
+/* Phones trim the header, give the panel the full width and hide the formatting row until the composer has focus. */
+@media (max-width: 767.98px) {
+	.cht-head {
+		gap: 0.3rem;
+		min-height: 4.25rem;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+	.cht-head-people.btn {
+		display: none;
+	}
+	.cht-msg {
+		gap: 0.65rem;
+		grid-template-columns: 2.1rem minmax(0, 1fr);
+	}
+	.cht-panel {
+		width: 100%;
+		border-left: 0;
+	}
+	.cht-tools {
+		display: none;
+	}
+	.cht-composer-box:focus-within .cht-tools {
+		display: flex;
+	}
+	.cht-attach-item {
+		width: 100%;
+	}
+}
+
+/* The message menus push key hints to the right and draw destructive choices in red. */
+.cht-menu {
+	& .dropdown-item {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+	& kbd.cht-menu-key {
+		font-size: var(--cht-fs-small);
+	}
+}
+.cht-menu-key {
+	margin-left: auto;
+	padding-left: 1rem;
+}
+.cht-danger-item.dropdown-item {
+	color: var(--cht-danger-text);
+
+	&:hover,
+	&:focus {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+.cht-danger-btn.btn {
+	--bs-btn-color: var(--cht-danger-text);
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-danger) 40%, var(--basalt-edge));
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-danger-soft);
+	--bs-btn-hover-border-color: var(--basalt-danger);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-danger-soft);
+	--bs-btn-active-border-color: var(--basalt-danger);
+}
+
+/* The emoji picker is fixed to the viewport, above dialogs, as an eight-column grid. */
+.cht-emoji {
+	position: fixed;
+	z-index: 1065;
+	width: max-content;
+	padding: 0.5rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cht-emoji-title {
+	margin: 0 0.25rem 0.3rem;
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--cht-quiet);
+}
+.cht-emoji-grid {
+	display: grid;
+	gap: 0.1rem;
+	grid-template-columns: repeat(8, 2.1rem);
+}
+.cht-emoji-btn {
+	width: 2.1rem;
+	height: 2.1rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1.1rem;
+	line-height: 1;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover,
+	&:focus-visible {
+		outline: none;
+		background: var(--cht-selected);
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+}
+
+/* Dialogs share the section title size. */
+.cht-dialog .basalt-dialog-head-title {
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+}
+.cht-legend {
+	float: none;
+	margin-bottom: 0.5rem;
+	font-size: var(--basalt-fs-section);
+}
+
+/* The channel directory puts search and filters on top, one row per channel, and pages at the foot. */
+.cht-browser-tools {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0 var(--basalt-pad-x) 0.75rem;
+	border-bottom: 1px solid var(--cht-line);
+}
+.cht-browser-sort {
+	flex: 0 1 11rem;
+	width: auto;
+}
+.cht-browser-body {
+	min-height: 18rem;
+	padding: 0.75rem var(--basalt-pad-x);
+}
+.cht-browser-count {
+	margin: 0 0 0.5rem;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.cht-browser-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cht-brow {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 0;
+
+	& + .cht-brow {
+		border-top: 1px solid var(--cht-line);
+	}
+}
+.cht-brow-main {
+	flex: 1;
+	min-width: 0;
+}
+.cht-brow-name {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.1rem;
+	font-size: var(--cht-fs-body);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& > .bi {
+		color: var(--cht-quiet);
+	}
+}
+.cht-brow-desc {
+	margin: 0;
+	font-size: var(--cht-fs-body);
+	color: var(--basalt-copy-body);
+}
+.cht-brow-meta {
+	margin: 0.1rem 0 0;
+	font-size: var(--cht-fs-small);
+	color: var(--cht-quiet);
+}
+.cht-brow-actions {
+	display: flex;
+	gap: 0.4rem;
+	flex: none;
+}
+.cht-joined.badge {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.1rem 0.4rem;
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-success) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.cht-browser-foot {
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+
+	& nav[hidden] {
+		display: none;
+	}
+}
+
+/* On phones each directory row wraps, with its buttons on a line of their own. */
+@media (max-width: 767.98px) {
+	.cht-browser-tools,
+	.cht-browser-body {
+		padding-left: var(--cht-x);
+		padding-right: var(--cht-x);
+	}
+	.cht-brow {
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+	.cht-brow-actions {
+		width: 100%;
+	}
+	.cht-browser-sort {
+		flex: 1 1 100%;
+	}
+}
+
+/* In New channel the people picked so far show as removable chips. */
+.cht-picked {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin: 0.5rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cht-picked-item {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.1rem 0.1rem 0.1rem 0.2rem;
+	border-radius: 999px;
+	font-size: var(--cht-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+
+	& .basalt-avatar {
+		width: 22px;
+		height: 22px;
+		font-size: 0.5rem;
+	}
+}
+
+.cht-settings-note {
+	margin: 0 0 0.6rem;
+	font-size: var(--cht-fs-small);
+	color: var(--basalt-copy-body);
+}
+
+/* The shortcut list is grouped, with one ruled row per key and action. */
+.cht-keys-group {
+	margin: 1.5rem 0 0.75rem;
+	font-size: var(--cht-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--cht-quiet);
+
+	&:first-child {
+		margin-top: 0;
+	}
+}
+.cht-keys {
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--cht-line);
+	}
+	& dt {
+		font-weight: 400;
+		font-size: var(--cht-fs-body);
+		white-space: nowrap;
+		color: var(--basalt-copy-body);
+	}
+	& dd {
+		margin: 0;
+		font-size: var(--cht-fs-body);
+		text-align: right;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* Touch screens have no / key, so its hint goes. */
+@media (hover: none) {
+	.cht-search-key {
+		display: none;
+	}
+}
+
+/* Reduced motion drops every transition and animation; a flashed message just stays tinted. */
+@media (prefers-reduced-motion: reduce) {
+	.cht-msg,
+	.cht-react-add,
+	.cht-msg-actions,
+	.cht-typing-line,
+	.cht-group-toggle .bi,
+	.cht-ws-btn .bi,
+	.cht-switch,
+	.cht-switch::after,
+	.cht-composer-box {
+		transition: none;
+	}
+	.cht-app .cht-main,
+	.cht-app .cht-panel,
+	.cht-app .cht-side {
+		animation: none;
+	}
+	.cht-msg.is-fresh,
+	.cht-msg.is-flash {
+		animation: none;
+	}
+	.cht-msg.is-flash {
+		background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+	}
+}
+
+/* Printing gives the feed its full height and leaves out everything around it. */
+@media print {
+	.cht-shell,
+	.cht-app {
+		height: auto;
+		overflow: visible;
+	}
+	.cht-app {
+		display: block;
+	}
+	.cht-side,
+	.cht-panel,
+	.cht-composer,
+	.cht-msg-actions {
+		display: none;
+	}
+	.cht-feed {
+		overflow: visible;
+	}
+	.cht-msg {
+		transition: none;
+		animation: none;
+	}
+}

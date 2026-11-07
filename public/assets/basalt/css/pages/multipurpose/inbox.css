@@ -1,0 +1,2086 @@
+/*
+ * Inbox styles, for inbox.html. Every class here starts with dm-.
+ *
+ * The inbox runs as its own full-window app, without the admin sidebar,
+ * top bar or page header; the workspace menu at the top of the thread
+ * list is the way back to the dashboard. Shared basalt.css parts do the
+ * heavy lifting (Headers, segmented control, context and command menus,
+ * avatars with presence, removable chips, typing dots, skeletons, empty
+ * states, toasts, dialogs, hold to confirm). This file arranges them and
+ * styles what only the inbox has: the thread list, the open thread, the
+ * composer and the profile column.
+ */
+
+/* Every part of the inbox, including the dialogs and floating menus that
+   sit outside the app grid, reads the same local tokens. */
+.dm-page,
+.dm-dialog,
+.dm-profile,
+.dm-menu,
+.dm-emoji {
+	/* Small gray text is the muted token pulled toward the body color, which
+     keeps it at 4.5:1 on light palettes and on hovered or selected rows. */
+	--dm-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Plain primary falls under 4.5:1 as text in a few light palettes. */
+	--dm-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--dm-danger-text: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+	--dm-selected: color-mix(in srgb, var(--basalt-hue) 11%, var(--basalt-plane));
+	--dm-mine: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+	--dm-theirs: var(--basalt-plane-alt);
+	/* Filled badges use primary deepened toward the text color, with a surface-colored label. */
+	--dm-fill: color-mix(in srgb, var(--basalt-hue) 58%, var(--basalt-copy));
+	--dm-hover: color-mix(in srgb, var(--basalt-copy) 5%, var(--basalt-plane));
+	/* The page keeps to four type sizes: the shared card title and section
+     sizes, body text, and one small muted size. */
+	--dm-fs-body: 0.9rem;
+	--dm-fs-small: 0.77rem;
+	/* Pane side padding comes from the shared spacing scale. */
+	--dm-x: var(--basalt-pad-x);
+}
+@media (max-width: 767.98px) {
+	.dm-page,
+	.dm-dialog,
+	.dm-profile,
+	.dm-menu,
+	.dm-emoji {
+		--dm-x: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Shared menus, buttons and fields inside the app use the body size. */
+.dm-page .dropdown-menu {
+	--bs-dropdown-font-size: var(--dm-fs-body);
+}
+.dm-app .btn,
+.dm-app .form-control {
+	--bs-btn-font-size: var(--dm-fs-body);
+	font-size: var(--dm-fs-body);
+}
+
+/* Keyboard hints come in two looks: outlined keys inside buttons and
+   menus, and filled keys in running text and the shortcuts dialog. */
+.dm-kbd {
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+	font:
+		600 var(--dm-fs-small)/1.3 "Chivo Mono",
+		monospace;
+	color: inherit;
+	background: transparent;
+	box-shadow: none;
+}
+.dm-kbd-menu {
+	margin-left: auto;
+	padding: 0 0.3rem;
+	font-size: var(--dm-fs-small);
+}
+.dm-menu .dropdown-item,
+.dm-thread-tools .dropdown-item {
+	display: flex;
+	gap: 0.1rem;
+	align-items: center;
+}
+.dm-page kbd:not(.dm-kbd),
+.dm-dialog kbd {
+	padding: 0.05rem 0.3rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge);
+	font:
+		600 var(--dm-fs-small)/1.3 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+	box-shadow: none;
+}
+
+/* Square icon buttons stay quiet until hovered; a pressed one turns primary. */
+.dm-icon-btn.btn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	--bs-btn-color: var(--dm-quiet);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: transparent;
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 9px;
+}
+.dm-icon-btn-sm.btn {
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 7px;
+	font-size: var(--dm-fs-body);
+}
+.dm-icon-btn[aria-pressed="true"] {
+	color: var(--dm-link);
+	background: var(--dm-selected);
+}
+
+/* One focus ring for the whole inbox, set just outside, just inside or
+   clear of the control depending on what surrounds it. */
+.dm-icon-btn:focus-visible,
+button.dm-quote:focus-visible,
+.dm-react:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.dm-ws-btn:focus-visible,
+.dm-conv:focus-visible,
+.dm-shared-item:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: -2px;
+}
+.dm-file:focus-visible,
+.dm-members-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* A text button that looks and reads like a link. */
+.dm-link {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 650;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--dm-link);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Bootstrap's outline danger button misses 4.5:1 in most palettes, so
+   destructive actions use this quieter version. */
+.dm-danger-btn.btn {
+	--bs-btn-color: var(--dm-danger-text);
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-danger) 40%, var(--basalt-edge));
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-danger-soft);
+	--bs-btn-hover-border-color: var(--basalt-danger);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-danger-soft);
+	--bs-btn-active-border-color: var(--basalt-danger);
+}
+
+/* Search hits are highlighted the same way everywhere they appear. */
+.dm-page mark,
+.dm-dialog mark {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 30%, var(--basalt-plane));
+}
+
+/* The app fills the window edge to edge; only the panes inside it
+   scroll, never the page. */
+.dm-shell {
+	height: 100vh;
+	height: 100dvh;
+	min-height: 0;
+	overflow: hidden;
+}
+.dm-page {
+	height: 100%;
+}
+
+/* Three columns: the thread list, the open thread, and the profile. */
+.dm-app {
+	--dm-rail: 20rem;
+	position: relative;
+	display: grid;
+	grid-template-columns: var(--dm-rail) minmax(0, 1fr);
+	height: 100%;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.dm-list,
+.dm-thread {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+}
+.dm-list {
+	border-right: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.dm-thread {
+	position: relative;
+	background: var(--basalt-plane);
+}
+.dm-thread-back.btn {
+	display: none;
+}
+/* From 1200px the profile takes the third column; narrower screens get it as a side sheet. */
+@media (min-width: 1200px) {
+	.dm-app.has-thread:not(.is-profile-off) {
+		grid-template-columns: var(--dm-rail) minmax(0, 1fr) minmax(18rem, 20rem);
+	}
+	.dm-app.is-profile-off .dm-profile,
+	.dm-app:not(.has-thread) .dm-profile {
+		display: none;
+	}
+}
+/* Tablets and phones show one pane at a time. Opening a thread slides it
+   in, and its back arrow slides the list back. */
+@media (max-width: 991.98px) {
+	.dm-app {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.dm-app[data-view="list"] .dm-thread,
+	.dm-app[data-view="thread"] .dm-list {
+		display: none;
+	}
+	.dm-app[data-view="thread"] .dm-thread {
+		animation: dm-slide-in 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.dm-app[data-view="list"] .dm-list {
+		animation: dm-slide-back 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.dm-list {
+		border-right: 0;
+	}
+	.dm-thread-back.btn {
+		display: inline-grid;
+	}
+}
+@keyframes dm-slide-in {
+	from {
+		translate: 2.5rem 0;
+		opacity: 0;
+	}
+}
+@keyframes dm-slide-back {
+	from {
+		translate: -1.5rem 0;
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.dm-app .dm-list,
+	.dm-app .dm-thread {
+		animation: none;
+	}
+}
+
+/* The head of the list: a way back, the workspace menu and New message. */
+.dm-side-head {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem 0.75rem 0.75rem 0.5rem;
+}
+.dm-side-back.btn-icon {
+	flex: none;
+	color: var(--dm-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.dm-ws {
+	flex: 1;
+	min-width: 0;
+}
+.dm-ws-btn {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover,
+	&[aria-expanded="true"] {
+		background: var(--dm-hover);
+	}
+	& .dm-side-title .bi {
+		margin-left: 0.3rem;
+		font-size: var(--dm-fs-small);
+		color: var(--dm-quiet);
+		transition: rotate 170ms ease;
+	}
+	&[aria-expanded="true"] .dm-side-title .bi {
+		rotate: 180deg;
+	}
+}
+.dm-ws-menu.dropdown-menu {
+	min-width: 17.5rem;
+}
+.dm-ws-head {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.5rem 0.7rem 0.4rem;
+}
+.dm-ws-head-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.dm-ws-name {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dm-ws-app {
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+.dm-ws-menu {
+	& .dropdown-item {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+	}
+	& .dropdown-item > .bi {
+		width: 1rem;
+		text-align: center;
+	}
+	& .dm-menu-key {
+		margin-left: auto;
+		padding-left: 0.3rem;
+		padding-right: 0.3rem;
+	}
+}
+/* The Dark mode item carries aria-pressed, and draws a small switch from it. */
+.dm-switch {
+	position: relative;
+	flex: none;
+	width: 1.9rem;
+	height: 1.1rem;
+	margin-left: auto;
+	border-radius: 999px;
+	background: var(--basalt-edge-strong);
+	transition: background-color 170ms ease;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0.1rem;
+		left: 0.1rem;
+		width: 0.8rem;
+		height: 0.8rem;
+		border-radius: 50%;
+		background: var(--basalt-plane);
+		transition: translate 170ms ease;
+	}
+}
+[aria-pressed="true"] > .dm-switch {
+	background: var(--basalt-hue);
+}
+[aria-pressed="true"] > .dm-switch::after {
+	translate: 0.8rem 0;
+}
+@media (prefers-reduced-motion: reduce) {
+	.dm-ws-btn .bi,
+	.dm-switch,
+	.dm-switch::after {
+		transition: none;
+	}
+}
+.dm-side-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}
+.dm-side-brand-text {
+	min-width: 0;
+}
+.dm-side-title {
+	display: flex;
+	align-items: center;
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.dm-side-sub {
+	display: block;
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--dm-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--dm-quiet);
+}
+/* New message is the inbox's one primary action, so it never scrolls away. */
+.dm-side-new.btn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+}
+
+/* Search sits above the folders, with its shortcut key shown until focused. */
+.dm-search {
+	position: relative;
+	margin: 0.25rem 0.75rem 0.75rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--dm-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+		padding-right: 2.4rem;
+	}
+	&:focus-within .dm-search-key {
+		display: none;
+	}
+}
+.dm-search-key.dm-kbd {
+	position: absolute;
+	top: 50%;
+	right: 0.7rem;
+	transform: translateY(-50%);
+	margin: 0;
+	color: var(--dm-quiet);
+	pointer-events: none;
+}
+.dm-filter {
+	margin: 0 0.75rem 1rem;
+}
+.dm-filter-count {
+	margin-left: 0.2rem;
+	font-weight: 700;
+
+	&:empty {
+		display: none;
+	}
+}
+.dm-list-count {
+	margin: 0 0.75rem 0.5rem;
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+
+	&:empty,
+	&[hidden] {
+		display: none;
+	}
+}
+.dm-list-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	padding: 0.1rem 0.75rem 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+	overflow-y: auto;
+	/* Search and folders stay put above the list, and a soft edge shows
+     where rows slide under them. */
+	box-shadow: inset 0 12px 12px -14px var(--basalt-scrim);
+	overscroll-behavior: contain;
+}
+
+/* Thread rows: avatar, name and time on top, preview and flags below. */
+.dm-convs {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dm-convs-group {
+	padding: 0.7rem 0.6rem 0.3rem;
+	font-size: var(--dm-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--dm-quiet);
+}
+.dm-convs-row {
+	position: relative;
+	margin-top: 2px;
+
+	&:hover .dm-conv-more,
+	&:focus-within .dm-conv-more,
+	&.is-target .dm-conv-more {
+		opacity: 1;
+	}
+}
+.dm-conv {
+	position: relative;
+	display: flex;
+	gap: 0.7rem;
+	align-items: flex-start;
+	width: 100%;
+	padding: 0.6rem 2rem 0.6rem 0.6rem;
+	border: 0;
+	border-radius: 11px;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	transition: background-color 130ms ease;
+
+	&:hover {
+		background: var(--dm-hover);
+	}
+	&.is-active {
+		background: var(--dm-selected);
+	}
+	&.is-active::before {
+		content: "";
+		position: absolute;
+		top: 0.6rem;
+		bottom: 0.6rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-hue);
+	}
+}
+.dm-conv-avatar {
+	flex: none;
+	padding-top: 0.1rem;
+}
+.dm-conv-main {
+	display: flex;
+	gap: 0.12rem;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+.dm-conv-top,
+.dm-conv-bottom {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+}
+.dm-conv-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--dm-fs-body);
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+/* Times sit in a fixed-width track so they line up down the list. */
+.dm-conv-time {
+	flex: none;
+	width: 4.25rem;
+	font-size: var(--dm-fs-small);
+	white-space: nowrap;
+	color: var(--dm-quiet);
+}
+.dm-conv-snippet {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--dm-fs-body);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--dm-quiet);
+}
+.dm-conv-draft {
+	font-weight: 700;
+	color: var(--dm-danger-text);
+}
+.dm-conv-quiet {
+	font-style: italic;
+}
+.dm-conv-flags {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex: none;
+	align-items: center;
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+.dm-conv-badge {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.25rem;
+	height: 1.25rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: var(--dm-fs-small);
+	font-weight: 700;
+	line-height: 1;
+	color: var(--basalt-plane);
+	background: var(--dm-fill);
+}
+.dm-conv.is-unread {
+	& .dm-conv-name {
+		font-weight: 750;
+	}
+	& .dm-conv-snippet {
+		font-weight: 550;
+		color: var(--basalt-copy);
+	}
+	& .dm-conv-time {
+		font-weight: 700;
+		color: var(--dm-link);
+	}
+}
+.dm-conv.is-muted .dm-conv-badge {
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge-strong);
+}
+/* The row's ... button shows on hover, on focus and while its menu is
+   open, and always on touch screens. */
+.dm-conv-more {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.3rem;
+	display: grid;
+	place-items: center;
+	width: 1.7rem;
+	height: 1.7rem;
+	border: 0;
+	border-radius: 7px;
+	color: var(--dm-quiet);
+	background: transparent;
+	opacity: 0;
+	transition: opacity 130ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+	}
+}
+@media (hover: none) {
+	.dm-conv-more {
+		opacity: 1;
+	}
+}
+.dm-convs-row.is-target .dm-conv {
+	background: var(--basalt-wash);
+}
+@media (prefers-reduced-motion: reduce) {
+	.dm-conv,
+	.dm-conv-more {
+		transition: none;
+	}
+}
+
+/* A small group shows two overlapping avatars. */
+.dm-duo {
+	position: relative;
+	display: inline-block;
+	flex: none;
+	width: 40px;
+	height: 40px;
+
+	& .basalt-avatar {
+		position: absolute;
+		box-sizing: content-box;
+		border: 2px solid var(--basalt-plane);
+	}
+	& .basalt-avatar:first-child {
+		top: 0;
+		left: 0;
+	}
+	& .basalt-avatar:last-child {
+		right: -2px;
+		bottom: -2px;
+	}
+}
+.dm-duo-lg .basalt-avatar {
+	width: 28px;
+	height: 28px;
+}
+
+/* Skeleton rows hold the list's shape while it loads. */
+.dm-convs-row-skeleton {
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	padding: 0.65rem 0.6rem;
+}
+.dm-skel-lines {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+}
+.dm-skel-name {
+	width: 55%;
+}
+
+/* Empty, no-result and error states share one look, with a larger icon in the thread. */
+.dm-empty {
+	padding: 2rem 1rem;
+
+	& .basalt-empty-text {
+		max-width: 22rem;
+		color: var(--dm-quiet);
+	}
+}
+.dm-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin-bottom: 0.4rem;
+	border-radius: 13px;
+	font-size: 1.2rem;
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.dm-empty-icon-lg {
+	width: 3.5rem;
+	height: 3.5rem;
+	border-radius: 16px;
+	font-size: 1.5rem;
+}
+.dm-empty.basalt-empty-danger .dm-empty-icon {
+	color: var(--dm-danger-text);
+	background: var(--basalt-danger-soft);
+}
+.dm-empty.basalt-empty-success .dm-empty-icon {
+	color: color-mix(in srgb, var(--basalt-success) 56%, var(--basalt-copy));
+	background: var(--basalt-success-soft);
+}
+.dm-empty-thread {
+	margin: auto;
+	padding: 3rem 1.5rem;
+}
+
+/* The thread head and the composer hold still while messages scroll
+   between them, each casting a soft edge toward the log. */
+.dm-thread-head {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem var(--dm-x);
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	box-shadow: 0 12px 24px -18px var(--basalt-scrim);
+
+	&[hidden] {
+		display: none;
+	}
+}
+@media (max-width: 767.98px) {
+	.dm-thread-head {
+		gap: 0.5rem;
+		min-height: 4.25rem;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+}
+.dm-thread-avatar {
+	display: inline-flex;
+	flex: none;
+}
+.dm-thread-who {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.dm-thread-name {
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.dm-thread-meta {
+	margin: 0.05rem 0 0;
+	overflow: hidden;
+	font-size: var(--dm-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--dm-quiet);
+}
+.dm-thread-dot {
+	margin: 0 0.3rem;
+}
+.dm-presence {
+	font-weight: 600;
+}
+.dm-presence-online {
+	color: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+}
+.dm-thread-tools {
+	display: flex;
+	gap: 0.1rem;
+	flex: none;
+	align-items: center;
+}
+
+/* The scrolling log of messages, broken up by day and by the New marker. */
+.dm-log {
+	position: relative;
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-height: 0;
+	padding: 0.5rem 0 1rem;
+	overflow-y: auto;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 35%, var(--basalt-plane));
+	overscroll-behavior: contain;
+}
+.dm-log-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dm-day {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 1rem var(--dm-x) 0.3rem;
+
+	&::before,
+	&::after {
+		content: "";
+		flex: 1;
+		height: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.dm-day-label {
+	margin: 0;
+	font-size: var(--dm-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--dm-quiet);
+}
+.dm-new-line {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.5rem var(--dm-x) 0.2rem;
+
+	&::before {
+		content: "";
+		flex: 1;
+		height: 1px;
+		background: color-mix(in srgb, var(--basalt-danger) 55%, transparent);
+	}
+	& span {
+		font-size: var(--dm-fs-small);
+		font-weight: 750;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--dm-danger-text);
+	}
+}
+
+/* One message: an avatar column, then the byline, bubble, files,
+   reactions and receipt stacked in the body. */
+.dm-row {
+	position: relative;
+	display: flex;
+	gap: 0.65rem;
+	align-items: flex-start;
+	padding: 0.12rem var(--dm-x);
+	outline: 0;
+
+	&:hover,
+	&:focus-within,
+	&.is-target {
+		background: color-mix(in srgb, var(--basalt-wash) 70%, transparent);
+	}
+	&:focus-visible {
+		background: var(--basalt-wash);
+		box-shadow: inset 3px 0 0 var(--basalt-hue);
+	}
+	&.is-editing {
+		background: var(--dm-selected);
+	}
+	&.is-flash {
+		animation: dm-flash 1.6s ease-out;
+	}
+	&:hover .dm-tools,
+	&:focus-within .dm-tools,
+	&.is-target .dm-tools {
+		opacity: 1;
+		pointer-events: auto;
+	}
+}
+.dm-row-start {
+	margin-top: 0.5rem;
+}
+@keyframes dm-flash {
+	0%,
+	35% {
+		background: color-mix(in srgb, var(--basalt-warning) 22%, var(--basalt-plane));
+	}
+	100% {
+		background: transparent;
+	}
+}
+/* Without motion, a message you jump to keeps a steady tint instead of fading. */
+@media (prefers-reduced-motion: reduce) {
+	.dm-row.is-flash {
+		background: color-mix(in srgb, var(--basalt-warning) 18%, var(--basalt-plane));
+		animation: none;
+	}
+}
+.dm-row-side {
+	flex: none;
+	width: 32px;
+}
+.dm-row-body {
+	display: flex;
+	gap: 0.25rem;
+	flex: 0 1 auto;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	max-width: min(36rem, 82%);
+}
+@media (max-width: 767.98px) {
+	.dm-row {
+		gap: 0.5rem;
+	}
+	.dm-row-body {
+		max-width: 88%;
+	}
+	.dm-row-side {
+		width: 28px;
+	}
+}
+.dm-row-by {
+	margin: 0;
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+.dm-row-name {
+	margin-right: 0.2rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dm-row-time {
+	font-size: var(--dm-fs-small);
+}
+
+/* Bubbles get a sharp corner at the top of a run and round fully after it. */
+.dm-bubble {
+	padding: 0.5rem 0.8rem;
+	border-radius: 4px 14px 14px 14px;
+	border: 1px solid var(--basalt-edge);
+	font-size: var(--dm-fs-body);
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--dm-theirs);
+
+	& a {
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--dm-link);
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+}
+.dm-row:not(.dm-row-start) .dm-bubble {
+	border-radius: 14px;
+}
+.dm-bubble-edited {
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+.dm-at {
+	padding: 0 0.2rem;
+	border-radius: 4px;
+	font-weight: 650;
+	color: var(--dm-link);
+	background: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+}
+.dm-at-me {
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 26%, transparent);
+}
+
+/* Your own messages flip to the right, without an avatar column. */
+.dm-row-mine {
+	flex-direction: row-reverse;
+
+	& .dm-row-side {
+		display: none;
+	}
+	& .dm-row-body {
+		align-items: flex-end;
+	}
+	& .dm-bubble {
+		border-radius: 14px 4px 14px 14px;
+		border-color: color-mix(in srgb, var(--basalt-hue) 22%, var(--basalt-edge));
+		background: var(--dm-mine);
+	}
+}
+
+/* A reply carries a clickable quote of the message it answers. */
+.dm-quote {
+	display: flex;
+	flex-direction: column;
+	max-width: 100%;
+	margin: 0;
+	padding: 0.3rem 0.65rem;
+	border: 0;
+	border-left: 3px solid color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-edge));
+	border-radius: 4px 8px 8px 4px;
+	font-size: var(--dm-fs-small);
+	text-align: left;
+	color: var(--dm-quiet);
+	background: color-mix(in srgb, var(--basalt-copy) 5%, transparent);
+}
+button.dm-quote:hover {
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+}
+.dm-quote-by {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dm-quote-text {
+	max-width: 30rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+@media (max-width: 767.98px) {
+	.dm-quote-text {
+		max-width: 14rem;
+	}
+}
+.dm-quote-gone {
+	font-style: italic;
+}
+
+/* Attachments are cards; images show a picture with the name under it. */
+.dm-files {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 0.1rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.dm-file {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	min-width: 14rem;
+	max-width: 100%;
+	padding: 0.5rem 0.8rem 0.5rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 130ms ease,
+		box-shadow 130ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		box-shadow: 0 2px 10px color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.dm-file {
+		transition: none;
+	}
+}
+.dm-file-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.dm-file-name {
+	overflow: hidden;
+	font-size: var(--dm-fs-body);
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.dm-file-size {
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+/* File icons take their tint from --dm-tone, set per kind. */
+.dm-file-icon {
+	--dm-tone: var(--basalt-copy-muted);
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: var(--basalt-fs-section);
+	color: color-mix(in srgb, var(--dm-tone) 66%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--dm-tone) 14%, var(--basalt-plane));
+}
+.dm-file-icon-sheet {
+	--dm-tone: var(--basalt-success);
+}
+.dm-file-icon-pdf {
+	--dm-tone: var(--basalt-danger);
+}
+.dm-file-icon-doc {
+	--dm-tone: var(--basalt-info);
+}
+.dm-file-icon-image {
+	--dm-tone: var(--basalt-series-4);
+}
+.dm-file-icon-link {
+	--dm-tone: var(--basalt-hue);
+}
+.dm-file-image {
+	gap: 0;
+	flex-direction: column;
+	align-items: stretch;
+	width: 15rem;
+	min-width: 0;
+	padding: 0;
+	overflow: hidden;
+}
+@media (max-width: 767.98px) {
+	.dm-file {
+		min-width: 0;
+	}
+	.dm-file-image {
+		width: 13rem;
+	}
+}
+.dm-file-pic {
+	display: block;
+	aspect-ratio: 16 / 10;
+	background: var(--basalt-plane-alt);
+
+	& img,
+	& .dm-art {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
+.dm-file-caption {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: space-between;
+	padding: 0.4rem 0.65rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* Sample images are small drawings colored from the palette. */
+.dm-art-ground {
+	fill: color-mix(in srgb, var(--basalt-series-3) 9%, var(--basalt-plane));
+}
+.dm-art-road {
+	fill: none;
+	stroke: color-mix(in srgb, var(--basalt-copy-muted) 30%, var(--basalt-plane));
+	stroke-width: 7;
+}
+.dm-art-water {
+	fill: color-mix(in srgb, var(--basalt-info) 22%, var(--basalt-plane));
+}
+.dm-art-before {
+	fill: none;
+	stroke: var(--basalt-copy-muted);
+	stroke-width: 3;
+	stroke-dasharray: 6 5;
+	stroke-linejoin: round;
+}
+.dm-art-after {
+	fill: none;
+	stroke: var(--basalt-hue);
+	stroke-width: 4;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+.dm-art-stop {
+	fill: var(--basalt-plane);
+	stroke: var(--basalt-hue);
+	stroke-width: 3;
+}
+.dm-art-stop-end {
+	fill: var(--basalt-hue);
+}
+
+/* Reaction chips; the ones you added are tinted primary. */
+.dm-reacts {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.dm-react {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.1rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: var(--dm-fs-small);
+	font-weight: 650;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+	}
+	&.is-mine {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge));
+		color: var(--dm-link);
+		background: var(--dm-selected);
+	}
+}
+.dm-react-emoji {
+	font-size: var(--dm-fs-body);
+}
+
+/* Sent, delivered and read under your newest message, and a retry link when one fails. */
+.dm-row-status {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0;
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+
+	&.is-read .bi {
+		color: var(--dm-link);
+	}
+	&.is-failed {
+		font-weight: 600;
+		color: var(--dm-danger-text);
+	}
+	& .dm-link {
+		color: var(--dm-danger-text);
+	}
+}
+
+/* React, reply and more float over a message's top edge on hover or focus;
+   touch screens use the menu instead. */
+.dm-tools {
+	position: absolute;
+	top: -0.85rem;
+	right: var(--dm-x);
+	z-index: 2;
+	display: flex;
+	gap: 1px;
+	padding: 2px;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 9px;
+	background: var(--basalt-plane);
+	opacity: 0;
+	box-shadow: 0 4px 14px color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+	pointer-events: none;
+	transition: opacity 110ms ease;
+}
+.dm-row-mine .dm-tools {
+	right: auto;
+	left: var(--dm-x);
+}
+.dm-tool {
+	display: grid;
+	place-items: center;
+	width: 1.85rem;
+	height: 1.7rem;
+	border: 0;
+	border-radius: 7px;
+	font-size: var(--dm-fs-body);
+	color: var(--dm-quiet);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+@media (hover: none) {
+	.dm-tools {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.dm-tools {
+		transition: none;
+	}
+}
+
+/* The typing row and the loading skeleton reuse the message layout. */
+.dm-row-typing .dm-row-body {
+	padding-top: 0.1rem;
+}
+.dm-row-skeleton {
+	& .dm-row-body {
+		width: 100%;
+		max-width: 100%;
+	}
+	&.dm-row-mine .dm-row-body {
+		align-items: flex-end;
+	}
+}
+.dm-skel-bubble {
+	display: block;
+	height: 2.4rem;
+	border-radius: 14px;
+}
+.dm-skel-bubble-1 {
+	width: 58%;
+}
+.dm-skel-bubble-2 {
+	width: 40%;
+}
+.dm-skel-bubble-3 {
+	width: 72%;
+}
+.dm-skel-bubble-4 {
+	width: 36%;
+}
+.dm-skel-bubble-5 {
+	width: 54%;
+}
+.dm-skel-av {
+	width: 32px;
+	height: 32px;
+}
+
+/* Jump to the newest message floats centered above the composer. */
+.dm-jump.btn {
+	--bs-btn-color: var(--basalt-plane);
+	--bs-btn-bg: var(--dm-fill);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-color: var(--basalt-plane);
+	--bs-btn-hover-bg: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-plane);
+	--bs-btn-active-bg: var(--basalt-copy);
+	position: absolute;
+	bottom: 8.5rem;
+	left: 50%;
+	z-index: 3;
+	transform: translateX(-50%);
+	border-radius: 999px;
+	box-shadow: 0 6px 18px color-mix(in srgb, var(--basalt-copy) 20%, transparent);
+}
+@media (max-width: 767.98px) {
+	.dm-jump.btn {
+		bottom: 7.5rem;
+	}
+}
+.dm-jump[hidden] {
+	display: none;
+}
+
+/* Dragging files over the thread shows a dashed drop target over everything. */
+.dm-drop {
+	position: absolute;
+	inset: 0.5rem;
+	z-index: 6;
+	display: none;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border: 2px dashed var(--basalt-hue);
+	border-radius: 14px;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue-soft) 85%, transparent);
+	pointer-events: none;
+
+	& .bi {
+		font-size: 2rem;
+		color: var(--dm-link);
+	}
+}
+.dm-thread.is-dropping .dm-drop {
+	display: flex;
+}
+
+/* The composer: what you are replying to, files waiting to go, then the box. */
+.dm-composer {
+	position: relative;
+	z-index: 1;
+	container-type: inline-size;
+	padding: 0.6rem var(--dm-x) 0.9rem;
+	border-top: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	box-shadow: 0 -12px 24px -18px var(--basalt-scrim);
+
+	&[hidden] {
+		display: none;
+	}
+}
+@media (max-width: 767.98px) {
+	.dm-composer {
+		padding-bottom: 0.7rem;
+	}
+}
+.dm-composer-context {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-bottom: 0.5rem;
+	padding: 0.4rem 0.4rem 0.4rem 0.7rem;
+	border-left: 3px solid var(--basalt-hue);
+	border-radius: 4px 10px 10px 4px;
+	color: var(--basalt-copy);
+	background: var(--dm-selected);
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		color: var(--dm-link);
+	}
+}
+.dm-composer-context-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.dm-composer-context-title {
+	margin: 0;
+	font-size: var(--dm-fs-small);
+	font-weight: 700;
+}
+.dm-composer-context-quote {
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--dm-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--dm-quiet);
+}
+.dm-composer-files {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.dm-pending {
+	max-width: 100%;
+}
+.dm-pending-name {
+	min-width: 0;
+	max-width: 12rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.dm-pending-size {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.dm-composer-box {
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 130ms ease,
+		box-shadow 130ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.dm-composer-box {
+		transition: none;
+	}
+}
+.dm-composer-input {
+	display: block;
+	width: 100%;
+	min-height: 2.75rem;
+	max-height: 11rem;
+	padding: 0.7rem 0.9rem 0.3rem;
+	border: 0;
+	outline: 0;
+	font-size: var(--dm-fs-body);
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: transparent;
+	resize: none;
+
+	&::placeholder {
+		color: var(--dm-quiet);
+		opacity: 1;
+	}
+}
+.dm-composer-bar {
+	display: flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.25rem 0.4rem 0.4rem;
+}
+.dm-composer-hint {
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0 0.5rem;
+	overflow: hidden;
+	font-size: var(--dm-fs-small);
+	text-align: right;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--dm-quiet);
+
+	& kbd {
+		font-size: var(--dm-fs-small);
+	}
+}
+.dm-send.btn {
+	flex: none;
+	border-radius: 10px;
+}
+/* The key hints shorten, then drop out, as the composer narrows. */
+@container (max-width: 34rem) {
+	.dm-composer-keys-long {
+		display: none;
+	}
+}
+@container (max-width: 22rem) {
+	.dm-composer-keys {
+		display: none;
+	}
+}
+
+/* @mention suggestions open above the composer box. */
+.dm-mention {
+	position: absolute;
+	bottom: calc(100% - 0.4rem);
+	left: var(--dm-x);
+	z-index: 8;
+	width: min(20rem, calc(100% - 2rem));
+	margin: 0;
+	padding: 0.3rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	list-style: none;
+	box-shadow: 0 10px 30px color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.dm-mention-item {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border-radius: 8px;
+	font-size: var(--dm-fs-body);
+	color: var(--basalt-copy);
+	cursor: pointer;
+
+	&.is-active {
+		background: var(--dm-selected);
+	}
+}
+.dm-mention-name {
+	flex: 1 1 auto;
+	font-weight: 600;
+}
+.dm-mention-role {
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+
+/* The emoji panel is placed by script in fixed coordinates, above the dialogs. */
+.basalt-stage .dropdown-menu.dm-emoji {
+	position: fixed;
+	z-index: 1060;
+	width: 15.5rem;
+	padding: 0.5rem;
+}
+.dm-emoji-title {
+	margin: 0.1rem 0.25rem 0.4rem;
+	font-size: var(--dm-fs-small);
+	font-weight: 700;
+	color: var(--dm-quiet);
+}
+.dm-emoji-grid {
+	display: grid;
+	gap: 2px;
+	grid-template-columns: repeat(5, 1fr);
+}
+.dm-emoji-btn {
+	height: 2.3rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1.2rem;
+	line-height: 1;
+	background: transparent;
+
+	&:hover,
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+		background: var(--basalt-wash);
+	}
+	&.is-on {
+		background: var(--dm-selected);
+	}
+}
+
+/* The profile: who you are talking to, then files and links, then settings. */
+.dm-profile {
+	--bs-offcanvas-width: 20rem;
+	--bs-offcanvas-bg: var(--basalt-plane);
+	color: var(--basalt-copy);
+
+	& .offcanvas-header {
+		min-height: 4.75rem;
+		padding: 0.75rem 0.75rem 0.75rem var(--dm-x);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& .offcanvas-title {
+		font-size: var(--basalt-fs-section);
+		font-weight: 700;
+	}
+}
+@media (min-width: 1200px) {
+	.dm-profile {
+		min-height: 0;
+		border-left: 1px solid var(--basalt-edge);
+		overflow-y: auto;
+	}
+}
+.dm-profile-body {
+	display: flex;
+	gap: var(--basalt-pad-head);
+	flex-direction: column;
+	padding: 1.5rem var(--dm-x);
+	overflow-y: auto;
+}
+.dm-profile-none {
+	margin: 0;
+	font-size: var(--dm-fs-body);
+	color: var(--dm-quiet);
+}
+.dm-profile-skel {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	align-items: center;
+}
+.dm-skel-big {
+	width: 72px;
+	height: 72px;
+}
+
+.dm-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+.dm-card-avatar {
+	margin-bottom: 0.6rem;
+}
+.dm-card-name {
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dm-card-title {
+	margin: 0.1rem 0 0.7rem;
+	font-size: var(--dm-fs-body);
+	color: var(--dm-quiet);
+}
+.dm-card-full {
+	margin-bottom: 0.9rem;
+	white-space: nowrap;
+}
+.dm-card-facts {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	width: 100%;
+	margin: 0;
+	padding: 0.7rem 0 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: var(--dm-fs-body);
+	text-align: left;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		min-width: 0;
+	}
+	& .bi {
+		flex: none;
+		width: 1rem;
+		text-align: center;
+		color: var(--dm-quiet);
+	}
+}
+.dm-card-email a {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--dm-link);
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+.dm-presence-dot.bi {
+	font-size: 0.5rem;
+}
+.dm-presence-dot-online.bi {
+	color: var(--basalt-success);
+}
+.dm-presence-dot-away.bi {
+	color: var(--basalt-warning);
+}
+.dm-presence-dot-busy.bi {
+	color: var(--basalt-danger);
+}
+.dm-members {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	width: 100%;
+	margin: 0.5rem 0 0;
+	padding: 0;
+	text-align: left;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+	}
+	& li > span:last-child {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+}
+.dm-members-name {
+	font-size: var(--dm-fs-body);
+	font-weight: 650;
+}
+.dm-members-link {
+	align-self: flex-start;
+	border-radius: 3px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+}
+.dm-members-role {
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+
+.dm-shared {
+	display: flex;
+	gap: 2px;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dm-shared-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.6rem 0.5rem;
+	border: 0;
+	border-radius: 9px;
+	text-align: left;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.dm-shared-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.dm-shared-name {
+	overflow: hidden;
+	font-size: var(--dm-fs-body);
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.dm-shared-meta {
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+.dm-profile-settings {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: var(--dm-fs-body);
+}
+
+/* New message: the chosen people as chips over a searchable team list. */
+.dm-picked {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	list-style: none;
+
+	&:empty {
+		display: none;
+	}
+}
+.dm-picked-none {
+	margin: 0 0 0.5rem;
+	font-size: var(--dm-fs-body);
+	color: var(--dm-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.dm-people {
+	&.basalt-command {
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		overflow: hidden;
+	}
+	& .basalt-command-list {
+		max-height: 15rem;
+	}
+}
+.dm-people-av.basalt-command-icon {
+	background: transparent;
+}
+.dm-people-item.is-picked .dm-people-hint {
+	font-weight: 700;
+	color: var(--dm-link);
+}
+.dm-new-err {
+	margin-top: 0.4rem;
+	color: var(--dm-danger-text);
+}
+
+/* File preview: an image with its legend, a table, or a page of text. */
+.dm-preview {
+	min-height: 10rem;
+}
+.dm-pv-image {
+	margin: 0;
+
+	& img,
+	& .dm-art {
+		display: block;
+		width: 100%;
+		max-height: 60vh;
+		border-radius: 10px;
+		object-fit: contain;
+	}
+	& figcaption {
+		margin-top: 0.6rem;
+		font-size: var(--dm-fs-body);
+		color: var(--dm-quiet);
+	}
+}
+.dm-pv-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0.6rem 0 0;
+	padding: 0;
+	font-size: var(--dm-fs-body);
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.dm-pv-key {
+	width: 1.5rem;
+	height: 0;
+	border-top: 3px dashed var(--basalt-copy-muted);
+}
+.dm-pv-key-after {
+	border-top: 4px solid var(--basalt-hue);
+}
+.dm-pv-table {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+
+	& .table {
+		--bs-table-bg: transparent;
+		font-size: var(--dm-fs-body);
+	}
+	& th {
+		font-size: var(--dm-fs-small);
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--dm-quiet);
+	}
+	& td {
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+}
+.dm-pv-more {
+	margin: 0.6rem 0 0;
+	font-size: var(--dm-fs-small);
+	color: var(--dm-quiet);
+}
+.dm-pv-page {
+	padding: 1.5rem 1.75rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+	box-shadow: 0 6px 22px color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+}
+.dm-pv-page-title {
+	margin: 0 0 1rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dm-pv-page-lines {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 8.5rem 1fr;
+	}
+	& dt {
+		font-size: var(--dm-fs-small);
+		font-weight: 700;
+		color: var(--dm-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: var(--dm-fs-body);
+		color: var(--basalt-copy);
+	}
+}
+/* On phones the preview page loses its padding and stacks term over text. */
+@media (max-width: 575.98px) {
+	.dm-pv-page {
+		padding: 1rem;
+	}
+	.dm-pv-page-lines > div {
+		gap: 0.1rem;
+		grid-template-columns: 1fr;
+	}
+}
+
+/* The shortcuts dialog lines keys up in a fixed column. */
+.dm-keys {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+	}
+	& dt {
+		flex: 0 0 7.5rem;
+		font-weight: 400;
+	}
+	& dd {
+		margin: 0;
+		font-size: var(--dm-fs-body);
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* Printed, the inbox becomes one plain column: the open thread, without
+   the list, composer, profile or anything that moves. */
+@media print {
+	.dm-conv,
+	.dm-tools,
+	.dm-file {
+		transition: none;
+	}
+	.dm-row.is-flash {
+		animation: none;
+	}
+	.dm-list,
+	.dm-composer,
+	.dm-tools,
+	.dm-jump,
+	.dm-profile {
+		display: none;
+	}
+	.dm-shell,
+	.dm-app {
+		height: auto;
+		overflow: visible;
+	}
+	.dm-app {
+		display: block;
+	}
+	.dm-log {
+		overflow: visible;
+	}
+}

@@ -1,0 +1,1357 @@
+/* Event log page (event-log.html), every class under .slg-*. Pills, tabs,
+   the pager, segmented controls, the drawer, empty and retry panels,
+   skeletons and toasts all come from basalt.css; this sheet arranges the
+   page around them and draws the log lines, the groups and the source bars. */
+
+.slg-page {
+	/* Small gray text is the muted token pulled toward the body color, which
+     keeps 4.5:1 on the lighter palettes and on hovered rows. */
+	--slg-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Each severity has one color. Warning and info run light in several
+     palettes, so any text drawn in them is mixed toward the text color. */
+	--slg-error: var(--basalt-danger);
+	--slg-warn: var(--basalt-warning);
+	--slg-info: var(--basalt-info);
+	--slg-debug: color-mix(in srgb, var(--basalt-copy) 22%, transparent);
+	--slg-mono: "Chivo Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Every list on the page drops the browser's bullets and indent. */
+.slg-legend,
+.slg-spikes-list,
+.slg-list,
+.slg-groups,
+.slg-sources,
+.slg-dbars {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Anything the script hides with the hidden attribute stays hidden,
+   whatever display its own rule asks for. */
+.slg-applied-row[hidden],
+.slg-fresh[hidden],
+.slg-head-row[hidden],
+.slg-list[hidden],
+.slg-row-detail[hidden],
+.slg-empty[hidden],
+.slg-error[hidden],
+.slg-pager[hidden],
+.slg-groups[hidden] {
+	display: none;
+}
+
+/* Follow live pulses its dot while the stream is running. */
+.slg-live {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	&.is-live .slg-live-dot {
+		opacity: 1;
+		animation: slg-live-pulse 1.6s ease-in-out infinite;
+	}
+}
+.slg-live-dot {
+	flex-shrink: 0;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: currentColor;
+	opacity: 0.55;
+}
+@keyframes slg-live-pulse {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);
+	}
+	50% {
+		box-shadow: 0 0 0 0.3rem color-mix(in srgb, currentColor 0%, transparent);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.slg-live.is-live .slg-live-dot {
+		animation: none;
+	}
+}
+
+/* Cards fill a twelve-column grid; each takes the full row until 1200px,
+   where the plain ones pair up side by side. */
+.slg-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.slg-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.75rem;
+	}
+}
+@media (min-width: 1200px) {
+	.slg-card {
+		grid-column: span 6;
+	}
+	.slg-card-full {
+		grid-column: span 12;
+	}
+}
+@media (max-width: 575.98px) {
+	.slg-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+/* A card opens with its title and blurb on the left, any controls on the right. */
+.slg-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 22rem;
+		min-width: 0;
+	}
+}
+.slg-card-head-row {
+	align-items: center;
+}
+.slg-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.slg-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--slg-quiet);
+}
+
+/* The legend's swatches use the same severity colors as the chart bars. */
+.slg-legend {
+	display: flex;
+	gap: 0.5rem 1.1rem;
+	flex-wrap: wrap;
+	font-size: 0.8rem;
+	color: var(--slg-quiet);
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.slg-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+}
+.slg-tone-error {
+	background: var(--slg-error);
+}
+.slg-tone-warn {
+	background: var(--slg-warn);
+}
+.slg-tone-info {
+	background: var(--slg-info);
+}
+.slg-tone-debug {
+	background: var(--slg-debug);
+}
+
+/* The chart takes the room it is given; from 992px the busy minutes sit
+   in a 16rem column beside it. */
+.slg-pulse {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 992px) {
+	.slg-pulse {
+		grid-template-columns: minmax(0, 1fr) 16rem;
+		align-items: stretch;
+	}
+}
+.slg-pulse-chart {
+	position: relative;
+	min-width: 0;
+	height: 220px;
+
+	/* Before it first draws, a canvas holds the browser's default 300px width. */
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+}
+
+/* Busy minutes are a column split off by a rule, and a band under the chart
+   once the two stack. */
+.slg-spikes {
+	padding-left: 1.5rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+@media (max-width: 991.98px) {
+	.slg-spikes {
+		padding-left: 0;
+		padding-top: 1.25rem;
+		border-left: 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.slg-spikes-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.slg-spikes-list {
+	display: grid;
+	gap: 0.4rem;
+}
+@media (min-width: 576px) and (max-width: 991.98px) {
+	.slg-spikes-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.slg-spikes-none {
+	font-size: 0.85rem;
+	color: var(--slg-quiet);
+}
+.slg-spike {
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: auto 1fr;
+	grid-template-areas: "time n" "time all";
+	align-items: center;
+	width: 100%;
+	padding: 0.5rem 0.8rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--slg-error);
+		background: color-mix(in srgb, var(--slg-error) 10%, var(--basalt-plane));
+	}
+}
+.slg-spike-time {
+	grid-area: time;
+	font-family: var(--slg-mono);
+	font-size: 0.95rem;
+	font-weight: 600;
+}
+.slg-spike-n {
+	grid-area: n;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: color-mix(in srgb, var(--slg-error) 55%, var(--basalt-copy));
+}
+.slg-spike-all {
+	grid-area: all;
+	font-size: 0.75rem;
+	color: var(--slg-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.slg-spike {
+		transition: none;
+	}
+}
+
+/* Toolbar fields line up on their bottom edge and wrap as room runs out. */
+.slg-toolbar {
+	display: flex;
+	gap: 1rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-bottom: 1.25rem;
+
+	& .basalt-segmented {
+		max-width: 100%;
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+}
+.slg-toolbar-field {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.slg-toolbar-field-grow {
+	flex: 1 1 13rem;
+	max-width: 22rem;
+}
+/* Below 1200px the level picker gets a row to itself and Time and Sources
+   split the next one evenly. */
+@media (max-width: 1199.98px) {
+	.slg-toolbar {
+		column-gap: 0.75rem;
+	}
+	.slg-toolbar-field:not(:has(> .form-select)) {
+		flex: 1 1 100%;
+		align-items: flex-start;
+	}
+	.slg-toolbar-field:has(> .form-select) {
+		flex: 1 1 0;
+		max-width: none;
+	}
+}
+.slg-toolbar-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--slg-quiet);
+}
+.slg-toolbar-note {
+	align-self: center;
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--slg-quiet);
+}
+
+/* The search box carries its icon on the left and a "/" hint on the right
+   that steps aside once the box has focus or text. */
+.slg-search {
+	position: relative;
+	flex: 1 1 100%;
+	max-width: 100%;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--slg-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+		padding-right: 2.2rem;
+	}
+	& .form-control:is(:focus, :not(:placeholder-shown)) ~ .slg-search-key {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.slg-search {
+		flex: 1 1 15rem;
+		max-width: 20rem;
+	}
+}
+.slg-search-key {
+	position: absolute;
+	top: 50%;
+	right: 0.5rem;
+	transform: translateY(-50%);
+	padding: 0.2rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-family: var(--slg-mono);
+	font-size: 0.7rem;
+	line-height: 1;
+	color: var(--slg-quiet);
+	background: var(--basalt-plane-alt);
+	pointer-events: none;
+}
+
+.slg-applied-row {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: -0.25rem 0 1.25rem;
+}
+
+/* Lines that came in while you were reading wait behind this quiet pill. */
+.slg-fresh {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 auto 0.9rem;
+	padding: 0.3rem 0.95rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-copy);
+	font-weight: 600;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+
+	&:is(:hover, :focus-visible) {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: color-mix(in srgb, var(--basalt-copy) 86%, var(--basalt-plane));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The column headings and every line's button share one six-track grid. */
+.slg-head-row,
+.slg-row-main {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 5.25rem 6.25rem 8.5rem minmax(0, 1fr) 2.75rem 1rem;
+	align-items: center;
+}
+.slg-head-row {
+	padding: 0 1rem 0.6rem 1.2rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--slg-quiet);
+}
+
+/* A line wears its severity as a thin bar down the left edge; errors also
+   get a faint tint. */
+.slg-row {
+	position: relative;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: 0;
+		width: 3px;
+		background: var(--slg-debug);
+	}
+	&.is-open > .slg-row-main {
+		background: var(--basalt-wash);
+	}
+	&.is-open .slg-row-chev {
+		transform: rotate(180deg);
+	}
+	& mark {
+		padding: 0 0.1em;
+		border-radius: 3px;
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-warning) 38%, var(--basalt-plane));
+	}
+	/* A line that just arrived fades in from a soft wash of the primary. */
+	&.is-new {
+		animation: slg-new 1.8s ease-out;
+	}
+}
+.slg-row-error {
+	background: color-mix(in srgb, var(--slg-error) 4%, transparent);
+
+	&::before {
+		background: var(--slg-error);
+	}
+}
+.slg-row-warn::before {
+	background: var(--slg-warn);
+}
+.slg-row-info::before {
+	background: var(--slg-info);
+}
+@keyframes slg-new {
+	from {
+		background-color: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+}
+.slg-row-main {
+	width: 100%;
+	padding: var(--basalt-pad-row-y) 1.25rem var(--basalt-pad-row-y) 1.5rem;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+	transition: background-color 130ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.slg-row-time {
+	font-family: var(--slg-mono);
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--slg-quiet);
+}
+.slg-lvl {
+	justify-self: start;
+}
+.slg-row-src {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-width: 0;
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--slg-quiet);
+
+	& .bi {
+		font-size: 0.85rem;
+	}
+}
+.slg-row-src-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.slg-row-msg {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.slg-row-text {
+	font-size: 0.9rem;
+	font-weight: 550;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.slg-row-meta {
+	overflow: hidden;
+	font-size: 0.77rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--slg-quiet);
+}
+.slg-row-rep {
+	justify-self: end;
+	padding: 0.1rem 0.4rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-family: var(--slg-mono);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.slg-row-rep-none {
+	visibility: hidden;
+}
+.slg-row-chev {
+	font-size: 0.8rem;
+	color: var(--slg-quiet);
+	transition: transform 180ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.slg-row.is-new {
+		animation: none;
+	}
+	.slg-row-main,
+	.slg-row-chev {
+		transition: none;
+	}
+}
+
+/* The first time the busy minutes and the first page of lines come into
+   view, their rows rise in one after another. A line that just arrived
+   keeps its own wash instead. */
+.slg-spikes-list,
+.slg-list {
+	&.is-waiting > li {
+		opacity: 0;
+	}
+	&.is-drawing > li:not(.is-new) {
+		animation: slg-rise 420ms ease-out calc(var(--slg-at, 0) * 45ms) both;
+	}
+	&.is-drawing > li:nth-child(2) {
+		--slg-at: 1;
+	}
+	&.is-drawing > li:nth-child(3) {
+		--slg-at: 2;
+	}
+	&.is-drawing > li:nth-child(4) {
+		--slg-at: 3;
+	}
+	&.is-drawing > li:nth-child(5) {
+		--slg-at: 4;
+	}
+	&.is-drawing > li:nth-child(6) {
+		--slg-at: 5;
+	}
+	&.is-drawing > li:nth-child(7) {
+		--slg-at: 6;
+	}
+	&.is-drawing > li:nth-child(8) {
+		--slg-at: 7;
+	}
+	&.is-drawing > li:nth-child(n + 9) {
+		--slg-at: 8;
+	}
+}
+.slg-spikes-list.is-drawing > li:not(.is-new) {
+	animation-duration: 500ms;
+	animation-delay: calc(var(--slg-at, 0) * 90ms + 150ms);
+}
+@keyframes slg-rise {
+	from {
+		opacity: 0;
+		transform: translateY(0.4rem);
+	}
+}
+
+/* Loading rows borrow the first four tracks of a real line. */
+.slg-row-skeleton {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 5.25rem 6.25rem 8.5rem minmax(0, 1fr);
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 1rem var(--basalt-pad-row-y) 1.2rem;
+
+	&::before {
+		display: none;
+	}
+}
+.slg-sk {
+	display: block;
+}
+.slg-sk-time {
+	width: 4.25rem;
+}
+.slg-sk-pill {
+	width: 4.5rem;
+	height: 1.3rem;
+}
+.slg-sk-src {
+	width: 5.5rem;
+}
+.slg-sk-msg {
+	width: var(--slg-sk-w, 60%);
+}
+
+/* In a narrow card a line stacks, with time, level and source on top. The
+   card is measured rather than the window, since the sidebar takes its share. */
+.slg-stream > .card-body {
+	container: slg / inline-size;
+}
+@container slg (max-width: 760px) {
+	.slg-head-row {
+		display: none;
+	}
+	.slg-row-main {
+		row-gap: 0.4rem;
+		column-gap: 0.5rem;
+		/* The time and level tracks are fixed, so each source starts at the
+       same x however wide its level pill is. */
+		grid-template-columns: 3.75rem 5.25rem minmax(0, 1fr) auto 1rem;
+		grid-template-areas:
+			"time lvl src rep chev"
+			"msg msg msg msg msg";
+		padding-left: 0.95rem;
+		padding-right: 0.6rem;
+	}
+	.slg-row-rep-none {
+		display: none;
+	}
+	.slg-row-time {
+		grid-area: time;
+		font-size: 0.75rem;
+	}
+	.slg-row-detail {
+		padding-left: 0.95rem;
+		padding-right: 0.6rem;
+	}
+	.slg-lvl {
+		grid-area: lvl;
+	}
+	.slg-row-src {
+		grid-area: src;
+	}
+	.slg-row-rep {
+		grid-area: rep;
+	}
+	.slg-row-chev {
+		grid-area: chev;
+	}
+	.slg-row-msg {
+		grid-area: msg;
+	}
+	.slg-row-skeleton {
+		row-gap: 0.5rem;
+		grid-template-columns: 4.25rem 4.5rem minmax(0, 1fr);
+	}
+	.slg-sk-msg {
+		grid-column: 1 / -1;
+	}
+}
+/* On a phone the source shows only its icon; screen readers still hear the
+   name, and the opened line spells it out. */
+@container slg (max-width: 480px) {
+	.slg-row-src-name {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+
+/* An opened line lists its facts, the request ID, any stack trace and its actions. */
+.slg-row-detail {
+	padding: 1rem 1.25rem 1.4rem 1.5rem;
+}
+.slg-detail {
+	display: flex;
+	gap: 1.1rem;
+	flex-direction: column;
+}
+.slg-detail-note {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	margin: 0;
+	padding: 0.6rem 0.85rem;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.slg-facts {
+	display: grid;
+	gap: 0.9rem 1.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+	margin: 0;
+
+	& > div {
+		min-width: 0;
+	}
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.71rem;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: var(--slg-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+.slg-facts-req {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+
+	& code {
+		padding: 0.1rem 0.3rem;
+		border-radius: 5px;
+		font-family: var(--slg-mono);
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+}
+.slg-copy {
+	color: var(--slg-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.slg-stack {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	overflow: hidden;
+}
+.slg-stack-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	font-weight: 650;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--slg-quiet);
+	background: var(--basalt-plane-alt);
+}
+.slg-stack-pre {
+	margin: 0;
+	padding: 0.9rem 1rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+	font-family: var(--slg-mono);
+	font-size: 0.77rem;
+	line-height: 1.7;
+	white-space: pre;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	& code {
+		font-size: inherit;
+		color: inherit;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.slg-detail-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* The empty, failed and paging states that close the list. */
+.slg-empty {
+	margin: 1.5rem 0;
+}
+.slg-error {
+	margin: 1rem 0;
+}
+.slg-pager {
+	margin-top: 1.5rem;
+}
+.slg-pager-fold {
+	margin: 0;
+
+	& .form-check-label {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* A group is a card with its severity bar on the left; muted and resolved
+   groups drop to the debug gray. */
+.slg-groups {
+	display: grid;
+	gap: 0.75rem;
+}
+.slg-group {
+	position: relative;
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: minmax(0, 1fr) 7.5rem 4.5rem auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 1.1rem var(--basalt-pad-row-y) 1.3rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.9rem;
+		bottom: 0.9rem;
+		left: 0;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--slg-warn);
+	}
+}
+.slg-group-error::before {
+	background: var(--slg-error);
+}
+.slg-group:is(.is-muted, .is-resolved)::before {
+	background: var(--slg-debug);
+}
+.slg-group-main {
+	min-width: 0;
+}
+.slg-group-pills {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.4rem;
+}
+.slg-group-title {
+	margin: 0 0 0.3rem;
+	font-size: 0.95rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.slg-group-link {
+	border-radius: 4px;
+	text-decoration: none;
+	color: inherit;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.slg-group-meta {
+	display: flex;
+	gap: 0.2rem 1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--slg-quiet);
+
+	& .bi {
+		margin-right: 0.3rem;
+	}
+}
+.slg-group-count {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	line-height: 1.15;
+	text-align: right;
+
+	& strong {
+		font-size: 1.35rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.75rem;
+		color: var(--slg-quiet);
+	}
+}
+
+/* Twelve five-minute bars; an empty slot keeps a 2px stub in debug gray. */
+.slg-spark {
+	display: flex;
+	gap: 2px;
+	align-items: flex-end;
+	height: 2rem;
+
+	& > span {
+		flex: 1 1 0;
+		height: var(--h);
+		min-height: 2px;
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--slg-warn) 75%, var(--basalt-copy));
+	}
+}
+.slg-group-error .slg-spark > span {
+	background: var(--slg-error);
+}
+.slg-spark > span.is-zero {
+	background: var(--slg-debug);
+}
+.slg-group:is(.is-muted, .is-resolved) .slg-spark > span:not(.is-zero) {
+	background: color-mix(in srgb, var(--basalt-copy) 38%, transparent);
+}
+@container slg (max-width: 700px) {
+	.slg-group {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "main main" "trend count" "open open";
+	}
+	.slg-group-main {
+		grid-area: main;
+	}
+	.slg-group-trend {
+		grid-area: trend;
+	}
+	.slg-group-count {
+		grid-area: count;
+	}
+	.slg-group-open {
+		grid-area: open;
+		justify-self: start;
+	}
+}
+
+/* Each source is a button: icon, name and counts, and a bar that layers
+   its errors over its warnings over its total. */
+.slg-sources {
+	display: grid;
+	gap: 0.3rem;
+}
+.slg-source {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.65rem 0.75rem;
+	border: 1px solid transparent;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+	&[aria-pressed="true"] .slg-source-icon {
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.slg-source-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 9px;
+	font-size: 0.95rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.slg-source-body {
+	display: flex;
+	gap: 0.4rem;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+.slg-source-top {
+	display: flex;
+	gap: 0.1rem 0.75rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+.slg-source-name {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.slg-source-nums {
+	font-size: 0.77rem;
+	color: var(--slg-quiet);
+}
+.slg-source-err {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--slg-error) 55%, var(--basalt-copy));
+}
+.slg-source-bar {
+	position: relative;
+	height: 6px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+
+	& > span {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		border-radius: 99px;
+	}
+}
+.slg-source-fill {
+	background: color-mix(in srgb, var(--slg-info) 45%, transparent);
+}
+.slg-source-warn {
+	background: var(--slg-warn);
+}
+.slg-source-error {
+	background: var(--slg-error);
+}
+@media (prefers-reduced-motion: reduce) {
+	.slg-source {
+		transition: none;
+	}
+}
+
+/* Retention settings read as ruled rows: the question on the left, its control on the right. */
+.slg-keep {
+	display: flex;
+	gap: 0;
+	flex-direction: column;
+}
+.slg-keep-row {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--basalt-pad-row-y) 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	& > div:first-child {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+}
+.slg-keep-label {
+	display: block;
+	margin-bottom: 0.2rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.slg-keep-hint {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--slg-quiet);
+}
+.slg-keep-control {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.slg-keep-unit {
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--slg-quiet);
+}
+.slg-keep-note {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	&:empty {
+		display: none;
+	}
+}
+.slg-keep-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 1.1rem;
+}
+
+/* Clearing debug lines is destructive, so it sits apart in a dashed danger box. */
+.slg-clear {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding: 1.1rem 1.2rem;
+	border-radius: 12px;
+	border: 1px dashed color-mix(in srgb, var(--basalt-danger) 45%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--basalt-danger) 5%, var(--basalt-plane));
+
+	& > div {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+}
+.slg-keep + .slg-clear {
+	margin-top: 1.75rem;
+}
+.slg-clear-title {
+	margin: 0 0 0.2rem;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.slg-clear-text {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+/* The drawer body scrolls as one column, and its parts keep their height
+   instead of squashing to fit. */
+.slg-drawer .offcanvas-body {
+	display: flex;
+	gap: var(--basalt-pad-head);
+	flex-direction: column;
+
+	& > * {
+		flex-shrink: 0;
+	}
+}
+.slg-d-pills {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& > * {
+		display: inline-flex;
+		align-items: center;
+		min-height: 1.75rem;
+	}
+}
+.slg-d-until {
+	font-size: 0.8rem;
+	color: var(--slg-quiet);
+}
+.slg-d-facts {
+	display: grid;
+	gap: 1px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--basalt-edge);
+
+	& > div {
+		padding: 0.8rem 0.95rem;
+		background: var(--basalt-plane);
+	}
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--slg-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.05rem;
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+/* Drawer headings sit a step above body text, .75rem from what they introduce. */
+.slg-d-sub {
+	margin: 0 0 calc(0.75rem - var(--basalt-pad-head));
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Each five-minute bar shows its count on top and, every fourth slot, a time below. */
+.slg-dbars {
+	display: grid;
+	gap: 4px;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	align-items: end;
+
+	& li {
+		display: flex;
+		gap: 0.25rem;
+		flex-direction: column;
+		align-items: center;
+		min-width: 0;
+	}
+}
+.slg-dbars-bar {
+	display: block;
+	order: 1;
+	width: 100%;
+	height: calc(4.5rem * var(--h) / 100);
+	min-height: 2px;
+	border-radius: 3px;
+	background: var(--slg-error);
+}
+.slg-dbars-warn .slg-dbars-bar {
+	background: color-mix(in srgb, var(--slg-warn) 75%, var(--basalt-copy));
+}
+.slg-dbars-val {
+	order: 0;
+	font-size: 0.7rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.slg-dbars-at {
+	order: 2;
+	min-height: 1em;
+	font-family: var(--slg-mono);
+	font-size: 0.66rem;
+	white-space: nowrap;
+	color: var(--slg-quiet);
+}
+
+/* In the drawer the latest event's facts become a small two-column table,
+   label left and value right, and the stack trace wraps instead of
+   scrolling sideways, so the drawer is the only thing that scrolls. */
+.slg-drawer {
+	& .slg-facts-tight {
+		gap: 0;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	& .slg-facts-tight > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 7rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& .slg-facts-tight > div:first-child {
+		padding-top: 0;
+	}
+	& .slg-facts-tight > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& .slg-facts-tight dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+	& .slg-stack {
+		overflow: clip;
+	}
+	& .slg-stack-pre {
+		overflow: visible;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+}
+
+/* On paper the log keeps its lines and drops the controls around them. */
+@media print {
+	.slg-toolbar,
+	.slg-pager,
+	.slg-fresh,
+	.slg-keep,
+	.slg-clear,
+	.basalt-hero-actions {
+		display: none;
+	}
+	.slg-row,
+	.slg-row-main,
+	.slg-row-chev {
+		transition: none;
+		animation: none;
+	}
+}

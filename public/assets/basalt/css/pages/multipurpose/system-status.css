@@ -1,0 +1,1209 @@
+/* The system status page (system-status.html). Every rule hangs off an
+   .ss-* class and every color comes from a --basalt-* token, so palettes,
+   dark mode, Neutral and Flat all reach the day bars, the banner and the
+   chart keys; system-status.js reads the same tokens for its canvas. */
+
+/* Small gray text is the muted token pulled toward the body color, so it
+   still clears 4.5:1 on the lighter palettes. The dialogs and drawers sit
+   outside .ss-page and need the same value. */
+.ss-page,
+.modal,
+.basalt-drawer {
+	--ss-quiet: color-mix(in srgb, var(--basalt-copy-muted) 80%, var(--basalt-copy));
+}
+
+/* A tone class lends its state color to bars, dots and legend swatches. */
+.ss-tone-ok {
+	--ss-tone: var(--basalt-success);
+}
+.ss-tone-slow {
+	--ss-tone: var(--basalt-warning);
+}
+.ss-tone-down {
+	--ss-tone: var(--basalt-danger);
+}
+.ss-tone-maint {
+	--ss-tone: var(--basalt-info);
+}
+
+/* A healthy day is a softer green than the other tones. */
+.ss-bar.ss-tone-ok,
+.ss-legend-swatch.ss-tone-ok {
+	background: color-mix(in srgb, var(--basalt-success) 72%, var(--basalt-plane));
+}
+
+/* Status pills lean toward the body color: the shared pill sits right at
+   4.5:1 on some light palettes once it is on the pale banner. */
+.ss-page .basalt-status {
+	color: color-mix(in srgb, var(--stp-tone) 38%, var(--basalt-copy));
+}
+.basalt-status-maint {
+	--stp-tone: var(--basalt-info);
+}
+
+/* Every card takes the whole row below 1200px and pairs up from there;
+   a full card keeps the whole row at any width. */
+.ss-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.ss-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.5rem;
+
+		@media (min-width: 768px) {
+			padding: 1.75rem;
+		}
+	}
+
+	@media (min-width: 1200px) {
+		grid-column: span 6;
+	}
+}
+.ss-card-full {
+	grid-column: span 12;
+}
+
+/* A card opens with its title and blurb on the left and a tag or action
+   on the right, wrapping under them when space runs out. */
+.ss-card-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+}
+.ss-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ss-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ss-quiet);
+}
+.ss-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.65rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--ss-quiet);
+}
+.ss-card-action {
+	flex-shrink: 0;
+
+	@media print {
+		display: none;
+	}
+}
+.ss-card-tools {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.1rem;
+}
+
+/* The banner sums the whole shop up in one line, tinted by its worst state. */
+.ss-banner {
+	--ss-tone: var(--basalt-success);
+	display: flex;
+	gap: 1rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.25rem 1.35rem;
+	border-radius: 14px;
+	border: 1px solid color-mix(in srgb, var(--ss-tone) 30%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--ss-tone) 10%, var(--basalt-plane));
+
+	&[data-tone="warning"] {
+		--ss-tone: var(--basalt-warning);
+	}
+	&[data-tone="danger"] {
+		--ss-tone: var(--basalt-danger);
+	}
+	&[data-tone="info"] {
+		--ss-tone: var(--basalt-info);
+	}
+
+	& .btn-outline-secondary {
+		background: var(--basalt-plane);
+	}
+
+	@media (min-width: 992px) {
+		padding: 1.5rem 1.75rem;
+	}
+}
+.ss-banner-icon {
+	position: relative;
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	font-size: 1.35rem;
+	color: var(--basalt-plane);
+	background: var(--ss-tone);
+
+	/* The only motion on the page: a slow ring breathing out of the icon. */
+	&::after {
+		content: "";
+		position: absolute;
+		inset: -4px;
+		border-radius: 50%;
+		border: 2px solid var(--ss-tone);
+		opacity: 0;
+		animation: ss-pulse 2.6s ease-out infinite;
+
+		@media (prefers-reduced-motion: reduce) {
+			opacity: 0;
+			animation: none;
+		}
+		@media print {
+			display: none;
+			animation: none;
+		}
+	}
+}
+@keyframes ss-pulse {
+	0% {
+		transform: scale(0.9);
+		opacity: 0.55;
+	}
+	100% {
+		transform: scale(1.45);
+		opacity: 0;
+	}
+}
+.ss-banner-text {
+	flex: 1 1 18rem;
+	min-width: 0;
+}
+.ss-banner-title {
+	margin: 0 0 0.25rem;
+	font-size: 1.3rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+	color: var(--basalt-copy);
+
+	@media (min-width: 992px) {
+		font-size: 1.45rem;
+	}
+}
+.ss-banner-sub {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.ss-banner-side {
+	display: flex;
+	gap: 0.5rem 0.9rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	@media print {
+		display: none;
+	}
+}
+.ss-banner-checked {
+	margin: 0;
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+}
+
+/* Under the banner: the public page link on one side, the day range on the other. */
+.ss-board-tools {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin: 1.75rem 0 0.5rem;
+
+	@media print {
+		display: none;
+	}
+}
+.ss-board-public {
+	display: flex;
+	gap: 0.25rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.85rem;
+}
+.ss-board-public-label {
+	color: var(--ss-quiet);
+}
+.ss-board-public-link {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	text-decoration: underline;
+	text-decoration-color: var(--basalt-edge-strong);
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration-color: currentColor;
+	}
+}
+.ss-copy.btn-icon {
+	width: 2rem;
+	height: 2rem;
+}
+
+/* One row per service, ruled off from the next. */
+.ss-services {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ss-svc {
+	padding: 1.35rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.ss-svc-ghost {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+}
+.ss-svc-ghost-lines {
+	flex: 1;
+	min-width: 0;
+}
+
+/* The row head stacks status over uptime on phones and lines all four up
+   from 576px. */
+.ss-svc-head {
+	display: grid;
+	row-gap: 0.1rem;
+	column-gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-areas: "icon name status" "icon name uptime";
+	align-items: center;
+	margin-bottom: 0.85rem;
+
+	@media (min-width: 576px) {
+		column-gap: 1rem;
+		grid-template-columns: auto minmax(0, 1fr) auto auto;
+		grid-template-areas: "icon name status uptime";
+	}
+}
+.ss-svc-icon {
+	display: grid;
+	grid-area: icon;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-copy) 6%, var(--basalt-plane));
+}
+.ss-svc-name-wrap {
+	grid-area: name;
+	min-width: 0;
+}
+.ss-svc-name {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 650;
+}
+.ss-svc-toggle {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: -0.1rem -0.3rem;
+	padding: 0.1rem 0.3rem;
+	border: 0;
+	border-radius: 6px;
+	font: inherit;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	& .bi {
+		font-size: 0.75rem;
+	}
+	&[aria-expanded="true"] .bi {
+		transform: rotate(180deg);
+	}
+}
+.ss-svc-desc {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--ss-quiet);
+}
+.ss-svc-status {
+	grid-area: status;
+	justify-self: end;
+}
+.ss-svc-uptime {
+	grid-area: uptime;
+	justify-self: end;
+	margin: 0;
+	line-height: 1.15;
+	text-align: right;
+
+	@media (min-width: 576px) {
+		min-width: 5.5rem;
+	}
+}
+.ss-svc-pct {
+	display: block;
+	font-size: 1rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.ss-svc-pct-label {
+	font-size: 0.71rem;
+	color: var(--ss-quiet);
+}
+.ss-svc-note {
+	display: flex;
+	gap: 0.3rem;
+	align-items: baseline;
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: var(--basalt-info);
+	}
+}
+
+/* Keyboard focus on a row's toggle or its day strip draws the accent ring. */
+.ss-svc-toggle:focus-visible,
+.ss-bars:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+/* One bar per day, colored by the worst thing that happened on it. While
+   a day is being read, the others fade back. */
+.ss-bars {
+	display: flex;
+	gap: 2px;
+	align-items: stretch;
+	height: 2.25rem;
+	margin: 0 -3px;
+	padding: 3px;
+	border-radius: 8px;
+	cursor: default;
+
+	&.is-reading .ss-bar {
+		opacity: 0.45;
+	}
+	&.is-reading .ss-bar.is-active {
+		transform: scaleY(1.12);
+		opacity: 1;
+	}
+
+	@media (min-width: 768px) {
+		gap: 3px;
+	}
+}
+.ss-bar {
+	flex: 1 1 0;
+	min-width: 0;
+	border-radius: 2px;
+	background: var(--ss-tone);
+	transition:
+		transform 130ms ease,
+		opacity 130ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+	@media print {
+		transition: none;
+	}
+}
+.ss-bars-30 .ss-bar,
+.ss-bars-7 .ss-bar {
+	border-radius: 3px;
+}
+@media (max-width: 575.98px) {
+	.ss-bars {
+		gap: 1px;
+		height: 2rem;
+	}
+	.ss-bar {
+		border-radius: 1px;
+	}
+}
+
+/* The caption under a strip shows the range ends, or the day being read. */
+.ss-read {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	min-height: 1.3rem;
+	margin: 0.5rem 0 0;
+	font-size: 0.77rem;
+	color: var(--ss-quiet);
+
+	&.is-reading {
+		justify-content: flex-start;
+	}
+}
+.ss-read-day {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* A service's parts open in a tinted panel under its row. */
+.ss-parts {
+	margin: 1rem 0 0;
+	padding: 0.3rem 1rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.6rem 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+	& li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.ss-parts-name {
+	min-width: 0;
+}
+.ss-parts-sub {
+	display: block;
+	font-size: 0.76rem;
+	color: var(--ss-quiet);
+}
+
+/* The legend names the bar colors and ends with the uptime explainer. */
+.ss-legend {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.5rem 0 0;
+	padding: 1.1rem 0 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.ss-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--ss-tone);
+}
+.ss-legend-how {
+	margin-left: auto;
+}
+.ss-how {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	text-decoration: underline dotted;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy-body);
+	background: none;
+	cursor: help;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Open incidents stack inside their card; the all-clear state centers in it. */
+.ss-open {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+	flex: 1;
+
+	& > .basalt-empty {
+		margin: auto 0;
+	}
+}
+.ss-inc {
+	& + .ss-inc {
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& .basalt-steps {
+		margin-bottom: 1.25rem;
+	}
+}
+.ss-inc-top {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.6rem;
+}
+.ss-inc-since {
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+}
+.ss-inc-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	text-wrap: balance;
+	color: var(--basalt-copy);
+}
+.ss-inc-affects {
+	margin: 0 0 1.25rem;
+	font-size: 0.85rem;
+	color: var(--ss-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.ss-inc-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	@media print {
+		display: none;
+	}
+}
+
+/* Posted updates hang off a thin line, newest dot in the accent color. */
+.ss-updates {
+	position: relative;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+.ss-update {
+	position: relative;
+	padding: 0 0 1rem 1.4rem;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: -0.2rem;
+		left: 0.28rem;
+		width: 2px;
+		background: var(--basalt-edge);
+	}
+	&:last-child::before {
+		display: none;
+	}
+
+	/* Filled, not a hollow ring, so an update never reads as a radio button. */
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0.3rem;
+		left: 0;
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-plane);
+		background: var(--basalt-edge-strong);
+	}
+	&:first-child::after {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-hue);
+	}
+}
+.ss-update-meta {
+	margin: 0 0 0.2rem;
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+}
+.ss-update-stage {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ss-update-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* A fresh update or booking drops in from just above. */
+.ss-update.is-new,
+.ss-maint-item.is-new {
+	animation: ss-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes ss-in {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ss-update.is-new,
+	.ss-maint-item.is-new {
+		animation: none;
+	}
+}
+
+/* Chart keys are pill toggles; a pressed key borrows its series color. */
+.ss-keys {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+.ss-key {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-pressed="true"] {
+		border-color: color-mix(in srgb, var(--ss-c) 60%, var(--basalt-edge-strong));
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--ss-c) 10%, var(--basalt-plane));
+	}
+	&[aria-pressed="false"] .ss-key-line {
+		border-top-style: dotted;
+		opacity: 0.6;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.ss-key-line {
+	width: 14px;
+	height: 0;
+	border-top: 3px solid var(--ss-c);
+	border-radius: 2px;
+}
+.ss-c1 {
+	--ss-c: var(--basalt-series-1);
+}
+.ss-c2 {
+	--ss-c: var(--basalt-series-2);
+}
+.ss-c3 {
+	--ss-c: var(--basalt-series-3);
+}
+.ss-c4 {
+	--ss-c: var(--basalt-series-4);
+}
+.ss-c5 {
+	--ss-c: var(--basalt-series-5);
+}
+
+/* The chart keeps a fixed height; its empty state covers the canvas. */
+.ss-chart {
+	position: relative;
+	height: 260px;
+
+	@media (max-width: 575.98px) {
+		height: 230px;
+	}
+}
+.ss-chart-empty {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	background: var(--basalt-plane);
+}
+
+/* Three figures sum the chart up under a rule. */
+.ss-stats {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 1.25rem 0 0;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.ss-stat {
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--ss-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-family: inherit;
+		font-size: 1rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+.ss-stat-sub {
+	display: block;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--ss-quiet);
+}
+
+/* Each booking leads with a calendar tile beside its title, time and note. */
+.ss-maint {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ss-maint-item {
+	display: grid;
+	gap: 0.3rem 1rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	padding: var(--basalt-pad-row-y) 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.ss-maint-date {
+	display: grid;
+	grid-row: span 2;
+	place-content: center;
+	width: 3.4rem;
+	height: 3.6rem;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--basalt-info) 24%, var(--basalt-edge));
+	line-height: 1.05;
+	text-align: center;
+	background: color-mix(in srgb, var(--basalt-info) 10%, var(--basalt-plane));
+}
+.ss-maint-day {
+	font-size: 1.25rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.ss-maint-mon {
+	font-size: 0.67rem;
+	font-weight: 650;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-body);
+}
+.ss-maint-title {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ss-maint-when {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+}
+.ss-maint-note {
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.ss-maint-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	grid-column: 2;
+	align-items: center;
+	margin-top: 0.4rem;
+
+	& .badge {
+		margin-right: auto;
+	}
+}
+.ss-maint-empty {
+	margin: auto 0;
+}
+
+/* The allowance ring sits beside its sentence; one bar per service follows. */
+.ss-budget {
+	display: flex;
+	gap: 1.25rem 1.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.ss-budget-ring {
+	--size: 132px;
+	--thickness: 3.2px;
+
+	& .basalt-ring-value {
+		font-size: 1.6rem;
+	}
+	& .basalt-ring-caption {
+		color: var(--ss-quiet);
+	}
+}
+.ss-budget-text {
+	flex: 1 1 12rem;
+	min-width: 0;
+}
+.ss-budget-big {
+	margin: 0 0 0.3rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ss-budget-note {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.ss-budget-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ss-budget-row {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr) 4.5rem;
+	align-items: center;
+	padding: 0.4rem 0;
+	font-size: 0.85rem;
+}
+.ss-budget-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ss-budget-mins {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+}
+.ss-budget-bar {
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+}
+.ss-budget-fill {
+	display: block;
+	width: calc(var(--share, 0) * 100%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--ss-c, var(--basalt-hue));
+	transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+	@media print {
+		transition: none;
+	}
+}
+
+/* Past incidents: filter and tabs above a list of rows that fold open. */
+.ss-hist-filter {
+	flex: 0 1 12rem;
+	min-width: 10rem;
+}
+.ss-hist-tabs {
+	margin-bottom: 0.5rem;
+}
+.ss-hist {
+	min-height: 8rem;
+
+	&:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+}
+.ss-hist-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&[aria-busy="true"] .ss-hrow {
+		display: none;
+	}
+}
+.ss-hrow {
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.ss-hrow-btn {
+	display: grid;
+	gap: 0.25rem 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	width: 100%;
+	padding: var(--basalt-pad-row-y) 0.5rem;
+	border: 0;
+	border-radius: 10px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&[aria-expanded="true"] .ss-hrow-side .bi {
+		transform: rotate(180deg);
+	}
+}
+.ss-hrow-dot {
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 50%;
+	background: var(--ss-tone);
+}
+.ss-hrow-main {
+	min-width: 0;
+}
+.ss-hrow-title {
+	display: block;
+	font-weight: 650;
+	font-size: 0.92rem;
+}
+.ss-hrow-meta {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+}
+.ss-hrow-side {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+
+	& .bi {
+		font-size: 0.8rem;
+	}
+}
+
+/* Both fold chevrons are quiet and turn over as their panel opens. */
+.ss-svc-toggle .bi,
+.ss-hrow-side .bi {
+	color: var(--ss-quiet);
+	transition: transform 200ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.ss-svc-toggle .bi,
+	.ss-hrow-side .bi {
+		transition: none;
+	}
+}
+
+/* An open row lists its facts, then its updates; the closing dot is green. */
+.ss-hrow-body {
+	padding: 0.25rem 0.5rem 1.25rem 2.15rem;
+
+	& .ss-updates {
+		margin-bottom: 0;
+	}
+	& .ss-update:first-child::after {
+		border-color: var(--basalt-success);
+		background: var(--basalt-success);
+	}
+}
+.ss-hrow-facts {
+	display: flex;
+	gap: 0.4rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.ss-hrow-ghost {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 0.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& > span:last-child {
+		flex: 1;
+	}
+}
+.ss-hist-empty {
+	padding: 2rem 0;
+}
+
+/* Phones drop the pill from closed rows and pull the open body flush left. */
+@media (max-width: 575.98px) {
+	.ss-hrow-side .basalt-status {
+		display: none;
+	}
+	.ss-hrow-body {
+		padding-left: 0.5rem;
+	}
+}
+
+/* Under the list: the visible range on the left, the pager on the right. */
+.ss-hist-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.1rem;
+}
+.ss-hist-range {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Dialog and drawer forms share label weight, error color and a counter. */
+.ss-form {
+	& .form-label,
+	& legend.form-label {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.ss-field-error,
+.ss-hook-msg.is-bad {
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+.ss-field-error {
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+}
+.ss-count {
+	margin-top: 0.3rem;
+	font-size: 0.77rem;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--ss-quiet);
+
+	&.is-near {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--basalt-warning) 40%, var(--basalt-copy));
+	}
+}
+.ss-svc-choices {
+	--basalt-choice-min: 108px;
+}
+.ss-plan-when {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* The webhook field keeps its test button beside it at any width. */
+.ss-hook {
+	display: flex;
+	gap: 0.5rem;
+
+	& .form-control {
+		min-width: 0;
+	}
+	& .btn {
+		flex-shrink: 0;
+	}
+}
+.ss-hook-msg {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+
+	&.is-good {
+		color: color-mix(in srgb, var(--basalt-success) 40%, var(--basalt-copy));
+	}
+}
+.ss-sub-svcs {
+	padding-left: 1.5rem;
+}

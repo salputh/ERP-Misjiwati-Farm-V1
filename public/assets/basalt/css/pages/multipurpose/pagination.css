@@ -1,0 +1,618 @@
+/*
+ * Layout for pagination.html, every class under the .pg- prefix. The
+ * pagers on show (Bootstrap's .pagination in palette colors, the pill and
+ * ghost variants, Basalt's own paging types) are styled in basalt.css; this
+ * file only arranges the demo around them. Colors are --basalt-* tokens, and
+ * the mixes hold small captions at 4.5:1 in each palette, light or dark.
+ */
+
+/* The page defines one quieter caption tone; inline code, key caps and
+   switched-off outline buttons inside it share one look. */
+.pg-page {
+	--pg-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+
+	& kbd {
+		padding: 0.1rem 0.3rem;
+		border: 1px solid var(--basalt-edge-strong);
+		border-bottom-width: 2px;
+		border-radius: 5px;
+		font:
+			600 0.71rem/1 "Chivo Mono",
+			monospace;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+	}
+
+	& .btn-outline-secondary:disabled {
+		--bs-btn-disabled-opacity: 1;
+		--bs-btn-disabled-color: var(--pg-quiet);
+		--bs-btn-disabled-bg: transparent;
+		--bs-btn-disabled-border-color: var(--basalt-edge-strong);
+		border-style: dashed;
+	}
+}
+
+/* Chips wrap in a row above a one-line result count; the pressed chip
+   inverts. Print drops the whole filter. */
+.pg-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+
+	@media print {
+		display: none;
+	}
+}
+.pg-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.pg-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.pg-chips .pg-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.pg-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--pg-quiet);
+}
+
+/* Cards fill the twelve-column grid until 1200px, then pair up, except the
+   full-width ones and any card left without a partner. Printing shows
+   filtered-out cards again. */
+.pg-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.pg-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+		@media print {
+			display: block;
+		}
+	}
+}
+@media (min-width: 1200px) {
+	.pg-card {
+		grid-column: span 6;
+	}
+	.pg-card-full,
+	.pg-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A card body is a column, so the snippet can sink to the bottom; padding
+   tightens on phones. */
+.pg-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+.pg-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+
+/* In the card head the meta line sits visually above the title it follows
+   in the markup. */
+.pg-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.pg-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pg-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pg-quiet);
+}
+.pg-card-meta {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.pg-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--pg-quiet);
+}
+.pg-card-origin {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.71rem;
+	color: var(--pg-quiet);
+
+	& .bi {
+		font-size: 0.8rem;
+	}
+}
+
+/* Demos stack with an even gap under small captions. */
+.pg-stack {
+	display: grid;
+	gap: 1.1rem;
+}
+.pg-label {
+	margin: 0 0 0.5rem;
+	font-size: 0.76rem;
+	font-weight: 600;
+	color: var(--pg-quiet);
+}
+
+/* The orders table scrolls sideways when narrow; its outer cells meet the
+   card edge, and money and order numbers use the mono face. */
+.pg-table-wrap {
+	margin-bottom: 0.25rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.pg-table {
+	width: 100%;
+	min-width: 34rem;
+	border-collapse: collapse;
+	font-size: 0.88rem;
+
+	& th {
+		padding: 0.6rem 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-align: left;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--pg-quiet);
+	}
+	& td {
+		padding: 0.7rem 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		color: var(--basalt-copy-body);
+	}
+	& tr:last-child td {
+		border-bottom: 0;
+	}
+	& :is(th, td):first-child {
+		padding-left: 0;
+	}
+	& :is(th, td):last-child {
+		padding-right: 0;
+		text-align: right;
+	}
+	& .pg-id {
+		font:
+			600 0.8rem/1 "Chivo Mono",
+			monospace;
+		color: var(--basalt-copy);
+	}
+	& .pg-money {
+		font:
+			600 0.84rem/1 "Chivo Mono",
+			monospace;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+
+	& tbody.is-turning {
+		animation: basalt-page-in 240ms ease;
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+
+/* A status is a colored dot before its word; each state sets the dot. */
+.pg-status {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.8rem;
+	white-space: nowrap;
+
+	&::before {
+		content: "";
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--pg-dot, var(--basalt-edge-strong));
+	}
+}
+.pg-status-paid {
+	--pg-dot: var(--basalt-success);
+}
+.pg-status-packed {
+	--pg-dot: var(--basalt-info);
+}
+.pg-status-refund {
+	--pg-dot: var(--basalt-danger);
+}
+
+/* Every list on the page starts bare. */
+.pg-list,
+.pg-rank,
+.pg-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Supply, feed and cursor rows: an icon tile, a name over a detail line,
+   and a value or time pinned right. */
+.pg-list > li {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.pg-list-icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+.pg-list-main {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.pg-list-name {
+	overflow: hidden;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pg-list-sub {
+	font-size: 0.77rem;
+	color: var(--pg-quiet);
+}
+.pg-list-val {
+	font:
+		600 0.8rem/1 "Chivo Mono",
+		monospace;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pg-list-time {
+	font-size: 0.76rem;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--pg-quiet);
+}
+
+/* The mini pager and the slides share one framed surface. */
+.pg-widget,
+.pg-slides {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+}
+
+/* The mini pager is a ranked list under a title row holding its arrows. */
+.pg-widget {
+	padding: 1rem 1.1rem;
+}
+.pg-widget-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+.pg-widget-title {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pg-rank li {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.pg-rank-n {
+	font:
+		600 0.77rem/1 "Chivo Mono",
+		monospace;
+	color: var(--pg-quiet);
+}
+.pg-rank-name {
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pg-rank-val {
+	font:
+		600 0.8rem/1 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy-body);
+}
+
+/* Each slide puts an icon tile beside its tip; the dots live in a tinted
+   footer strip. */
+.pg-slides {
+	overflow: hidden;
+}
+.pg-slides-view {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: start;
+	min-height: 9.5rem;
+	padding: 1.5rem 1.5rem 1rem;
+
+	&.is-turning {
+		animation: basalt-page-in 260ms ease;
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+.pg-slides-icon {
+	display: grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 12px;
+	font-size: 1.3rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.pg-slides-title {
+	margin: 0.1rem 0 0.3rem;
+	font-size: 1rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pg-slides-text {
+	margin: 0;
+	font-size: 0.88rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.pg-slides-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.6rem 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+
+/* The stepped record is a grid of fields, each value shown above its term. */
+.pg-record {
+	display: grid;
+	gap: 0.9rem 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+	margin-top: 1rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+
+	&.is-turning {
+		animation: basalt-page-in 240ms ease;
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+	& div {
+		display: flex;
+		gap: 0.2rem;
+		flex-direction: column-reverse;
+	}
+	& dt {
+		font-size: 0.74rem;
+		font-weight: 600;
+		color: var(--pg-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.pg-hint {
+	margin: 0.85rem 0 0;
+	font-size: 0.8rem;
+	color: var(--pg-quiet);
+}
+
+/* Customers under the letter index fill as many tile columns as fit. */
+.pg-alpha-count {
+	margin: 1rem 0 0.5rem;
+	font-size: 0.8rem;
+	color: var(--pg-quiet);
+}
+.pg-people {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+
+	& li {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		padding: 0.5rem 0.6rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 10px;
+	}
+}
+.pg-people-avatar {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+.pg-people-name {
+	display: block;
+	font-size: 0.86rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pg-people-sub {
+	display: block;
+	font-size: 0.76rem;
+	color: var(--pg-quiet);
+}
+
+/* The snippet closes each card behind a rule. Its toggle's chevron turns
+   when open, and the copy button floats over the code. Print leaves it out. */
+.pg-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	@media print {
+		display: none;
+	}
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.pg-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.pg-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}

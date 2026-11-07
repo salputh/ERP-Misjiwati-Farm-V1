@@ -2,22 +2,22 @@
     <div class="row">
         <x-breadcrumb judul="Rekap hasil sampel bobot ayam" :jejak="['Produksi', 'Sampling bobot']">
             @if ($this->terpilih && ! $this->periode->tertutup())
-                <x-tombol.kepala ikon="las la-plus" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-form-sampling">Tambah sampling {{ $this->terpilih->kandang->nama }}</x-tombol.kepala>
+                <x-tombol.kepala ikon="bi bi-plus-lg" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-form-sampling">Tambah sampling {{ $this->terpilih->kandang->nama }}</x-tombol.kepala>
             @endif
         </x-breadcrumb>
         <x-periode-tertutup :periode="$this->periode" />
 
         @if ($pesan)
             <div class="col-12">
-                <x-peringatan warna="success" bisaDitutup="true" class="mb-25">{{ $pesan }}</x-peringatan>
+                <x-peringatan warna="success" bisaDitutup="true" class="mb-4">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
         @if ($this->terpilih)
             {{-- Ringkasan semua kandang: sesi terakhir tiap kandang --}}
-            <div class="col-12 mb-25">
+            <div class="col-12 mb-4">
                 <x-kartu judul="Ringkasan sampling" subjudul="Sesi terakhir tiap kandang dalam periode ini." badan="p-0">
-                    <div class="table4 p-25">
+                    <div class="tabel-data">
                         <x-sampling.ringkasan-kandang :gabungan="$this->gabunganKandang" />
                     </div>
                 </x-kartu>
@@ -30,13 +30,13 @@
                 aksi-tutup="batal"
                 x-on:tutup-modal-sampling.window="bootstrap.Modal.getInstance($el)?.hide()">
                 {{-- Pengaturan sesi: kandang mengikuti pilihan di halaman; tanggal hanya dapat dipilih saat menambah --}}
-                <div class="d-flex flex-wrap align-items-end gap-4 mb-15">
+                <div class="d-flex flex-wrap align-items-end gap-4 mb-3">
                     <x-info.butir label="Kandang">{{ $this->terpilih->kandang->nama }}</x-info.butir>
                     @if ($sesiId)
                         <x-info.butir label="Tanggal">{{ $this->labelTanggal }}</x-info.butir>
                     @else
                         <div>
-                            <span class="d-block color-light fs-12 mb-1">Tanggal</span>
+                            <span class="d-block text-body-secondary small mb-1">Tanggal</span>
                             <x-pilih-tanggal
                                 id="sampling-tanggal"
                                 :nilai="$tanggal"
@@ -49,30 +49,30 @@
                     @endif
                     <x-info.butir label="Usia">{{ $this->umur }} hari</x-info.butir>
                     <div>
-                        <span class="d-block color-light fs-12 mb-1" id="label-jenis-sampling">Jenis sampling</span>
-                        <div class="btn-group dm-button-group btn-group-normal" role="group" aria-labelledby="label-jenis-sampling">
+                        <span class="d-block text-body-secondary small mb-1" id="label-jenis-sampling">Jenis sampling</span>
+                        <div class="btn-group" role="group" aria-labelledby="label-jenis-sampling">
                             <button type="button" wire:click="pilihJenis(false)" @class(['btn btn-sm', 'btn-primary' => ! $denganSexing, 'btn-light' => $denganSexing]) aria-pressed="{{ $denganSexing ? 'false' : 'true' }}">Tanpa sexing</button>
                             <button type="button" wire:click="pilihJenis(true)" @class(['btn btn-sm', 'btn-primary' => $denganSexing, 'btn-light' => ! $denganSexing]) aria-pressed="{{ $denganSexing ? 'true' : 'false' }}">Dengan sexing</button>
                         </div>
                     </div>
                     @foreach ($this->hasil['kelamin'] as $kelamin)
                         <div wire:key="ekor-{{ $kelamin }}">
-                            <label for="ekor-sampel-{{ $kelamin }}" class="d-block color-light fs-12 mb-1">Ekor per sampel{{ $kelamin === 'campuran' ? '' : ' '.$kelamin }}</label>
-                            <input id="ekor-sampel-{{ $kelamin }}" type="number" min="1" step="1" @class(['form-control form-control-sm ip-gray radius-xs b-light px-15 input-ekor', 'is-invalid' => $errors->has('ekor.'.$kelamin)]) wire:model.blur="ekor.{{ $kelamin }}" @disabled($ekorTerkunci)>
+                            <label for="ekor-sampel-{{ $kelamin }}" class="d-block text-body-secondary small mb-1">Ekor per sampel{{ $kelamin === 'campuran' ? '' : ' '.$kelamin }}</label>
+                            <input id="ekor-sampel-{{ $kelamin }}" type="number" min="1" step="1" @class(['form-control form-control-sm    px-3 input-ekor', 'is-invalid' => $errors->has('ekor.'.$kelamin)]) wire:model.blur="ekor.{{ $kelamin }}" @disabled($ekorTerkunci)>
                         </div>
                     @endforeach
                     <div>
                         @if ($ekorTerkunci)
-                            <x-tombol warna="light" variasi="outlined" ikon="uil-lock" wire:click="bukaKunciEkor" wire:loading.attr="disabled" wire:target="bukaKunciEkor, kunciEkor" aria-label="Buka kunci ekor per sampel">Buka kunci</x-tombol>
+                            <x-tombol warna="light" variasi="outlined" ikon="bi-lock" wire:click="bukaKunciEkor" wire:loading.attr="disabled" wire:target="bukaKunciEkor, kunciEkor" aria-label="Buka kunci ekor per sampel">Buka kunci</x-tombol>
                         @else
-                            <x-tombol ikon="uil-unlock" wire:click="kunciEkor" wire:loading.attr="disabled" wire:target="ekor, kunciEkor" aria-label="Kunci ekor per sampel">Kunci</x-tombol>
+                            <x-tombol ikon="bi-unlock" wire:click="kunciEkor" wire:loading.attr="disabled" wire:target="ekor, kunciEkor" aria-label="Kunci ekor per sampel">Kunci</x-tombol>
                         @endif
                     </div>
                 </div>
                 @error('tanggal')
-                    <x-peringatan warna="warning" class="mb-15">{{ $message }}</x-peringatan>
+                    <x-peringatan warna="warning" class="mb-3">{{ $message }}</x-peringatan>
                 @enderror
-                <p class="fs-13 color-light mb-25">
+                <p class="small text-body-secondary mb-4">
                     @if ($sesiId)
                         Kandang dan tanggal sesi ini tidak dapat diganti. Bila tanggalnya salah, hapus sesi ini dari Riwayat sampling lalu tambah sampling di tanggal yang benar.
                     @else
@@ -83,11 +83,11 @@
 
                 {{-- Isian per lantai --}}
                 @foreach (config('sampling.lantai') as $lantai => $info)
-                    <div class="card card-default card-sm bg-transparent card-bordered mb-25" wire:key="lantai-{{ $lantai }}-{{ $denganSexing ? 'sexing' : 'campuran' }}">
-                        <div class="card-header">
-                            <h6>{{ $info['label'] }}</h6>
-                        </div>
-                        <div class="card-body">
+                    <section class="card basalt-box db-card bg-transparent mb-4" wire:key="lantai-{{ $lantai }}-{{ $denganSexing ? 'sexing' : 'campuran' }}">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">{{ $info['label'] }}</h2></div>
+</header>
                             <div class="row g-4">
                                 @foreach ($this->hasil['kelamin'] as $kelamin)
                                     <div class="col-12">
@@ -100,24 +100,26 @@
                                     </div>
                                 @endforeach
                             </div>
-                        </div>
-                    </div>
+                        
+</div>
+</section>
                 @endforeach
 
                 {{-- Ringkasan --}}
-                <div class="card card-default card-sm bg-transparent card-bordered">
-                    <div class="card-header">
-                        <h6>Ringkasan hasil</h6>
-                    </div>
-                    <div class="card-body">
+                <section class="card basalt-box db-card bg-transparent">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Ringkasan hasil</h2></div>
+</header>
                         <x-sampling.ringkasan :hasil="$this->hasil" :pakan="$this->pakan" :dengan-sexing="$denganSexing" :umur="$this->umur" />
-                        <p class="fs-13 color-light mt-15 mb-0">ABW sesi ini menjadi ABW aktual di recording harian tanggal yang sama, tanpa perlu disalin manual.</p>
-                    </div>
-                </div>
+                        <p class="small text-body-secondary mt-3 mb-0">ABW sesi ini menjadi ABW aktual di recording harian tanggal yang sama, tanpa perlu disalin manual.</p>
+                    
+</div>
+</section>
 
                 <x-slot:footer>
                     @if ($errors->any())
-                        <span class="color-danger fs-14 me-auto" role="alert">Lengkapi ekor per sampel dan semua berat sampel sebelum menyimpan ({{ $errors->count() }} isian belum benar).</span>
+                        <span class="text-danger me-auto" role="alert">Lengkapi ekor per sampel dan semua berat sampel sebelum menyimpan ({{ $errors->count() }} isian belum benar).</span>
                     @endif
                     <x-tombol.batal wire:click="batal" />
                     @if ($sesiId)
@@ -129,57 +131,57 @@
             </x-modal>
 
             {{-- Riwayat sampling kandang terpilih: lihat, ubah, hapus --}}
-            <div class="col-12 mb-25">
-                <div class="card card-default card-md">
-                    <div class="card-header flex-wrap gap-2">
-                        <div>
-                            <h6>Riwayat sampling</h6>
-                            <span class="d-block fs-13 color-light fw-400 tanpa-kapital">Satu sesi per kandang per tanggal. Pilih kandang untuk melihat dan mengelola sesinya.</span>
+            <div class="col-12 mb-4">
+                <section class="card basalt-box db-card">
+<div class="db-card-body db-card-body-table">
+<header class="db-card-head">
+<div>
+                            <h2 class="db-card-title">Riwayat sampling</h2>
+                            <span class="d-block small text-body-secondary fw-normal tanpa-kapital">Satu sesi per kandang per tanggal. Pilih kandang untuk melihat dan mengelola sesinya.</span>
                         </div>
-                        <div class="card-extra">
-                            <ul class="card-tab-links nav-tabs nav" role="tablist">
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <ul class="nav nav-pills nav-sm" role="tablist">
                                 @foreach ($this->daftarKandang as $pilihan)
                                     <li wire:key="tab-kandang-{{ $pilihan->id }}">
                                         <a
                                             href="{{ route('sampling.bobot', ['periode' => $this->periode->id, 'kandang' => $pilihan->id]) }}"
                                             role="tab"
                                             wire:click.prevent="pilihKandang({{ $pilihan->id }})"
-                                            @class(['active' => $pilihan->is($this->terpilih)])
+                                            @class(['nav-link', 'active' => $pilihan->is($this->terpilih)])
                                             aria-selected="{{ $pilihan->is($this->terpilih) ? 'true' : 'false' }}"
                                         >{{ $pilihan->kandang->nama }}</a>
                                     </li>
                                 @endforeach
                             </ul>
                         </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table4 p-25">
+</header>
+                        <div class="tabel-data">
                             <div class="table-responsive">
-                                <table class="table mb-0">
+                                <table class="table mb-0 db-table">
                                     <thead>
-                                        <tr class="userDatatable-header">
-                                            <th><span class="userDatatable-title">Tanggal</span></th>
-                                            <th><span class="userDatatable-title">Jenis</span></th>
-                                            <th class="text-end"><span class="userDatatable-title">Ekor</span></th>
-                                            <th class="text-end"><span class="userDatatable-title">ABW</span></th>
-                                            <th class="text-end"><span class="userDatatable-title">Aksi</span></th>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Jenis</th>
+                                            <th class="text-end">Ekor</th>
+                                            <th class="text-end">ABW</th>
+                                            <th class="text-end">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse ($this->riwayat as $sesi)
                                             <tr wire:key="riwayat-{{ $sesi->id }}">
                                                 <td>
-                                                    <span class="d-block fw-500 color-dark">{{ $sesi->tanggal->translatedFormat('j M Y') }}</span>
-                                                    <span class="d-block fs-12 color-light">usia {{ $sesi->umur }} hari</span>
+                                                    <span class="d-block fw-medium text-body">{{ $sesi->tanggal->translatedFormat('j M Y') }}</span>
+                                                    <span class="d-block small text-body-secondary">usia {{ $sesi->umur }} hari</span>
                                                 </td>
                                                 <td>
-                                                    <span @class(['dm-tag tag-transparented m-0', 'tag-primary' => $sesi->dengan_sexing, 'tag-success' => ! $sesi->dengan_sexing])>{{ $sesi->dengan_sexing ? 'Dengan sexing' : 'Tanpa sexing' }}</span>
+                                                    <span @class(['badge  m-0', 'bg-primary-subtle text-primary' => $sesi->dengan_sexing, 'bg-success-subtle text-success' => ! $sesi->dengan_sexing])>{{ $sesi->dengan_sexing ? 'Dengan sexing' : 'Tanpa sexing' }}</span>
                                                 </td>
                                                 <td class="text-end">@angka($sesi->titik->sum('ekor'))</td>
                                                 <td class="text-end">
-                                                    <span class="d-block color-dark">@angka($sesi->abw()) g</span>
+                                                    <span class="d-block text-body">@angka($sesi->abw()) g</span>
                                                     @if ($sesi->dengan_sexing)
-                                                        <span class="d-block fs-12 color-light">J @angka($sesi->abw('jantan')) / B @angka($sesi->abw('betina'))</span>
+                                                        <span class="d-block small text-body-secondary">J @angka($sesi->abw('jantan')) / B @angka($sesi->abw('betina'))</span>
                                                     @endif
                                                 </td>
                                                 <td>
@@ -198,15 +200,16 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center color-light">Belum ada sampling tersimpan untuk {{ $this->terpilih->kandang->nama }}.</td>
+                                                <td colspan="5" class="text-center text-body-secondary">Belum ada sampling tersimpan untuk {{ $this->terpilih->kandang->nama }}.</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    
+</div>
+</section>
             </div>
         @else
             <x-kosong judul="Belum ada kandang untuk disampling">Sampling bobot bisa diisi setelah periode dibuat dan kandangnya diisi populasi awal.</x-kosong>

@@ -1,0 +1,1239 @@
+/* Styles for my-profile.html, the signed-in person's own page: the hero card
+   with their status, the about, contact and availability boxes that each
+   turn into a form in place, then their projects, their week and the people
+   they work with. my-account.css styles the settings screens. */
+
+.mine-shell {
+	--mine-radius: 20px;
+	--mine-tone: var(--basalt-hue);
+}
+
+/* A tone class sets one color that every tinted part reads, so switching the
+   palette moves the status, icons and avatar together. */
+.is-tone-primary {
+	--mine-tone: var(--basalt-hue);
+}
+.is-tone-accent {
+	--mine-tone: var(--basalt-flare);
+}
+.is-tone-success {
+	--mine-tone: var(--basalt-success);
+}
+.is-tone-warning {
+	--mine-tone: var(--basalt-warning);
+}
+.is-tone-danger {
+	--mine-tone: var(--basalt-danger);
+}
+.is-tone-info {
+	--mine-tone: var(--basalt-info);
+}
+.is-tone-muted {
+	--mine-tone: var(--basalt-copy-muted);
+}
+
+/* Cards share one surface: the plane fill, the card shadow and a hairline. */
+.mine-hero,
+.mine-box,
+.mine-panel {
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+
+/* The page's lists are layout, not bullets. */
+.mine-hero-facts,
+.mine-skills,
+.mine-week,
+.mine-avail-extras,
+.mine-work,
+.mine-feed ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Stacked rows are split by the same hairline wherever they appear. */
+.mine-contact-row + .mine-contact-row,
+.mine-work-row + .mine-work-row,
+.mine-feed-item + .mine-feed-item,
+.mine-person + .mine-person {
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* The title and the share button sit on one line and wrap when narrow. */
+.mine-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.mine-head-actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.mine-head-visibility {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.81rem;
+	color: var(--bs-secondary-color);
+}
+
+/* The hero card: a soft band, the avatar breaking over it, then who the
+   person is and an Edit button, with the status strip underneath. */
+.mine-hero {
+	position: relative;
+	margin-bottom: 1.5rem;
+	border-radius: var(--mine-radius);
+}
+.mine-hero-band {
+	height: 96px;
+	border-radius: calc(var(--mine-radius) - 1px) calc(var(--mine-radius) - 1px) 0 0;
+	background: var(--basalt-grad-soft);
+}
+.mine-hero-main {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	padding: 0 1.75rem 1.5rem;
+
+	& > .mine-avatar {
+		margin-top: -52px;
+		border-radius: 30%;
+		box-shadow: 0 0 0 5px var(--basalt-plane);
+	}
+}
+.mine-hero-who {
+	min-width: 0;
+	padding-top: 1rem;
+}
+.mine-hero-actions {
+	padding-top: 1rem;
+}
+.mine-hero-name {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 800;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.mine-hero-pronouns {
+	margin-left: 0.5rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	white-space: nowrap;
+	color: var(--bs-secondary-color);
+
+	&:empty {
+		display: none;
+	}
+}
+.mine-hero-role {
+	display: flex;
+	gap: 0.25rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.3rem 0 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.mine-hero-sep {
+	color: var(--bs-secondary-color);
+}
+.mine-hero-access {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-left: 0.3rem;
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-hue) 80%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.mine-hero-facts {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	font-size: 0.875rem;
+	color: var(--bs-secondary-color);
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.mine-hero-form {
+	grid-column: 2 / -1;
+	padding-top: 1.25rem;
+}
+.mine-hero-status {
+	padding: 1.25rem 1.75rem 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* Below tablet width the Edit button and the form drop under the avatar;
+   on phones the card stacks and the avatar shrinks. */
+@media (max-width: 767.98px) {
+	.mine-hero-main {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.mine-hero-actions {
+		grid-column: 1 / -1;
+		padding-top: 1.25rem;
+	}
+	.mine-hero-form {
+		grid-column: 1 / -1;
+	}
+}
+@media (max-width: 575.98px) {
+	.mine-hero-band {
+		height: 72px;
+	}
+	.mine-hero-main {
+		display: block;
+		padding: 0 1.25rem 1.25rem;
+	}
+	.mine-hero-main > .mine-avatar {
+		--mine-avatar-size: 84px;
+		margin-top: -42px;
+	}
+	.mine-hero-name {
+		font-size: 1.4rem;
+	}
+	.mine-hero-access {
+		margin-left: 0;
+	}
+	.mine-hero-actions .btn {
+		width: 100%;
+	}
+	.mine-hero-status {
+		padding: 1rem 1.25rem 1.25rem;
+	}
+}
+
+/* The avatar is a rounded square of initials, or the uploaded photo, with
+   a presence dot on its corner. */
+.mine-avatar {
+	--mine-avatar-size: 112px;
+	position: relative;
+	flex-shrink: 0;
+	width: var(--mine-avatar-size);
+	height: var(--mine-avatar-size);
+}
+.mine-avatar-face {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	border-radius: 30%;
+	overflow: hidden;
+	font-size: calc(var(--mine-avatar-size) * 0.34);
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	color: color-mix(in srgb, var(--mine-tone) 50%, var(--basalt-copy));
+	/* A tint of the chosen tone; the brand choice switches to the gradient. */
+	background: color-mix(in srgb, var(--mine-tone) 20%, var(--basalt-plane));
+
+	& img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	& img:not([hidden]) + span {
+		display: none;
+	}
+}
+.mine-avatar.is-brand .mine-avatar-face {
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+	background-color: var(--basalt-hue);
+}
+.mine-avatar-dot {
+	position: absolute;
+	right: -3px;
+	bottom: -3px;
+	width: calc(var(--mine-avatar-size) * 0.22);
+	height: calc(var(--mine-avatar-size) * 0.22);
+	border-radius: 50%;
+	border: 4px solid var(--basalt-plane);
+	background: var(--mine-tone);
+}
+
+/* The status line is one big button that opens its form. */
+.mine-status {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.6rem 0.85rem 0.6rem 0.6rem;
+	border: 1px solid color-mix(in srgb, var(--mine-tone) 30%, var(--basalt-edge));
+	border-radius: 14px;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--mine-tone) 7%, var(--basalt-plane));
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--mine-tone) 55%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--mine-tone) 11%, var(--basalt-plane));
+	}
+}
+.mine-status-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--mine-tone) 82%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mine-tone) 16%, var(--basalt-plane));
+}
+.mine-status-text {
+	display: flex;
+	gap: 0 0.5rem;
+	flex-wrap: wrap;
+	flex: 1;
+	align-items: baseline;
+	min-width: 0;
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& span {
+		color: var(--basalt-copy-body);
+	}
+}
+.mine-status-edit {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex-shrink: 0;
+	align-items: center;
+	font-size: 0.81rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--bs-secondary-color);
+}
+/* With no status set, this quiet link takes the status line's place. */
+.mine-status-add {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-left: -0.6rem;
+	padding: 0.3rem 0.6rem;
+	border: 0;
+	border-radius: 10px;
+	font-weight: 600;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-hue) 78%, var(--basalt-copy));
+	background: none;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+}
+
+/* Phones keep only the pencil of the status line's Change label. */
+@media (max-width: 575.98px) {
+	.mine-status-edit > span {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.mine-status {
+		transition: none;
+	}
+}
+
+/* About, contact and availability sit in three equal-height boxes. */
+.mine-trio {
+	margin-bottom: 2rem;
+}
+.mine-box {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	border-radius: 16px;
+}
+.mine-box-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head, 1.5rem) var(--basalt-pad-x) 0;
+}
+.mine-box-title,
+.mine-section-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.mine-box-title {
+	display: flex;
+	align-items: center;
+	min-height: 2rem;
+}
+.mine-box-body {
+	flex: 1;
+	margin: 0;
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+
+/* The bio reads as a paragraph; its topics follow as pills. */
+.mine-about-bio {
+	margin: 0 0 1.25rem;
+	line-height: 1.65;
+	color: var(--basalt-copy-body);
+}
+.mine-skills {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.mine-skill {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.3rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.81rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+
+/* Each way to reach the person is a row: icon, label over value, and a
+   badge on the one they prefer. */
+.mine-contact {
+	padding-top: 0.5rem;
+	list-style: none;
+}
+.mine-contact-row {
+	display: grid;
+	column-gap: 0.85rem;
+	grid-template-columns: 32px minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+}
+.mine-contact-main {
+	min-width: 0;
+}
+.mine-contact-label {
+	display: block;
+	font-size: 0.81rem;
+	color: var(--bs-secondary-color);
+}
+.mine-contact-value {
+	display: block;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+
+	&.is-empty {
+		font-weight: 400;
+		color: var(--bs-secondary-color);
+	}
+}
+.mine-contact-pref {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+
+/* Availability leads with the live state, then their local time, the week
+   strip and any focus or office hours. */
+.mine-avail {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+}
+.mine-avail-now {
+	display: flex;
+	gap: 0.65rem;
+	align-items: flex-start;
+	margin: 0;
+
+	& strong {
+		display: block;
+		font-size: 1.05rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& span span {
+		display: block;
+		margin-top: 0.2rem;
+		font-size: 0.875rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.mine-avail-dot {
+	flex-shrink: 0;
+	width: 10px;
+	height: 10px;
+	margin-top: 0.4rem;
+	border-radius: 50%;
+	background: var(--mine-tone);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--mine-tone) 20%, transparent);
+}
+.mine-avail-time {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		margin-top: 0.1rem;
+		color: var(--bs-secondary-color);
+	}
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.mine-avail-rel {
+	display: block;
+	font-size: 0.81rem;
+	color: var(--bs-secondary-color);
+}
+
+/* Seven equal cells, Monday first; days off go flat and today is ringed. */
+.mine-week {
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.mine-week-day {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 0.5rem 0.1rem;
+	border-radius: 10px;
+	text-align: center;
+	background: color-mix(in srgb, var(--basalt-hue) 9%, var(--basalt-plane));
+
+	&.is-off {
+		background: var(--basalt-canvas);
+	}
+	&.is-today {
+		box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	}
+}
+.mine-week-name {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.mine-week-hours {
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.mine-week-day.is-off .mine-week-hours {
+	color: var(--bs-secondary-color);
+}
+
+.mine-avail-extras {
+	display: grid;
+	gap: 0.5rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.mine-avail-key {
+	margin-right: 0.4rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	&::after {
+		content: ":";
+	}
+}
+
+/* Phones pull the box padding in to the narrow gutter. */
+@media (max-width: 575.98px) {
+	.mine-box-head,
+	.mine-box-body {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Every inline form shares these labels, field spacing and footer. */
+.mine-form fieldset {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.mine-field + .mine-field {
+	margin-top: 1.25rem;
+}
+.mine-form-label {
+	display: block;
+	float: none;
+	width: auto;
+	margin-bottom: 0.4rem;
+	padding: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+}
+.mine-form-optional {
+	margin-left: 0.3rem;
+	font-weight: 400;
+	color: var(--bs-secondary-color);
+}
+.mine-form-grid {
+	display: grid;
+	gap: 1.25rem 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	& > .mine-field + .mine-field {
+		margin-top: 0;
+	}
+}
+.mine-form-pair {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.mine-form-switch {
+	margin-bottom: 0.6rem;
+}
+.mine-form-short {
+	max-width: 12rem;
+}
+.mine-form-hint {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin-top: 0.3rem;
+	font-size: 0.81rem;
+	color: var(--bs-secondary-color);
+
+	& > :last-child {
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+}
+.mine-form .invalid-feedback {
+	font-size: 0.81rem;
+}
+.mine-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* The photo buttons and the initials colors sit beside the avatar, which
+   acts as the live preview. */
+.mine-photo {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-bottom: 1.25rem;
+}
+.mine-photo-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.mine-photo-colors .mine-form-label {
+	margin-bottom: 0.4rem;
+}
+.mine-swatches {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.mine-swatch {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	font-weight: 800;
+	color: color-mix(in srgb, var(--mine-tone) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mine-tone) 20%, var(--basalt-plane));
+	cursor: pointer;
+
+	/* The brand swatch is a solid fill a shade under the primary, which keeps
+     its tiny initials legible on every palette. */
+	&.is-brand {
+		border-color: transparent;
+		color: var(--basalt-on-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 82%, var(--basalt-copy));
+	}
+	& input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+	/* The ring marks the chosen swatch, focused or not; an outline appears
+     only on an unchosen one under the keyboard. */
+	&:has(input:checked) {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--mine-tone);
+	}
+	&:has(input:focus-visible:not(:checked)) {
+		outline: 2px solid var(--mine-tone);
+		outline-offset: 3px;
+	}
+}
+
+/* Status, clearing and day pickers reuse .basalt-choice tiles, tinted by
+   their tone class. */
+.mine-status-form {
+	margin-top: 0;
+}
+.mine-choices {
+	--basalt-choice-min: 112px;
+
+	& .basalt-choice {
+		--basalt-choice-tone: var(--mine-tone);
+	}
+	&.basalt-choices-compact {
+		--basalt-choice-min: 88px;
+	}
+}
+.mine-choice-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--mine-tone) 82%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mine-tone) 14%, var(--basalt-plane));
+}
+.mine-days {
+	--basalt-choice-min: 36px;
+	gap: 0.3rem;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+
+	& .basalt-choice {
+		padding: 0.4rem 0;
+		font-size: 0.75rem;
+	}
+}
+
+/* Chips in the topics field look like the topic pills on the profile. */
+.mine-tags .basalt-tags-tag {
+	gap: 0.3rem;
+	padding: 0.2rem 0.3rem 0.2rem 0.65rem;
+	border: 1px solid transparent;
+	font-weight: 500;
+	line-height: inherit;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+/* On phones the form fields stack, the footer buttons share the width and
+   Clear status takes a line of its own. */
+@media (max-width: 575.98px) {
+	.mine-form-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.mine-form-foot .btn {
+		flex: 1 1 auto;
+	}
+	.mine-form-foot .me-auto {
+		flex-basis: 100%;
+	}
+	.mine-choices {
+		--basalt-choice-min: 96px;
+	}
+	.mine-choices.basalt-choices-compact {
+		--basalt-choice-min: 76px;
+	}
+}
+
+/* The lower sections share a heading row and a panel. */
+.mine-section {
+	margin-bottom: 2rem;
+}
+.mine-section-head {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 0.85rem;
+}
+.mine-section-sub {
+	margin: 0.1rem 0 0;
+	font-size: 0.875rem;
+	color: var(--bs-secondary-color);
+}
+.mine-panel {
+	border-radius: 16px;
+}
+.mine-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: var(--mine-tone);
+	background: color-mix(in srgb, var(--mine-tone) 14%, var(--basalt-plane));
+}
+.mine-icon-sm {
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	font-size: 0.95rem;
+}
+/* Panels in the same row end level, with their footers on the bottom. */
+.mine-col {
+	display: flex;
+	flex-direction: column;
+
+	& > .mine-panel {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+	}
+	& .mine-panel-foot {
+		margin-top: auto;
+	}
+}
+
+/* A project row lines up its name, role, state, progress and date in fixed
+   columns so they read down the list. */
+.mine-work-row {
+	display: grid;
+	column-gap: 1.1rem;
+	grid-template-columns: 40px minmax(0, 1fr) 96px 104px 170px 128px;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+}
+.mine-work-main {
+	min-width: 0;
+}
+.mine-work-title {
+	font-weight: 700;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		color: var(--basalt-hue);
+	}
+}
+.mine-work-desc {
+	margin: 0.1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--bs-secondary-color);
+}
+.mine-work-meta {
+	display: contents;
+}
+.mine-work-role {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& small {
+		display: block;
+		font-size: 0.71rem;
+		color: var(--bs-secondary-color);
+	}
+}
+.mine-state {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	justify-self: start;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--mine-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mine-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--mine-tone);
+	}
+}
+.mine-work-progress {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.mine-work-bar {
+	flex: 1;
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+
+	& span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--mine-tone);
+	}
+}
+.mine-work-pct {
+	min-width: 2.6rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.mine-work-date {
+	font-size: 0.8rem;
+	color: var(--bs-secondary-color);
+
+	& strong {
+		display: block;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+@media (max-width: 1399.98px) {
+	.mine-work-row {
+		column-gap: 0.9rem;
+		grid-template-columns: 40px minmax(0, 1fr) 90px 100px 150px 118px;
+	}
+}
+/* Under 1200px a row splits in two: the project, then how it is going. */
+@media (max-width: 1199.98px) {
+	.mine-work-row {
+		row-gap: 0.7rem;
+		grid-template-columns: 40px minmax(0, 1fr);
+	}
+	.mine-work-meta {
+		display: grid;
+		column-gap: 1.25rem;
+		grid-column: 2;
+		/* Role, state and date keep fixed tracks, so they start level on every row. */
+		grid-template-columns: 9.5rem 6.75rem minmax(120px, 1fr) 9.5rem;
+		align-items: center;
+	}
+	.mine-work-role small {
+		display: inline;
+		margin-left: 0.3rem;
+	}
+	.mine-work-date strong {
+		display: inline;
+		margin-right: 0.3rem;
+	}
+}
+/* Tablets pair the facts: role with date, then state with progress. */
+@media (max-width: 767.98px) {
+	.mine-work-meta {
+		row-gap: 0.6rem;
+		grid-template-columns: 9.5rem minmax(0, 1fr);
+	}
+	.mine-work-date {
+		order: 1;
+	}
+	.mine-work-meta .mine-state,
+	.mine-work-progress {
+		order: 2;
+	}
+}
+/* Phones run the facts full width: role, state and progress, then date. */
+@media (max-width: 575.98px) {
+	.mine-work-row {
+		column-gap: 0.8rem;
+		padding: 1rem var(--basalt-pad-x-narrow);
+	}
+	.mine-work-meta {
+		gap: 0.6rem 1rem;
+		grid-column: 1 / -1;
+		grid-template-columns: 6.75rem minmax(0, 1fr);
+	}
+	.mine-work-role {
+		grid-column: 1 / -1;
+	}
+	.mine-work-date {
+		grid-column: 1 / -1;
+		order: 4;
+	}
+	.mine-work-meta .mine-state {
+		order: 2;
+	}
+	.mine-work-progress {
+		order: 3;
+	}
+}
+
+/* The week's activity groups under small day headings; each time keeps a
+   fixed track so the times line up. */
+.mine-feed {
+	padding: 0.5rem var(--basalt-pad-x) 0;
+}
+.mine-feed-day {
+	margin: 0.9rem 0 0.25rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--bs-secondary-color);
+}
+.mine-feed-item {
+	display: grid;
+	column-gap: 0.85rem;
+	grid-template-columns: 32px minmax(0, 1fr) 4.75rem;
+	align-items: center;
+	padding: 0.9rem 0;
+}
+/* A name or an incident number never splits across lines on a phone. */
+.mine-feed-text {
+	margin: 0;
+	color: var(--basalt-copy-body);
+	text-wrap: pretty;
+
+	& strong,
+	& a {
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& a {
+		text-decoration: none;
+	}
+	& a:hover {
+		color: var(--basalt-hue);
+	}
+}
+.mine-feed-time {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--bs-secondary-color);
+}
+.mine-panel-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.5rem;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* Colleagues: tinted initials, name over role and topic, a message button. */
+.mine-people {
+	margin: 0;
+	padding: 0.3rem var(--basalt-pad-x);
+	list-style: none;
+}
+.mine-person {
+	display: grid;
+	column-gap: 0.85rem;
+	grid-template-columns: 40px minmax(0, 1fr) auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 0;
+
+	& .btn-icon {
+		color: var(--bs-secondary-color);
+	}
+}
+.mine-person-initials {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--mine-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mine-tone) 18%, var(--basalt-plane));
+}
+.mine-person-name {
+	margin: 0;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.mine-person-about {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--bs-secondary-color);
+
+	& span {
+		white-space: nowrap;
+	}
+	& span + span::before {
+		content: " \00b7  ";
+		white-space: pre;
+	}
+}
+
+/* Phones narrow the gutters, drop each activity time under its text and
+   put a colleague's role and topic on separate lines. */
+@media (max-width: 575.98px) {
+	.mine-person-about span {
+		display: block;
+	}
+	.mine-person-about span + span::before {
+		content: none;
+	}
+	.mine-feed,
+	.mine-people,
+	.mine-panel-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.mine-feed-item {
+		row-gap: 0.1rem;
+		grid-template-columns: 32px minmax(0, 1fr);
+	}
+	.mine-feed-time {
+		grid-column: 2;
+	}
+}
+
+/* Toasts stack in the bottom corner; a colored edge carries the tone, and
+   they slide in and out unless motion is reduced. */
+.mine-toasts {
+	position: fixed;
+	right: 1.25rem;
+	bottom: 1.25rem;
+	z-index: 1090;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	max-width: min(360px, calc(100vw - 2rem));
+}
+.mine-toast {
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	padding: 0.75rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	animation: mine-toast-in 0.25s ease-out;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.65rem;
+		bottom: 0.65rem;
+		left: -1px;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--mine-tone);
+	}
+	& > .bi {
+		margin-top: 1px;
+		color: var(--mine-tone);
+	}
+	&.is-out {
+		animation: mine-toast-out 0.2s ease-in forwards;
+	}
+}
+.mine-toast-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.mine-toast-action {
+	flex-shrink: 0;
+	align-self: center;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 8px;
+	font-size: 0.81rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+}
+@keyframes mine-toast-in {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+@keyframes mine-toast-out {
+	to {
+		transform: translateX(20px);
+		opacity: 0;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.mine-toasts {
+		right: 1rem;
+		bottom: 1rem;
+		left: 1rem;
+		max-width: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.mine-toast,
+	.mine-toast.is-out {
+		animation: none;
+	}
+}
+
+/* Whatever the script hides with [hidden] stays hidden, whatever display
+   its component asks for. */
+.mine-hero-facts li[hidden],
+.mine-avatar-face img[hidden],
+.mine-status[hidden],
+.mine-status-add[hidden],
+.mine-box-body[hidden],
+.mine-avail-extras[hidden],
+.mine-form[hidden],
+.mine-form-pair[hidden],
+[data-mine-block-times][hidden] {
+	display: none;
+}
+
+/* With gradients switched off (data-basalt-gradients="off" on <html>) the
+   hero band reads --basalt-grad-soft and turns plain by itself, and the
+   brand avatar reads --basalt-grad, which becomes the solid primary. No
+   other part of this page draws a gradient. */

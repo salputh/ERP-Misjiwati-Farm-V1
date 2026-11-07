@@ -1,0 +1,39 @@
+/* An avatar is a fixed circle that centers initials or crops a photo. The
+   steps change only its box and type size, and inside a stack each one
+   overlaps the last behind a ring of the surface color. */
+$avatar-steps: (xs 26px 0.625rem, sm 32px 0.75rem, lg 56px 1.1rem);
+
+.basalt-avatar {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+
+	.basalt-avatar-group & {
+		box-sizing: content-box;
+		margin-left: -8px;
+		border: 2px solid var(--basalt-plane);
+
+		&:first-child {
+			margin-left: 0;
+		}
+	}
+}
+@each $step, $side, $type in $avatar-steps {
+	.basalt-avatar-#{$step} {
+		width: $side;
+		height: $side;
+		font-size: $type;
+	}
+}
+
+.basalt-avatar-group {
+	display: inline-flex;
+	align-items: center;
+}

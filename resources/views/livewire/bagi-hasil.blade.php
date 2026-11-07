@@ -2,7 +2,7 @@
     <div class="row" id="halaman-bagi-hasil">
         <x-breadcrumb judul="Bagi hasil {{ $kandang->nama }}" :jejak="['Keuangan', 'Bagi hasil', $kandang->nama]">
             @if ($this->periode && $this->lembar)
-                <x-tombol.kepala warna="white" ikon="uil uil-file-download" data-lewati-ekspor :href="route('bagi.hasil.export.pdf', ['kandang' => $kandang->id, 'periode' => $this->periode->id])">Ekspor PDF</x-tombol.kepala>
+                <x-tombol.kepala warna="white" ikon="bi bi-file-earmark-arrow-down" data-lewati-ekspor :href="route('bagi.hasil.export.pdf', ['kandang' => $kandang->id, 'periode' => $this->periode->id])">Ekspor PDF</x-tombol.kepala>
                 <x-tombol.kepala
                     data-lewati-ekspor
                     x-data="eksporHalaman('#halaman-bagi-hasil', {{ \Illuminate\Support\Js::from($this->namaBerkasGambar) }})"
@@ -17,7 +17,7 @@
         @endif
 
         @if ($this->bagiHasilTerkunci)
-            <div class="col-12 mb-25">
+            <div class="col-12 mb-4">
                 <x-peringatan warna="secondary" judul="Bagi hasil {{ $kandang->nama }} dikunci" class="mb-0">
                     Pengaturan bagi hasil tidak dapat diubah selama terkunci. Buka kuncinya dari halaman Periode bila perlu diperbaiki.
                 </x-peringatan>
@@ -25,28 +25,28 @@
         @endif
 
         @if ($pesan)
-            <div class="col-12 mb-25">
+            <div class="col-12 mb-4">
                 <x-peringatan warna="success" bisaDitutup="true">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
         @if ($kandang->nama === 'Kandang 2' && $this->periodeKandang?->bagiHasil && ! $this->periode?->tertutup() && ! $this->bagiHasilTerkunci)
-            <div class="col-12 mb-25">
-                <div class="card card-default card-md">
-                    <div class="card-header">
-                        <h6>Pengaturan bagi hasil Kandang 2</h6>
-                        <div class="card-extra fs-13 color-light tanpa-kapital">Simpan perubahan untuk menghitung ulang pembagian.</div>
-                    </div>
-                    <div class="card-body">
+            <div class="col-12 mb-4">
+                <section class="card basalt-box db-card">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Pengaturan bagi hasil Kandang 2</h2></div>
+                        <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">Simpan perubahan untuk menghitung ulang pembagian.</div>
+</header>
                         @error('pemodal')
-                            <x-peringatan warna="danger" class="mb-20">{{ $message }}</x-peringatan>
+                            <x-peringatan warna="danger" class="mb-3">{{ $message }}</x-peringatan>
                         @enderror
                         @error('abk')
-                            <x-peringatan warna="danger" class="mb-20">{{ $message }}</x-peringatan>
+                            <x-peringatan warna="danger" class="mb-3">{{ $message }}</x-peringatan>
                         @enderror
 
                         <form wire:submit="simpan">
-                            <h6 class="mb-15">Pengeluaran dan tarif</h6>
+                            <h6 class="mb-3">Pengeluaran dan tarif</h6>
                             <div class="row">
                                 <div class="col-md-4">
                                     <x-masukan.ribuan properti="masukan.operasional" teks
@@ -58,7 +58,7 @@
                                         readonly
                                        
                                         keterangan="Dikunci: diambil otomatis dari total biaya operasional di halaman kas operasional, tidak termasuk pinjaman makan dan pinjaman karyawan." />
-                                    <span class="fs-12 color-light d-block mt-5">
+                                    <span class="small text-body-secondary d-block mt-5">
                                         Sumber:
                                         <a href="{{ route('kas.operasional', ['kandang' => $kandang->id, 'periode' => $this->periode?->id]) }}">
                                             Kas operasional {{ $kandang->nama }}
@@ -91,7 +91,7 @@
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-10">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                                 <h6 class="mb-0">Daftar ABK dan premi tetap</h6>
                                 <x-tombol ukuran="sm" variasi="outlined" warna="primary" wire:click="tambahAbk" wire:loading.attr="disabled" wire:target="tambahAbk">Tambah ABK</x-tombol>
                             </div>
@@ -107,7 +107,7 @@
                                     <div class="col-md-3">
                                         <x-masukan.ribuan properti="abk.{{ $indeks }}.jumlah" teks :id="'bagi-hasil-abk-premi-'.$indeks" label="Premi tetap (Rp)" :kesalahan="$errors->first('abk.'.$indeks.'.jumlah')" />
                                     </div>
-                                    <div class="col-md-1 pt-md-35 text-end">
+                                    <div class="col-md-1 pt-md-5 text-end">
                                         <x-aksi.ikon :aksi="[
                                             ['kelas' => 'remove', 'label' => 'Hapus ABK '.($satu['nama'] ?: 'tanpa nama'), 'click' => 'mintaHapus(\'abk\', '.$indeks.')', 'modal' => '#konfirmasi-hapus-bagi-hasil'],
                                         ]" />
@@ -115,7 +115,7 @@
                                 </div>
                             @endforeach
 
-                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-10 mb-10">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2 mb-2">
                                 <h6 class="mb-0">Entertain</h6>
                                 <x-tombol ukuran="sm" variasi="outlined" warna="primary" wire:click="tambahEntertain" wire:loading.attr="disabled" wire:target="tambahEntertain">Tambah penerima</x-tombol>
                             </div>
@@ -128,7 +128,7 @@
                                     <div class="col-md-5">
                                         <x-masukan.ribuan properti="entertain.{{ $indeks }}.jumlah" teks :id="'bagi-hasil-entertain-jumlah-'.$indeks" label="Jumlah (Rp)" :kesalahan="$errors->first('entertain.'.$indeks.'.jumlah')" />
                                     </div>
-                                    <div class="col-md-2 pt-md-35 text-end">
+                                    <div class="col-md-2 pt-md-5 text-end">
                                         <x-aksi.ikon :aksi="[
                                             ['kelas' => 'remove', 'label' => 'Hapus penerima entertain '.($satu['nama'] ?: 'tanpa nama'), 'click' => 'mintaHapus(\'entertain\', '.$indeks.')', 'modal' => '#konfirmasi-hapus-bagi-hasil'],
                                         ]" />
@@ -136,7 +136,7 @@
                                 </div>
                             @endforeach
 
-                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-10 mb-10">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2 mb-2">
                                 <h6 class="mb-0">Pembagian pemodal</h6>
                                 <x-tombol ukuran="sm" variasi="outlined" warna="primary" wire:click="tambahPemodal" wire:loading.attr="disabled" wire:target="tambahPemodal">Tambah pemodal</x-tombol>
                             </div>
@@ -149,7 +149,7 @@
                                     <div class="col-md-5">
                                         <x-masukan :id="'bagi-hasil-pemodal-persen-'.$indeks" tipe="number" min="0" max="100" step="0.001" label="Porsi (%)" wire:model="pemodal.{{ $indeks }}.persen" :kesalahan="$errors->first('pemodal.'.$indeks.'.persen')" />
                                     </div>
-                                    <div class="col-md-2 pt-md-35 text-end">
+                                    <div class="col-md-2 pt-md-5 text-end">
                                         <x-aksi.ikon :aksi="[
                                             ['kelas' => 'remove', 'label' => 'Hapus pemodal '.($satu['nama'] ?: 'tanpa nama'), 'click' => 'mintaHapus(\'pemodal\', '.$indeks.')', 'modal' => '#konfirmasi-hapus-bagi-hasil'],
                                         ]" />
@@ -157,25 +157,26 @@
                                 </div>
                             @endforeach
                             @error('pemodal')
-                                <div class="color-danger fs-12 mb-15">{{ $message }}</div>
+                                <div class="text-danger small mb-3">{{ $message }}</div>
                             @enderror
 
-                            <div class="d-flex justify-content-end mt-15">
-                                <x-tombol tipe="submit" ikon="uil-save" wire:loading.attr="disabled" wire:target="simpan">
+                            <div class="d-flex justify-content-end mt-3">
+                                <x-tombol tipe="submit" ikon="bi-save" wire:loading.attr="disabled" wire:target="simpan">
                                     Simpan dan hitung ulang
                                 </x-tombol>
                             </div>
                         </form>
-                    </div>
-                </div>
+                    
+</div>
+</section>
             </div>
         @endif
 
         @if ($this->lembar)
             {{-- Identitas lembar --}}
-            <div class="col-12 mb-25">
-                <div class="card card-default card-md">
-                    <div class="card-body kartu-identitas">
+            <div class="col-12 mb-4">
+                <section class="card basalt-box db-card">
+<div class="db-card-body">
                         <x-info class="mb-0">
                             <x-info.butir label="Inti">PT. Indojaya Agrinusa</x-info.butir>
                             <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
@@ -189,33 +190,34 @@
 
                         <div class="aksi-kunci">
                             @if ($this->bagiHasilTerkunci)
-                                <span class="dm-tag tag-primary tag-transparented m-0">Terkunci</span>
+                                <span class="badge bg-primary-subtle text-primary m-0">Terkunci</span>
                             @elseif (! $this->periode?->tertutup())
                                 <x-tombol ukuran="sm" variasi="outlined" wire:click="bukaModalKunci" data-bs-toggle="modal" data-bs-target="#modal-kunci-bagi-hasil" wire:loading.attr="disabled" wire:target="bukaModalKunci, kunciBagiHasil">
                                     Kunci bagi hasil
                                 </x-tombol>
                             @endif
                         </div>
-                    </div>
-                </div>
+                    
+</div>
+</section>
             </div>
 
             
 
             {{-- Angka utama --}}
-            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['ringkasan']['pendapatan'])" label="Jumlah pendapatan" ikon="uil-bill" warna="primary">
+            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['ringkasan']['pendapatan'])" label="Jumlah pendapatan" ikon="bi-receipt" warna="primary">
                 <small>Rp @angka($this->lembar['ringkasan']['pendapatan']) dari RHPP real</small>
             </x-dashboard.kartu>
 
-            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['ringkasan']['pengeluaran'])" label="Total operasional pemeliharaan" ikon="uil-arrow-circle-up" warna="warning">
+            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['ringkasan']['pengeluaran'])" label="Total operasional pemeliharaan" ikon="bi-arrow-up-circle" warna="warning">
                 <small>Rp @angka($this->lembar['ringkasan']['pengeluaran'])</small>
             </x-dashboard.kartu>
 
-            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['ringkasan']['sisa_akhir'])" label="Sisa akhir diperoleh" ikon="uil-wallet" :warna="$this->lembar['ringkasan']['sisa_akhir'] < 0 ? 'danger' : 'success'">
+            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['ringkasan']['sisa_akhir'])" label="Sisa akhir diperoleh" ikon="bi-wallet2" :warna="$this->lembar['ringkasan']['sisa_akhir'] < 0 ? 'danger' : 'success'">
                 <small>Rp @angka($this->lembar['ringkasan']['sisa_akhir']) untuk pemodal</small>
             </x-dashboard.kartu>
 
-            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['ringkasan']['abk'])" label="Total pendapatan ABK" ikon="uil-users-alt" warna="info">
+            <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->lembar['ringkasan']['abk'])" label="Total pendapatan ABK" ikon="bi-people" warna="info">
                 <small>Rp @angka($this->lembar['ringkasan']['abk']) untuk @angka($this->lembar['ringkasan']['jumlah_abk']) ABK</small>
             </x-dashboard.kartu>
 
@@ -223,14 +225,14 @@
                  Di bawah itu dua tumpukan dilebur (tumpuk-lebur) dan kartu berurutan menurut order-*. --}}
             <div class="col-xxl-6 tumpuk-lebur">
                 <div class="row h-100">
-                    <x-rhpp.rincian judul="Pendapatan" lebar="col-12 order-1 rincian-kas">
+                    <x-rhpp.rincian judul="Pendapatan" lebar="col-12 order-1">
                         @foreach ($this->lembar['pendapatan'] as $baris)
                             <x-rhpp.baris :label="$baris['label']" :angka="$baris['jumlah']" :satuan="$baris['rumus']" :tebal="$baris['tebal']" :sorot="$baris['sorot']" />
                         @endforeach
                         <x-slot:catatan>Angkanya sama dengan pendapatan bersih {{ $kandang->nama }} di <a href="{{ route('rhpp', ['periode' => $this->periode->id, 'tab' => 'real']) }}">RHPP real</a>, yang membagi nilai panen ke tiap kandang menurut tonase.</x-slot:catatan>
                     </x-rhpp.rincian>
 
-                    <x-rhpp.rincian judul="Sisa diperoleh" lebar="col-12 order-3 rincian-kas">
+                    <x-rhpp.rincian judul="Sisa diperoleh" lebar="col-12 order-3">
                         @foreach ($this->lembar['sisa'] as $baris)
                             <x-rhpp.baris :label="$baris['label']" :angka="$baris['jumlah']" :satuan="$baris['rumus']" :tebal="$baris['tebal']" :sorot="$baris['sorot']" :masukan="$baris['masukan']" kurung />
                         @endforeach
@@ -241,19 +243,19 @@
 
             <div class="col-xxl-6 tumpuk-lebur">
                 <div class="row h-100">
-                    <x-rhpp.rincian judul="Pengeluaran" lebar="col-12 order-2 rincian-kas">
+                    <x-rhpp.rincian judul="Pengeluaran" lebar="col-12 order-2">
                         @foreach ($this->lembar['pengeluaran'] as $baris)
                             <x-rhpp.baris :label="$baris['label']" :angka="$baris['jumlah']" :satuan="$baris['rumus']" :tebal="$baris['tebal']" :sorot="$baris['sorot']" :masukan="$baris['masukan']" />
                         @endforeach
                             <x-slot:catatan>
                                 Angka <span class="recording-masukan">ungu</span> adalah masukan yang disalin dari lembar.
                                 @isset($this->lembar['operasional']['kas'])
-                                    <span class="color-success fw-500">Operasional diambil otomatis dari total biaya operasional di <a href="{{ route('kas.operasional', ['kandang' => $kandang->id, 'periode' => $this->periode->id]) }}">buku kas</a> (Rp @angka($this->lembar['operasional']['kas'])), tidak termasuk pinjaman makan dan pinjaman karyawan.</span>
+                                    <span class="text-success fw-medium">Operasional diambil otomatis dari total biaya operasional di <a href="{{ route('kas.operasional', ['kandang' => $kandang->id, 'periode' => $this->periode->id]) }}">buku kas</a> (Rp @angka($this->lembar['operasional']['kas'])), tidak termasuk pinjaman makan dan pinjaman karyawan.</span>
                                 @else
                                     Buku kas {{ $kandang->nama }} periode ini belum diisi, jadi angka operasional memakai nilai terakhir yang tersimpan.
                                 @endisset
                                 @foreach ($this->lembar['tidak_dijumlahkan'] as $bonus)
-                                    <span class="color-warning fw-500">Bonus pasar {{ $bonus['nama'] }} Rp @angka($bonus['jumlah']) tercantum di lembar asli tetapi tidak masuk totalnya, jadi di sini juga tidak dijumlahkan.</span>
+                                    <span class="text-warning fw-medium">Bonus pasar {{ $bonus['nama'] }} Rp @angka($bonus['jumlah']) tercantum di lembar asli tetapi tidak masuk totalnya, jadi di sini juga tidak dijumlahkan.</span>
                                 @endforeach
                             </x-slot:catatan>
                     </x-rhpp.rincian>
@@ -279,7 +281,7 @@
         judul="Kunci bagi hasil {{ $kandang->nama }}"
         submit="kunciBagiHasil"
         x-on:tutup-modal-kunci-bagi-hasil.window="bootstrap.Modal.getInstance($el).hide()">
-        <p class="fs-13 color-light">
+        <p class="small text-body-secondary">
             @if ($this->sandiAdminTeratur)
                 Lembar bagi hasil {{ $kandang->nama }} akan dikunci sehingga tidak dapat diubah. Masukkan password admin untuk mengunci.
             @else

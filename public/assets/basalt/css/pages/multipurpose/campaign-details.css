@@ -1,0 +1,995 @@
+/* Styles for campaign-details.html, one marketing campaign in full. Every
+   class starts with .cd- and every color is a --basalt-* token, which is
+   how the palettes, dark mode and the Flat setting reach this page. */
+
+.cd-page {
+	/* Small gray text is pulled toward the body color so it holds its
+     contrast in every palette; links, warnings and tracks mix the same way. */
+	--cd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--cd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--cd-warn: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+	--cd-track: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+
+	/* The filled primary button takes its label color from the token made
+     for it, because the primary turns light in several dark palettes. */
+	& .btn-primary {
+		--bs-btn-color: var(--basalt-on-hue);
+		--bs-btn-hover-color: var(--basalt-on-hue);
+		--bs-btn-active-color: var(--basalt-on-hue);
+		--bs-btn-disabled-color: var(--basalt-on-hue);
+	}
+}
+
+/* One class per chart tone, shared by the key, the funnel and the ranks. */
+.cd-c1 {
+	--cd-tone: var(--basalt-series-1);
+}
+.cd-c2 {
+	--cd-tone: var(--basalt-series-2);
+}
+.cd-c3 {
+	--cd-tone: var(--basalt-series-3);
+}
+.cd-c4 {
+	--cd-tone: var(--basalt-series-4);
+}
+.cd-c5 {
+	--cd-tone: var(--basalt-series-5);
+}
+.cd-c8 {
+	--cd-tone: var(--basalt-series-8);
+}
+
+/* The header: name, status and channel on the left, the run button and
+   the menu on the right, stacked on a phone. */
+.basalt-hero-detail.cd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+
+	@media (max-width: 575.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+
+.cd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+
+.cd-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+
+	& .badge {
+		font-size: 0.75rem;
+	}
+}
+
+.cd-page .dropdown-item {
+	& .bi {
+		margin-right: 0.6rem;
+	}
+
+	&.cd-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+
+	&.cd-danger-item:hover,
+	&.cd-danger-item:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* Four tinted figure cards: four across, two by two under 1200px and a
+   single column on the narrowest phones. */
+.cd-figs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+
+	@media (max-width: 1199.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	@media (max-width: 575.98px) {
+		gap: 0.75rem;
+	}
+
+	@media (max-width: 359.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.cd-fig {
+	--cd-tone: var(--basalt-series-1);
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.25rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background-color: var(--basalt-plane);
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--cd-tone) 10%, transparent), transparent 62%);
+
+	& dd {
+		margin: 0;
+	}
+
+	& .cd-fig-visual {
+		display: flex;
+		align-items: flex-end;
+		min-height: 1.75rem;
+		margin: 0.5rem 0 0.6rem;
+	}
+
+	& .cd-fig-note {
+		margin-top: auto;
+		font-size: 0.8rem;
+		line-height: 1.45;
+		color: var(--cd-quiet);
+	}
+
+	@media (max-width: 575.98px) {
+		padding: 1rem;
+	}
+}
+
+:root[data-basalt-gradients="off"] .cd-fig {
+	background-image: none;
+}
+
+.cd-fig-2 {
+	--cd-tone: var(--basalt-series-2);
+}
+.cd-fig-3 {
+	--cd-tone: var(--basalt-series-3);
+}
+.cd-fig-4 {
+	--cd-tone: var(--basalt-series-5);
+}
+
+.cd-fig-label {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--cd-quiet);
+
+	& .bi {
+		display: inline-grid;
+		place-items: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 8px;
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--cd-tone) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--cd-tone) 16%, var(--basalt-plane));
+	}
+}
+
+.cd-fig-value {
+	margin-top: 0.65rem;
+	font-size: 1.45rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	@media (max-width: 575.98px) {
+		font-size: 1.1rem;
+	}
+}
+
+.cd-fig-flag {
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+
+.cd-fig-flag-warn {
+	color: var(--cd-warn);
+}
+
+.cd-fig-big-note {
+	align-self: center;
+	font-size: 0.9rem;
+	font-weight: 650;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+
+/* A bar measured against the budget or the goal. Its mark shows how much
+   of the time has gone, so the two read side by side. */
+.cd-meter {
+	position: relative;
+	width: 100%;
+	height: 0.5rem;
+	margin-bottom: 0.6rem;
+	border-radius: 999px;
+	background: var(--cd-track);
+}
+
+.cd-meter-bar {
+	position: absolute;
+	inset: 0 auto 0 0;
+	transform-origin: left center;
+	width: var(--cd-w);
+	border-radius: inherit;
+	background: var(--cd-tone);
+	animation: cd-grow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.cd-meter-mark {
+	position: absolute;
+	top: -0.3rem;
+	bottom: -0.3rem;
+	left: var(--cd-at);
+	width: 3px;
+	margin-left: -1.5px;
+	border-radius: 3px;
+	background: var(--basalt-copy);
+}
+
+/* Customers won each month, drawn as small columns that rise in. */
+.cd-minibars {
+	display: flex;
+	gap: 4px;
+	align-items: flex-end;
+	height: 1.75rem;
+
+	& span {
+		transform-origin: bottom center;
+		width: 0.65rem;
+		height: var(--cd-h);
+		min-height: 3px;
+		border-radius: 3px 3px 1px 1px;
+		background: color-mix(in srgb, var(--cd-tone) 80%, var(--basalt-plane));
+		animation: cd-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	}
+}
+
+@keyframes cd-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+@keyframes cd-rise {
+	from {
+		transform: scaleY(0);
+	}
+}
+
+/* Every card takes the full width below 1200px; from there they pair up
+   on a twelve-column grid and each pair ends level. */
+.cd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+
+	@media (min-width: 1200px) {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+}
+
+@media (min-width: 1200px) {
+	.cd-card-months {
+		grid-column: span 8;
+	}
+	.cd-card-flow {
+		grid-column: span 4;
+	}
+	.cd-card-sources,
+	.cd-card-messages {
+		grid-column: span 6;
+	}
+	.cd-card-customers {
+		grid-column: 1 / -1;
+	}
+	.cd-card-settings {
+		grid-column: span 7;
+	}
+	.cd-card-activity {
+		grid-column: span 5;
+	}
+}
+
+/* Card chrome every section shares. */
+.cd-card {
+	min-width: 0;
+}
+
+.cd-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.cd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+
+	& .btn[hidden] {
+		display: none;
+	}
+}
+
+.cd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.cd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cd-quiet);
+}
+
+.cd-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+.cd-card-note {
+	margin: auto 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--cd-quiet);
+}
+
+.cd-more-line {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--cd-quiet);
+}
+
+.cd-small {
+	font-size: 0.85rem;
+}
+
+.cd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--cd-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.cd-mono {
+	font-size: 0.85rem;
+}
+
+/* Results by month: the key above the chart, then a canvas that fills
+   whatever height the card has. */
+.cd-key {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+
+.cd-key-bar {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 3px;
+	background: var(--cd-tone);
+}
+
+.cd-key-line {
+	width: 1rem;
+	height: 3px;
+	border-radius: 2px;
+	background: var(--cd-tone);
+}
+
+.cd-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 260px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+}
+
+/* The funnel from leads to customers and the two ranked lists (sources
+   and headlines) share one bar pattern: a name and a figure on one line,
+   a track with a growing bar, and a small note under it. */
+.cd-flow {
+	display: flex;
+	gap: 1.1rem;
+	flex-direction: column;
+	flex: 1 1 auto;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cd-flow-line,
+.cd-rank-line {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+
+.cd-flow-name {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.cd-flow-n {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.cd-flow-track,
+.cd-rank-track {
+	display: block;
+	height: 0.5rem;
+	margin: 0.4rem 0 0.3rem;
+	border-radius: 999px;
+	background: var(--cd-track);
+}
+
+.cd-flow-bar,
+.cd-rank-bar {
+	transform-origin: left center;
+	display: block;
+	width: var(--cd-w);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--cd-tone);
+	animation: cd-grow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.cd-flow-note,
+.cd-rank-sub {
+	font-size: 0.77rem;
+	color: var(--cd-quiet);
+}
+
+.cd-flow-cost {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--cd-quiet);
+
+	& strong {
+		margin-left: 0.3rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+.cd-ranks {
+	display: flex;
+	gap: 1.1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cd-rank-name {
+	min-width: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.cd-rank-value {
+	flex: none;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.cd-ranks-messages {
+	gap: 1.35rem;
+	margin-bottom: 1.5rem;
+}
+
+.cd-main-tag {
+	margin-left: 0.5rem;
+	vertical-align: 0.1em;
+}
+
+/* The customers table. Its card is a size container, so the source and
+   join date fold under the name once the card, not the window, is narrow. */
+.cd-card-customers {
+	container-type: inline-size;
+}
+
+.cd-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 1rem 0.75rem;
+		border-bottom-color: var(--basalt-edge);
+		color: var(--basalt-copy);
+	}
+
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+
+	& thead th {
+		padding-top: 0;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--cd-quiet);
+	}
+
+	& tbody tr:last-child > * {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+
+	& tbody td {
+		white-space: nowrap;
+	}
+
+	& td:first-child {
+		width: 100%;
+		white-space: normal;
+	}
+
+	& .badge {
+		font-size: 0.71rem;
+	}
+}
+
+.cd-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--cd-link);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.cd-cell-note {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.77rem;
+	color: var(--cd-quiet);
+}
+
+.cd-fold {
+	display: none;
+	margin-top: 0.2rem;
+	font-size: 0.77rem;
+	color: var(--cd-quiet);
+}
+
+.cd-amount {
+	font-weight: 650;
+}
+
+@container (max-width: 640px) {
+	.cd-col-source,
+	.cd-col-joined {
+		display: none;
+	}
+	.cd-fold {
+		display: block;
+	}
+}
+
+@container (max-width: 420px) {
+	.cd-city {
+		display: none;
+	}
+}
+
+/* Settings as read: a ruled list of labels and values, one column on the
+   smallest phones. */
+.cd-facts {
+	display: grid;
+	margin: 0;
+
+	&[hidden] {
+		display: none;
+	}
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 8rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+
+	& > div:first-child {
+		padding-top: 0;
+	}
+
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--cd-quiet);
+	}
+
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+
+	@media (max-width: 389.98px) {
+		& > div {
+			gap: 0.25rem;
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+}
+
+.cd-facts-aside {
+	margin-left: 0.6rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--cd-quiet);
+}
+
+.cd-chips {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+
+.cd-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Settings while editing: the whole section turns into one form, two
+   fields to a row on wider screens. */
+.cd-form[hidden] {
+	display: none;
+}
+
+.cd-fields {
+	display: grid;
+	gap: 1.25rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.cd-field {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	& > legend.form-label {
+		float: none;
+		width: auto;
+		padding: 0;
+		font-size: 1rem;
+	}
+
+	& .cd-select {
+		max-width: 15rem;
+	}
+}
+
+.cd-field-wide {
+	grid-column: 1 / -1;
+}
+
+.cd-money,
+.cd-date {
+	max-width: 12rem;
+}
+
+.cd-static {
+	display: flex;
+	align-items: center;
+	min-height: calc(1.5em + 0.75rem + 2px);
+	margin: 0;
+}
+
+.cd-optional {
+	margin-left: 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--cd-quiet);
+}
+
+.cd-hint {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	color: var(--cd-quiet);
+}
+
+.cd-error {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.cd-page .form-control.is-invalid {
+	padding-right: 0.75rem;
+	background-image: none;
+}
+
+.cd-money .form-control.is-invalid {
+	z-index: 3;
+}
+
+/* Industries and regions are checkboxes drawn as pills that wrap; the box
+   itself stays in place for the keyboard but is not seen. */
+.cd-checks {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.cd-check {
+	position: relative;
+	display: inline-flex;
+	cursor: pointer;
+
+	& input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	& span {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.1rem;
+		padding: 0.3rem 0.9rem;
+		border: 1px solid color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		background: var(--basalt-plane);
+		transition:
+			border-color 170ms ease,
+			background-color 170ms ease;
+	}
+
+	&:hover span {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	}
+
+	& input:checked + span {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+	}
+
+	& input:focus-visible:not(:checked) + span {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	& input:checked:focus-visible + span {
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-hue) 20%, transparent);
+	}
+}
+
+.cd-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* The history of changes, each entry tied to the next by a thin rule. */
+.cd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+
+.cd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+
+.cd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	margin: 0;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 650;
+	}
+}
+
+.cd-feed-time {
+	font-size: 0.77rem;
+	color: var(--cd-quiet);
+}
+
+/* Bars and columns appear without growing when motion is reduced, and on
+   paper; print also drops the controls. */
+@media (prefers-reduced-motion: reduce) {
+	.cd-meter-bar,
+	.cd-minibars span,
+	.cd-flow-bar,
+	.cd-rank-bar {
+		animation: none;
+	}
+}
+
+@media print {
+	.cd-head .basalt-hero-actions,
+	.cd-card-head .btn,
+	.cd-card-head .basalt-segmented {
+		display: none;
+	}
+	.cd-meter-bar,
+	.cd-minibars span,
+	.cd-flow-bar,
+	.cd-rank-bar {
+		animation: none;
+	}
+}

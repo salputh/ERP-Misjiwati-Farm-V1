@@ -1,24 +1,24 @@
 @props(['kandang'])
 
-{{-- Tabel performa tiap kandang (HexaDash demo one: top selling products) --}}
-<div class="col-xxl-8 mb-25" x-data="saringKandang(@js(array_column($kandang, 'status')))">
-    <div class="card border-0 px-25 h-100">
-        <div class="card-header px-0 border-0">
-            <h6>Performa kandang</h6>
-            <div class="card-extra">
-                <ul class="card-tab-links nav-tabs nav" role="tablist">
+{{-- Tabel performa tiap kandang --}}
+<div class="col-xxl-8 mb-4" x-data="saringKandang(@js(array_column($kandang, 'status')))">
+    <section class="card basalt-box db-card h-100">
+<div class="db-card-body db-card-body-table">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Performa kandang</h2></div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <ul class="nav nav-pills nav-sm" role="tablist">
                     @foreach (['semua' => 'Semua', 'perlu' => 'Perlu dicek', 'sesuai' => 'Sesuai'] as $kunci => $teks)
                     <li>
-                        <a href="#" role="tab" @class(['active'=> $loop->first]) :class="saring === '{{ $kunci }}' && 'active'" :aria-selected="saring === '{{ $kunci }}'" @click.prevent="saring = '{{ $kunci }}'">{{ $teks }}</a>
+                        <a href="#" role="tab" @class(['nav-link', 'active'=> $loop->first]) :class="saring === '{{ $kunci }}' && 'active'" :aria-selected="saring === '{{ $kunci }}'" @click.prevent="saring = '{{ $kunci }}'">{{ $teks }}</a>
                     </li>
                     @endforeach
                 </ul>
             </div>
-        </div>
-        <div class="card-body p-0">
+</header>
             <div class="selling-table-wrap">
                 <div class="table-responsive">
-                    <table class="table table--default table-borderless">
+                    <table class="table db-table">
                         <thead>
                             <tr>
                                 <th>Kandang</th>
@@ -51,17 +51,18 @@
                                 </td>
                                 <td>@angka($baris['mortalitas'], 2)%</td>
                                 <td>@angka($baris['fcr'], 2)</td>
-                                <td><span class="{{ $baris['status']->kelasLencana() }} rounded-pill userDatatable-content-status active">{{ $baris['status']->label() }}</span></td>
+                                <td><span class="badge {{ $baris['status']->kelasLencana() }} rounded-pill">{{ $baris['status']->label() }}</span></td>
                             </tr>
                             @endforeach
                             <tr x-show="kosong" x-cloak>
-                                <td colspan="7" class="color-gray">Tidak ada kandang di kategori ini.</td>
+                                <td colspan="7" class="text-body-secondary">Tidak ada kandang di kategori ini.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <p class="fs-12 color-gray mb-15">Jumlah per kandang belum dikurangi panen karena nota panen gabungan tidak mencatat kandang asal. Angka ayam hidup pada ringkasan sudah dikurangi dari total ekor panen.</p>
-        </div>
-    </div>
+            <p class="db-card-foot">Jumlah per kandang belum dikurangi panen karena nota panen gabungan tidak mencatat kandang asal. Angka ayam hidup pada ringkasan sudah dikurangi dari total ekor panen.</p>
+        
+</div>
+</section>
 </div>

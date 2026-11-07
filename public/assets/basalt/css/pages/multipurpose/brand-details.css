@@ -1,0 +1,1081 @@
+/* Brand Details (brand-details.html): the page's own pieces under .bd-*.
+   The hero header, cards, status pills, segmented switch, empty state and
+   toasts come from basalt.css; this sheet arranges them and adds the logo
+   tile, the figures, the product table, the month bars, the order list, the
+   fact rows with their in-place forms, the notes and the feed. Colors are
+   always a --basalt-* token, so palettes and dark mode carry through. */
+
+.bd-page {
+	/* Quiet text is the muted token leaned toward the body color, which keeps
+     it above 4.5:1 on the paler palettes. */
+	--bd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--bd-line: var(--basalt-edge);
+	/* Links get the same treatment: the bare primary falls short on a few of
+     the light palettes. */
+	--bd-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--bd-ok: color-mix(in srgb, var(--basalt-success) 58%, var(--basalt-copy));
+	--bd-warn: color-mix(in srgb, var(--basalt-warning) 52%, var(--basalt-copy));
+	--bd-bad: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--bd-info: color-mix(in srgb, var(--basalt-info) 58%, var(--basalt-copy));
+}
+
+/* Each brand keeps the chart color it has on the Brands page; the logo tile,
+   product icons, sales bars and month bars all read it. */
+.bd-tone-1 {
+	--bd-tone: var(--basalt-series-1);
+}
+.bd-tone-2 {
+	--bd-tone: var(--basalt-series-2);
+}
+.bd-tone-3 {
+	--bd-tone: var(--basalt-series-3);
+}
+.bd-tone-4 {
+	--bd-tone: var(--basalt-series-4);
+}
+.bd-tone-5 {
+	--bd-tone: var(--basalt-series-5);
+}
+.bd-tone-6 {
+	--bd-tone: var(--basalt-series-6);
+}
+.bd-tone-7 {
+	--bd-tone: var(--basalt-series-7);
+}
+.bd-tone-8 {
+	--bd-tone: var(--basalt-series-8);
+}
+
+/* The header is a two-column grid: back link, logo and name on the left,
+   the buttons and pager on the right, both resting on the baseline. */
+.basalt-hero-detail.bd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.bd-head {
+	.basalt-hero-actions {
+		flex-wrap: nowrap;
+		align-self: end;
+		align-items: center;
+		margin: 0;
+
+		.btn {
+			white-space: nowrap;
+		}
+		.btn[hidden] {
+			display: none;
+		}
+	}
+	.dropdown-menu li[hidden] {
+		display: none;
+	}
+	.dropdown-item .bi {
+		margin-right: 0.6rem;
+	}
+}
+.bd-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.bd-who-text {
+	min-width: 0;
+}
+.bd-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	.basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+.bd-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.5rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+
+/* The logo tile shows the brand's initials on a gradient of its color, held
+   at a fixed lightness (deep in light mode, pale in dark mode) so the
+   surface-colored initials read on every palette. */
+.bd-logo {
+	--bd-logo-a: color-mix(in srgb, oklch(from var(--bd-tone, var(--basalt-hue)) 0.5 c h) 100%, transparent);
+	--bd-logo-b: color-mix(in srgb, oklch(from var(--bd-tone, var(--basalt-hue)) 0.4 c h) 100%, transparent);
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 4.5rem;
+	height: 4.5rem;
+	border-radius: 18px;
+	font-size: 1.45rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	color: var(--basalt-plane);
+	background-color: var(--bd-logo-a);
+	background-image: linear-gradient(140deg, var(--bd-logo-a), var(--bd-logo-b));
+	box-shadow:
+		0 0 0 3px var(--basalt-plane),
+		0 8px 22px -12px var(--bd-logo-a);
+
+	& img {
+		width: 100%;
+		height: 100%;
+		border-radius: inherit;
+		object-fit: contain;
+		background: var(--basalt-plane);
+	}
+}
+:root[data-basalt-gradients="off"] .bd-logo {
+	background-image: none;
+}
+[data-bs-theme="dark"] .bd-logo {
+	--bd-logo-a: color-mix(in srgb, oklch(from var(--bd-tone, var(--basalt-hue)) 0.8 c h) 100%, transparent);
+	--bd-logo-b: color-mix(in srgb, oklch(from var(--bd-tone, var(--basalt-hue)) 0.7 c h) 100%, transparent);
+}
+.bd-logo-sm {
+	width: 3.5rem;
+	height: 3.5rem;
+	border-radius: 15px;
+	font-size: 1.1rem;
+	box-shadow: none;
+}
+/* Under desktop width the buttons drop to their own row, so the name and
+   its line keep the full width; the pager slides to the right end. */
+@media (max-width: 1199.98px) {
+	.basalt-hero-detail.bd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.bd-pager {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.bd-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.bd-logo {
+		width: 3.5rem;
+		height: 3.5rem;
+		border-radius: 15px;
+		font-size: 1.1rem;
+	}
+}
+
+/* One slim line says why the brand is where it is: paused, onboarding or
+   out of stock. A straight inset bar carries the tone instead of a border
+   that would bend round the corners. */
+.bd-notice {
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem 0.7rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&[hidden] {
+		display: none;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: 0.4rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--bd-notice-tone, var(--basalt-edge-strong));
+	}
+	& > .bi {
+		flex: none;
+		color: var(--bd-notice-ink, var(--bd-quiet));
+	}
+	& a {
+		font-weight: 600;
+		color: var(--bd-link);
+	}
+}
+.bd-notice-warning {
+	--bd-notice-tone: var(--basalt-warning);
+	--bd-notice-ink: var(--bd-warn);
+}
+.bd-notice-info {
+	--bd-notice-tone: var(--basalt-info);
+	--bd-notice-ink: var(--bd-info);
+}
+
+/* Four tinted figures in a row; each takes a faint wash of its own color. */
+.bd-figs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+}
+.bd-fig {
+	--bd-fig-tone: var(--basalt-series-1);
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.25rem 1.05rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background-color: var(--basalt-plane);
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--bd-fig-tone) 10%, transparent), transparent 62%);
+}
+:root[data-basalt-gradients="off"] .bd-fig {
+	background-image: none;
+}
+.bd-fig-2 {
+	--bd-fig-tone: var(--basalt-series-2);
+}
+.bd-fig-3 {
+	--bd-fig-tone: var(--basalt-series-3);
+}
+.bd-fig-4 {
+	--bd-fig-tone: var(--basalt-series-5);
+}
+.bd-fig-label {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--bd-quiet);
+
+	.bi {
+		display: inline-grid;
+		place-items: center;
+		width: 1.65rem;
+		height: 1.65rem;
+		border-radius: 8px;
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--bd-fig-tone) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--bd-fig-tone) 16%, var(--basalt-plane));
+	}
+}
+.bd-fig-value {
+	margin: 0.7rem 0 0.25rem;
+	overflow: hidden;
+	font-size: 1.35rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.bd-fig-note {
+	margin: 0;
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--bd-quiet);
+
+	.bi {
+		margin-right: 0.1rem;
+	}
+}
+/* The note under a figure turns green, red or amber with the news. */
+.bd-up {
+	font-weight: 600;
+	color: var(--bd-ok);
+}
+.bd-down {
+	font-weight: 600;
+	color: var(--bd-bad);
+}
+.bd-fig-note.bd-warn {
+	font-weight: 600;
+	color: var(--bd-warn);
+}
+@media (max-width: 1199.98px) {
+	.bd-figs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 575.98px) {
+	.bd-figs {
+		gap: 0.75rem;
+	}
+	.bd-fig {
+		padding: 1rem;
+	}
+	.bd-fig-value {
+		font-size: 1.1rem;
+	}
+	.bd-fig-note {
+		white-space: normal;
+	}
+}
+@media (max-width: 389.98px) {
+	.bd-figs {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The cards sit on a six-column grid at desktop width so each row ends
+   level: products across the page, sales beside orders, the three editable
+   cards in a row, notes beside activity. Narrower, they stack in that
+   order. */
+.bd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.bd-grid {
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.bd-card-products {
+		grid-column: span 6;
+	}
+	.bd-card-half {
+		grid-column: span 3;
+	}
+	.bd-card-third {
+		grid-column: span 2;
+	}
+}
+
+/* Every card measures its own width, so its table and fact rows can fold
+   by the room they actually have. */
+.bd-card {
+	container-type: inline-size;
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	}
+	&.is-editing {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge));
+	}
+}
+@media (max-width: 575.98px) {
+	.bd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.bd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& > .btn,
+	& > .bd-link {
+		flex: none;
+		white-space: nowrap;
+	}
+	& > .btn[hidden] {
+		display: none;
+	}
+	& > .bd-link {
+		margin-top: 0.2rem;
+		font-size: 0.875rem;
+	}
+}
+.bd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--bd-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* Links, second lines and SKUs are shared by several cards. */
+.bd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--bd-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.bd-link-plain {
+	font-weight: 500;
+}
+.bd-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--bd-quiet);
+}
+.bd-sku {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	white-space: nowrap;
+}
+
+/* The product table: name and icon, price, a sales bar, then stock. */
+.bd-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+		border-bottom-color: var(--bd-line);
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& tbody tr:last-child > * {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		padding-bottom: 0.8rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--bd-quiet);
+	}
+	& tbody td {
+		white-space: nowrap;
+	}
+	& tbody td:first-child {
+		min-width: 13rem;
+		white-space: normal;
+	}
+}
+.bd-col-price {
+	width: 8rem;
+}
+.bd-col-sales {
+	width: 32%;
+}
+.bd-col-stock {
+	width: 10rem;
+}
+.bd-product {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.bd-product-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--bd-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--bd-tone) 15%, var(--basalt-plane));
+}
+.bd-product-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.bd-product-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--bd-link);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.bd-fold {
+	display: none;
+}
+
+/* Sales read as a bar in the brand's color with the amount after it. */
+.bd-sold {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+}
+.bd-sold-bar {
+	flex: 1 1 auto;
+	min-width: 3rem;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--bd-tone) 12%, var(--basalt-plane-alt));
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--bd-tone);
+	}
+}
+.bd-sold-num {
+	flex: none;
+	min-width: 5.5rem;
+	font-weight: 650;
+	text-align: right;
+}
+.bd-col-sales .bd-sub {
+	text-align: right;
+}
+
+.bd-state {
+	font-weight: 500;
+	color: var(--basalt-copy);
+}
+.bd-state-warn {
+	font-weight: 600;
+	color: var(--bd-warn);
+}
+.bd-state-danger {
+	font-weight: 600;
+	color: var(--bd-bad);
+}
+.bd-state-info {
+	font-weight: 600;
+	color: var(--bd-info);
+}
+
+/* As the card narrows the price folds under the product name, and then
+   the whole row becomes a two-column block with stock under sales. */
+@container (max-width: 760px) {
+	.bd-col-price {
+		display: none;
+	}
+	.bd-fold {
+		display: inline;
+	}
+}
+@container (max-width: 460px) {
+	.bd-table thead {
+		display: none;
+	}
+	.bd-table tbody tr {
+		display: grid;
+		gap: 0.75rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--bd-line);
+	}
+	.bd-table tbody tr:first-child {
+		padding-top: 0;
+	}
+	.bd-table tbody tr:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	.bd-table > :not(caption) > * > *,
+	.bd-table > :not(caption) > * > :first-child,
+	.bd-table > :not(caption) > * > :last-child {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+	}
+	.bd-table tbody td:first-child {
+		grid-column: 1 / -1;
+	}
+	.bd-table td.bd-col-sales {
+		padding-left: 3.4rem;
+	}
+	.bd-sold-bar {
+		min-width: 2rem;
+	}
+	.bd-sold-num {
+		min-width: 0;
+	}
+	.bd-table td.bd-col-stock {
+		text-align: right;
+	}
+}
+
+/* Six month bars grow up from a shared baseline, one after another; the
+   recent three are solid, the earlier three a tint. */
+.bd-bars {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.bd-bar {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+
+	&:nth-child(2) .bd-bar-fill {
+		animation-delay: 50ms;
+	}
+	&:nth-child(3) .bd-bar-fill {
+		animation-delay: 100ms;
+	}
+	&:nth-child(4) .bd-bar-fill {
+		animation-delay: 150ms;
+	}
+	&:nth-child(5) .bd-bar-fill {
+		animation-delay: 200ms;
+	}
+	&:nth-child(6) .bd-bar-fill {
+		animation-delay: 250ms;
+	}
+}
+.bd-bar-value {
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--bd-quiet);
+}
+.bd-bar.is-recent .bd-bar-value {
+	color: var(--basalt-copy);
+}
+.bd-bar-track {
+	position: relative;
+	width: min(100%, 2.75rem);
+	height: 9.5rem;
+}
+.bd-bar-fill {
+	position: absolute;
+	inset: auto 0 0;
+	transform-origin: bottom;
+	border-radius: 8px 8px 3px 3px;
+	background: color-mix(in srgb, var(--bd-tone) 30%, var(--basalt-plane));
+	animation: bd-grow 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.bd-bar.is-recent .bd-bar-fill {
+	background: linear-gradient(180deg, var(--bd-tone), color-mix(in srgb, var(--bd-tone) 78%, var(--basalt-copy)));
+}
+:root[data-basalt-gradients="off"] .bd-bar.is-recent .bd-bar-fill {
+	background: var(--bd-tone);
+}
+@keyframes bd-grow {
+	from {
+		transform: scaleY(0);
+	}
+	to {
+		transform: scaleY(1);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.bd-bar-fill {
+		animation: none;
+	}
+}
+.bd-bar-label {
+	width: 100%;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	text-align: center;
+	color: var(--bd-quiet);
+}
+.bd-legend {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 1.5rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+}
+.bd-legend-key {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--bd-tone) 30%, var(--basalt-plane));
+
+	&.is-recent {
+		background: var(--bd-tone);
+	}
+}
+.bd-empty {
+	padding: 1.5rem 0 0.5rem;
+}
+
+/* Purchase orders: number and goods, state and date, amount at the end. */
+.bd-pos {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.bd-po {
+	display: grid;
+	gap: 0.5rem 1.25rem;
+	grid-template-columns: minmax(0, 1fr) 8.5rem auto;
+	align-items: start;
+	padding: 1rem 0;
+	border-bottom: 1px solid var(--bd-line);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.bd-po-main {
+	min-width: 0;
+}
+.bd-po-id {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--bd-link);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.bd-po-state .bd-sub {
+	margin-top: 0.3rem;
+}
+.bd-po-amount {
+	min-width: 5rem;
+	font-weight: 650;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+@container (max-width: 400px) {
+	.bd-po {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.bd-po-state {
+		grid-row: 2;
+	}
+	.bd-po-amount {
+		grid-row: 1;
+		grid-column: 2;
+	}
+}
+
+/* Fact rows pair a quiet label with its value; a narrow card stacks the
+   label above the value so an email address keeps to one line. */
+.bd-facts {
+	display: grid;
+	margin: 0;
+
+	&[hidden] {
+		display: none;
+	}
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--bd-line);
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--bd-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+@container (max-width: 420px) {
+	.bd-facts > div {
+		gap: 0.3rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The in-place forms: a single column of fields and a footer of buttons. */
+.bd-form {
+	display: grid;
+	gap: 1.25rem;
+	max-width: 28rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.bd-field {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	.form-label {
+		font-weight: 600;
+		font-size: 0.85rem;
+	}
+}
+/* The logo picker keeps its file input hidden; the Upload button beside the
+   preview shows the keyboard focus in its place. */
+.bd-logo-field {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+
+	& input:focus-visible + .bd-logo-field-btns label {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.bd-hint {
+	margin: 0 0 0.65rem;
+	font-size: 0.8rem;
+	color: var(--bd-quiet);
+}
+.bd-logo-field-btns {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	.btn {
+		white-space: nowrap;
+	}
+	.btn[hidden] {
+		display: none;
+	}
+}
+.bd-logo-field-remove {
+	text-decoration: none;
+	color: var(--bd-bad);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--bd-bad);
+	}
+}
+.bd-optional {
+	font-weight: 400;
+	color: var(--bd-quiet);
+}
+.bd-w-short {
+	max-width: 12rem;
+}
+.bd-fit {
+	max-width: 14rem;
+}
+.bd-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--bd-bad);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.bd-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--bd-line);
+
+	.btn {
+		white-space: nowrap;
+	}
+}
+
+/* Notes stack newest first; a note just added slides in. */
+.bd-notes {
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+
+	&:empty {
+		display: none;
+	}
+}
+.bd-note {
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--bd-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&.is-fresh {
+		animation: bd-in 400ms ease both;
+	}
+}
+.bd-note-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.bd-note-meta {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	color: var(--bd-quiet);
+}
+@keyframes bd-in {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.bd-note.is-fresh {
+		animation: none;
+	}
+}
+.bd-note-form-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+}
+
+/* The feed is a timeline: an icon in a circle, a line down to the next
+   entry, the text and the time beside it. */
+.bd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.bd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.bd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.bd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 650;
+	}
+}
+.bd-feed-time {
+	font-size: 0.77rem;
+	color: var(--bd-quiet);
+}
+.bd-feed-item.is-fresh .bd-feed-icon {
+	color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+.bd-more {
+	margin-top: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}

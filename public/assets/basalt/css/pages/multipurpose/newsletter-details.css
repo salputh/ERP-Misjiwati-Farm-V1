@@ -1,0 +1,769 @@
+/* Basalt - Newsletter Details (newsletter-details.html)
+   One newsletter in full. Namespaced under .nd-*
+   Built from shared parts: the detail header, status pills, empty
+   states, the date picker, dialogs and toasts. This file styles the
+   results band, the email preview with its click numbers, the
+   clicks-by-link list and the send details. Every color is a
+   --basalt-* token, so palettes, surfaces and dark mode carry through. */
+
+.nd-page {
+	--nd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--nd-line: var(--basalt-edge);
+	--nd-track: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+	--nd-up: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	--nd-down: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+
+/* Header */
+.basalt-hero-detail.nd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.nd-head-desc {
+	display: flex;
+	gap: 0.3rem 0.65rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.nd-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-self: end;
+	margin: 0;
+}
+.nd-actions .btn {
+	white-space: nowrap;
+}
+.nd-actions .btn[hidden] {
+	display: none;
+}
+@media (max-width: 767.98px) {
+	.basalt-hero-detail.nd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Results band */
+.nd-band.card {
+	container-type: inline-size;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.nd-figs {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin: 0;
+}
+.nd-fig {
+	position: relative;
+	min-width: 0;
+	padding: 0.25rem 1.25rem;
+}
+.nd-fig:first-child {
+	padding-left: 0;
+}
+.nd-fig + .nd-fig {
+	border-left: 1px solid var(--nd-line);
+}
+.nd-fig dt {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--nd-quiet);
+}
+.nd-fig dd {
+	margin: 0;
+}
+.nd-fig-value {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 1.65rem;
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.nd-fig-note {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--nd-quiet);
+}
+.nd-up {
+	font-weight: 700;
+	color: var(--nd-up);
+}
+.nd-down {
+	font-weight: 700;
+	color: var(--nd-down);
+}
+
+/* The open rate gets a small ring beside it. */
+.nd-fig-lead {
+	padding-right: 4.25rem;
+}
+.nd-ring {
+	position: absolute;
+	top: 50%;
+	right: 1rem;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin-top: -1.375rem;
+	border-radius: 50%;
+	background: conic-gradient(var(--basalt-series-2) var(--nd-open, 0%), var(--nd-track) 0);
+	-webkit-mask: radial-gradient(circle, transparent 54%, #000 56%);
+	mask: radial-gradient(circle, transparent 54%, #000 56%);
+}
+
+/* Not sent yet: when it goes, and the opens to expect at the end. */
+.nd-wait {
+	display: flex;
+	gap: 1rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.nd-wait-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 12px;
+	font-size: 1.25rem;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.nd-wait-text {
+	flex: 1 1 18rem;
+	min-width: 0;
+}
+.nd-expect {
+	margin: 0;
+	padding-left: 1.5rem;
+	border-left: 1px solid var(--nd-line);
+}
+.nd-expect dt {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--nd-quiet);
+}
+.nd-expect dd {
+	margin: 0;
+}
+.nd-expect-value {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 1.4rem;
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.nd-expect-note {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--nd-quiet);
+}
+.nd-wait-title {
+	margin: 0;
+	font-size: 1.35rem;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.nd-wait-sub {
+	margin: 0.2rem 0 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+}
+
+@container (max-width: 900px) {
+	.nd-figs {
+		row-gap: 1.25rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.nd-fig:nth-child(4) {
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+@container (max-width: 520px) {
+	.nd-figs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.nd-expect {
+		flex: 1 1 100%;
+		padding: 1rem 0 0 4rem;
+		border-left: 0;
+		border-top: 1px solid var(--nd-line);
+	}
+	.nd-fig:nth-child(odd) {
+		padding-left: 0;
+		border-left: 0;
+	}
+	.nd-fig:nth-child(4) {
+		padding-left: 1.25rem;
+		border-left: 1px solid var(--nd-line);
+	}
+	.nd-fig-lead {
+		grid-column: 1 / -1;
+	}
+	.nd-figs .nd-fig:nth-child(2) {
+		padding-left: 0;
+		border-left: 0;
+	}
+	.nd-figs .nd-fig:nth-child(3) {
+		padding-left: 1.25rem;
+		border-left: 1px solid var(--nd-line);
+	}
+	.nd-figs .nd-fig:nth-child(4) {
+		padding-left: 0;
+		border-left: 0;
+	}
+	.nd-figs .nd-fig:nth-child(5) {
+		padding-left: 1.25rem;
+		border-left: 1px solid var(--nd-line);
+	}
+	.nd-fig-value {
+		font-size: 1.4rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.nd-band.card {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Grid: the email beside clicks and send details
+   The cards on the right keep their own height and stay in view while
+   the email scrolls past; at the bottom both columns end level. */
+.nd-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.nd-grid {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		align-items: start;
+	}
+	.nd-grid > .nd-email {
+		align-self: stretch;
+	}
+}
+@media (min-width: 1200px) and (min-height: 820px) {
+	.nd-side {
+		position: sticky;
+		top: calc(var(--basalt-header-h) + 1.5rem);
+	}
+}
+.nd-side {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.nd-card.card {
+	min-width: 0;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.nd-card.card {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+	.nd-mail {
+		padding: 1.25rem 0.85rem;
+	}
+	.nd-sheet-head {
+		font-size: 1.3rem;
+	}
+}
+.nd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.nd-card-head > div {
+	min-width: 0;
+}
+.nd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.nd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--nd-quiet);
+}
+.nd-switch {
+	flex: none;
+	margin: 0.2rem 0 0;
+	white-space: nowrap;
+}
+.nd-switch[hidden] {
+	display: none;
+}
+.nd-switch .form-check-label {
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+
+/* The email */
+.nd-inbox {
+	display: flex;
+	gap: 0.85rem;
+	align-items: flex-start;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--nd-line);
+	border-radius: 12px 12px 0 0;
+	background: var(--basalt-plane-alt);
+}
+.nd-inbox-logo {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.nd-inbox-text {
+	min-width: 0;
+}
+.nd-inbox-from {
+	margin: 0;
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--nd-quiet);
+}
+.nd-inbox-from strong {
+	color: var(--basalt-copy);
+}
+.nd-inbox-subject {
+	margin: 0.1rem 0 0;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.nd-inbox-pre {
+	margin: 0.1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--nd-quiet);
+}
+
+.nd-mail {
+	padding: 1.75rem 1.25rem 1.5rem;
+	border: 1px solid var(--nd-line);
+	border-top: 0;
+	border-radius: 0 0 12px 12px;
+	background: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+}
+.nd-sheet {
+	max-width: 34rem;
+	margin: 0 auto;
+	text-align: center;
+}
+.nd-sheet-brand {
+	margin: 0 0 1.25rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	letter-spacing: 0.42em;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+}
+.nd-sheet-hero {
+	position: relative;
+	display: block;
+	border-radius: 10px;
+	overflow: hidden;
+}
+.nd-sheet-hero img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 2 / 1;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.nd-sheet-head {
+	margin: 1.5rem 0 0.5rem;
+	font-size: 1.5rem;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.nd-sheet-body {
+	max-width: 28rem;
+	margin: 0 auto 1.25rem;
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.nd-sheet-cta-wrap {
+	position: relative;
+	display: inline-block;
+}
+.nd-sheet-cta {
+	display: inline-block;
+	padding: 0.65rem 1.5rem;
+	border-radius: 999px;
+	font-size: 0.9rem;
+	font-weight: 650;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.nd-sheet-cta:hover {
+	color: var(--basalt-plane);
+	background: color-mix(in srgb, var(--basalt-copy) 85%, var(--basalt-plane));
+}
+
+.nd-tiles {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-top: 2rem;
+	text-align: left;
+}
+.nd-tile {
+	position: relative;
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	border-radius: 10px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.nd-tile-img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1;
+	margin-bottom: 0.5rem;
+	border-radius: 10px;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.nd-tile-name {
+	font-size: 0.9rem;
+	font-weight: 650;
+}
+.nd-tile-price {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.nd-tile-price s {
+	color: var(--nd-quiet);
+}
+.nd-email.card {
+	container-type: inline-size;
+}
+@container (min-width: 560px) {
+	.nd-tiles {
+		gap: 0.85rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+	.nd-tile-name {
+		font-size: 0.8rem;
+		line-height: 1.35;
+	}
+	.nd-tile-price {
+		font-size: 0.8rem;
+	}
+}
+.nd-tile:hover .nd-tile-name {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.nd-sheet-foot {
+	margin: 2rem 0 0;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--nd-line);
+	font-size: 0.77rem;
+	line-height: 1.6;
+	color: var(--nd-quiet);
+}
+.nd-sheet-unsub {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.nd-sheet a:focus {
+	outline: 0;
+}
+.nd-sheet a:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+/* Click numbers on the email, shown with the switch. */
+.nd-hit {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	display: none;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--basalt-copy) 18%, transparent);
+}
+.nd-sheet-cta-wrap .nd-hit {
+	top: -0.7rem;
+	right: -1.6rem;
+}
+.show-clicks .nd-hit {
+	display: inline-block;
+	animation: nd-pop 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes nd-pop {
+	from {
+		transform: scale(0.6);
+		opacity: 0;
+	}
+}
+
+/* A link lit from the clicks list. */
+.nd-sheet .is-lit {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 4px;
+}
+
+/* Clicks by link */
+.nd-links {
+	display: grid;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.nd-links li {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	border-radius: 6px;
+	font-size: 0.9rem;
+}
+.nd-links-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.nd-links-n {
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.nd-links-pct {
+	margin-left: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--nd-quiet);
+}
+.nd-links-bar {
+	grid-column: 1 / -1;
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--nd-track);
+}
+.nd-links-bar > span {
+	display: block;
+	width: var(--nd-fill, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--nd-tone, var(--basalt-series-1));
+}
+
+/* Test sends */
+.nd-tests {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.nd-tests li {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.7rem 0;
+	border-top: 1px solid var(--nd-line);
+	font-size: 0.9rem;
+}
+.nd-tests li:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+.nd-tests-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	color: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.nd-tests-to {
+	min-width: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.nd-tests-when {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--nd-quiet);
+}
+.nd-empty {
+	padding: 0.5rem 0;
+	text-align: center;
+}
+
+/* Audience and send time */
+.nd-facts {
+	display: grid;
+	gap: 0 1rem;
+	grid-template-columns: 8rem minmax(0, 1fr);
+	margin: 0;
+	font-size: 0.9rem;
+}
+.nd-facts dt,
+.nd-facts dd {
+	padding: 0.75rem 0;
+	border-top: 1px solid var(--nd-line);
+}
+.nd-facts dt:first-of-type,
+.nd-facts dt:first-of-type + dd {
+	padding-top: 0;
+	border-top: 0;
+}
+.nd-facts dt {
+	font-weight: 400;
+	color: var(--nd-quiet);
+}
+.nd-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.nd-facts-note {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--nd-quiet);
+}
+.nd-code {
+	display: inline-block;
+	padding: 0.1rem 0.5rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 6px;
+	font-family: var(--bs-font-monospace);
+	font-size: 0.8rem;
+	letter-spacing: 0.035em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.show-clicks .nd-hit {
+		animation: none;
+	}
+}
+
+/* Saving: a dot that turns amber while there are unsaved changes. */
+.nd-saved {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0.5rem 0 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-muted);
+
+	&.is-unsaved {
+		color: var(--basalt-copy);
+	}
+}
+.nd-saved-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--basalt-success);
+}
+.nd-saved.is-unsaved .nd-saved-dot {
+	background: var(--basalt-warning);
+}
+
+/* Editing in place: words that can change show a dashed edge on hover
+   and a solid one while typing. */
+[data-nd-field] {
+	border-radius: 6px;
+	outline: 1px dashed transparent;
+	outline-offset: 3px;
+	cursor: text;
+	transition: outline-color 130ms ease;
+
+	&:hover {
+		outline-color: color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	}
+	&:focus {
+		outline: 2px solid var(--basalt-hue);
+	}
+	&:empty::before {
+		content: "Write here";
+		color: var(--basalt-copy-muted);
+	}
+}
+.nd-sheet-cta[data-nd-field]:focus {
+	outline-offset: 4px;
+}
+
+/* Each product photo gets a Swap menu while the email can change. */
+.nd-swap {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	z-index: 1;
+}
+.nd-swap-btn {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.25rem 0.6rem;
+	border: 0;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-plane) 92%, transparent);
+	box-shadow: 0 2px 8px rgba(20, 16, 40, 0.16);
+
+	&:hover,
+	&:focus-visible,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+	}
+}
+.nd-swap-menu {
+	max-height: 18rem;
+	overflow-y: auto;
+	font-size: 0.85rem;
+}

@@ -1,0 +1,345 @@
+/* Basalt - Breadcrumbs page
+   Only what this demo page needs, namespaced under .bc-*.
+   The breadcrumb itself (Bootstrap's .breadcrumb on the
+   palette, the collapsed trail, the compact trail and the
+   level with a menu) lives in basalt.css.
+   Colors come from the --basalt-* tokens. */
+
+/* PAGE - the Breadcrumbs demo page (.bc-*) */
+.bc-page {
+	--bc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+}
+.bc-page code {
+	padding: 0 0.3em;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px;
+	font-size: 0.85em;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Filter row */
+.bc-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.bc-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.bc-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.bc-chip:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.bc-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.bc-chips .bc-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.bc-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--bc-quiet);
+}
+
+/* Grid */
+.bc-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.bc-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.bc-card.is-hidden {
+	display: none;
+}
+@media (min-width: 1200px) {
+	.bc-card {
+		grid-column: span 6;
+	}
+	.bc-card-full,
+	.bc-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Card */
+.bc-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.bc-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+.bc-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.bc-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bc-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--bc-quiet);
+}
+.bc-card-meta {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.bc-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--bc-quiet);
+}
+.bc-card-origin {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.71rem;
+	color: var(--bc-quiet);
+}
+.bc-card-origin .bi {
+	font-size: 0.8rem;
+}
+
+/* Code snippet */
+.bc-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.bc-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.bc-code summary {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+}
+.bc-code summary::-webkit-details-marker {
+	display: none;
+}
+.bc-code summary:hover {
+	color: var(--basalt-copy);
+}
+.bc-code summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.bc-code summary .bi {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.bc-code[open] summary .bi {
+	transform: rotate(90deg);
+}
+.bc-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.bc-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+.bc-code pre {
+	margin: 0;
+	padding: 2.9rem 1rem 0.9rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	line-height: 1.6;
+	/* Long lines wrap, so the sample never scrolls inside the card. */
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Demo bits */
+.bc-stack {
+	display: grid;
+	gap: 1.25rem;
+}
+.bc-label {
+	margin: 0 0 0.4rem;
+	font-size: 0.76rem;
+	font-weight: 600;
+	color: var(--bc-quiet);
+}
+.bc-page .breadcrumb {
+	margin-bottom: 0;
+}
+
+/* The page header example, framed like the top of a page. */
+.bc-frame {
+	padding: 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-canvas);
+}
+.bc-page .bc-frame-crumbs {
+	margin-bottom: 0.6rem;
+}
+
+/* Separators, one per row: the name, then the trail. */
+.bc-seps {
+	display: grid;
+	gap: 0.9rem;
+}
+.bc-sep {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+}
+.bc-sep .bc-sep-name {
+	flex: 0 0 4.5rem;
+	margin: 0;
+}
+
+/* A card with a trail for its title. */
+.bc-box {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+}
+.bc-box-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.bc-box-list {
+	margin: 0;
+	padding: 0.25rem 1rem;
+	list-style: none;
+}
+.bc-box-list li {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	padding: 0.6rem 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.bc-box-list li + li {
+	border-top: 1px solid var(--basalt-edge);
+}
+.bc-box-list li span:last-child {
+	font-family: "Chivo Mono", monospace;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+/* Collapsed trail: the line under it. */
+.bc-hint {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-height: 31px;
+	margin-top: 1rem;
+	font-size: 0.8rem;
+	color: var(--bc-quiet);
+}
+
+/* Compact trail in a frame the slider resizes. */
+.bc-resize {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+.bc-resize .bc-label {
+	margin: 0;
+}
+.bc-resize .form-range {
+	width: 14rem;
+	max-width: 100%;
+}
+.bc-resize output {
+	min-width: 3.5rem;
+	font:
+		600 0.8rem/1 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+}
+.bc-width {
+	width: 560px;
+	max-width: 100%;
+	padding: 0.9rem 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bc-chip,
+	.bc-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.bc-filter,
+	.bc-code {
+		display: none;
+	}
+	.bc-card.is-hidden {
+		display: block;
+	}
+}

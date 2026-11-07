@@ -49,8 +49,6 @@ class ManajemenPeriode extends Component
 
     public string $nama = '';
 
-    public string $nomorSiklus = '';
-
     public string $inti = '';
 
     public string $ppl = '';
@@ -62,6 +60,22 @@ class ManajemenPeriode extends Component
     public string $beratDocGram = '';
 
     public ?string $jumlahDocChickIn = null;
+
+    /**
+     * Populasi awal tiap kandang farm saat membuat periode baru, dikunci dengan id kandang.
+     *
+     * @var array<int|string, string>
+     */
+    public array $populasiKandang = [];
+
+    /**
+     * Nomor siklus tiap kandang saat membuat periode baru, dikunci dengan id kandang.
+     *
+     * @var array<int|string, string>
+     */
+    public array $siklusKandang = [];
+
+    public string $nomorSiklusKandang = '';
 
     public string $status = 'persiapan';
 
@@ -351,13 +365,18 @@ class ManajemenPeriode extends Component
         $this->pesan = null;
         $this->periodeFormId = null;
         $this->nama = '';
-        $this->nomorSiklus = '';
         $this->inti = '';
         $this->ppl = '';
         $this->strain = (string) StandarStrain::query()->orderBy('nama')->value('nama');
         $this->tanggalChickIn = today()->toDateString();
         $this->beratDocGram = '37';
         $this->jumlahDocChickIn = null;
+        $this->populasiKandang = $this->daftarKandang
+            ->mapWithKeys(fn (Kandang $kandang): array => [$kandang->id => (string) $kandang->kapasitas])
+            ->all();
+        $this->siklusKandang = $this->daftarKandang
+            ->mapWithKeys(fn (Kandang $kandang): array => [$kandang->id => (string) ((int) $kandang->periodeKandang()->max('nomor_siklus') + 1)])
+            ->all();
         $this->status = 'persiapan';
     }
 
@@ -370,7 +389,6 @@ class ManajemenPeriode extends Component
         $this->pesan = null;
         $this->periodeFormId = $periode->id;
         $this->nama = $periode->nama;
-        $this->nomorSiklus = (string) ($periode->nomor_siklus ?? '');
         $this->inti = (string) ($periode->inti ?? '');
         $this->ppl = (string) ($periode->ppl ?? '');
         $this->strain = $periode->strain;
@@ -397,13 +415,6 @@ class ManajemenPeriode extends Component
                 'max:150',
                 Rule::unique('periodes', 'nama')->where('farm_id', $farm->id)->ignore($this->periodeFormId),
             ],
-            'nomorSiklus' => [
-                'required',
-                'integer',
-                'min:1',
-                'max:65535',
-                Rule::unique('periodes', 'nomor_siklus')->where('farm_id', $farm->id)->ignore($this->periodeFormId),
-            ],
             'inti' => ['required', 'string', 'max:150'],
             'ppl' => ['required', 'string', 'max:150'],
             'strain' => ['required', 'string', Rule::in(StandarStrain::query()->orderBy('nama')->pluck('nama')->all())],
@@ -414,10 +425,6 @@ class ManajemenPeriode extends Component
         ], [
             'nama.required' => 'Nama periode wajib diisi.',
             'nama.unique' => 'Nama periode sudah digunakan.',
-            'nomorSiklus.required' => 'Nomor siklus wajib diisi.',
-            'nomorSiklus.integer' => 'Nomor siklus harus berupa angka bulat.',
-            'nomorSiklus.min' => 'Nomor siklus minimal 1.',
-            'nomorSiklus.unique' => 'Nomor siklus sudah digunakan di farm ini.',
             'inti.required' => 'Nama inti wajib diisi.',
             'inti.max' => 'Nama inti maksimal 150 karakter.',
             'ppl.required' => 'Nama PPL wajib diisi.',
@@ -437,6 +444,12 @@ class ManajemenPeriode extends Component
         ]);
 
         $mengubah = $this->periodeFormId !== null;
+
+        $populasiBaru = $mengubah ? null : $this->populasiKandangValid($farm);
+        if (! $mengubah && $populasiBaru === null) {
+            return;
+        }
+
         $periode = $mengubah ? $this->periodeDiFarm($this->periodeFormId) : new ModelPeriode;
         if ($mengubah && $periode->tertutup()) {
             $this->addError('periodeForm', 'Periode yang sudah tutup RHPP hanya dapat dibuka dalam mode baca-saja.');
@@ -480,7 +493,6 @@ class ManajemenPeriode extends Component
         $periode->fill([
             'farm_id' => $farm->id,
             'nama' => $data['nama'],
-            'nomor_siklus' => $data['nomorSiklus'],
             'inti' => $data['inti'],
             'ppl' => $data['ppl'],
             'strain' => $data['strain'],
@@ -489,8 +501,20 @@ class ManajemenPeriode extends Component
             'status' => $data['status'],
         ]);
 
-        DB::transaction(function () use ($periode, $mengubah, $alokasi, $rincian): void {
+        DB::transaction(function () use ($periode, $mengubah, $alokasi, $rincian, $populasiBaru, $data): void {
             $periode->save();
+
+            foreach ($populasiBaru ?? [] as $idKandang => [$populasi, $siklus]) {
+                PeriodeKandang::query()->create([
+                    'periode_id' => $periode->id,
+                    'kandang_id' => $idKandang,
+                    'nomor_siklus' => $siklus,
+                    'populasi_awal' => $populasi,
+                    'tanggal_chick_in' => $data['tanggalChickIn'],
+                    'berat_doc_gram' => $data['beratDocGram'],
+                    'bonus_doc_ekor' => 0,
+                ]);
+            }
 
             foreach ($alokasi ?? [] as $idKandang => $populasiBaru) {
                 $satu = $periode->kandangPeriode->firstWhere('id', $idKandang);
@@ -514,6 +538,63 @@ class ManajemenPeriode extends Component
         $this->dispatch('tutup-modal-periode');
         $this->bersihkanFormPeriode();
         unset($this->daftarPeriode, $this->periodeTerpilih, $this->masterData, $this->ringkasanGabungan);
+    }
+
+    /**
+     * Populasi awal tiap kandang farm untuk periode baru; kandang yang dikosongkan tidak ikut periode.
+     * Mengisi pesan galat dan mengembalikan null bila ada isian yang tidak sah.
+     *
+     * @return array<int, array{int, int}>|null Populasi dan nomor siklus per id kandang.
+     */
+    private function populasiKandangValid(Farm $farm): ?array
+    {
+        $hasil = [];
+
+        foreach ($farm->kandangs()->orderBy('nama')->get() as $kandang) {
+            $nilai = trim((string) ($this->populasiKandang[$kandang->id] ?? ''));
+            $kunci = 'populasiKandang.'.$kandang->id;
+
+            if ($nilai === '') {
+                continue;
+            }
+
+            if (! ctype_digit($nilai) || (int) $nilai < 1) {
+                $this->addError($kunci, 'Populasi '.$kandang->nama.' harus berupa bilangan bulat, minimal 1 ekor.');
+
+                return null;
+            }
+
+            if ((int) $nilai > $kandang->kapasitas) {
+                $this->addError($kunci, 'Populasi melebihi kapasitas '.$kandang->nama.' ('.Format::angka($kandang->kapasitas).' ekor).');
+
+                return null;
+            }
+
+            $siklus = trim((string) ($this->siklusKandang[$kandang->id] ?? ''));
+            $kunciSiklus = 'siklusKandang.'.$kandang->id;
+
+            if (! ctype_digit($siklus) || (int) $siklus < 1 || (int) $siklus > 65535) {
+                $this->addError($kunciSiklus, 'Nomor siklus '.$kandang->nama.' harus berupa angka bulat, minimal 1.');
+
+                return null;
+            }
+
+            if ($kandang->periodeKandang()->where('nomor_siklus', (int) $siklus)->exists()) {
+                $this->addError($kunciSiklus, 'Nomor siklus '.$siklus.' sudah dipakai '.$kandang->nama.'.');
+
+                return null;
+            }
+
+            $hasil[$kandang->id] = [(int) $nilai, (int) $siklus];
+        }
+
+        if ($hasil === []) {
+            $this->addError('periodeForm', 'Isi populasi awal minimal satu kandang.');
+
+            return null;
+        }
+
+        return $hasil;
     }
 
     public function mintaHapusPeriode(int $id): void
@@ -561,6 +642,7 @@ class ManajemenPeriode extends Component
         $this->pesan = null;
         $this->periodeKandangFormId = null;
         $this->kandangId = '';
+        $this->nomorSiklusKandang = '';
         $this->populasiAwal = '';
         $this->tanggalChickInKandang = $periode->tanggal_chick_in->toDateString();
         $this->beratDocGramKandang = (string) $periode->berat_doc_gram;
@@ -576,6 +658,7 @@ class ManajemenPeriode extends Component
         $this->pesan = null;
         $this->periodeKandangFormId = $periodeKandang->id;
         $this->kandangId = (string) $periodeKandang->kandang_id;
+        $this->nomorSiklusKandang = (string) ($periodeKandang->nomor_siklus ?? '');
         $this->populasiAwal = (string) $periodeKandang->populasi_awal;
         $this->tanggalChickInKandang = $periodeKandang->tanggalChickInEfektif()->toDateString();
         $this->beratDocGramKandang = (string) $periodeKandang->beratDocGramEfektif();
@@ -597,6 +680,15 @@ class ManajemenPeriode extends Component
                     ->where('periode_id', $periode->id)
                     ->ignore($this->periodeKandangFormId),
             ],
+            'nomorSiklusKandang' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:65535',
+                Rule::unique('periode_kandangs', 'nomor_siklus')
+                    ->where('kandang_id', (int) $this->kandangId)
+                    ->ignore($this->periodeKandangFormId),
+            ],
             'populasiAwal' => ['required', 'integer', 'min:1', 'max:1000000'],
             'tanggalChickInKandang' => ['required', 'date_format:Y-m-d'],
             'beratDocGramKandang' => ['required', 'integer', 'min:1', 'max:1000'],
@@ -606,6 +698,10 @@ class ManajemenPeriode extends Component
             'kandangId.required' => 'Kandang wajib dipilih.',
             'kandangId.exists' => 'Kandang tidak ditemukan.',
             'kandangId.unique' => 'Kandang ini sudah terdaftar pada periode.',
+            'nomorSiklusKandang.required' => 'Nomor siklus wajib diisi.',
+            'nomorSiklusKandang.integer' => 'Nomor siklus harus berupa angka bulat.',
+            'nomorSiklusKandang.min' => 'Nomor siklus minimal 1.',
+            'nomorSiklusKandang.unique' => 'Nomor siklus sudah dipakai kandang ini pada periode lain.',
             'populasiAwal.required' => 'Populasi awal wajib diisi.',
             'populasiAwal.integer' => 'Populasi awal harus berupa bilangan bulat.',
             'populasiAwal.min' => 'Populasi awal minimal 1 ekor.',
@@ -636,6 +732,10 @@ class ManajemenPeriode extends Component
                 $terkunci[] = 'kandang yang dipakai';
             }
 
+            if ($periodeKandang->nomor_siklus !== null && $periodeKandang->nomor_siklus !== (int) $data['nomorSiklusKandang']) {
+                $terkunci[] = 'nomor siklus';
+            }
+
             if ($periodeKandang->tanggalChickInEfektif()->toDateString() !== $data['tanggalChickInKandang']) {
                 $terkunci[] = 'tanggal chick-in';
             }
@@ -664,6 +764,7 @@ class ManajemenPeriode extends Component
         $periodeKandang->fill([
             'periode_id' => $periode->id,
             'kandang_id' => $kandang->id,
+            'nomor_siklus' => $data['nomorSiklusKandang'],
             'populasi_awal' => $data['populasiAwal'],
             'tanggal_chick_in' => $data['tanggalChickInKandang'],
             'berat_doc_gram' => $data['beratDocGramKandang'],
@@ -851,13 +952,14 @@ class ManajemenPeriode extends Component
         $this->resetValidation();
         $this->periodeFormId = null;
         $this->nama = '';
-        $this->nomorSiklus = '';
         $this->inti = '';
         $this->ppl = '';
         $this->strain = '';
         $this->tanggalChickIn = '';
         $this->beratDocGram = '';
         $this->jumlahDocChickIn = null;
+        $this->populasiKandang = [];
+        $this->siklusKandang = [];
         $this->status = 'persiapan';
     }
 
@@ -952,10 +1054,6 @@ class ManajemenPeriode extends Component
      */
     private function baselineBerubah(ModelPeriode $periode, array $data): bool
     {
-        if ($periode->nomor_siklus !== null && $periode->nomor_siklus !== (int) $data['nomorSiklus']) {
-            return true;
-        }
-
         if ($periode->inti !== null && $periode->inti !== $data['inti']) {
             return true;
         }

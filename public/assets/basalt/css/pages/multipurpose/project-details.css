@@ -1,0 +1,997 @@
+/*
+ * project-details.html: the full view of one project, every class prefixed
+ * .pd-. Colors only ever come from --basalt-* tokens so each palette and the
+ * dark theme apply without extra rules here; the hero, ring, segmented
+ * control, ticks, status pills, dialogs and toasts are styled centrally.
+ */
+
+/* Page-wide tokens, also set on the dialog layer that sits outside the page.
+   The quiet gray leans toward body text so it stays readable on light palettes. */
+.pd-page,
+.pd-layer {
+	--pd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--pd-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--pd-track: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+	--pd-line: var(--basalt-edge);
+}
+
+/* A tone class hands its element one of the eight chart series colors. */
+.pd-tone-1 {
+	--pd-tone: var(--basalt-series-1);
+}
+.pd-tone-2 {
+	--pd-tone: var(--basalt-series-2);
+}
+.pd-tone-3 {
+	--pd-tone: var(--basalt-series-3);
+}
+.pd-tone-4 {
+	--pd-tone: var(--basalt-series-4);
+}
+.pd-tone-5 {
+	--pd-tone: var(--basalt-series-5);
+}
+.pd-tone-6 {
+	--pd-tone: var(--basalt-series-6);
+}
+.pd-tone-7 {
+	--pd-tone: var(--basalt-series-7);
+}
+.pd-tone-8 {
+	--pd-tone: var(--basalt-series-8);
+}
+
+/* Rounded icon tiles tint themselves from their tone, or the brand hue without one. */
+.pd-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--pd-tone, var(--basalt-hue)) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pd-tone, var(--basalt-hue)) 15%, var(--basalt-plane));
+}
+.pd-icon-lg {
+	width: 3.5rem;
+	height: 3.5rem;
+	border-radius: 16px;
+	font-size: 1.55rem;
+
+	@media (max-width: 575.98px) {
+		width: 2.75rem;
+		height: 2.75rem;
+		border-radius: 13px;
+		font-size: 1.25rem;
+	}
+}
+
+/* The hero puts the project on the left and its actions bottom right,
+   stacking the two on phones. */
+.basalt-hero-detail.pd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+
+	@media (max-width: 575.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.pd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+
+	@media (max-width: 575.98px) {
+		justify-self: start;
+	}
+}
+.pd-who {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	min-width: 0;
+}
+.pd-who-text {
+	min-width: 0;
+}
+.pd-tags {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+
+/* In the actions menu only the current status shows its check mark. */
+.pd-menu {
+	& .dropdown-item .bi {
+		margin-right: 0.6rem;
+	}
+	& [data-pd-status] .bi {
+		visibility: hidden;
+	}
+	& [data-pd-status].is-selected {
+		font-weight: 650;
+	}
+	& [data-pd-status].is-selected .bi {
+		visibility: visible;
+	}
+}
+
+/* Cards stack in reading order until 1200px, then pair up on a twelve
+   column grid: tasks with activity, team with files, so each pair ends level. */
+.pd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.pd-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.pd-card-full {
+		grid-column: span 12;
+	}
+	.pd-card-tasks {
+		grid-column: 1 / span 8;
+		grid-row: 3;
+	}
+	.pd-card-activity {
+		grid-column: 9 / span 4;
+		grid-row: 3;
+	}
+	.pd-card-team {
+		grid-column: 1 / span 6;
+		grid-row: 4;
+	}
+	.pd-card-files {
+		grid-column: 7 / span 6;
+		grid-row: 4;
+	}
+}
+
+/* Card bodies are columns, so a footer can sink to the bottom edge. */
+.pd-card {
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem var(--basalt-pad-x-narrow);
+		}
+	}
+}
+.pd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+.pd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pd-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+/* A footer whose every child is hidden takes no room at all. */
+.pd-card-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1.25rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+	&:not(:has(> :not([hidden]))) {
+		display: none;
+	}
+}
+.pd-sub {
+	margin: 0 0 0.6rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--pd-quiet);
+}
+
+/* Plain links take the link tint; names of people read as body text
+   until hovered. */
+.pd-link,
+.pd-person {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--pd-link);
+}
+.pd-person {
+	color: var(--basalt-copy);
+}
+.pd-link:hover,
+.pd-person:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--pd-link);
+}
+.pd-link .bi {
+	margin-left: 0.2rem;
+}
+
+.pd-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The standing card lays out ring, goal and pace in three columns and
+   folds them by its own width, which shrinks when the sidebar opens. */
+.pd-card:has(.pd-stand) {
+	container-type: inline-size;
+}
+.pd-stand {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: auto minmax(0, 1.25fr) minmax(0, 1fr);
+	align-items: start;
+}
+.pd-ring {
+	--size: 148px;
+	--thickness: 13px;
+	--ring-tone: var(--basalt-series-1);
+
+	& .basalt-ring-caption {
+		margin-top: 0.3rem;
+		color: var(--pd-quiet);
+	}
+}
+.pd-goal {
+	margin: 0;
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.pd-stand-goal .form-control {
+	font-size: 0.95rem;
+}
+
+/* The next milestone sits in a tinted strip with a calendar-style date chip. */
+.pd-next {
+	display: grid;
+	gap: 0.5rem 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	margin-top: 1.25rem;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-series-1) 8%, var(--basalt-plane));
+}
+.pd-next-date {
+	--pd-tone: var(--basalt-series-1);
+	display: grid;
+	flex: none;
+	place-content: center;
+	justify-items: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	border-radius: 12px;
+	line-height: 1;
+	color: color-mix(in srgb, var(--pd-tone) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pd-tone) 20%, var(--basalt-plane));
+}
+.pd-next-date-warning {
+	--pd-tone: var(--basalt-warning);
+}
+.pd-next-date-danger {
+	--pd-tone: var(--basalt-danger);
+}
+.pd-next-date-success {
+	--pd-tone: var(--basalt-success);
+	font-size: 1.25rem;
+}
+.pd-next-day {
+	font-size: 1.35rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+}
+.pd-next-month {
+	margin-top: 0.2rem;
+	font-size: 0.67rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+}
+.pd-next-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.pd-next-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--pd-quiet);
+}
+.pd-next-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pd-next-when {
+	white-space: nowrap;
+}
+/* On phones the "when" chip drops under the name. */
+@media (max-width: 575.98px) {
+	.pd-next {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.pd-next-date {
+		grid-row: span 2;
+	}
+	.pd-next-when {
+		justify-self: start;
+	}
+}
+
+/* Work done and time used are two bars on the same track for comparison. */
+.pd-pace {
+	display: grid;
+	gap: 1rem;
+}
+.pd-pace-row {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 5.5rem minmax(0, 1fr) 2.75rem;
+	align-items: center;
+	font-size: 0.85rem;
+}
+.pd-pace-row-work {
+	--pd-tone: var(--basalt-series-1);
+}
+.pd-pace-row-time {
+	--pd-tone: var(--basalt-series-3);
+}
+.pd-pace-label {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.pd-pace-bar {
+	position: relative;
+	height: 10px;
+	border-radius: 10px;
+	overflow: hidden;
+	background: var(--pd-track);
+}
+.pd-pace-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--pd-pct, 0%);
+	border-radius: inherit;
+	background: var(--pd-tone);
+	transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.pd-pace-value {
+	font-weight: 650;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.pd-pace-note {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 1.1rem 0 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--pd-quiet);
+	}
+	&.is-ahead .bi {
+		color: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+	}
+	&.is-behind .bi {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+
+@container (max-width: 940px) {
+	.pd-stand {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.pd-stand-pace {
+		grid-column: 1 / -1;
+		max-width: 36rem;
+	}
+}
+@container (max-width: 540px) {
+	.pd-stand {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.pd-stand-ring {
+		justify-self: center;
+	}
+}
+
+/* Below a rule, four facts (lead, area, start, release) read across;
+   the editor that replaces them uses the same rule and spacing. */
+.pd-facts,
+.pd-facts-edit {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--pd-line);
+}
+.pd-facts[hidden],
+.pd-facts-edit[hidden] {
+	display: none;
+}
+.pd-facts {
+	display: grid;
+	gap: 1.25rem 1.5rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin-right: 0;
+	margin-bottom: 0;
+	margin-left: 0;
+
+	& dt {
+		margin-bottom: 0.3rem;
+		font-size: 0.77rem;
+		font-weight: 600;
+		color: var(--pd-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	@media (max-width: 767.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.pd-facts-who {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.pd-facts-muted {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--pd-quiet);
+}
+.pd-facts-edit-grid {
+	display: grid;
+	gap: 1.25rem 1.5rem;
+	grid-template-columns: repeat(4, minmax(0, 15rem));
+
+	@media (max-width: 991.98px) {
+		grid-template-columns: repeat(2, minmax(0, 15rem));
+	}
+	@media (max-width: 479.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.pd-facts-edit-foot {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* Every list on the page drops its bullets and indent. */
+.pd-steps,
+.pd-tasks,
+.pd-team,
+.pd-files,
+.pd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Both timelines (milestones and activity) join their markers with a
+   thin vertical line that stops before the last entry. */
+.pd-step:not(:last-child)::before,
+.pd-feed-item:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	width: 2px;
+	border-radius: 1px;
+	background: var(--basalt-edge);
+}
+
+/* Milestones run down the card, and turn into a row across it once the
+   card is 760px wide. */
+.pd-card:has(.pd-steps) {
+	container-type: inline-size;
+}
+.pd-steps {
+	display: grid;
+}
+.pd-step {
+	--pd-trail-from: scaleY(0);
+	--pd-trail-origin: top;
+	position: relative;
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr);
+	padding-bottom: 1.5rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		top: 2.6rem;
+		bottom: 0.3rem;
+		left: calc(1.125rem - 1px);
+	}
+	&.is-done:not(:last-child)::before {
+		background: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-plane));
+	}
+	/* The first time the milestones are on screen they fill in from the
+	   first: each marker colors in as the line reaches it, its task bar
+	   fills, then a reached stretch grows on to the next marker. */
+	.pd-steps.is-waiting &.is-done:not(:last-child)::before {
+		transform: var(--pd-trail-from);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.pd-steps.is-drawing &.is-done:not(:last-child)::before {
+			transform-origin: var(--pd-trail-origin);
+			animation: pd-trail-grow 200ms linear calc(var(--pd-trail-at, 0) * 200ms + 80ms) both;
+		}
+	}
+}
+@keyframes pd-trail-grow {
+	from {
+		transform: var(--pd-trail-from);
+	}
+}
+@keyframes pd-marker-in {
+	from {
+		opacity: 0.6;
+		filter: grayscale(1);
+		transform: scale(0.8);
+	}
+}
+@keyframes pd-bar-in {
+	from {
+		transform: scaleX(0);
+	}
+}
+.pd-step-marker {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--pd-quiet);
+	background: var(--basalt-plane-alt);
+
+	.pd-step.is-done & {
+		font-size: 1rem;
+		color: var(--basalt-plane);
+		background: color-mix(in srgb, var(--basalt-success) 80%, var(--basalt-copy));
+	}
+	.pd-step.is-next & {
+		color: var(--basalt-plane);
+		background: color-mix(in srgb, var(--basalt-series-1) 66%, var(--basalt-copy));
+		box-shadow: 0 0 0 5px color-mix(in srgb, var(--basalt-series-1) 18%, transparent);
+	}
+	.pd-steps.is-waiting & {
+		opacity: 0.6;
+		filter: grayscale(1);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.pd-steps.is-drawing & {
+			animation: pd-marker-in 260ms ease-out calc(var(--pd-trail-at, 0) * 200ms) both;
+		}
+	}
+}
+.pd-step-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.pd-step-label {
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	.pd-step.is-todo & {
+		font-weight: 550;
+		color: var(--basalt-copy-body);
+	}
+}
+.pd-step-when {
+	font-size: 0.8rem;
+	color: var(--pd-quiet);
+
+	&.is-late {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+.pd-step-tasks {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 0.3rem;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--pd-quiet);
+}
+.pd-step-bar {
+	position: relative;
+	width: 4.5rem;
+	height: 5px;
+	border-radius: 5px;
+	overflow: hidden;
+	background: var(--pd-track);
+
+	& > span {
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: var(--pd-pct, 0%);
+		border-radius: inherit;
+		background: var(--basalt-series-1);
+		transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+		.pd-steps.is-waiting & {
+			transform: scaleX(0);
+		}
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			.pd-steps.is-drawing & {
+				transform-origin: left;
+				animation: pd-bar-in 420ms ease-out calc(var(--pd-trail-at, 0) * 200ms + 60ms) both;
+			}
+		}
+	}
+}
+.pd-step.is-done .pd-step-bar > span {
+	background: var(--basalt-success);
+}
+.pd-step.is-todo .pd-step-bar > span {
+	background: var(--basalt-series-3);
+}
+
+/* Laid across, the steps share subgrid rows, so one long name cannot push
+   its own date and bar out of line with the others. */
+@container (min-width: 760px) {
+	.pd-steps {
+		row-gap: 0.25rem;
+		column-gap: 1rem;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+	.pd-step {
+		--pd-trail-from: scaleX(0);
+		--pd-trail-origin: left;
+		grid-row: span 4;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: subgrid;
+		padding-bottom: 0;
+	}
+	.pd-step-text {
+		display: contents;
+	}
+	.pd-step-label {
+		margin-top: 0.6rem;
+	}
+	.pd-step-tasks {
+		align-self: start;
+	}
+	.pd-step:not(:last-child)::before {
+		top: calc(1.125rem - 1px);
+		right: calc(-1rem + 0.5rem);
+		bottom: auto;
+		left: 3rem;
+		width: auto;
+		height: 2px;
+	}
+}
+
+/* Task, member and file rows: one ruled grid line each, with a text
+   column that stacks a name over its detail. */
+.pd-task,
+.pd-member,
+.pd-file {
+	display: grid;
+	align-items: center;
+	border-bottom: 1px solid var(--pd-line);
+}
+.pd-task:last-child,
+.pd-member:last-child,
+.pd-file:last-child {
+	border-bottom: 0;
+}
+.pd-member:first-child,
+.pd-file:first-child {
+	padding-top: 0;
+}
+.pd-task-text,
+.pd-member-text,
+.pd-file-text,
+.pd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.pd-task-ms,
+.pd-member-role,
+.pd-file-meta,
+.pd-feed-when {
+	font-size: 0.77rem;
+	color: var(--pd-quiet);
+}
+
+/* Open tasks: a milestone filter above rows that fade and strike through
+   once ticked, and a brief highlight on a task just added. */
+.pd-filter {
+	align-self: flex-start;
+	max-width: 100%;
+	margin-bottom: 0.5rem;
+
+	/* Narrow phones trim the option padding so all four choices fit. */
+	@media (max-width: 359.98px) {
+		& .basalt-segmented-option {
+			padding-inline: 0.4rem;
+		}
+	}
+}
+.pd-task {
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto 7.25rem;
+	padding: 1rem 0;
+	transition: opacity 300ms ease;
+
+	&.is-done {
+		opacity: 0.45;
+	}
+	&.is-done .pd-task-name {
+		text-decoration: line-through;
+	}
+	&.is-new {
+		animation: pd-new 1.6s ease;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+
+		&.is-new {
+			animation: none;
+		}
+	}
+	@media (max-width: 479.98px) {
+		row-gap: 0.5rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+}
+@keyframes pd-new {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+.pd-task-name {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pd-task-due {
+	justify-self: start;
+	white-space: nowrap;
+
+	@media (max-width: 479.98px) {
+		grid-column: 2 / -1;
+	}
+}
+.pd-tasks-none {
+	padding: 0.5rem 0;
+	font-size: 0.875rem;
+	color: var(--pd-quiet);
+	list-style: none;
+}
+
+/* Team rows end in a load bar scaled to whoever holds the most open tasks. */
+.pd-member {
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) 10.5rem;
+	padding: 0.9rem 0;
+
+	@media (max-width: 399.98px) {
+		grid-template-columns: auto minmax(0, 1fr) 8rem;
+	}
+}
+.pd-member-load {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) 4.75rem;
+	align-items: center;
+}
+.pd-member-bar {
+	position: relative;
+	height: 6px;
+	border-radius: 6px;
+	overflow: hidden;
+	background: var(--pd-track);
+
+	& > span {
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: var(--pd-pct, 0%);
+		border-radius: inherit;
+		background: var(--pd-tone, var(--basalt-hue));
+	}
+}
+.pd-member-count {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+
+/* File rows; the real file input stays invisible inside its button, which
+   takes the focus ring instead. */
+.pd-file {
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	padding: 0.85rem 0;
+}
+.pd-file-name {
+	font-size: 0.9rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.pd-file-remove {
+	color: var(--pd-quiet);
+
+	&:hover {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+.pd-upload {
+	position: relative;
+	overflow: hidden;
+
+	&:has(.pd-upload-input:focus-visible) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.pd-upload-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* Activity entries hang off round tinted icons along the timeline line. */
+.pd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		top: 2.3rem;
+		bottom: 0.3rem;
+		left: calc(1rem - 1px);
+	}
+}
+.pd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--pd-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pd-tone) 15%, var(--basalt-plane));
+}
+.pd-feed-text {
+	gap: 0.1rem;
+	padding-top: 0.25rem;
+}
+/* Who and when share the first line, so each entry reads in two: the
+   person with the time beside, then what they did. */
+.pd-feed-head {
+	display: flex;
+	gap: 0 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+.pd-feed-what {
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& a:not(.pd-person) {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--pd-link);
+	}
+	& a:not(.pd-person):hover {
+		text-decoration: underline;
+	}
+}
+
+/* Fields in the Add task and Add to the team dialogs keep an even gap. */
+.pd-dialog-field {
+	margin-bottom: 1.25rem;
+}

@@ -1,0 +1,1020 @@
+/* Basalt - Refund Details (refund-details.html)
+   One refund claim on a Store order. Namespaced under .rd-*; the
+   header, cards, status pills, choice cards, stepper, dialogs and
+   lightbox are the shared components from basalt.css. Every color
+   is a --basalt-* token, so palettes and dark mode carry through. */
+
+.rd-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes. */
+	--rd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--rd-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--rd-line: var(--basalt-edge);
+}
+
+/* One color per reason or product, from the chart ramp. */
+.rd-tone-1 {
+	--rd-tone: var(--basalt-series-1);
+}
+.rd-tone-2 {
+	--rd-tone: var(--basalt-series-2);
+}
+.rd-tone-3 {
+	--rd-tone: var(--basalt-series-3);
+}
+.rd-tone-4 {
+	--rd-tone: var(--basalt-series-4);
+}
+.rd-tone-5 {
+	--rd-tone: var(--basalt-series-5);
+}
+.rd-tone-6 {
+	--rd-tone: var(--basalt-series-6);
+}
+.rd-tone-7 {
+	--rd-tone: var(--basalt-series-7);
+}
+.rd-tone-8 {
+	--rd-tone: var(--basalt-series-8);
+}
+/* A reason pill takes its chart color; the text leans toward the text
+   color, as some ramp colors are pale in the lighter palettes. */
+.basalt-status[class*="rd-tone-"] {
+	--stp-tone: var(--rd-tone);
+	color: color-mix(in srgb, var(--rd-tone) 40%, var(--basalt-copy));
+}
+
+/* Header: back link, claim number, state, actions */
+.basalt-hero-detail.rd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.rd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.rd-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+.rd-tags .basalt-status {
+	padding: 0.25rem 0.7rem;
+	font-size: 0.77rem;
+}
+.rd-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.5rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+.rd-pager .btn.disabled {
+	opacity: 0.4;
+}
+.rd-page .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.rd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.rd-pager {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+
+/* Grid
+   Rows whose cards end level: the claim beside the answer, then the
+   return, the customer and the history (the history takes a row of its
+   own when there is less room). Below desktop width every card stacks
+   in that reading order. */
+.rd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 992px) {
+	.rd-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.rd-card-claim,
+	.rd-card-decide,
+	.rd-card-history {
+		grid-column: span 12;
+	}
+	.rd-card-return,
+	.rd-card-account {
+		grid-column: span 6;
+	}
+}
+@media (min-width: 1200px) {
+	.rd-card-claim {
+		grid-column: span 7;
+	}
+	.rd-card-decide {
+		grid-column: span 5;
+	}
+}
+@media (min-width: 1400px) {
+	.rd-card-return,
+	.rd-card-account,
+	.rd-card-history {
+		grid-column: span 4;
+	}
+}
+
+/* Cards */
+.rd-card {
+	container-type: inline-size;
+	min-width: 0;
+}
+.rd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.rd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.rd-card-head > div {
+	min-width: 0;
+}
+.rd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rd-quiet);
+}
+.rd-card-desc:empty {
+	display: none;
+}
+.rd-card-head .rd-link {
+	flex: none;
+	margin-top: 0.2rem;
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+/* A section inside a card: clearly above the body text, below the card title. */
+.rd-section {
+	display: block;
+	margin: 0 0 0.85rem;
+	padding: 0;
+	font-size: 1rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rd-block {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.rd-block + .rd-block {
+	margin-top: 1.75rem;
+}
+.rd-quiet {
+	display: block;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--rd-quiet);
+}
+.rd-inline {
+	display: inline;
+}
+.rd-sku {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+}
+.rd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--rd-link);
+}
+.rd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.rd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+.rd-copy {
+	padding: 0.1rem 0.3rem;
+	vertical-align: baseline;
+	color: var(--rd-quiet);
+}
+.rd-copy:hover {
+	color: var(--basalt-copy);
+}
+.rd-hint {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+.rd-error {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+}
+.rd-error[hidden] {
+	display: none;
+}
+@media (max-width: 575.98px) {
+	.rd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The claim */
+.rd-who {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	margin-bottom: 1.1rem;
+}
+.rd-who-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-who-name {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* The customer's words, large and easy to read, with a straight inset
+   bar in the color of the reason. */
+.rd-quote {
+	position: relative;
+	margin: 0;
+	padding: 1.25rem 1.5rem 1.25rem 1.85rem;
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--rd-tone) 9%, var(--basalt-plane));
+}
+.rd-quote::before {
+	content: "";
+	position: absolute;
+	top: 1rem;
+	bottom: 1rem;
+	left: 0.7rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--rd-tone);
+}
+.rd-quote p {
+	margin: 0;
+	font-size: 1.1rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+
+.rd-evidence,
+.rd-check {
+	margin-top: 1.75rem;
+}
+.rd-check[hidden] {
+	display: none;
+}
+.rd-none {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--rd-quiet);
+}
+
+/* What they sent: a picture tile per file, opened large in the lightbox. */
+.rd-files {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-file {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 12px;
+	text-align: left;
+	background: none;
+}
+.rd-file .rd-photo {
+	aspect-ratio: 4 / 3;
+	margin-bottom: 0.4rem;
+	border-radius: 12px;
+	transition:
+		transform 200ms ease,
+		box-shadow 200ms ease;
+}
+.rd-file:hover .rd-photo {
+	transform: translateY(-2px);
+	box-shadow: 0 14px 26px -18px var(--basalt-scrim);
+}
+.rd-file:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.rd-file-name {
+	max-width: 100%;
+	overflow: hidden;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rd-file-size {
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+
+/* A stand-in for the upload: two chart colors and the file's glyph. */
+.rd-photo {
+	--rd-a: var(--rd-tone, var(--basalt-series-1));
+	--rd-b: var(--basalt-series-4);
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	font-size: 2rem;
+	color: color-mix(in srgb, var(--basalt-plane) 90%, transparent);
+	background:
+		radial-gradient(120% 90% at 20% 15%, color-mix(in srgb, var(--basalt-plane) 45%, transparent), transparent 60%),
+		linear-gradient(135deg, var(--rd-a), var(--rd-b));
+}
+.rd-photo-1 {
+	--rd-a: var(--basalt-series-1);
+	--rd-b: var(--basalt-series-3);
+}
+.rd-photo-2 {
+	--rd-a: var(--basalt-series-2);
+	--rd-b: var(--basalt-series-6);
+}
+.rd-photo-3 {
+	--rd-a: var(--basalt-series-3);
+	--rd-b: var(--basalt-series-5);
+}
+.rd-photo-4 {
+	--rd-a: var(--basalt-series-4);
+	--rd-b: var(--basalt-series-1);
+}
+.rd-photo-5 {
+	--rd-a: var(--basalt-series-5);
+	--rd-b: var(--basalt-series-2);
+}
+.rd-photo-6 {
+	--rd-a: var(--basalt-series-6);
+	--rd-b: var(--basalt-series-3);
+}
+.rd-photo-8 {
+	--rd-a: var(--basalt-series-8);
+	--rd-b: var(--basalt-series-2);
+}
+:root[data-basalt-gradients="off"] .rd-photo {
+	background: var(--rd-a);
+}
+.basalt-lightbox-slide .rd-photo {
+	font-size: clamp(3rem, 10vw, 6rem);
+}
+.basalt-lightbox-thumb .rd-photo {
+	font-size: 1.1rem;
+}
+
+/* Our check of a returned item */
+.rd-finding {
+	display: flex;
+	gap: 0.8rem;
+	margin: 0;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.rd-finding > .bi {
+	flex: none;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+}
+.rd-finding .rd-quiet {
+	margin-top: 0.3rem;
+}
+
+/* The answer */
+.rd-card-decide {
+	display: flex;
+	flex-direction: column;
+}
+.rd-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-item {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rd-line);
+}
+.rd-item:first-child {
+	padding-top: 0;
+}
+.rd-item-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.rd-item-name {
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rd-item .basalt-stepper {
+	flex: none;
+}
+
+/* A product's tile: its icon on a pale wash of its own ramp color. */
+.rd-tile {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--rd-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-tone) 16%, var(--basalt-plane));
+}
+
+.rd-sums {
+	display: grid;
+	gap: 0.6rem;
+	margin: 1.25rem 0 0;
+	padding: 1.1rem 1.2rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	background: var(--basalt-plane-alt);
+}
+.rd-sums > div {
+	display: flex;
+	gap: 1.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.rd-sums dt {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.rd-sums dt small {
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--rd-quiet);
+}
+.rd-sums dd {
+	margin: 0;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rd-sums .rd-sums-total {
+	padding-top: 0.7rem;
+	border-top: 1px solid var(--basalt-edge-strong);
+}
+.rd-sums .rd-sums-total dt,
+.rd-sums .rd-sums-total dd {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.rd-methods.basalt-choice-grid {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr));
+}
+.rd-card-decide textarea {
+	resize: vertical;
+}
+
+.rd-decide-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	padding: 1.1rem var(--basalt-pad-x) 1.35rem;
+	border-top: 1px solid var(--rd-line);
+}
+.rd-decide-foot .btn {
+	white-space: nowrap;
+}
+@container (max-width: 320px) {
+	.rd-decide-foot .btn {
+		flex: 1 1 100%;
+	}
+}
+
+/* How it was settled: the amount, then the facts */
+.rd-result {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+	padding: 1.1rem 1.25rem;
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--rd-result) 10%, var(--basalt-plane));
+}
+.rd-result-refunded {
+	--rd-result: var(--basalt-success);
+}
+.rd-result-declined {
+	--rd-result: var(--basalt-copy-muted);
+}
+.rd-result-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 50%;
+	font-size: 1.3rem;
+	color: color-mix(in srgb, var(--rd-result) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-result) 18%, var(--basalt-plane));
+}
+.rd-result-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-result-amount {
+	font-size: 1.6rem;
+	font-weight: 750;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+}
+.rd-result-declined .rd-result-amount {
+	text-decoration: line-through;
+	text-decoration-thickness: 2px;
+	color: var(--basalt-copy-body);
+}
+.rd-sent {
+	margin: 0;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.rd-sent p {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+.rd-you {
+	display: inline-block;
+	margin-left: 0.3rem;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	font-size: 0.71rem;
+	font-weight: 600;
+	vertical-align: 0.05em;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+/* Facts: label and value */
+.rd-facts {
+	display: grid;
+	margin: 0;
+}
+.rd-facts > div {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rd-line);
+}
+.rd-facts > div:first-child {
+	padding-top: 0;
+}
+.rd-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.rd-facts dt {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--rd-quiet);
+}
+.rd-facts dd {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.rd-card-decide .rd-facts {
+	margin-bottom: 1.75rem;
+}
+/* In a very narrow card each value goes under its label. */
+@container (max-width: 280px) {
+	.rd-facts > div {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The order, at the foot of the claim */
+.rd-order {
+	margin-top: 1.75rem;
+	padding-top: 1.75rem;
+	border-top: 1px solid var(--rd-line);
+}
+.rd-order-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.rd-order-head .rd-section {
+	margin-bottom: 0;
+}
+.rd-order-head .rd-link {
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.rd-order-desc {
+	margin: 0.3rem 0 1.25rem;
+	font-size: 0.875rem;
+	color: var(--rd-quiet);
+}
+.rd-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+}
+.rd-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+	border-bottom-color: var(--rd-line);
+	color: var(--basalt-copy);
+}
+.rd-table > :not(caption) > * > :first-child {
+	padding-left: 0;
+}
+.rd-table > :not(caption) > * > :last-child {
+	padding-right: 0;
+}
+.rd-table thead th {
+	padding-top: 0;
+	padding-bottom: 0.8rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--rd-quiet);
+}
+.rd-table tbody td {
+	white-space: nowrap;
+}
+.rd-table tbody td:first-child {
+	width: 100%;
+	white-space: normal;
+}
+.rd-product {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.rd-product-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-product-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rd-claimed {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.75rem;
+	height: 1.75rem;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-warning) 38%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 18%, var(--basalt-plane));
+}
+.rd-facts-order {
+	margin-top: 1.5rem;
+}
+@container (max-width: 440px) {
+	.rd-col-paid {
+		display: none;
+	}
+	.rd-table .rd-tile {
+		display: none;
+	}
+}
+
+/* Return */
+.rd-kept {
+	display: flex;
+	gap: 0.75rem;
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.rd-kept > .bi {
+	flex: none;
+	margin-top: 0.05rem;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+}
+.rd-kept-ask > .bi {
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+}
+.rd-label-btn {
+	margin-top: 1.25rem;
+	white-space: nowrap;
+}
+
+.rd-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-step {
+	position: relative;
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.35rem;
+}
+.rd-step:last-child {
+	padding-bottom: 0;
+}
+/* The line from one step to the next; filled once the step is done. */
+.rd-step:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.3rem;
+	bottom: 0.3rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	border-radius: 1px;
+	background: var(--basalt-edge);
+}
+.rd-step.is-done:not(:last-child)::before {
+	background: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-plane));
+}
+/* A filled line grows out of its marker the first time the steps are on
+   screen, each one a beat behind the one before. */
+.rd-steps.is-waiting .rd-step.is-done:not(:last-child)::before {
+	transform: scaleY(0);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.rd-steps.is-drawing .rd-step.is-done:not(:last-child)::before {
+		transform-origin: top;
+		animation: rd-trail-grow 600ms ease-out both;
+	}
+	.rd-steps.is-drawing .rd-step.is-done:nth-child(2)::before {
+		animation-delay: 300ms;
+	}
+	.rd-steps.is-drawing .rd-step.is-done:nth-child(3)::before {
+		animation-delay: 600ms;
+	}
+	.rd-steps.is-drawing .rd-step.is-done:nth-child(4)::before {
+		animation-delay: 900ms;
+	}
+	@keyframes rd-trail-grow {
+		from {
+			transform: scaleY(0);
+		}
+	}
+}
+.rd-step-marker {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--rd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.rd-step.is-done .rd-step-marker {
+	font-size: 0.95rem;
+	color: var(--basalt-plane);
+	background: var(--basalt-success);
+}
+.rd-step.is-next .rd-step-marker {
+	color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+}
+.rd-step-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.rd-step-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rd-step.is-todo .rd-step-label {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.rd-step-when {
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--rd-quiet);
+}
+.rd-step-when .rd-sku {
+	color: var(--basalt-copy-body);
+}
+
+/* History */
+.rd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.8rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.25rem;
+}
+.rd-feed-item:last-child {
+	padding-bottom: 0;
+}
+.rd-feed-item:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.25rem;
+	bottom: 0.25rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	border-radius: 1px;
+	background: var(--basalt-edge);
+}
+.rd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.rd-feed-item-success .rd-feed-icon {
+	color: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+}
+.rd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+}
+.rd-feed-text strong {
+	font-weight: 650;
+}
+.rd-feed-time {
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-feed-item.is-fresh .rd-feed-icon {
+	animation: rd-pop 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes rd-pop {
+	0% {
+		transform: scale(0.6);
+	}
+	60% {
+		transform: scale(1.12);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* Customer */
+.rd-account {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.rd-account-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+	font-weight: 800;
+	color: color-mix(in srgb, var(--rd-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-tone) 14%, var(--basalt-plane));
+}
+.rd-account-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-account-name {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Return label dialog */
+.rd-carriers.basalt-choices {
+	--basalt-choice-min: 120px;
+}
+.rd-label-goes {
+	margin: 0 0 1.25rem;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.rd-label-goes strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rd-file .rd-photo {
+		transition: none;
+	}
+	.rd-feed-item.is-fresh .rd-feed-icon {
+		animation: none;
+	}
+}
+@media print {
+	.rd-head .basalt-hero-actions,
+	.rd-decide-foot,
+	.rd-label-btn,
+	.rd-copy {
+		display: none;
+	}
+	.rd-feed-item.is-fresh .rd-feed-icon {
+		animation: none;
+	}
+}

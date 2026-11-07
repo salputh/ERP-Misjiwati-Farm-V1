@@ -251,7 +251,7 @@ class RhppTest extends TestCase
             ->assertSee('Ekspor PNG');
 
         // Keempat kartu ringkasan di atas tab ditandai agar dilewati saat halaman dipotret; kartu rincian tetap ikut.
-        $this->assertSame(4, substr_count($halaman->getContent(), 'class="col-xxl-3 col-sm-6 mb-25" data-lewati-ekspor="data-lewati-ekspor"'));
+        $this->assertSame(4, substr_count($halaman->getContent(), 'class="col-xxl-3 col-sm-6 mb-4" data-lewati-ekspor="data-lewati-ekspor"'));
         $halaman->assertSee('Ringkasan panen dan performa');
     }
 

@@ -1,0 +1,532 @@
+/* Compiles to assets/basalt/css/components/fields.css, linked after basalt.css by
+   the pages that use it. */
+/**
+ * Three inputs that every page draws the same way: a tag field, a row of
+ * choice tiles and a round number stepper (all on field-types.html). The
+ * tag field and the stepper take their behavior from assets/basalt/js/components/fields.js through
+ * [data-basalt-tags] and [data-basalt-stepper]; the tiles are plain inputs.
+ */
+/* The three frames share one hairline, mixed from the text color so it
+   still shows in dark mode under palettes whose border token stays light. */
+.basalt-choice,
+.basalt-tags,
+.basalt-stepper {
+	--basalt-control-line: color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+}
+
+/* Typing happens in a bare input; the frame around it carries the edge,
+   so the frame alone rings on focus and the input inside skips its own. */
+.basalt-tags-input,
+.basalt-stepper-input {
+	border: 0;
+	outline: 0;
+	color: var(--basalt-copy);
+	background: transparent;
+}
+.basalt-tags-input:focus-visible,
+.basalt-stepper-input:focus-visible {
+	box-shadow: none;
+}
+
+.basalt-tags:focus-within,
+.basalt-stepper:focus-within {
+	border-color: var(--basalt-hue-border);
+	box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+}
+
+/* Removing a tag and stepping a number both use a round, centered button. */
+.basalt-tags-remove,
+.basalt-stepper-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+}
+
+/* Tags: Enter or a comma turns the typed word into a pill, and Backspace
+   in an empty field takes the last pill back. */
+.basalt-tags {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-height: calc(1.5em + 0.75rem + 2px);
+	padding: 0.3rem 0.4rem;
+	border: 1px solid var(--basalt-control-line);
+	border-radius: var(--bs-border-radius);
+	background: var(--bs-body-bg);
+	cursor: text;
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+}
+.basalt-tags-tag {
+	display: inline-flex;
+	gap: 0.2rem;
+	align-items: center;
+	padding: 0.2rem 0.25rem 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.basalt-tags-remove {
+	width: 1.2rem;
+	height: 1.2rem;
+	font-size: 0.95rem;
+	line-height: 1;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+}
+.basalt-tags-remove:hover {
+	color: var(--basalt-danger);
+	background: color-mix(in srgb, var(--basalt-danger) 14%, transparent);
+}
+.basalt-tags-input {
+	flex: 1;
+	min-width: 8rem;
+	padding: 0.2rem 0.25rem;
+	font-size: 0.9rem;
+}
+.basalt-tags {
+	/* A full field stops inviting input: plain cursor, placeholder in italics. */
+}
+.basalt-tags.is-full .basalt-tags-input {
+	cursor: default;
+}
+.basalt-tags.is-full .basalt-tags-input::placeholder {
+	font-style: italic;
+}
+.basalt-tags {
+	/* The line under the field: help on the left, the count kept whole on the right. */
+}
+.basalt-tags-meta {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin-top: 0.3rem;
+	font-size: 0.75rem;
+	color: var(--basalt-copy-muted);
+}
+.basalt-tags-meta > :last-child {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+/* Tiles: radios or checkboxes drawn as centered cards that split the row
+   evenly; --basalt-choice-min sets how narrow one gets before the row wraps. */
+.basalt-choices {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--basalt-choice-min, 96px)), 1fr));
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	/* Bootstrap floats a legend at heading size; here it reads as a field label. */
+}
+.basalt-choices > legend {
+	float: none;
+	width: 100%;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 1rem;
+	font-weight: 500;
+	line-height: 1.5;
+}
+
+.basalt-choice {
+	--basalt-choice-tone: var(--basalt-hue);
+	position: relative;
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	padding: 0.75rem 0.5rem;
+	border: 1px solid var(--basalt-control-line);
+	border-radius: 12px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.25;
+	text-align: center;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease,
+		box-shadow 170ms ease;
+	/* The real input stays in the tile for forms and keyboards, unseen. */
+}
+.basalt-choice input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+.basalt-choice > .bi {
+	font-size: 1.1rem;
+	color: var(--basalt-choice-tone);
+}
+.basalt-choice-hint {
+	font-size: 0.71rem;
+	font-weight: 500;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-choice:hover {
+	border-color: color-mix(in srgb, var(--basalt-choice-tone) 55%, var(--basalt-control-line));
+}
+.basalt-choice:has(input:checked) {
+	border-color: var(--basalt-choice-tone);
+	background: color-mix(in srgb, var(--basalt-choice-tone) 9%, var(--basalt-plane));
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-choice-tone) 16%, transparent);
+}
+.basalt-choice:has(input:focus-visible:not(:checked)) {
+	outline: 2px solid var(--basalt-choice-tone);
+	outline-offset: 2px;
+}
+.basalt-choice:has(input:disabled) {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.basalt-choice {
+	/* A tone class colors one tile by what the option means. */
+}
+.basalt-choice-success {
+	--basalt-choice-tone: var(--basalt-success);
+}
+.basalt-choice-warning {
+	--basalt-choice-tone: var(--basalt-warning);
+}
+.basalt-choice-danger {
+	--basalt-choice-tone: var(--basalt-danger);
+}
+
+/* The compact row puts icon and word on one line, for weekdays or sizes. */
+.basalt-choices-compact {
+	--basalt-choice-min: 56px;
+	gap: 0.3rem;
+}
+.basalt-choices-compact .basalt-choice {
+	flex-direction: row;
+	padding: 0.4rem 0.5rem;
+	border-radius: 10px;
+}
+
+/* Wider minimums for choices that carry a few words each. */
+.basalt-choices-wide {
+	--basalt-choice-min: 120px;
+}
+
+.basalt-choices-wider {
+	--basalt-choice-min: 160px;
+}
+
+/* Stepper: a pill holding minus, the number and plus. */
+.basalt-stepper {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.2rem;
+	border: 1px solid var(--basalt-control-line);
+	border-radius: 999px;
+	background: var(--bs-body-bg);
+}
+.basalt-stepper-btn {
+	width: 2rem;
+	height: 2rem;
+	color: var(--basalt-hue);
+	background: var(--basalt-hue-soft);
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+}
+.basalt-stepper-btn:hover:not(:disabled) {
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.basalt-stepper-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+.basalt-stepper {
+	/* The number is typed as text: no spin arrows, bold and centered. */
+}
+.basalt-stepper-input {
+	width: 3.5rem;
+	padding: 0;
+	font-size: 1rem;
+	font-weight: 700;
+	text-align: center;
+	appearance: textfield;
+}
+.basalt-stepper-input::-webkit-outer-spin-button,
+.basalt-stepper-input::-webkit-inner-spin-button {
+	margin: 0;
+	-webkit-appearance: none;
+}
+.basalt-stepper-sm .basalt-stepper-btn {
+	width: 1.6rem;
+	height: 1.6rem;
+}
+.basalt-stepper-sm .basalt-stepper-input {
+	width: 2.75rem;
+	font-size: 0.9rem;
+}
+
+/* Under reduced motion the frames and buttons change state at once. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tags,
+	.basalt-choice,
+	.basalt-stepper-btn {
+		transition: none;
+	}
+}
+/* .basalt-tick turns a checkbox or radio into a rounded square without any
+   script. The real input sits inside the label, out of sight yet still in the
+   tab order, and the .basalt-tick-box after it paints whatever state the
+   input is in. Size follows --basalt-tick-size and color follows the theme
+   tokens, so every palette and dark mode carry over; field-types.html shows
+   the whole set.
+
+   label.basalt-tick
+     input (checkbox or radio, with an aria-label when there is no caption)
+     span.basalt-tick-box > i.bi.bi-check-lg (aria-hidden)
+     span.basalt-tick-label (optional caption) */
+.basalt-tick {
+	--basalt-tick-size: 36px;
+	--basalt-tick-radius: 11px;
+	--basalt-tick-border: 1.5px;
+	--basalt-tick-tone: var(--basalt-hue);
+	--basalt-tick-fill: color-mix(in srgb, var(--basalt-tick-tone) 86%, var(--basalt-copy));
+	--basalt-tick-ink: var(--basalt-on-hue);
+	--basalt-tick-ring: var(--basalt-hue-border);
+	--basalt-tick-line: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+	position: relative;
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	vertical-align: middle;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	/* The input keeps focus and its form value but takes up no room. */
+}
+.basalt-tick > input {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.basalt-tick-box {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: var(--basalt-tick-size);
+	height: var(--basalt-tick-size);
+	border: var(--basalt-tick-border) solid var(--basalt-tick-line);
+	border-radius: var(--basalt-tick-radius);
+	font-size: calc(var(--basalt-tick-size) * 0.5);
+	line-height: 1;
+	color: var(--basalt-tick-ink);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		box-shadow 170ms ease,
+		transform 170ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tick-box {
+		transition: none;
+	}
+}
+.basalt-tick-box {
+	/* The check waits small and invisible until the input is checked. */
+}
+.basalt-tick-box .bi {
+	transform: scale(0.6);
+	display: block;
+	line-height: 1;
+	opacity: 0;
+	transition:
+		opacity 170ms ease,
+		transform 200ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tick-box .bi {
+		transform: none;
+		transition: none;
+	}
+}
+.basalt-tick-box {
+	/* A half-checked box shows a bar drawn here, so no second icon is needed. */
+}
+.basalt-tick-box::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scaleX(0.4);
+	width: 44%;
+	height: max(2px, var(--basalt-tick-size) * 0.085);
+	margin: 0;
+	border-radius: 99px;
+	background: currentColor;
+	opacity: 0;
+	transition:
+		opacity 170ms ease,
+		transform 200ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tick-box::after {
+		transition: none;
+	}
+}
+
+.basalt-tick-label {
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+
+/* Every state is read off the hidden input and painted on the box beside it.
+   Hover comes first so a checked or half-checked fill still owns the edge. */
+.basalt-tick:hover > input:enabled + .basalt-tick-box {
+	border-color: var(--basalt-tick-ring);
+}
+.basalt-tick > input:checked + .basalt-tick-box,
+.basalt-tick > input[type="checkbox"]:indeterminate + .basalt-tick-box {
+	border-color: var(--basalt-tick-fill);
+	background: var(--basalt-tick-fill);
+}
+.basalt-tick > input:checked + .basalt-tick-box .bi {
+	transform: none;
+	opacity: 1;
+}
+.basalt-tick {
+	/* Half-checked hides the check again and grows the bar to full width. */
+}
+.basalt-tick > input[type="checkbox"]:indeterminate + .basalt-tick-box .bi {
+	transform: scale(0.6);
+	opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tick > input[type="checkbox"]:indeterminate + .basalt-tick-box .bi {
+		transform: none;
+	}
+}
+.basalt-tick > input[type="checkbox"]:indeterminate + .basalt-tick-box::after {
+	transform: translate(-50%, -50%);
+	opacity: 1;
+}
+.basalt-tick > input:focus-visible + .basalt-tick-box {
+	box-shadow: 0 0 0 3px var(--basalt-tick-ring);
+}
+.basalt-tick:active > input:enabled + .basalt-tick-box {
+	transform: scale(0.94);
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tick:active > input:enabled + .basalt-tick-box {
+		transform: none;
+	}
+}
+.basalt-tick {
+	/* A disabled input grays the box, its fill and its caption alike. */
+}
+.basalt-tick:has(> input:disabled) {
+	cursor: not-allowed;
+}
+.basalt-tick > input:disabled + .basalt-tick-box {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy-muted);
+	background: var(--basalt-plane-alt);
+}
+.basalt-tick > input:disabled ~ .basalt-tick-label {
+	color: var(--basalt-copy-muted);
+}
+.basalt-tick > input:disabled:checked + .basalt-tick-box,
+.basalt-tick > input[type="checkbox"]:disabled:indeterminate + .basalt-tick-box {
+	border-color: var(--basalt-edge-strong);
+	background: var(--basalt-plane-alt);
+}
+.basalt-tick {
+	/* .is-refused, added for a moment, shakes off a change the app declined. */
+}
+.basalt-tick.is-refused .basalt-tick-box {
+	border-color: var(--basalt-danger);
+	animation: basalt-tick-shake 360ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tick.is-refused .basalt-tick-box {
+		animation: none;
+	}
+}
+
+@keyframes basalt-tick-shake {
+	25% {
+		transform: translateX(-3px);
+	}
+	75% {
+		transform: translateX(3px);
+	}
+}
+/* Tones swap the hue; the fill leans toward the text color, as a stock
+   checkbox does, so the check drawn on it keeps its contrast. */
+.basalt-tick-success {
+	--basalt-tick-tone: var(--basalt-success);
+	--basalt-tick-fill: color-mix(in srgb, var(--basalt-tick-tone) 70%, var(--basalt-copy));
+	--basalt-tick-ring: color-mix(in srgb, var(--basalt-success) 45%, transparent);
+}
+
+.basalt-tick-danger {
+	--basalt-tick-tone: var(--basalt-danger);
+	--basalt-tick-fill: color-mix(in srgb, var(--basalt-tick-tone) 80%, var(--basalt-copy));
+	--basalt-tick-ring: color-mix(in srgb, var(--basalt-danger) 45%, transparent);
+}
+
+/* The small size enlarges its glyph relative to the box so it stays legible. */
+.basalt-tick-sm {
+	--basalt-tick-size: 24px;
+	--basalt-tick-radius: 8px;
+}
+.basalt-tick-sm .basalt-tick-box {
+	font-size: calc(var(--basalt-tick-size) * 0.58);
+}
+.basalt-tick-sm .basalt-tick-label {
+	font-size: 0.8rem;
+}
+
+/* Both large sizes share a heavier edge and a slightly bigger caption. */
+.basalt-tick-lg {
+	--basalt-tick-size: 48px;
+	--basalt-tick-radius: 14px;
+}
+
+.basalt-tick-xl {
+	--basalt-tick-size: 64px;
+	--basalt-tick-radius: 18px;
+}
+
+.basalt-tick-lg,
+.basalt-tick-xl {
+	--basalt-tick-border: 2px;
+}
+
+.basalt-tick-lg .basalt-tick-label,
+.basalt-tick-xl .basalt-tick-label {
+	font-size: 0.95rem;
+}

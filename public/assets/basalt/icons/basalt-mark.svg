@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="basalt-mark" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#8b3fd0"/>
+      <stop offset="0.55" stop-color="#6d3fe0"/>
+      <stop offset="1" stop-color="#4a1f9e"/>
+    </linearGradient>
+  </defs>
+  <path d="M15 0h34a15 15 0 0 1 15 15v34a15 15 0 0 1-15 15H15A15 15 0 0 1 0 49V15A15 15 0 0 1 15 0Z" fill="url(#basalt-mark)"/>
+  <path d="M13 50V36.4L16.8 34.4L20.6 36.4V50Z M23.8 50V26.8L27.6 24.8L31.4 26.8V50Z M34.6 50V31.6L38.4 29.6L42.2 31.6V50Z M45.4 50V20.8L49.2 18.8L53 20.8V50Z" fill="#fff"/>
+</svg>

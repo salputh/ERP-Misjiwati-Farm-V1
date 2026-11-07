@@ -125,7 +125,7 @@ class Projects extends Component
 
     public function paginationView(): string
     {
-        return 'vendor.pagination.hexadash';
+        return 'vendor.pagination.basalt';
     }
 
     public function render(): View

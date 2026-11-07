@@ -1,0 +1,887 @@
+/* Styles for one person's profile (employee-user-details.html), under the ud-
+   prefix. The page loads employee-users.css first and reuses its avatars, role
+   pills, team chips, status dots, sign-in badges and quiet text, so a
+   person looks the same here as in the directory. Colors are --basalt-*
+   tokens throughout. */
+
+/* Whatever the script hides stays hidden, even where a rule sets display. */
+.ud-head .basalt-hero-actions .btn[hidden],
+.ud-notice[hidden],
+.ud-card-head .btn[hidden],
+.ud-card-foot .btn[hidden],
+.ud-sub-head .btn[hidden],
+.ud-empty[hidden],
+[data-ud-group-add-wrap][hidden],
+.ud-table[hidden],
+.ud-more-line[hidden],
+.ud-deact-transfer[hidden] {
+	display: none;
+}
+
+/* The header sets who they are on the left and the actions at bottom right. */
+.basalt-hero-detail.ud-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.ud-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	margin: 0;
+}
+.ud-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+
+	& .us-av {
+		box-shadow: 0 0 0 3px var(--basalt-plane);
+	}
+	& .basalt-avatar-status-dot {
+		right: 3px;
+		bottom: 3px;
+		width: 16px;
+		height: 16px;
+	}
+}
+.ud-who-text {
+	min-width: 0;
+}
+.ud-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .us-tag {
+		margin: 0;
+	}
+	& .us-role {
+		min-height: 1.75rem;
+	}
+	& .us-state {
+		padding: 0 0.25rem;
+		font-size: 0.8rem;
+	}
+	& .us-online {
+		font-size: 0.8rem;
+	}
+}
+/* On phones the actions drop under the name and the avatar shrinks. */
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.ud-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.ud-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.ud-who .basalt-avatar-xl {
+		width: 56px;
+		height: 56px;
+		font-size: 1.2rem;
+	}
+	.ud-who .basalt-avatar-status-dot {
+		right: 1px;
+		bottom: 1px;
+		width: 14px;
+		height: 14px;
+	}
+}
+
+/* One slim line explains an unusual status; a suspension turns it amber. */
+.ud-notice {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	& > .bi {
+		flex: none;
+		color: var(--us-quiet);
+	}
+}
+.ud-notice-warning {
+	border-color: color-mix(in srgb, var(--basalt-warning) 40%, var(--basalt-edge));
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 10%, var(--basalt-plane));
+
+	& > .bi {
+		color: var(--us-warn);
+	}
+}
+
+/* Four figure tiles, each washed with its own series hue from the corner. */
+.ud-figs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+	margin: 0 0 1.5rem;
+}
+.ud-fig {
+	--ud-tone: var(--basalt-series-1);
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.25rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background-color: var(--basalt-plane);
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--ud-tone) 9%, transparent), transparent 60%);
+}
+:root[data-basalt-gradients="off"] .ud-fig {
+	background-image: none;
+}
+.ud-fig-2 {
+	--ud-tone: var(--basalt-series-2);
+}
+.ud-fig-3 {
+	--ud-tone: var(--basalt-series-3);
+}
+.ud-fig-4 {
+	--ud-tone: var(--basalt-series-5);
+}
+.ud-fig-label {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--us-quiet);
+
+	& .bi {
+		display: inline-grid;
+		place-items: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 8px;
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--ud-tone) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--ud-tone) 16%, var(--basalt-plane));
+	}
+}
+.ud-fig-value {
+	margin: 0.65rem 0 0.25rem;
+	overflow: hidden;
+	font-size: 1.3rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ud-fig-value-ok {
+	color: var(--us-ok);
+}
+.ud-fig-value-warn {
+	color: var(--us-warn);
+}
+.ud-fig-note {
+	margin: 0;
+	overflow: hidden;
+	font-size: 0.77rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--us-quiet);
+}
+@media (max-width: 575.98px) {
+	.ud-figs {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.ud-fig {
+		padding: 1rem;
+	}
+	.ud-fig-value {
+		font-size: 1.1rem;
+	}
+}
+@media (max-width: 389.98px) {
+	.ud-figs {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Two columns that stack their own cards, so a long card leaves no hole
+   beside a short one, with the audit trail across both underneath. In a
+   single column the cards fall into the order that suits a phone. */
+.ud-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+.ud-col {
+	display: contents;
+}
+.ud-card-access {
+	order: 1;
+}
+.ud-card-details {
+	order: 2;
+}
+.ud-card-security {
+	order: 3;
+}
+.ud-card-owns {
+	order: 4;
+}
+.ud-card-activity {
+	order: 5;
+}
+.ud-card-audit {
+	order: 6;
+}
+@media (min-width: 1200px) {
+	.ud-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		align-items: start;
+	}
+	.ud-col {
+		display: flex;
+		gap: 1.5rem;
+		flex-direction: column;
+		min-width: 0;
+	}
+	.ud-card-audit {
+		grid-column: 1 / -1;
+	}
+}
+
+/* Every card has a heading row with an optional button and a footer of links. */
+.ud-card {
+	min-width: 0;
+}
+.ud-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.ud-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.ud-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+	}
+}
+.ud-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ud-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--us-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.ud-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+
+	& .us-link {
+		margin-left: auto;
+	}
+}
+
+/* A section inside a card starts with a rule, the card's own spacing and
+   a heading that stands clearly above the text. */
+.ud-sub-block {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.ud-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ud-sub-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+
+	& .ud-sub {
+		margin: 0;
+	}
+	& .btn {
+		padding: 0;
+	}
+}
+.ud-hint {
+	margin: -0.4rem 0 0.9rem;
+	font-size: 0.8rem;
+	color: var(--us-quiet);
+}
+.ud-small {
+	font-size: 0.8rem;
+}
+.ud-empty {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--us-quiet);
+	list-style: none;
+}
+.ud-foot-link {
+	display: inline-block;
+	margin-top: 1rem;
+}
+
+/* Names of other people link to their own profiles. */
+.ud-person {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The lists of sessions, owned work and activity are bare lists. */
+.ud-sessions,
+.ud-owns,
+.ud-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Rows in those lists and in the details are split by hairlines, with no
+   padding above the first or below the last. */
+.ud-session:first-child,
+.ud-own:first-child,
+.ud-facts > div:first-child {
+	padding-top: 0;
+}
+.ud-session:last-child,
+.ud-own:last-child,
+.ud-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+
+/* Square icon tiles at the start of session and owned-work rows. */
+.ud-session-icon,
+.ud-own-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+}
+.ud-session-text,
+.ud-own-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.ud-session-meta,
+.ud-own-meta,
+.ud-feed-time {
+	font-size: 0.77rem;
+	color: var(--us-quiet);
+}
+
+/* Access: the role and its reach, then group chips. */
+.ud-role {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.ud-role-line {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+
+	& .us-role {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.8rem;
+	}
+}
+.ud-role-about {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.ud-table-perms {
+	margin-top: 1.25rem;
+}
+.ud-groups {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+.ud-group {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	min-height: 2rem;
+	padding: 0.2rem 0.3rem 0.2rem 0.75rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:not(:has(button)) {
+		padding-right: 0.75rem;
+	}
+}
+.ud-group-x {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	border: 0;
+	border-radius: 50%;
+	font-size: 0.65rem;
+	color: var(--us-quiet);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+/* The small tables share the directory's header labels and lose their outer padding. */
+.ud-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.75rem;
+		border-bottom-color: var(--basalt-edge);
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--us-quiet);
+	}
+	& tbody tr:last-child > * {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& tbody td {
+		white-space: nowrap;
+	}
+	& tr.is-fresh {
+		animation: us-fresh 1.6s ease;
+	}
+	& .ud-none-row td {
+		padding-top: 1rem;
+		font-size: 0.8rem;
+		white-space: normal;
+		color: var(--us-quiet);
+	}
+}
+.ud-cell-note {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.75rem;
+	color: var(--us-quiet);
+}
+.ud-fold {
+	display: none;
+	font-size: 0.75rem;
+	color: var(--us-quiet);
+}
+.ud-table-audit td:nth-child(2) {
+	width: 100%;
+	white-space: normal;
+}
+.ud-change {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+
+	& > .bi {
+		flex: none;
+		color: var(--us-quiet);
+	}
+}
+/* In a narrow card the device and place fold under the time, and who
+   under the change, so no table runs past its card. */
+.ud-card-security,
+.ud-card-audit {
+	container-type: inline-size;
+}
+@container (max-width: 600px) {
+	.ud-col-device,
+	.ud-col-place,
+	.ud-col-by {
+		display: none;
+	}
+	.ud-fold {
+		display: block;
+		margin-top: 0.1rem;
+	}
+	.ud-table-signins td:first-child {
+		white-space: normal;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ud-table tr.is-fresh {
+		animation: none;
+	}
+}
+
+/* Security: the sign-in method beside its icon, with its buttons below the text. */
+.ud-method {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+
+	& .ud-method-icon {
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 12px;
+		font-size: 1.1rem;
+	}
+}
+.ud-method-text {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.ud-method-name {
+	display: flex;
+	gap: 0.4rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ud-method-line {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	&.is-warn {
+		font-weight: 600;
+		color: var(--us-warn);
+	}
+}
+.ud-method-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	grid-column: 2;
+	margin-top: 1rem;
+
+	& .btn-loading {
+		display: inline-grid;
+	}
+}
+
+/* Open sessions, one device per row with a Sign out button. */
+.ud-session {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& .btn {
+		flex: none;
+	}
+}
+.ud-session-icon {
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.ud-session-text {
+	flex: 1 1 auto;
+}
+.ud-session-device {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& .us-tag {
+		margin-left: 0.3rem;
+	}
+}
+
+/* Details: a label column and a value column, row by row. */
+.ud-facts {
+	display: grid;
+	margin: 0;
+}
+.ud-facts > div {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 6rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.ud-facts dt {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--us-quiet);
+}
+.ud-facts dd {
+	margin: 0;
+	font-size: 0.875rem;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.ud-facts-email {
+	margin-right: 0.2rem;
+}
+.ud-facts-aside {
+	margin-left: 0.6rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--us-quiet);
+}
+.ud-copy {
+	padding: 0.1rem 0.3rem;
+	vertical-align: baseline;
+	color: var(--us-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Owned work: a tinted tile per kind, the name and one line about it. */
+.ud-own {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.ud-own-icon {
+	color: color-mix(in srgb, var(--us-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--us-tone) 16%, var(--basalt-plane));
+}
+.ud-own-name {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ud-more-line {
+	margin: 1rem 0 0;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--us-quiet);
+}
+
+/* Recent activity hangs on a thin thread drawn from one icon to the next. */
+.ud-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.ud-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.ud-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+}
+
+/* Dialogs: role tiles in threes (twos on phones) and what a new role changes. */
+.ud-roles.basalt-choices {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.ud-roles .basalt-choice {
+	padding: 0.9rem 0.5rem;
+}
+.ud-reasons.basalt-choices {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 575.98px) {
+	.ud-roles.basalt-choices {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.ud-diff {
+	margin-top: 1.25rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	background: var(--basalt-plane-alt);
+}
+.ud-diff-lead {
+	margin: 0;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ud-diff-same {
+	margin: 0.4rem 0 0;
+	color: var(--us-quiet);
+}
+.ud-diff-list {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0.75rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.6rem;
+		grid-template-columns: 1rem minmax(0, 11rem) minmax(0, 1fr);
+		align-items: baseline;
+		color: var(--basalt-copy-body);
+	}
+	& li > .bi {
+		color: var(--us-quiet);
+	}
+	& li.is-up > .bi {
+		color: var(--us-ok);
+	}
+	& li.is-down > .bi {
+		color: var(--us-warn);
+	}
+}
+.ud-diff-area {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.ud-diff-list {
+		gap: 0.75rem;
+	}
+	.ud-diff-list li {
+		row-gap: 0.1rem;
+		grid-template-columns: 1rem minmax(0, 1fr);
+	}
+	.ud-diff-levels {
+		grid-column: 2;
+	}
+}
+.ud-kinds {
+	display: grid;
+	gap: 0.3rem;
+}
+.ud-kinds .form-check-label {
+	color: var(--basalt-copy-body);
+}
+.ud-deact-transfer {
+	margin-top: 1rem;
+}
+
+/* Printed profiles leave out every button and the fresh-row flash. */
+@media print {
+	.ud-head .basalt-hero-actions,
+	.ud-card-head .btn,
+	.ud-card-foot,
+	.ud-sub-head .btn,
+	.ud-method-actions,
+	.ud-session .btn,
+	.ud-group-x,
+	[data-ud-group-add-wrap] {
+		display: none;
+	}
+	.ud-table tr.is-fresh {
+		animation: none;
+	}
+}

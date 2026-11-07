@@ -1,0 +1,1113 @@
+/*
+ * person-details.html: the page for one person at a customer or a
+ * prospect. Every class here starts with .cnd-. Cards, the hero header,
+ * the segmented control, selects, avatars, copy buttons and toasts all
+ * come from basalt.css; this sheet only arranges the page and draws its
+ * own pieces: the Reach band with their clock and contact channels, the
+ * waiting card with its steps, deals and quotes, coworkers, the sign-in
+ * facts, the history feed and the details form. Colors are --basalt-*
+ * tokens blended with color-mix(), so each palette and mode keeps its hues.
+ */
+
+/* The page owns a few derived colors; small gray text and links are pulled
+   toward the body color so they keep 4.5:1 on the lighter palettes. */
+.cnd-page {
+	--cnd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--cnd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--cnd-ok: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	--cnd-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--cnd-tone: var(--basalt-series-1);
+
+	& .form-control,
+	& .form-select {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+	& .form-control::placeholder {
+		color: var(--cnd-quiet);
+		opacity: 1;
+	}
+}
+
+/* A tone class picks one hue from the theme ramp for whatever it sits on. */
+.cnd-tone-1 {
+	--cnd-tone: var(--basalt-series-1);
+}
+.cnd-tone-2 {
+	--cnd-tone: var(--basalt-series-2);
+}
+.cnd-tone-3 {
+	--cnd-tone: var(--basalt-series-3);
+}
+.cnd-tone-4 {
+	--cnd-tone: var(--basalt-series-4);
+}
+.cnd-tone-5 {
+	--cnd-tone: var(--basalt-series-5);
+}
+.cnd-tone-6 {
+	--cnd-tone: var(--basalt-series-6);
+}
+.cnd-tone-7 {
+	--cnd-tone: var(--basalt-series-7);
+}
+
+/* Quiet text is a muted line that never adds space of its own. */
+.cnd-quiet {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--cnd-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Secondary lines under a value, wherever a fact needs a second line. */
+.cnd-fact-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--cnd-quiet);
+}
+
+/* Links come in two weights: tinted ones for actions, plain ones for names. */
+.cnd-link,
+.cnd-name {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+}
+.cnd-link {
+	color: var(--cnd-link);
+}
+.cnd-name {
+	color: var(--basalt-copy);
+}
+.cnd-link:hover,
+.cnd-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--basalt-copy);
+}
+.cnd-link:focus-visible,
+.cnd-name:focus-visible,
+.cnd-owner:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Every list on the page is a bare stack of rows. */
+.cnd-ways-list,
+.cnd-steps,
+.cnd-deals,
+.cnd-quote-list,
+.cnd-mates,
+.cnd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Divided rows lose the rule and the top padding on the first one. */
+.cnd-way:first-child,
+.cnd-deal:first-child,
+.cnd-quote:first-child,
+.cnd-mate:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+
+/* Square icon tiles tinted with the tone of their row. */
+.cnd-way-icon,
+.cnd-act-icon,
+.cnd-co-tile {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--cnd-tone) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cnd-tone) 15%, var(--basalt-plane));
+}
+
+/* Button labels stay on one line in every action row. */
+.cnd-head .basalt-hero-actions .btn,
+.cnd-card-foot .btn,
+.cnd-ways-acts .btn,
+.cnd-sign-acts .btn,
+.cnd-sign-none .btn,
+.cnd-edit-foot .btn {
+	white-space: nowrap;
+}
+
+.cnd-menu .dropdown-item .bi {
+	width: 1rem;
+	margin-right: 0.5rem;
+	text-align: center;
+}
+
+/* The header puts the person on the left and the actions on the right,
+   both resting on the same baseline. */
+.basalt-hero-detail.cnd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.cnd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	margin: 0;
+}
+.cnd-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.cnd-who-text {
+	min-width: 0;
+}
+.cnd-face {
+	& .basalt-avatar {
+		box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--basalt-copy) 60%, transparent);
+	}
+	& .basalt-avatar-status-dot {
+		right: 3px;
+		bottom: 3px;
+		border-width: 3px;
+	}
+}
+.cnd-tags {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+
+/* Pills carry role, plan and seats in their own hue. */
+.cnd-pill {
+	display: inline-flex;
+	align-items: center;
+	min-height: 1.75rem;
+	padding: 0.1rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--cnd-tone) 42%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--cnd-tone) 15%, var(--basalt-plane));
+}
+[data-bs-theme="dark"] .cnd-pill {
+	color: color-mix(in srgb, var(--cnd-tone) 30%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--cnd-tone) 24%, var(--basalt-plane));
+}
+
+/* Presence and the clock state share one dot, gray by default and green at work. */
+.cnd-presence::before,
+.cnd-state::before {
+	content: "";
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--basalt-copy-muted);
+}
+.cnd-presence {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-height: 1.75rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--cnd-quiet);
+
+	&.is-on {
+		color: var(--cnd-ok);
+	}
+	&.is-on::before {
+		background: var(--basalt-success);
+	}
+}
+
+/* The account owner is a small outlined chip with their avatar. */
+.cnd-owner {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-height: 1.75rem;
+	padding: 0.1rem 0.7rem 0.1rem 0.2rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	& .basalt-avatar {
+		width: 22px;
+		height: 22px;
+		font-size: 0.5rem;
+	}
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+	}
+}
+
+/* On phones the actions drop under the person and the avatar shrinks. */
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.cnd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.cnd-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.cnd-face .basalt-avatar {
+		width: 56px;
+		height: 56px;
+		font-size: 1.1rem;
+	}
+	.cnd-face .basalt-avatar-status-dot {
+		right: 1px;
+		bottom: 1px;
+		border-width: 2px;
+	}
+}
+
+/* Card bodies stack their parts so a footer can sink to the bottom. */
+.cnd-card {
+	min-width: 0;
+}
+.cnd-card.basalt-box > .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.cnd-card.basalt-box > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.cnd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+.cnd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cnd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cnd-quiet);
+}
+.cnd-card-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: auto;
+	padding-top: 1.5rem;
+
+	& .btn[hidden] {
+		display: none;
+	}
+}
+.cnd-foot-link {
+	align-self: flex-start;
+	margin-top: auto;
+	padding-top: 1.25rem;
+	font-size: 0.85rem;
+}
+
+/* A heading inside a card sits clearly above body text and below the card title. */
+.cnd-label {
+	margin: 0 0 0.75rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cnd-label-gap {
+	margin-top: 1.5rem;
+}
+
+/* Cards stack below 1200px; above it they pair up and end level. */
+.cnd-row {
+	display: grid;
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+@media (min-width: 1200px) {
+	.cnd-row {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	}
+	.cnd-row-three {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+/* Reach and Sign-in span the page and size their insides by their own width. */
+.cnd-reach.basalt-box,
+.cnd-sign.basalt-box {
+	container-type: inline-size;
+	margin-bottom: 1.5rem;
+}
+
+/* Reach splits into their time and the ways in once the card is wide enough. */
+.cnd-reach-grid {
+	display: grid;
+	gap: 1.5rem;
+}
+.cnd-reach-part {
+	min-width: 0;
+}
+@container (min-width: 640px) {
+	.cnd-reach-grid {
+		gap: 0;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+	}
+	.cnd-reach-part + .cnd-reach-part {
+		margin-left: 1.75rem;
+		padding-left: 1.75rem;
+		border-left: 1px solid var(--basalt-edge);
+	}
+}
+
+/* Their clock reads time then weekday, with the place and a work-state badge below. */
+.cnd-clock {
+	display: flex;
+	gap: 0.25rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+}
+.cnd-clock-day {
+	font-weight: 400;
+	color: var(--basalt-copy-body);
+}
+.cnd-where {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--cnd-quiet);
+}
+.cnd-state {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.85rem 0 0;
+	padding: 0.2rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--cnd-quiet);
+	background: var(--basalt-plane-alt);
+
+	&.is-on {
+		color: var(--cnd-ok);
+		background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+	}
+	&.is-on::before {
+		background: var(--basalt-success);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-success) 25%, transparent);
+	}
+}
+
+/* Each channel is a row of icon, address and a copy button. */
+.cnd-way {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cnd-way-text {
+	min-width: 0;
+	font-size: 0.875rem;
+
+	& .cnd-link {
+		overflow-wrap: anywhere;
+	}
+}
+.cnd-way-kind {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--cnd-quiet);
+}
+.cnd-icon-btn.btn-icon {
+	width: 2.1rem;
+	height: 2.1rem;
+	padding: 0;
+	border-radius: 9px;
+	color: var(--cnd-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.cnd-icon-btn.is-copied {
+	color: var(--cnd-ok);
+}
+.cnd-ways-acts {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	margin-top: 1.1rem;
+
+	& .btn[hidden] {
+		display: none;
+	}
+}
+
+/* The waiting card leads with a calendar tile and the date it all hangs on. */
+.cnd-card-wait.basalt-box {
+	position: relative;
+	overflow: hidden;
+}
+.cnd-renew {
+	display: flex;
+	gap: 1.1rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.cnd-cal {
+	display: inline-flex;
+	flex-direction: column;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 3.5rem;
+	height: 3.5rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	line-height: 1;
+	background: var(--basalt-plane);
+}
+.cnd-cal-month {
+	font-size: 0.71rem;
+	font-weight: 600;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--cnd-quiet);
+}
+.cnd-cal-day {
+	margin-top: 0.25rem;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cnd-renew-text {
+	min-width: 0;
+}
+.cnd-renew-when {
+	display: block;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cnd-renew-what {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Steps hang from a thin line, with filled or numbered markers so they
+   can never be mistaken for radio buttons. */
+.cnd-step {
+	position: relative;
+	display: flex;
+	gap: 0.9rem;
+	padding-bottom: 1.1rem;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 2rem;
+		bottom: 0.25rem;
+		left: 0.875rem;
+		width: 2px;
+		margin-left: -1px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:last-child::before {
+		display: none;
+	}
+	&.is-done::before {
+		background: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-edge));
+	}
+
+	/* A done line grows down from its marker the first time the steps are
+	   on screen, each one a beat behind the one above. */
+	.cnd-steps.is-waiting &.is-done::before {
+		transform: scaleY(0);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.cnd-steps.is-drawing &.is-done::before {
+			transform-origin: top;
+			animation: cnd-trail-grow 600ms ease-out calc(var(--cnd-trail-at, 0) * 300ms) both;
+		}
+	}
+}
+@keyframes cnd-trail-grow {
+	from {
+		transform: scaleY(0);
+	}
+}
+.cnd-step-mark {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--cnd-quiet);
+	background: var(--basalt-plane-alt);
+
+	.cnd-step.is-done & {
+		color: var(--basalt-plane);
+		background: var(--basalt-success);
+	}
+	.cnd-step.is-now & {
+		color: var(--cnd-warn);
+		background: color-mix(in srgb, var(--basalt-warning) 22%, var(--basalt-plane));
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-warning) 14%, transparent);
+	}
+}
+.cnd-step-text {
+	min-width: 0;
+	padding-top: 0.2rem;
+	font-size: 0.875rem;
+}
+.cnd-step-title {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cnd-step-note {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--cnd-quiet);
+
+	.cnd-step.is-now & {
+		font-weight: 600;
+		color: var(--cnd-warn);
+	}
+}
+
+/* A deal row: name and value, a segmented stage track, then stage and their part. */
+.cnd-deal {
+	display: grid;
+	gap: 0.6rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	padding: var(--basalt-pad-row-y) 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .cnd-name {
+		overflow-wrap: anywhere;
+	}
+}
+.cnd-deal-amt {
+	font-weight: 700;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--cnd-ok);
+}
+.cnd-deal-track {
+	display: grid;
+	gap: 0.3rem;
+	grid-column: 1 / -1;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.cnd-deal-seg {
+	height: 0.4rem;
+	border-radius: 999px;
+	background: var(--basalt-plane-alt);
+
+	&.is-on {
+		background: var(--cnd-tone);
+	}
+}
+.cnd-deal-meta {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	grid-column: 1 / -1;
+	justify-content: space-between;
+	font-size: 0.8rem;
+	color: var(--cnd-quiet);
+}
+.cnd-deal-stage {
+	font-weight: 700;
+	color: color-mix(in srgb, var(--cnd-tone) 45%, var(--basalt-copy));
+}
+
+/* Quotes list the number, what it prices and its status on one line. */
+.cnd-quote {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: baseline;
+	padding: 0.6rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.cnd-quote-what {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cnd-quote-state {
+	font-size: 0.8rem;
+	color: var(--cnd-quiet);
+}
+
+/* The company card opens with a larger gradient tile next to the name. */
+.cnd-co {
+	gap: 1rem;
+	justify-content: flex-start;
+}
+.cnd-co-tile {
+	width: 3rem;
+	height: 3rem;
+	border-radius: 14px;
+	font-size: 1.35rem;
+	background-image: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--cnd-tone) 40%, var(--basalt-plane)),
+		transparent 80%
+	);
+}
+:root[data-basalt-gradients="off"] .cnd-co-tile {
+	background-image: none;
+}
+
+/* Coworkers show avatar, name, title and their role pill. */
+.cnd-mate {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: start;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .cnd-pill {
+		min-height: 1.5rem;
+		margin-top: 0.5rem;
+		font-size: 0.75rem;
+	}
+}
+.cnd-mate-text {
+	min-width: 0;
+	font-size: 0.875rem;
+
+	& .cnd-name {
+		display: block;
+		width: fit-content;
+		max-width: 100%;
+	}
+}
+.cnd-mate-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--cnd-quiet);
+}
+.cnd-mates-more {
+	margin-top: 0.75rem;
+}
+
+/* Sign-in lays its four facts out one, two or four across, then the actions. */
+.cnd-sign-grid {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+}
+@container (min-width: 560px) {
+	.cnd-sign-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@container (min-width: 960px) {
+	.cnd-sign-grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.cnd-sign-fact {
+	display: flex;
+	gap: 0.85rem;
+	align-items: flex-start;
+	min-width: 0;
+	font-size: 0.875rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& dt {
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--cnd-quiet);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& .cnd-fact-sub {
+		font-weight: 400;
+	}
+}
+.cnd-sign-acts {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.cnd-sign-note {
+	flex: 1 1 18rem;
+}
+.cnd-sign-none {
+	display: flex;
+	gap: 0.85rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .cnd-quiet {
+		flex: 1 1 16rem;
+	}
+}
+
+/* The pinned note is a soft panel with a straight bar inside its left edge. */
+.cnd-pin {
+	position: relative;
+	display: flex;
+	gap: 0.75rem;
+	margin: 0 0 1.5rem;
+	padding: 0.9rem 1rem 0.9rem 1.25rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-series-4) 11%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.7rem;
+		bottom: 0.7rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-series-4);
+	}
+	& > .bi {
+		flex: none;
+		margin-top: 0.05rem;
+		color: color-mix(in srgb, var(--basalt-series-4) 50%, var(--basalt-copy));
+	}
+}
+.cnd-pin-label {
+	font-weight: 700;
+}
+
+/* The composer is kind, text and button in a single column. */
+.cnd-composer {
+	display: grid;
+	gap: 0.75rem;
+	margin-bottom: 1.5rem;
+
+	& .invalid-feedback {
+		margin-top: -0.35rem;
+	}
+}
+.cnd-kinds {
+	justify-self: start;
+}
+.cnd-composer-go {
+	justify-self: start;
+	white-space: nowrap;
+}
+
+/* Filter chips sit under a rule; the checked one takes the primary hue. */
+.cnd-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0 0 0.75rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.cnd-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.24rem 0.75rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	.btn-check:checked + & {
+		border-color: var(--basalt-hue-border);
+		color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+	}
+	.btn-check:focus-visible:not(:checked) + & {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* Feed entries are divided rows; a new one flashes the soft hue once. */
+.cnd-act {
+	display: flex;
+	gap: 0.9rem;
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:last-child {
+		border-bottom: 0;
+	}
+	&.is-fresh {
+		animation: cnd-fresh 1.8s ease;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		&.is-fresh {
+			animation: none;
+		}
+	}
+}
+@keyframes cnd-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+.cnd-act-icon {
+	width: 2.1rem;
+	height: 2.1rem;
+}
+.cnd-act-text {
+	min-width: 0;
+	padding-top: 0.1rem;
+	color: var(--basalt-copy);
+}
+.cnd-act-by {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--cnd-quiet);
+}
+.cnd-feed-empty {
+	padding: 0.9rem 0;
+}
+.cnd-more {
+	align-self: flex-start;
+	margin-top: 1rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Details read as label and value rows, one column on the narrowest phones. */
+.cnd-facts {
+	margin: 0;
+
+	&[hidden] {
+		display: none;
+	}
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+	}
+	& > div:first-child {
+		padding-top: 0.25rem;
+		border-top: 0;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--cnd-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+@media (max-width: 389.98px) {
+	.cnd-facts > div {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The edit form keeps fields evenly spaced and pairs names and phones side by side. */
+.cnd-edit[hidden] {
+	display: none;
+}
+.cnd-field {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+
+	& legend.form-label {
+		float: none;
+		width: auto;
+		padding: 0;
+		font-size: inherit;
+		line-height: inherit;
+	}
+	&.is-bad .invalid-feedback {
+		display: block;
+	}
+}
+.cnd-field-last {
+	margin-bottom: 0;
+}
+.cnd-field-pair {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 389.98px) {
+	.cnd-field-pair {
+		gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.cnd-select-role {
+	max-width: 15rem;
+}
+
+/* Working hours are two short selects joined by "to". */
+.cnd-hours {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+
+	& > .basalt-select {
+		flex: 0 0 7.5rem;
+		min-width: 0;
+	}
+}
+.cnd-select-hour {
+	width: 7.5rem;
+}
+.cnd-hours-to {
+	font-size: 0.875rem;
+	color: var(--cnd-quiet);
+}
+.cnd-edit-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* On paper only the facts remain: actions, composer and filters drop out
+   and nothing animates. */
+@media print {
+	.cnd-head .basalt-hero-actions,
+	.cnd-card-head .btn,
+	.cnd-card-foot .btn,
+	.cnd-ways-acts,
+	.cnd-icon-btn,
+	.cnd-composer,
+	.cnd-chips,
+	.cnd-more {
+		display: none;
+	}
+	.cnd-chip {
+		transition: none;
+	}
+	.cnd-act.is-fresh {
+		animation: none;
+	}
+}

@@ -1,0 +1,743 @@
+/* Basalt - Travel (travel.html)
+   Namespaced under .trv-*
+   Products, figures and deals take chart colors from the --basalt-*
+   tokens; trip statuses use the shared status pills. */
+
+.trv-page {
+	--trv-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--trv-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--trv-up: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+	--trv-down: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--trv-track: color-mix(in srgb, var(--basalt-edge) 60%, transparent);
+}
+
+/* Cards share one head. */
+.trv-card.card {
+	overflow: hidden;
+}
+.trv-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.trv-card-head > div:first-child {
+	flex: 1 1 14rem;
+	min-width: 0;
+}
+.trv-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.trv-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--trv-quiet);
+}
+.trv-card-link {
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--trv-link);
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+/* Bookings by product */
+.trv-mix {
+	display: grid;
+	gap: 1.5rem;
+	margin: 0;
+	padding: 1.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+	list-style: none;
+}
+.trv-mix-row {
+	display: grid;
+	gap: 0.3rem 1rem;
+	grid-template-columns: 8rem minmax(0, 1fr) 6.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+}
+.trv-mix-name {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	.bi {
+		color: var(--trv-quiet);
+	}
+}
+.trv-mix-track {
+	height: 0.75rem;
+	border-radius: 999px;
+	background: var(--trv-track);
+}
+.trv-mix-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--tone);
+	transition: width 500ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.trv-mix-value {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	color: var(--basalt-copy);
+
+	& span {
+		margin-left: 0.4rem;
+		font-weight: 500;
+		color: var(--trv-quiet);
+	}
+}
+.trv-mix-sub {
+	grid-column: 2 / -1;
+	font-size: 0.81rem;
+	color: var(--trv-quiet);
+
+	.is-up {
+		color: var(--trv-up);
+	}
+	.is-down {
+		color: var(--trv-down);
+	}
+}
+@media (max-width: 575.98px) {
+	.trv-mix-row {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.trv-mix-track,
+	.trv-mix-sub {
+		grid-column: 1 / -1;
+	}
+}
+
+/* Lists: payouts, changes, listings. */
+.trv-list {
+	margin: 0;
+	padding: 0.75rem 0 0.5rem;
+	list-style: none;
+}
+.trv-row {
+	display: grid;
+	gap: 0.5rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.85rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+.trv-row-main {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.trv-row-title {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	text-decoration: none;
+}
+a.trv-row-title:hover {
+	color: var(--trv-link);
+	text-decoration: underline;
+}
+.trv-row-sub {
+	font-size: 0.81rem;
+	color: var(--trv-quiet);
+}
+.trv-row-end {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+}
+/* Payouts stack the amount over its status, so the name keeps its width. */
+[data-trv-payouts] .trv-row-end {
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.trv-amount {
+	font-size: 0.9rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.trv-urgent {
+	margin-right: 0.3rem;
+	color: var(--trv-down);
+}
+.trv-missing {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+.trv-empty {
+	padding: 1.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+@media (max-width: 575.98px) {
+	.trv-row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.trv-row-end {
+		justify-content: flex-start;
+	}
+}
+
+/* List bar */
+.trv-listbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.25rem var(--basalt-pad-x) 0.75rem;
+}
+.trv-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 10rem;
+	max-width: 24rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--trv-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.trv-select.form-select {
+	width: auto;
+	flex: none;
+}
+.trv-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	color: var(--trv-quiet);
+}
+
+/* Departures */
+.trv-table-wrap {
+	flex: none;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.trv-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: inherit;
+	margin: 0;
+}
+.trv-table th,
+.trv-table td {
+	padding: 0.8rem 0.75rem;
+	vertical-align: middle;
+	border-color: var(--basalt-edge);
+}
+.trv-table th:first-child,
+.trv-table td:first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.trv-table th:last-child,
+.trv-table td:last-child {
+	padding-right: var(--basalt-pad-x);
+}
+.trv-table th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--trv-quiet);
+}
+.trv-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+.trv-table tr.is-alert td {
+	background: color-mix(in srgb, var(--basalt-danger) 5%, transparent);
+}
+.trv-num {
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+}
+.trv-table th.trv-num .trv-sort {
+	flex-direction: row-reverse;
+}
+.trv-when {
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.trv-trip {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	color: inherit;
+	text-decoration: none;
+
+	&:hover b {
+		color: var(--trv-link);
+		text-decoration: underline;
+	}
+}
+.trv-trip-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: var(--basalt-series-1);
+	background: color-mix(in srgb, var(--basalt-series-1) 12%, var(--basalt-plane));
+}
+.trv-trip-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+
+	& b {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.81rem;
+		color: var(--trv-quiet);
+	}
+}
+.trv-status {
+	display: inline-flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	align-items: flex-start;
+	vertical-align: middle;
+}
+.trv-status-note {
+	font-size: 0.77rem;
+	color: var(--trv-quiet);
+}
+/* The status and its one action share a row while there is room; in a narrow
+   column the button drops below the status and starts flush with it. */
+.trv-status-cell {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.trv-notify {
+	white-space: nowrap;
+}
+.trv-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	white-space: nowrap;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.trv-sort-idle {
+	opacity: 0.55;
+}
+@media (max-width: 991.98px) {
+	.trv-col-who {
+		display: none;
+	}
+}
+@media (max-width: 575.98px) {
+	.trv-col-pax {
+		display: none;
+	}
+	.trv-trip-text span {
+		display: none;
+	}
+}
+
+/* Deals: a row each, with bookings against what was hoped for. */
+.trv-deals {
+	display: grid;
+	margin: 0;
+	padding: 0.75rem 0 0.5rem;
+	list-style: none;
+}
+.trv-deal {
+	display: grid;
+	gap: 0.5rem 1.5rem;
+	grid-template-columns: minmax(12rem, 1.2fr) minmax(9rem, 0.8fr) minmax(8rem, 1fr) 5rem;
+	align-items: center;
+	padding: 0.85rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.trv-deal-name,
+.trv-deal-figure {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+
+	& b {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.81rem;
+		color: var(--trv-quiet);
+	}
+}
+.trv-deal-figure b {
+	font-variant-numeric: tabular-nums;
+}
+.trv-deal-track {
+	height: 0.6rem;
+	border-radius: 999px;
+	background: var(--trv-track);
+}
+.trv-deal-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-4);
+
+	&.is-done {
+		background: var(--basalt-hue);
+	}
+}
+.trv-deal-value {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+@media (max-width: 767.98px) {
+	.trv-deal {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.trv-deal-track {
+		grid-column: 1 / -1;
+	}
+	.trv-deal-figure {
+		grid-row: 3;
+	}
+}
+
+/* Today's biggest trip: a boarding pass in the theme color, its stub on the
+   right, and today's other departures as plain rows underneath. */
+.trv-pass-card {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0.75rem;
+	overflow: hidden;
+}
+.trv-pass {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 13rem;
+	overflow: hidden;
+	border-radius: 18px;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.trv-pass-main {
+	min-width: 0;
+	padding: 1.6rem 1.8rem;
+}
+/* In dark mode the pass text is dark on a bright violet, where faded labels
+   fall below a readable contrast, so they show at full strength there. */
+[data-bs-theme="dark"] .trv-pass :is(.trv-pass-kicker, span, small) {
+	opacity: 1;
+}
+/* The stub darkens the violet in light mode; under dark text it lightens it. */
+[data-bs-theme="dark"] .trv-pass-stub {
+	background: color-mix(in srgb, var(--basalt-hue) 82%, #fff);
+}
+.trv-pass-kicker {
+	margin: 0 0 0.3rem;
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: inherit;
+	opacity: 0.8;
+}
+.trv-pass-route {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	gap: 1rem;
+	align-items: center;
+	margin: 0.6rem 0 1.2rem;
+
+	& b {
+		display: block;
+		font-family: "Chivo Mono", monospace;
+		font-size: clamp(2.6rem, 5vw, 4rem);
+		line-height: 1;
+	}
+	& span {
+		font-size: 0.9rem;
+		opacity: 0.85;
+	}
+	& svg {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+	& circle {
+		fill: currentColor;
+	}
+}
+.trv-pass-flight {
+	min-width: 0;
+	text-align: center;
+
+	& span {
+		display: block;
+		margin-top: -1.6rem;
+		white-space: nowrap;
+	}
+}
+.trv-pass-arc {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 3;
+	stroke-linecap: round;
+	stroke-dasharray: 2 9;
+	opacity: 0.9;
+}
+.trv-pass-fields {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 1rem;
+}
+.trv-pass-field {
+	min-width: 0;
+
+	& span {
+		display: block;
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		opacity: 0.86;
+	}
+	& b {
+		font-size: 1rem;
+	}
+}
+.trv-pass-stub {
+	display: grid;
+	align-content: center;
+	gap: 0.3rem;
+	padding: 1.4rem;
+	border-left: 2px dashed color-mix(in srgb, var(--basalt-on-hue) 45%, transparent);
+	background: color-mix(in srgb, var(--basalt-hue) 78%, #000);
+
+	& span {
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		opacity: 0.8;
+	}
+	& b {
+		font-family: "Chivo Mono", monospace;
+		font-size: 1.8rem;
+	}
+	& small {
+		opacity: 0.85;
+	}
+}
+
+/* Today's other departures, one plain row each. */
+.trv-pass-deps {
+	margin-top: 1.2rem;
+}
+.trv-pass-deps-title {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 1rem;
+	justify-content: space-between;
+	margin: 0 0 0.4rem;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& span {
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--trv-quiet);
+	}
+}
+.trv-pass-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.trv-pass-dep {
+	display: grid;
+	grid-template-columns: 6rem 13rem minmax(0, 1fr) 7rem 8rem;
+	gap: 1rem;
+	align-items: center;
+	padding: 0.65rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.92rem;
+	color: var(--basalt-copy);
+
+	& > * {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+.trv-pass-dep-time {
+	font-family: "Chivo Mono", monospace;
+}
+.trv-pass-dep-route {
+	font-weight: 700;
+}
+.trv-pass-dep-who,
+.trv-pass-dep-pax {
+	color: var(--trv-quiet);
+}
+.trv-pass-dep-status {
+	justify-self: end;
+	font-size: 0.82rem;
+	color: var(--trv-quiet);
+
+	&.is-flag {
+		font-weight: 700;
+		color: var(--trv-link);
+	}
+}
+
+@media (max-width: 1199.98px) {
+	.trv-pass {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.trv-pass-flight span {
+		margin-top: 0.25rem;
+	}
+	.trv-pass-stub {
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: baseline;
+		gap: 0.2rem 1rem;
+		padding: 1rem 1.8rem;
+		border-top: 2px dashed color-mix(in srgb, var(--basalt-on-hue) 45%, transparent);
+		border-left: 0;
+
+		& small {
+			grid-column: 1 / -1;
+		}
+	}
+	.trv-pass-dep {
+		grid-template-columns: 5.5rem minmax(0, 1fr) 7rem 8rem;
+	}
+	.trv-pass-dep-who {
+		display: none;
+	}
+}
+@media (max-width: 767.98px) {
+	.trv-pass-main {
+		padding: 1.25rem;
+	}
+	.trv-pass-stub {
+		padding: 1rem 1.25rem;
+	}
+	.trv-pass-fields {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.trv-pass-dep {
+		grid-template-columns: 4.75rem minmax(0, 1fr) auto;
+		gap: 0.75rem;
+	}
+	.trv-pass-dep-pax {
+		display: none;
+	}
+	.trv-pass-dep-route {
+		white-space: normal;
+	}
+}
+@media (max-width: 575.98px) {
+	.trv-pass-route {
+		gap: 0.5rem;
+
+		& b {
+			font-size: 2.1rem;
+		}
+	}
+	.trv-pass-flight span {
+		font-size: 0.8rem;
+	}
+}
+
+/* The arc's dots run out from JFK and the rows rise, once the page has settled. */
+@media (prefers-reduced-motion: no-preference) {
+	.trv-pass-card:not(.is-live) .trv-pass-dep {
+		opacity: 0;
+	}
+	.trv-pass-card.is-live .trv-pass-arc {
+		animation: trv-pass-arc 1400ms cubic-bezier(0.3, 0.8, 0.3, 1) backwards;
+	}
+	.trv-pass-card.is-live .trv-pass-dep {
+		animation: trv-pass-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+	}
+	.trv-pass-card.is-live .trv-pass-dep:nth-child(2) {
+		animation-delay: 60ms;
+	}
+	.trv-pass-card.is-live .trv-pass-dep:nth-child(3) {
+		animation-delay: 120ms;
+	}
+	.trv-pass-card.is-live .trv-pass-dep:nth-child(4) {
+		animation-delay: 180ms;
+	}
+	.trv-pass-card.is-live .trv-pass-dep:nth-child(5) {
+		animation-delay: 240ms;
+	}
+	.trv-pass-card.is-live .trv-pass-dep:nth-child(n + 6) {
+		animation-delay: 300ms;
+	}
+}
+@keyframes trv-pass-arc {
+	from {
+		stroke-dashoffset: 110;
+		opacity: 0;
+	}
+}
+@keyframes trv-pass-rise {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+}

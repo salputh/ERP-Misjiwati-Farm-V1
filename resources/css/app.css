@@ -1,5 +1,5 @@
 /*
- * Gaya utama berasal dari template HexaDash (public/assets/css).
+ * Gaya utama berasal dari template Basalt (public/assets/css).
  * File ini hanya untuk penyesuaian yang tidak ada di template: tata letak khusus lembar data peternakan,
  * kepadatan tabel laporan, dan perilaku komponen Livewire. Warna dan ukuran memakai variabel template.
  */
@@ -9,7 +9,7 @@
 .navbar-brand.brand-teks {
     font-weight: 700;
     font-size: 20px;
-    color: var(--color-dark);
+    color: var(--basalt-copy);
     white-space: nowrap;
 }
 
@@ -22,11 +22,11 @@ body::after { display: none; }
 /* Judul grup di sidebar dengan garis pembatas di bawahnya */
 .sidebar_nav .menu-title--garis span {
     padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--basalt-edge);
 }
 /* Saat sidebar diperkecil judul disembunyikan template; garisnya tetap menandai batas grup */
 .sidebar.collapsed .menu-title--garis {
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--basalt-edge);
     margin: 12px 14px;
 }
 
@@ -34,25 +34,25 @@ body::after { display: none; }
 
 .tanpa-kapital { text-transform: none; }
 
-/* ===== Tabel template (table4, Basic Usage) ===== */
+/* ===== Tabel template (tabel-data, Basic Usage) ===== */
 /* Baris total di kaki tabel mengikuti sel isi template, bukan th bawaan Bootstrap. */
-.table4 .table > tfoot > tr > th,
-.table4 .table > tfoot > tr > td { padding: 15px 20px; border-bottom: 0; font-size: inherit; font-weight: 600; color: var(--color-dark); }
+.tabel-data .table > tfoot > tr > th,
+.tabel-data .table > tfoot > tr > td { padding: 15px 20px; border-bottom: 0; font-size: inherit; font-weight: 600; color: var(--basalt-copy); }
 /* Tabel laporan keuangan dan rincian angka: baris lebih rapat dari daftar data biasa (template memakai 18px). */
-.table4 .tabel-laporan td,
-.table4 .tabel-laporan th { padding: 12px 20px; }
-.table4 .tabel-laporan .userDatatable-header th { padding: 13px 20px; }
+.tabel-data .tabel-laporan td,
+.tabel-data .tabel-laporan th { padding: 12px 20px; }
+.tabel-data .tabel-laporan .userDatatable-header th { padding: 13px 20px; }
 /* Tabel padat untuk lembar dengan banyak kolom angka (nota panen, FCR): sel template diperkecil agar muat di layar laptop. */
-.table4 .tabel-rapat td,
-.table4 .tabel-rapat th,
-.table4 .tabel-rapat .userDatatable-header th { padding: 12px 10px; font-size: 13px; white-space: nowrap; }
-.table4 .tabel-rapat .sel-lebar { min-width: 200px; white-space: normal; }
-/* Baris yang disorot (order-bg-opacity-primary pada tr): latar tr tetap terlihat di balik sel Bootstrap. */
-.table > tbody > tr.order-bg-opacity-primary > *,
-.table > tfoot > tr.order-bg-opacity-primary > * { background-color: transparent; }
+.tabel-data .tabel-rapat td,
+.tabel-data .tabel-rapat th,
+.tabel-data .tabel-rapat .userDatatable-header th { padding: 12px 10px; font-size: 13px; white-space: nowrap; }
+.tabel-data .tabel-rapat .sel-lebar { min-width: 200px; white-space: normal; }
+/* Baris yang disorot (bg-primary-subtle pada tr): latar tr tetap terlihat di balik sel Bootstrap. */
+.table > tbody > tr.bg-primary-subtle > *,
+.table > tfoot > tr.bg-primary-subtle > * { background-color: transparent; }
 
 /* Tabel widget demo one (selling-table-wrap) di Laporan harian: baris total bergaris atas dan sejajar kolom pertama isi. */
-.selling-table-wrap .tabel-laporan tfoot th { border-top: 1px solid var(--border-color); font-weight: 600; color: var(--color-dark); }
+.selling-table-wrap .tabel-laporan tfoot th { border-top: 1px solid var(--basalt-edge); font-weight: 600; color: var(--basalt-copy); }
 .crm .selling-table-wrap .tabel-laporan tfoot th:first-child { padding-left: 0; }
 
 /* Kolom batang pemakaian dan persentase di tabel laporan */
@@ -74,7 +74,7 @@ body::after { display: none; }
 .recording-gulung {
     max-height: 72vh;
     overflow: auto;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--basalt-edge);
     border-radius: 10px;
 }
 .tabel-recording {
@@ -90,29 +90,29 @@ body::after { display: none; }
     text-align: right;
     vertical-align: middle;
     border-width: 0 1px 1px 0;
-    border-color: var(--border-color);
-    background: var(--color-white);
-    color: var(--color-dark);
+    border-color: var(--basalt-edge);
+    background: var(--basalt-plane);
+    color: var(--basalt-copy);
 }
 .tabel-recording thead { position: sticky; top: 0; z-index: 3; }
-/* Kepala bertingkat memakai latar dan warna kepala tabel template (bg-normal, color-dark) */
-.tabel-recording thead th { text-align: center; font-weight: 500; background: var(--bg-normal); }
-.tabel-recording .recording-kepala-3 th { color: var(--color-gray); }
+/* Kepala bertingkat memakai latar dan warna kepala tabel template */
+.tabel-recording thead th { text-align: center; font-weight: 500; background: var(--basalt-plane-alt); }
+.tabel-recording .recording-kepala-3 th { color: var(--basalt-copy-muted); }
 /* Tanggal dan umur tetap terlihat saat digulir ke samping */
 .tabel-recording .recording-lekat-1,
 .tabel-recording .recording-lekat-2 { position: sticky; z-index: 2; text-align: left; }
 .tabel-recording .recording-lekat-1 { left: 0; min-width: 96px; font-weight: 500; }
-.tabel-recording .recording-lekat-2 { left: 96px; min-width: 52px; text-align: center; box-shadow: 2px 0 0 var(--border-color); }
+.tabel-recording .recording-lekat-2 { left: 96px; min-width: 52px; text-align: center; box-shadow: 2px 0 0 var(--basalt-edge); }
 .tabel-recording thead .recording-lekat-1,
 .tabel-recording thead .recording-lekat-2 { z-index: 4; text-align: center; }
-.tabel-recording .grup-awal { border-left: 2px solid var(--border-color); }
-.recording-masukan { color: var(--color-primary); font-weight: 600; }
-.tabel-recording td.color-danger { color: var(--color-danger); }
+.tabel-recording .grup-awal { border-left: 2px solid var(--basalt-edge); }
+.recording-masukan { color: var(--basalt-hue); font-weight: 600; }
+.tabel-recording td.text-danger { color: var(--basalt-danger); }
 .tabel-recording .recording-belum td,
-.tabel-recording .recording-belum th { color: var(--color-light); }
+.tabel-recording .recording-belum th { color: var(--basalt-copy-muted); }
 /* Baris pemisah minggu berlatar primary transparan, sama dengan baris kelompok tabel lain */
 .tabel-recording .recording-minggu th,
-.tabel-recording .recording-minggu td { background: rgba(var(--color-primary-rgba), .1); color: var(--color-primary); font-weight: 500; text-align: left; }
+.tabel-recording .recording-minggu td { background: color-mix(in srgb, var(--basalt-hue) 10%, transparent); color: var(--basalt-hue); font-weight: 500; text-align: left; }
 .tabel-log { font-size: 13px; width: 100%; }
 .tabel-log th,
 .tabel-log td,
@@ -123,18 +123,18 @@ body::after { display: none; }
 .tabel-sampling { font-size: 13px; font-variant-numeric: tabular-nums; }
 .tabel-sampling th,
 .tabel-sampling td { text-align: center; vertical-align: middle; padding: 6px 10px; }
-.tabel-sampling thead th { background: var(--bg-normal); font-weight: 500; color: var(--color-dark); }
-.tabel-sampling tfoot th { text-align: right; font-weight: 500; background: var(--bg-normal); }
-.tabel-sampling tfoot td { background: var(--bg-normal); }
-.tabel-sampling .input-sampel { min-width: 96px; text-align: right; color: var(--color-primary); font-weight: 600; }
-.tabel-sampling .nilai-sampel { color: var(--color-primary); font-weight: 600; }
+.tabel-sampling thead th { background: var(--basalt-plane-alt); font-weight: 500; color: var(--basalt-copy); }
+.tabel-sampling tfoot th { text-align: right; font-weight: 500; background: var(--basalt-plane-alt); }
+.tabel-sampling tfoot td { background: var(--basalt-plane-alt); }
+.tabel-sampling .input-sampel { min-width: 96px; text-align: right; color: var(--basalt-hue); font-weight: 600; }
+.tabel-sampling .nilai-sampel { color: var(--basalt-hue); font-weight: 600; }
 /* Jumlah ekor tiap titik: kolom sempit, karena angkanya kecil dan sering sama. */
-.tabel-sampling .input-ekor-titik { width: 74px; text-align: center; color: var(--color-dark); }
-.tabel-sampling .nilai-ekor { color: var(--color-dark); font-weight: 600; }
+.tabel-sampling .input-ekor-titik { width: 74px; text-align: center; color: var(--basalt-copy); }
+.tabel-sampling .nilai-ekor { color: var(--basalt-copy); font-weight: 600; }
 .input-ekor { width: 110px; }
 
 /* ===== Pilihan tunggal (dropdown template pengganti select) ===== */
-.pilih .btn { background-color: var(--color-white); }
+.pilih .btn { background-color: var(--basalt-plane); }
 /* Bentuk tombol: menu menempel di bawah tombol, rata kiri, dan minimal selebar tombolnya.
    Bentuk isian dibiarkan diatur Popper (dropdown-menu--dynamic, posisi fixed), supaya menu membuka ke atas bila ruang
    di bawah tombol tidak cukup dan tidak terpotong modal; menimpa posisinya membuat menu terjepit. */
@@ -149,7 +149,7 @@ body::after { display: none; }
 .pilih button.dropdown-item { width: 100%; border: 0; text-align: left; }
 /* Pilihan terpilih memakai "light color primary" template (btn-transparent-primary), bukan biru bawaan Bootstrap. */
 .pilih .dropdown-item.active,
-.pilih .dropdown-item:active { background: rgba(var(--color-primary-rgba), .15); color: var(--color-primary); font-weight: 500; }
+.pilih .dropdown-item:active { background: color-mix(in srgb, var(--basalt-hue) 15%, transparent); color: var(--basalt-hue); font-weight: 500; }
 /* Menu dropdown rata kanan tombolnya, untuk pilihan yang berada di tepi kanan kartu. */
 .pilih--kanan:not(.pilih--isian) .dropdown-menu { left: auto !important; right: 0 !important; }
 /* Bentuk isian: daftar pilihan bisa panjang, jadi digulir di dalam menu (lebarnya diatur Alpine pilihIsian). */
@@ -159,7 +159,7 @@ body::after { display: none; }
    mis. ".card .card-header .dropdown i" (abu-abu) atau ".breadcrumb-action .action-btn .btn i" (ungu). */
 .btn-primary i,
 .btn-primary svg,
-.btn-primary img.svg { color: var(--color-white) !important; }
+.btn-primary img.svg { color: var(--basalt-plane) !important; }
 
 /* Button group template: pilihan aktif berlatar primary, jadi tulisan dan ikonnya putih. Template hanya memutihkannya
    di dalam .button-inline-list, dan ".dm-button-group .btn:focus" menggelapkannya lagi setelah diklik. */
@@ -167,7 +167,7 @@ body::after { display: none; }
 .dm-button-group .btn.btn-outline-light.active:hover,
 .dm-button-group .btn.btn-outline-light.active:focus,
 .dm-button-group .btn.btn-outline-light.active i,
-.dm-button-group .btn.btn-outline-light.active svg { color: var(--color-white) !important; }
+.dm-button-group .btn.btn-outline-light.active svg { color: var(--basalt-plane) !important; }
 
 /* Tombol kepala halaman (x-tombol.kepala) berupa <button>; CSS template hanya menata ".user-member .action-btn a". */
 .user-member .action-btn button.btn {
@@ -187,13 +187,13 @@ body::after { display: none; }
 .project-category .pilih--isian .form-control {
     height: 40px;
     min-width: 170px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--basalt-edge);
     border-radius: 5px;
     padding: 0 12px 0 10px;
     gap: 20px;
     font-size: 14px;
-    color: var(--color-primary);
-    background-color: var(--color-white);
+    color: var(--basalt-hue);
+    background-color: var(--basalt-plane);
 }
 /* Jumlah per halaman: ukuran select page-selection template; panahnya dari .paging-option:after template. */
 .paging-option .pilih--isian .form-control {
@@ -201,11 +201,11 @@ body::after { display: none; }
     min-width: 103px;
     margin: 2px;
     padding: 4.5px 30px 4.5px 13px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--basalt-edge);
     border-radius: 4px;
     font-size: 13px;
-    color: var(--color-gray);
-    background-color: var(--color-white);
+    color: var(--basalt-copy-muted);
+    background-color: var(--basalt-plane);
 }
 .paging-option .pilih--isian .uil-angle-down { display: none; }
 /* Daftar karyawan di modal project digulir supaya tombol simpan tetap terlihat. */
@@ -215,7 +215,7 @@ body::after { display: none; }
 .pilih-tanggal { width: 190px; }
 /* Isian tanggal dan jam hanya dibuka lewat pemilih; tetap putih seperti isian template, bukan abu-abu readonly Bootstrap. */
 .form-group-calender .form-control[readonly],
-.form-control.hasWickedpicker[readonly] { padding-right: 38px; background-color: var(--color-white); cursor: pointer; }
+.form-control.hasWickedpicker[readonly] { padding-right: 38px; background-color: var(--basalt-plane); cursor: pointer; }
 /* Kalender dan jendela jam dipasang di body. Template menguncinya di z-index 11 (datepicker) dan 1 (wickedpicker),
    sedangkan modal template z-index 9999 dengan latar 9998, sehingga di dalam modal keduanya tertutup latar dan tidak bisa diklik.
    Dinaikkan di atas modal; di luar modal tetap aman karena hanya muncul saat isian dibuka. */
@@ -229,7 +229,7 @@ body::after { display: none; }
     margin: 4px;
     line-height: 2rem;
     font-size: .875rem;
-    color: var(--color-lighten);
+    color: var(--basalt-copy-muted);
 }
 
 /* ===== Bagi hasil ===== */
@@ -250,12 +250,12 @@ body::after { display: none; }
 
 /* ===== Payroll ABK ===== */
 /* Judul kelompok slip per kandang, di antara baris kartu. */
-.slip-gaji__kandang { margin: 5px 0 15px; font-size: 16px; font-weight: 600; color: var(--color-dark); }
-.slip-gaji__kandang span { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--color-light); }
+.slip-gaji__kandang { margin: 5px 0 15px; font-size: 16px; font-weight: 600; color: var(--basalt-copy); }
+.slip-gaji__kandang span { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--basalt-copy-muted); }
 /* Kartu slip gaji: bagian pendapatan dan potongan, lalu kotak pendapatan bersih di dasar kartu. */
 .slip-gaji { scroll-margin-top: 90px; }
 .slip-gaji__tabel td,
-.slip-gaji__tabel th { padding: 7px 0; vertical-align: top; color: var(--color-dark); }
+.slip-gaji__tabel th { padding: 7px 0; vertical-align: top; color: var(--basalt-copy); }
 .slip-gaji__tabel td:last-child { white-space: nowrap; padding-left: 16px; }
 .slip-gaji__bagian th {
     padding-top: 14px;
@@ -263,11 +263,11 @@ body::after { display: none; }
     font-weight: 600;
     letter-spacing: .04em;
     text-transform: uppercase;
-    color: var(--color-gray);
-    border-bottom: 1px solid var(--border-color);
+    color: var(--basalt-copy-muted);
+    border-bottom: 1px solid var(--basalt-edge);
 }
 .slip-gaji__tabel tr:first-child th { padding-top: 0; }
-.slip-gaji__total td { font-weight: 600; border-top: 1px solid var(--border-color); }
+.slip-gaji__total td { font-weight: 600; border-top: 1px solid var(--basalt-edge); }
 .slip-gaji__bersih {
     display: flex;
     flex-wrap: wrap;
@@ -276,10 +276,10 @@ body::after { display: none; }
     gap: 4px 12px;
     padding: 14px 16px;
     border-radius: 10px;
-    background: rgba(var(--color-primary-rgba), .08);
+    background: color-mix(in srgb, var(--basalt-hue) 8%, transparent);
 }
-.slip-gaji__bersih span { font-size: 13px; font-weight: 500; color: var(--color-dark); }
-.slip-gaji__bersih strong { font-size: 18px; font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+.slip-gaji__bersih span { font-size: 13px; font-weight: 500; color: var(--basalt-copy); }
+.slip-gaji__bersih strong { font-size: 18px; font-weight: 600; color: var(--basalt-hue); font-variant-numeric: tabular-nums; }
 
 /* ===== Lapisan memuat (x-memuat) ===== */
 /* Menutup layar selama aksi Livewire berjalan. Muncul seketika; setelah aksi selesai bertahan sebentar lalu memudar,
@@ -307,11 +307,11 @@ body::after { display: none; }
     gap: 18px;
     padding: 26px 34px;
     border-radius: 10px;
-    background: var(--color-white);
+    background: var(--basalt-plane);
     box-shadow: 0 10px 40px rgba(10, 10, 10, .12);
     font-size: 14px;
     font-weight: 500;
-    color: var(--color-dark);
+    color: var(--basalt-copy);
 }
 .lapisan-memuat .dm-spin-dots { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
@@ -321,7 +321,7 @@ body::after { display: none; }
 
 /* ===== Aktivitas terbaru di ringkasan ===== */
 /* Timeline template: modul dan rinciannya lebih redup dari kalimat aktivitasnya. */
-.card-timeline.aktivitas-terbaru .card-timeline-body ul li .card-timeline-body__title p span { margin-left: 10px; font-size: 13px; font-weight: 400; color: var(--color-light); }
+.card-timeline.aktivitas-terbaru .card-timeline-body ul li .card-timeline-body__title p span { margin-left: 10px; font-size: 13px; font-weight: 400; color: var(--basalt-copy-muted); }
 .card-timeline.aktivitas-terbaru .card-timeline-body__time { padding-left: 12px; white-space: nowrap; }
 /* Di layar HP template menggulir timeline ke samping; di sini teksnya turun baris dan rincian pindah ke bawah kalimat. */
 @media (max-width: 575px) {
@@ -336,7 +336,7 @@ body::after { display: none; }
     right: 24px;
     bottom: 24px;
     z-index: 1040;
-    box-shadow: 0 8px 24px rgba(var(--color-primary-rgba), .25);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--basalt-hue) 25%, transparent);
 }
 .panduan-sistem__latar {
     position: fixed;
@@ -376,8 +376,8 @@ body::after { display: none; }
 .modal-dialog-scrollable .modal-content > form > .modal-body { overflow-y: auto; }
 
 /* Penanda warna garis sexing di grafik bobot dashboard, melengkapi --primary dan --info bawaan template. */
-.label-detailed__type--jantan::before { background: var(--color-secondary); }
-.label-detailed__type--betina::before { background: var(--color-warning); }
+.label-detailed__type--jantan::before { background: var(--basalt-copy-muted); }
+.label-detailed__type--betina::before { background: var(--basalt-warning); }
 
 /* Lonceng notifikasi header: dropdown template terbuka saat disorot, juga saat difokus keyboard. Keterangan boleh lebih dari satu baris. */
 .dropdown-custom:focus-within .dropdown-wrapper {
@@ -400,3 +400,38 @@ body::after { display: none; }
 .daftar-poin li + li {
     margin-top: 4px;
 }
+
+/* ===== Basalt ===== */
+/* Nada status untuk kartu ringkasan (db-kpi): hijau, kuning, merah hanya untuk status yang bermakna itu. */
+.kpi-tone-success { --db-tone: var(--basalt-success); }
+.kpi-tone-warning { --db-tone: var(--basalt-warning); }
+.kpi-tone-danger { --db-tone: var(--basalt-danger); }
+
+/* Lingkaran inisial berukuran tetap (pengganti utilitas wh-N template). */
+.lingkar-25, .lingkar-34, .lingkar-38, .lingkar-46, .lingkar-60 { flex: none; }
+.lingkar-25 { width: 25px; height: 25px; }
+.lingkar-34 { width: 34px; height: 34px; }
+.lingkar-38 { width: 38px; height: 38px; }
+.lingkar-46 { width: 46px; height: 46px; }
+.lingkar-60 { width: 60px; height: 60px; }
+.lingkar-titik { width: 12px; height: 12px; }
+.pemintal-lg { width: 3rem; height: 3rem; }
+
+/* Kepala kartu: judul di kiri, aksi atau tab di kanan, dan turun baris di layar sempit. */
+.card-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
+.card-header > h6, .card-header h6 { margin-bottom: 0; }
+.nav-sm .nav-link { padding: .25rem .75rem; font-size: .8125rem; }
+
+/* Kartu project: garis kiri menurut keadaan project. */
+.project-kartu { border-left: 4px solid var(--basalt-info); }
+.project-kartu--late { border-left-color: var(--basalt-danger); }
+.project-kartu--completed { border-left-color: var(--basalt-success); }
+.project-kartu--onHold { border-left-color: var(--basalt-warning); }
+
+/* Bar progres: lebar mengikuti kelas nilai Basalt share-N (0 sampai 100), tanpa inline style. */
+.progress-bar[class*="share-"] { width: var(--share); }
+
+/* Tautan di dalam tabel mengikuti Basalt: tanpa garis bawah, bergaris saat disorot. */
+.db-table a:not(.btn):not(.dropdown-item) { text-decoration: none; color: var(--basalt-copy); font-weight: 600; }
+.db-table a:not(.btn):not(.dropdown-item):hover,
+.db-table a:not(.btn):not(.dropdown-item):focus-visible { text-decoration: underline; }

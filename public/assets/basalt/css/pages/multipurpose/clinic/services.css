@@ -1,0 +1,567 @@
+/* Basalt - Services (services.html)
+   Namespaced under .sv-*. Every color is a --basalt-* token.
+   Built from shared parts: the Headers component, styled selects,
+   the segmented control, avatars, the side panel and switches.
+   This file styles the services table with its time bars, the
+   rules list and the editor. */
+
+.sv-page,
+.sv-drawer {
+	--sv-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--sv-line: var(--basalt-edge);
+	--sv-fs-body: 0.875rem;
+	--sv-fs-small: 0.77rem;
+}
+
+/* The same service colors as the Bookings calendar. */
+.bk-tone-styling {
+	--bk-tone: var(--basalt-series-1);
+}
+.bk-tone-measure {
+	--bk-tone: var(--basalt-series-3);
+}
+.bk-tone-alter {
+	--bk-tone: var(--basalt-series-5);
+}
+
+.sv-sub {
+	display: block;
+	margin-top: 0.3rem;
+	overflow: hidden;
+	font-size: var(--sv-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--sv-quiet);
+}
+.sv-main {
+	display: block;
+	font-size: var(--sv-fs-body);
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+/* Cards */
+.sv-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.sv-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 1.25rem;
+}
+.sv-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.sv-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--sv-fs-body);
+	color: var(--sv-quiet);
+}
+.sv-card-foot {
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--sv-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+@media (max-width: 575.98px) {
+	.sv-card-head,
+	.sv-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Table */
+.sv-table {
+	--bs-table-bg: transparent;
+	table-layout: fixed;
+}
+.sv-table .sv-col-time {
+	width: 13rem;
+}
+.sv-table .sv-col-price {
+	width: 12rem;
+}
+.sv-table .sv-col-who {
+	width: 11rem;
+}
+.sv-table .sv-col-open {
+	width: 4.5rem;
+}
+.sv-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 1rem;
+	border-color: var(--sv-line);
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.sv-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.sv-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+	text-align: right;
+}
+.sv-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--sv-quiet);
+}
+.sv-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.sv-group > th {
+	padding-top: 1rem;
+	padding-bottom: 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--sv-quiet);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.sv-table > tbody > .sv-group > th:last-child {
+	text-align: left;
+}
+.sv-group-dot {
+	display: inline-block;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.5rem;
+	border-radius: 50%;
+	vertical-align: 0.05em;
+	background: var(--bk-tone);
+}
+.sv-row {
+	cursor: pointer;
+}
+.sv-row:hover > * {
+	background: var(--basalt-wash);
+}
+.sv-row.is-open > * {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+.sv-svc {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.sv-svc-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--bk-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--bk-tone) 15%, var(--basalt-plane));
+}
+.sv-svc-text {
+	min-width: 0;
+}
+.sv-svc-name {
+	display: block;
+	overflow: hidden;
+	font-size: var(--sv-fs-body);
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+/* Time: the appointment as a bar against two hours, then a striped
+   piece for the time kept free after it. */
+.sv-time {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+}
+.sv-time-text {
+	font-size: var(--sv-fs-body);
+	font-weight: 600;
+	white-space: nowrap;
+}
+.sv-time-text .sv-sub {
+	display: inline;
+	margin: 0;
+	font-weight: 400;
+}
+.sv-bar {
+	display: flex;
+	width: 100%;
+	max-width: 9rem;
+	height: 0.5rem;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.sv-bar-len {
+	width: var(--sv-len);
+	border-radius: 99px 0 0 99px;
+	background: var(--basalt-hue);
+}
+.sv-bar-buf {
+	width: var(--sv-buf);
+	background: repeating-linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--basalt-hue) 45%, transparent) 0 2px,
+		transparent 2px 5px
+	);
+}
+
+.sv-who {
+	display: flex;
+}
+/* A light overlap, so two-letter initials are never covered. */
+.sv-who.basalt-avatar-group .basalt-avatar {
+	margin-left: -4px;
+}
+.sv-who.basalt-avatar-group .basalt-avatar:first-child {
+	margin-left: 0;
+}
+
+.sv-key {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: var(--sv-fs-small);
+	color: var(--sv-quiet);
+}
+.sv-key-len,
+.sv-key-buf {
+	width: 1.25rem;
+	height: 0.5rem;
+	border-radius: 99px;
+	background: var(--basalt-hue);
+}
+.sv-key-buf {
+	margin-left: 1rem;
+	background: repeating-linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--basalt-hue) 45%, transparent) 0 2px,
+		transparent 2px 5px
+	);
+	box-shadow: inset 0 0 0 1px var(--sv-line);
+}
+
+@container (max-width: 980px) {
+	.sv-table .sv-col-time {
+		width: 9.5rem;
+	}
+	.sv-table .sv-col-price {
+		width: 10rem;
+	}
+	.sv-table .sv-col-who {
+		width: 8.5rem;
+	}
+	/* Five avatars no longer fit; the names under them stay. */
+	.sv-who {
+		display: none;
+	}
+	.sv-col-who .sv-sub {
+		margin-top: 0;
+		white-space: normal;
+	}
+}
+/* Narrow: each service becomes a small block, the name across the top
+   and its time and price side by side under it. */
+@container (max-width: 760px) {
+	.sv-table,
+	.sv-table tbody,
+	.sv-table tr,
+	.sv-table td,
+	.sv-table th {
+		display: block;
+		width: auto;
+	}
+	.sv-table thead {
+		display: none;
+	}
+	.sv-table .sv-col-time,
+	.sv-table .sv-col-price {
+		width: auto;
+	}
+	.sv-table > :not(caption) > * > * {
+		border-bottom: 0;
+	}
+	.sv-table .sv-row {
+		position: relative;
+		display: grid;
+		column-gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		padding: 1.1rem 0;
+		border-bottom: 1px solid var(--sv-line);
+	}
+	.sv-table tbody tr.sv-row:last-child {
+		border-bottom: 0;
+	}
+	.sv-table .sv-row > td {
+		padding: 0;
+	}
+	.sv-table .sv-row > td:first-child {
+		grid-column: 1 / -1;
+		padding: 0 3.5rem 0 var(--basalt-pad-x);
+	}
+	.sv-table .sv-row > .sv-col-time {
+		padding: 0.9rem 0 0 calc(var(--basalt-pad-x) + 2.5rem + 0.9rem);
+	}
+	.sv-table .sv-row > .sv-col-price {
+		padding-top: 0.9rem;
+		padding-right: var(--basalt-pad-x);
+	}
+	.sv-table .sv-row > .sv-col-open {
+		position: absolute;
+		top: 1rem;
+		right: var(--basalt-pad-x);
+		padding: 0;
+	}
+	.sv-table .sv-row > .sv-col-who {
+		display: none;
+	}
+	.sv-row-svc .sv-sub {
+		white-space: normal;
+	}
+	/* Time text on top so it lines up with the price beside it. */
+	.sv-time {
+		flex-direction: column-reverse;
+	}
+	.sv-group > th {
+		border-bottom: 1px solid var(--sv-line);
+	}
+}
+@container (max-width: 400px) {
+	.sv-table .sv-row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.sv-table .sv-row > .sv-col-price {
+		padding: 0.6rem var(--basalt-pad-x-narrow) 0 calc(var(--basalt-pad-x-narrow) + 2.5rem + 0.9rem);
+	}
+}
+@media (max-width: 575.98px) {
+	.sv-table > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.sv-table > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.sv-table .sv-row > .sv-col-time {
+		padding-left: calc(var(--basalt-pad-x-narrow) + 2.5rem + 0.9rem);
+	}
+	.sv-table .sv-row > .sv-col-open {
+		right: var(--basalt-pad-x-narrow);
+	}
+	/* A service keeps its name, length and price; where and how it is
+	   booked, and the note under the price, wait in its editor. */
+	.sv-row-svc .sv-sub,
+	.sv-table .sv-col-price .sv-sub {
+		display: none;
+	}
+}
+
+/* For every booking */
+.sv-rules {
+	margin: 0;
+	padding: 0 0 0.5rem;
+	list-style: none;
+}
+.sv-rule {
+	display: flex;
+	gap: 1rem 2rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--sv-line);
+}
+.sv-rule-text {
+	min-width: 0;
+}
+.sv-rule-label {
+	display: block;
+	font-size: var(--sv-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sv-rule-hint {
+	margin: 0.3rem 0 0;
+	font-size: var(--sv-fs-small);
+	color: var(--sv-quiet);
+}
+.sv-rule-control {
+	display: flex;
+	flex: none;
+	justify-content: flex-end;
+	width: 11.5rem;
+}
+.sv-rule-control .form-select {
+	width: 100%;
+}
+.sv-rule .form-switch {
+	padding-left: 0;
+}
+.sv-rule .form-switch .form-check-input {
+	width: 2.4em;
+	height: 1.3em;
+	margin: 0;
+}
+@container (max-width: 520px) {
+	.sv-rule {
+		gap: 0.75rem;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.sv-rule-control {
+		justify-content: flex-start;
+	}
+}
+@media (max-width: 575.98px) {
+	.sv-rule {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Editor */
+.sv-drawer.offcanvas {
+	--bs-offcanvas-width: min(520px, 100vw);
+}
+.sv-drawer .offcanvas-header {
+	gap: 0.75rem;
+	align-items: flex-start;
+	border-bottom: 1px solid var(--sv-line);
+}
+.sv-drawer .offcanvas-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.sv-drawer .offcanvas-title:focus {
+	outline: none;
+}
+.sv-drawer .offcanvas-title:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.sv-drawer .basalt-drawer-sub {
+	margin-top: 0.3rem;
+	font-size: var(--sv-fs-small);
+	color: var(--sv-quiet);
+}
+.sv-drawer .offcanvas-body {
+	padding-top: var(--basalt-pad-head);
+	padding-bottom: var(--basalt-pad-head);
+}
+.sv-drawer .form-label {
+	font-size: var(--sv-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sv-field {
+	min-width: 0;
+	margin-bottom: 1.25rem;
+}
+.sv-field[hidden] {
+	display: none;
+}
+.sv-field-short {
+	max-width: 15rem;
+}
+.sv-pair {
+	display: grid;
+	gap: 0 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.sv-pair[hidden] {
+	display: none;
+}
+.sv-pair .input-group {
+	max-width: 10rem;
+}
+@container basalt-drawer (max-width: 400px) {
+	.sv-pair {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.sv-preview {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.sv-preview .sv-bar {
+	flex: 0 0 9rem;
+}
+.sv-preview-text {
+	font-size: var(--sv-fs-small);
+	color: var(--sv-quiet);
+}
+.sv-price-kind {
+	margin-bottom: 1.25rem;
+}
+.sv-fieldset {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.sv-fieldset > legend {
+	float: none;
+	width: auto;
+	padding: 0;
+}
+.sv-people {
+	display: flex;
+	flex-direction: column;
+}
+.sv-person {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.65rem 0;
+	border-top: 1px solid var(--sv-line);
+	cursor: pointer;
+}
+.sv-person:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+.sv-person .form-check-input {
+	flex: none;
+	margin: 0;
+}
+.sv-person-text {
+	min-width: 0;
+}
+.sv-person-name {
+	display: block;
+	font-size: var(--sv-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sv-drawer .form-check-label {
+	font-size: var(--sv-fs-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sv-row {
+		transition: none;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.sv-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

@@ -1,0 +1,841 @@
+/* Basalt - Abandoned Carts (abandoned-carts.html)
+   Namespaced under .ac-*
+   Built from shared parts: the page header, status pills, avatars,
+   empty states, the side panel and toasts. This file lays out the four
+   figures, the list of carts with its product photos, the cart panel
+   and the reminder settings.
+   Three type sizes below the card titles: the figures, body text
+   (--ac-fs-body) and one small size (--ac-fs-small). */
+
+.ac-page,
+.ac-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--ac-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary as text: on its own it is under 4.5:1 in a few light palettes. */
+	--ac-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--ac-line: var(--basalt-edge);
+	--ac-fs-body: 0.875rem;
+	--ac-fs-small: 0.77rem;
+}
+.ac-page .basalt-status,
+.ac-drawer .basalt-status {
+	font-size: var(--ac-fs-small);
+}
+
+/* The list card */
+.ac-card.card {
+	container-type: inline-size;
+	margin-bottom: 1.5rem;
+	overflow: hidden;
+}
+.ac-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--ac-line);
+}
+.ac-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.ac-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--ac-fs-body);
+	color: var(--ac-quiet);
+}
+
+.ac-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-head);
+}
+.ac-search {
+	position: relative;
+	flex: 0 1 22rem;
+	min-width: 12rem;
+}
+.ac-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--ac-quiet);
+	pointer-events: none;
+}
+.ac-search .form-control {
+	padding-left: 2.4rem;
+	font-size: var(--ac-fs-body);
+}
+
+/* Text-only chips that wrap rather than scroll. */
+.ac-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.ac-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border: 1px solid var(--ac-line);
+	border-radius: 999px;
+	font-size: var(--ac-fs-small);
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+}
+.ac-chip:hover {
+	background: var(--basalt-wash);
+}
+.ac-chip:focus {
+	outline: none;
+}
+.ac-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.ac-chip[aria-pressed="true"] {
+	border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--ac-line));
+	background: var(--basalt-hue-soft);
+}
+.ac-chip-n {
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+	color: var(--ac-quiet);
+}
+.ac-chip[aria-pressed="true"] .ac-chip-n {
+	color: var(--basalt-copy);
+}
+
+/* The table
+   Fixed tracks for the short columns; Shopper takes the rest. */
+.ac-table-wrap {
+	overflow: hidden;
+}
+.ac-table {
+	--bs-table-bg: transparent;
+	table-layout: fixed;
+}
+.ac-table .ac-col-items {
+	width: 8rem;
+}
+.ac-table .ac-col-value {
+	width: 6.5rem;
+}
+.ac-table .ac-col-left {
+	width: 8rem;
+}
+.ac-table .ac-col-rem {
+	width: 8.5rem;
+}
+.ac-table .ac-col-status {
+	width: 8.5rem;
+}
+.ac-table .ac-col-open {
+	width: 6rem;
+}
+.ac-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 1rem;
+	border-color: var(--ac-line);
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.ac-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.ac-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+	text-align: right;
+}
+.ac-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--ac-quiet);
+}
+.ac-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+
+.ac-row[data-ac-id] {
+	cursor: pointer;
+}
+.ac-row[data-ac-id]:hover > * {
+	background: var(--basalt-wash);
+}
+.ac-row.is-open > * {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+.ac-who {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.ac-who .basalt-avatar {
+	flex: none;
+}
+.ac-who-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.ac-who-name,
+.ac-who-email {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ac-who-name {
+	font-size: var(--ac-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ac-who-email {
+	margin-top: 0.1rem;
+	font-size: var(--ac-fs-small);
+	color: var(--ac-quiet);
+}
+/* A guest has no name to draw initials from, so a quiet person icon. */
+.basalt-avatar.ac-guest {
+	display: inline-grid;
+	place-items: center;
+	border: 1px dashed color-mix(in srgb, var(--basalt-copy-muted) 55%, var(--basalt-plane));
+	font-size: 0.95rem;
+	color: var(--ac-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* Product photos, slightly overlapped, each ringed in the card color. */
+.ac-thumbs {
+	display: inline-flex;
+	align-items: center;
+}
+.ac-thumb {
+	display: inline-grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 9px;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+	box-shadow: 0 0 0 2px var(--basalt-plane);
+}
+.ac-thumb + .ac-thumb {
+	margin-left: -6px;
+}
+.ac-thumb-more {
+	border: 1px solid var(--ac-line);
+	font-size: var(--ac-fs-small);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ac-row:hover .ac-thumb,
+.ac-row.is-open .ac-thumb {
+	box-shadow: 0 0 0 2px var(--basalt-wash);
+}
+
+.ac-value {
+	font-size: var(--ac-fs-body);
+	font-weight: 650;
+}
+.ac-row-left-inline {
+	display: none;
+	font-size: var(--ac-fs-small);
+	white-space: nowrap;
+	color: var(--ac-quiet);
+}
+.ac-row-left > span {
+	display: block;
+	white-space: nowrap;
+}
+.ac-left-day {
+	font-size: var(--ac-fs-body);
+}
+.ac-left-time {
+	margin-top: 0.1rem;
+	font-size: var(--ac-fs-small);
+	color: var(--ac-quiet);
+}
+
+/* Reminders: two small marks, filled once that email has gone. */
+.ac-rems {
+	display: inline-flex;
+	gap: 0.3rem;
+}
+.ac-rem {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.1rem 0.5rem;
+	border: 1px dashed color-mix(in srgb, var(--basalt-copy-muted) 55%, var(--basalt-plane));
+	border-radius: 999px;
+	font-size: var(--ac-fs-small);
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--ac-quiet);
+}
+.ac-rem.is-sent {
+	border: 1px solid transparent;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.ac-rem.is-sent .bi {
+	color: var(--ac-link);
+}
+
+/* A guest's row keeps the expand icon's room so the icons stay in line. */
+.ac-noicon {
+	visibility: hidden;
+	pointer-events: none;
+}
+
+/* A quiet footer opens the rest. */
+.ac-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--ac-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.ac-card-note {
+	margin: 0;
+	font-size: var(--ac-fs-small);
+	color: var(--ac-quiet);
+}
+.ac-card-foot .btn {
+	white-space: nowrap;
+}
+
+/* Empty and no results */
+.ac-empty {
+	max-width: 30rem;
+	margin: 1.5rem auto;
+	padding: 0 1rem;
+	text-align: center;
+}
+.ac-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.6rem;
+	border-radius: 14px;
+	font-size: var(--basalt-fs-card-title);
+	color: var(--ac-link);
+	background: var(--basalt-hue-soft);
+}
+.ac-empty .basalt-empty-title {
+	font-size: var(--basalt-fs-section);
+}
+.ac-empty .basalt-empty-text {
+	font-size: var(--ac-fs-body);
+	color: var(--ac-quiet);
+}
+.ac-empty .basalt-empty-actions {
+	justify-content: center;
+}
+
+/* Medium cards: the reminder marks step back to the panel, and the day
+   moves under the value, so the shopper's name keeps its room. */
+@container (max-width: 940px) {
+	.ac-table .ac-col-rem,
+	.ac-row-rem,
+	.ac-table .ac-col-left,
+	.ac-row-left {
+		display: none;
+	}
+	.ac-table .ac-col-value {
+		width: 7.5rem;
+	}
+	.ac-row-left-inline {
+		display: block;
+		margin-top: 0.1rem;
+	}
+}
+
+/* Narrow cards: each cart becomes a small record. The shopper and the
+   status on top, then the photos, value and day with the icons. */
+@container (max-width: 700px) {
+	.ac-card-head,
+	.ac-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.ac-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+
+	.ac-table {
+		table-layout: auto;
+	}
+	.ac-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.ac-table,
+	.ac-table tbody,
+	.ac-table td {
+		display: block;
+		width: 100%;
+	}
+	.ac-table tbody tr {
+		display: grid;
+		gap: 0.9rem 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas: "who who status" "items value open";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--ac-line);
+	}
+	.ac-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.ac-table > :not(caption) > * > *,
+	.ac-table > :not(caption) > * > :first-child,
+	.ac-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: transparent;
+	}
+	.ac-row[data-ac-id]:hover {
+		background: var(--basalt-wash);
+	}
+	.ac-row[data-ac-id]:hover > * {
+		background: transparent;
+	}
+	.ac-row.is-open {
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	}
+	.ac-row.is-open > * {
+		background: transparent;
+	}
+	.ac-row-who {
+		grid-area: who;
+		min-width: 0;
+	}
+	.ac-row-status {
+		grid-area: status;
+		align-self: start;
+		width: auto;
+	}
+	.ac-row-items {
+		grid-area: items;
+		width: auto;
+	}
+	.ac-row-value {
+		grid-area: value;
+	}
+	.ac-row-open {
+		grid-area: open;
+		width: auto;
+	}
+	.ac-table td.ac-row-left,
+	.ac-table td.ac-row-rem {
+		display: none;
+	}
+	.ac-row-left-inline {
+		display: inline;
+		margin: 0;
+	}
+	.ac-row-left-inline::before {
+		content: " · ";
+	}
+}
+
+/* Reminder settings
+   Four steps along one line: the cart is left, the 1st email, the 2nd
+   email (with an optional code), the cart is cleared. They stack down
+   the left on narrow cards. */
+.ac-rules.card {
+	container-type: inline-size;
+}
+.ac-rules:focus {
+	outline: none;
+}
+.ac-rules-form {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.ac-rules-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.ac-rules-switch {
+	margin: 0.25rem 0 0;
+	font-size: var(--ac-fs-body);
+	white-space: nowrap;
+}
+.ac-rules-switch .form-check-label {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.ac-flow {
+	--ac-icon: 2.5rem;
+	position: relative;
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 1.75rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+/* The line the steps sit on. */
+.ac-flow::before {
+	content: "";
+	position: absolute;
+	top: calc(var(--ac-icon) / 2);
+	/* Ends at the last step's icon: one column, less half an icon. */
+	right: calc((100% - 4.5rem) / 4 - var(--ac-icon) / 2);
+	left: calc(var(--ac-icon) / 2);
+	height: 2px;
+	background: repeating-linear-gradient(90deg, var(--ac-line) 0 8px, transparent 8px 14px);
+}
+.ac-flow-step {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+}
+.ac-flow-icon {
+	--ac-tone: var(--basalt-series-1);
+	display: grid;
+	place-items: center;
+	width: var(--ac-icon);
+	height: var(--ac-icon);
+	margin-bottom: 0.85rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--ac-tone) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ac-tone) 16%, var(--basalt-plane));
+	box-shadow: 0 0 0 4px var(--basalt-plane);
+	transition: opacity 200ms ease;
+}
+.ac-flow-step-first .ac-flow-icon {
+	--ac-tone: var(--basalt-series-5);
+}
+.ac-flow-step-second .ac-flow-icon {
+	--ac-tone: var(--basalt-series-8);
+}
+.ac-flow-step-end .ac-flow-icon {
+	--ac-tone: var(--basalt-series-3);
+}
+.ac-flow-title {
+	margin: 0 0 0.5rem;
+	font-size: var(--ac-fs-body);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ac-flow-sub {
+	margin: 0.85rem 0 0.4rem;
+	font-size: var(--ac-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.ac-flow-text {
+	max-width: 15rem;
+	margin: 0;
+	font-size: var(--ac-fs-small);
+	line-height: 1.5;
+	color: var(--ac-quiet);
+}
+/* Fields as wide as their longest choice, never the whole column. */
+.ac-flow-select {
+	width: auto;
+	max-width: 100%;
+	font-size: var(--ac-fs-body);
+}
+.ac-flow.is-off .ac-flow-step-first .ac-flow-icon,
+.ac-flow.is-off .ac-flow-step-second .ac-flow-icon {
+	opacity: 0.45;
+}
+
+.ac-rules-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.75rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--ac-line);
+}
+.ac-rules-note {
+	margin: 0;
+	font-size: var(--ac-fs-small);
+	color: var(--ac-quiet);
+}
+.ac-rules-foot .btn {
+	min-width: 6rem;
+	white-space: nowrap;
+}
+
+@container (max-width: 760px) {
+	.ac-rules-form {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.ac-flow {
+		gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.ac-flow::before {
+		top: calc(var(--ac-icon) / 2);
+		right: auto;
+		bottom: calc(var(--ac-icon) / 2);
+		left: calc(var(--ac-icon) / 2 - 1px);
+		width: 2px;
+		height: auto;
+		background: repeating-linear-gradient(180deg, var(--ac-line) 0 8px, transparent 8px 14px);
+	}
+	.ac-flow-step {
+		min-height: var(--ac-icon);
+		padding-left: calc(var(--ac-icon) + 1rem);
+	}
+	.ac-flow-icon {
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin: 0;
+	}
+	.ac-flow-title {
+		margin-top: 0.6rem;
+	}
+	.ac-flow-text {
+		max-width: none;
+	}
+}
+
+/* The cart panel */
+.ac-drawer.offcanvas {
+	--bs-offcanvas-width: min(480px, 100vw);
+}
+.ac-drawer .offcanvas-header {
+	gap: 0.75rem;
+	align-items: flex-start;
+	border-bottom: 1px solid var(--ac-line);
+}
+.ac-drawer .offcanvas-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.ac-drawer .offcanvas-title:focus {
+	outline: none;
+}
+.ac-drawer .offcanvas-title:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.ac-drawer .basalt-drawer-sub {
+	margin-top: 0.3rem;
+	font-size: var(--ac-fs-small);
+	overflow-wrap: anywhere;
+	color: var(--ac-quiet);
+}
+.ac-drawer .basalt-drawer-full[hidden] {
+	display: none;
+}
+.ac-drawer .offcanvas-body {
+	padding-top: var(--basalt-pad-head);
+	padding-bottom: var(--basalt-pad-head);
+}
+
+.ac-d-facts {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+}
+.ac-d-fact {
+	font-size: var(--ac-fs-body);
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.ac-d-section {
+	margin-top: var(--basalt-pad-head);
+	padding-top: var(--basalt-pad-head);
+	border-top: 1px solid var(--ac-line);
+}
+.ac-d-h {
+	margin: 0 0 1rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.ac-d-note {
+	margin: 1rem 0 0;
+	font-size: var(--ac-fs-small);
+	color: var(--ac-quiet);
+}
+
+.ac-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ac-item {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.5rem 0;
+}
+.ac-item + .ac-item {
+	border-top: 1px solid var(--ac-line);
+}
+.ac-item-img {
+	flex: none;
+	width: 48px;
+	height: 48px;
+	border-radius: 10px;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.ac-item-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+.ac-item-name {
+	font-size: var(--ac-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ac-item-meta {
+	margin-top: 0.1rem;
+	font-size: var(--ac-fs-small);
+	color: var(--ac-quiet);
+}
+.ac-item-price {
+	flex: none;
+	font-size: var(--ac-fs-body);
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.ac-total {
+	display: flex;
+	justify-content: space-between;
+	margin: 0.5rem 0 0;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--ac-line);
+	font-size: var(--ac-fs-body);
+	color: var(--basalt-copy);
+}
+.ac-total strong {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+/* The reminder timeline: an icon per step on a thin line. */
+.ac-tl {
+	position: relative;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ac-tl::before {
+	content: "";
+	position: absolute;
+	top: 1rem;
+	bottom: 1rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	background: var(--ac-line);
+}
+.ac-tl-item {
+	--ac-tone: var(--basalt-copy-muted);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 2rem;
+	padding: 0.2rem 0 1.1rem 2.9rem;
+}
+.ac-tl-item:last-child {
+	padding-bottom: 0;
+}
+.ac-tl-dot {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--ac-tone) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ac-tone) 16%, var(--basalt-plane));
+	box-shadow: 0 0 0 3px var(--basalt-plane);
+}
+.ac-tl-item-left {
+	--ac-tone: var(--basalt-series-1);
+}
+.ac-tl-item-sent {
+	--ac-tone: var(--basalt-series-8);
+}
+.ac-tl-item-won {
+	--ac-tone: var(--basalt-success);
+}
+.ac-tl-item-due .ac-tl-dot {
+	border: 1px dashed color-mix(in srgb, var(--basalt-copy-muted) 60%, var(--basalt-plane));
+	color: var(--ac-quiet);
+	background: var(--basalt-plane);
+}
+.ac-tl-title {
+	font-size: var(--ac-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ac-tl-title a {
+	text-decoration: none;
+	color: var(--ac-link);
+}
+.ac-tl-title a:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.ac-tl-title a:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.ac-tl-when {
+	margin-top: 0.1rem;
+	font-size: var(--ac-fs-small);
+	color: var(--ac-quiet);
+}
+.ac-tl-item-due .ac-tl-title {
+	font-weight: 500;
+}

@@ -1,0 +1,1183 @@
+/**
+ * Accounting (accounting.html).
+ * Lays out the two summary cards, the chart of accounts, the journal, the
+ * account and entry drawers and the two dialogs. The page header, tabs,
+ * segmented control, styled selects, drawers, dialogs, empty states and
+ * status pills come from basalt.css. Everything here lives under .acc-*
+ * and takes its colors from the --basalt-* tokens.
+ */
+
+/* The page and its drawers and dialogs share one set of tokens: a small
+   gray text that still clears 4.5:1 on light palettes and hovered rows,
+   and one chart color per kind of account. This year's profit is equity in
+   the making, so it takes a lighter shade of the equity color. */
+.acc-page,
+.acc-drawer,
+.acc-entry-dialog,
+.acc-account-dialog {
+	--acc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--acc-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--acc-good: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	--acc-bad: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+	--acc-assets: var(--basalt-series-1);
+	--acc-liabilities: var(--basalt-series-2);
+	--acc-equity: var(--basalt-series-3);
+	--acc-revenue: var(--basalt-series-4);
+	--acc-expenses: var(--basalt-series-5);
+	--acc-profit: color-mix(in srgb, var(--basalt-series-3) 45%, var(--basalt-plane));
+}
+.acc-type-assets {
+	--acc-tone: var(--acc-assets);
+}
+.acc-type-liabilities {
+	--acc-tone: var(--acc-liabilities);
+}
+.acc-type-equity {
+	--acc-tone: var(--acc-equity);
+}
+.acc-type-revenue {
+	--acc-tone: var(--acc-revenue);
+}
+.acc-type-expenses {
+	--acc-tone: var(--acc-expenses);
+}
+.acc-type-profit {
+	--acc-tone: var(--acc-profit);
+}
+
+/* Text fields on the page and in the dialogs sit on the plane color. */
+.acc-page .form-control,
+.acc-entry-dialog .form-control,
+.acc-account-dialog .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.acc-page .form-control::placeholder,
+.acc-entry-dialog .form-control::placeholder,
+.acc-account-dialog .form-control::placeholder {
+	color: var(--acc-quiet);
+	opacity: 1;
+}
+
+/* A card keeps one inset on every side; the tables below pull back out
+   to its edges. */
+.acc-card.basalt-box .card-body {
+	--acc-inset: 1.75rem;
+	padding: var(--acc-inset);
+}
+@media (max-width: 575.98px) {
+	.acc-card.basalt-box .card-body {
+		--acc-inset: 1.25rem;
+	}
+}
+.acc-card-head {
+	margin-bottom: 1.25rem;
+}
+.acc-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.acc-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--acc-quiet);
+}
+
+/* The two summary cards: a title on the left, one big figure on the right,
+   then bars whose segments the script sizes through --acc-w. */
+.acc-card-head-figure {
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: start;
+	margin-bottom: 1.75rem;
+}
+.acc-figure {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	margin: 0;
+}
+.acc-figure-value {
+	font-size: 1.85rem;
+	font-weight: 750;
+	line-height: 1.05;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.acc-figure-label {
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--acc-quiet);
+}
+@media (max-width: 575.98px) {
+	.acc-card-head-figure {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.acc-figure {
+		align-items: flex-start;
+	}
+}
+.acc-bars {
+	display: grid;
+	gap: 1rem;
+}
+.acc-bars-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 5.5rem minmax(0, 1fr);
+	align-items: center;
+}
+.acc-bars-row-value {
+	grid-template-columns: 5.5rem minmax(0, 1fr) 4.5rem;
+}
+.acc-bars-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.acc-bars-value {
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.acc-bar {
+	display: flex;
+	gap: 3px;
+	height: 1.6rem;
+	border-radius: 8px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.acc-bar-seg {
+	width: var(--acc-w, 0%);
+	background: var(--acc-tone);
+	transition: width 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+
+	&:first-child {
+		border-radius: 8px 0 0 8px;
+	}
+	&:last-child {
+		border-radius: 0 8px 8px 0;
+	}
+	&:only-child {
+		border-radius: 8px;
+	}
+}
+@media (prefers-reduced-motion: reduce), print {
+	.acc-bar-seg {
+		transition: none;
+	}
+}
+.acc-legend {
+	display: flex;
+	gap: 0.6rem 1.75rem;
+	flex-wrap: wrap;
+	margin: 1.5rem 0 0;
+	padding: 0;
+	font-size: 0.84rem;
+	list-style: none;
+
+	& > li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& > li::before {
+		content: "";
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 3px;
+		background: var(--acc-tone);
+	}
+}
+.acc-legend-name {
+	color: var(--basalt-copy-body);
+}
+.acc-legend-value {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.acc-glance-note {
+	margin: 1.5rem 0 0;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+
+	& .acc-open {
+		font-weight: 600;
+	}
+}
+@media (max-width: 575.98px) {
+	.acc-bars-row {
+		gap: 0.4rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.acc-bars-row-value {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.acc-bars-row-value > .acc-bar {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+}
+
+/* A slim amber line says that drafts are waiting to be posted. */
+.acc-drafts {
+	display: flex;
+	gap: 0.6rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0 0 1.75rem;
+	padding: 0.75rem 0.9rem 0.75rem 1.1rem;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--basalt-warning) 35%, var(--basalt-edge));
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 9%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+	}
+	& > .btn {
+		white-space: nowrap;
+	}
+}
+.acc-drafts-text {
+	flex: 1 1 18rem;
+}
+
+/* The tabs that switch between the chart and the journal. */
+.acc-tabs {
+	scroll-margin-top: 6rem;
+	margin-bottom: 1rem;
+}
+.acc-panels > .tab-pane:focus-visible {
+	border-radius: 12px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 4px;
+}
+.acc-chart-pane .acc-card-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.acc-fold-all {
+	white-space: nowrap;
+}
+
+/* The toolbar over each table: a search box that gives way first, a
+   filter beside it and a count on the far right. */
+.acc-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.75rem;
+}
+.acc-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--acc-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.acc-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.acc-chip {
+	padding: 0.5rem 0.95rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible:not([aria-pressed="true"]) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.acc-chips .acc-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.acc-status-filter {
+	flex: 0 0 auto;
+}
+.acc-seg-count {
+	margin-left: 0.3rem;
+	font-weight: 700;
+}
+.acc-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--acc-quiet);
+}
+@media (max-width: 575.98px) {
+	.acc-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.acc-summary {
+		display: none;
+	}
+}
+
+/* Both tables run to the card's edges; their outer cells carry the inset,
+   so the first column lines up with the title. */
+.acc-scroll {
+	position: relative;
+	margin: 0 calc(-1 * var(--acc-inset));
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.acc-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		vertical-align: middle;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--acc-inset);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--acc-inset);
+	}
+	& > thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--acc-quiet);
+	}
+	& > tbody + tbody {
+		border-top: 0;
+	}
+}
+/* A row lights on hover and, when it was just added, fades in from the
+   accent color. */
+.acc-row {
+	& > td {
+		cursor: pointer;
+	}
+	&:hover > td {
+		background: var(--basalt-wash);
+	}
+	&.is-fresh > td {
+		animation: acc-fresh 2.4s ease-out;
+	}
+}
+@keyframes acc-fresh {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+	to {
+		background: transparent;
+	}
+}
+@media (prefers-reduced-motion: reduce), print {
+	.acc-row > td {
+		transition: none;
+	}
+	.acc-row.is-fresh > td {
+		animation: none;
+	}
+}
+.acc-amount {
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.acc-amount-quiet {
+	color: var(--acc-quiet);
+}
+/* The name in a row is a real button, so the keyboard can open the row;
+   a click anywhere else on the row does the same. */
+.acc-open {
+	display: inline;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--acc-link);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.acc-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--acc-quiet);
+}
+
+/* Chart of accounts: one tbody per kind, headed by a tinted row whose
+   button folds the accounts under it. */
+.acc-col-code {
+	width: 7rem;
+}
+.acc-col-month {
+	width: 10rem;
+}
+.acc-col-bal {
+	width: 11rem;
+}
+.acc-code {
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+}
+.acc-group {
+	& > th,
+	& > td {
+		padding-top: 1.5rem;
+		border-bottom-color: var(--basalt-edge);
+		background: color-mix(in srgb, var(--acc-tone) 7%, var(--basalt-plane));
+	}
+	& .acc-amount {
+		font-weight: 700;
+	}
+}
+.acc-group-name {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&::before {
+		content: "";
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 3px;
+		background: var(--acc-tone);
+	}
+}
+.acc-group-count {
+	margin-left: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--acc-quiet);
+}
+.acc-group-toggle {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:disabled {
+		cursor: default;
+	}
+	&:disabled .acc-group-chevron {
+		display: none;
+	}
+	&[aria-expanded="false"] .acc-group-chevron {
+		transform: rotate(-90deg);
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.acc-group-chevron {
+	font-size: 0.8rem;
+	color: var(--acc-quiet);
+	transition: transform 0.2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.acc-group-chevron {
+		transition: none;
+	}
+}
+/* "Show all" closes an open group that lists only its first accounts. */
+.acc-more > td {
+	padding-top: 0.6rem;
+	padding-bottom: 0.9rem;
+}
+.acc-more-btn {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-size: 0.84rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--acc-link);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+/* The trial balance line under the chart. */
+.acc-check {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 1.25rem 0 0;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+
+	& > .bi {
+		font-size: 1rem;
+		color: var(--acc-good);
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Journal: each row names the first account on each side with a count of
+   the others. */
+.acc-col-date {
+	width: 6.5rem;
+	white-space: nowrap;
+}
+.acc-col-lines {
+	width: 17rem;
+}
+.acc-col-amount {
+	width: 10rem;
+}
+.acc-col-status {
+	width: 7.5rem;
+}
+.acc-date {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.acc-dc {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+
+	& + .acc-dc {
+		margin-top: 0.1rem;
+	}
+}
+.acc-dc-side {
+	flex: 0 0 1.4rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--acc-quiet);
+}
+.acc-dc-more {
+	white-space: nowrap;
+	color: var(--acc-quiet);
+}
+
+/* Tablets drop the accounts column of the journal (the drawer has every
+   line) and tighten the chart's columns. */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.acc-table-journal .acc-col-lines {
+		display: none;
+	}
+	.acc-col-month {
+		width: 8.5rem;
+	}
+	.acc-col-bal {
+		width: 9.5rem;
+	}
+	.acc-col-code {
+		width: 6rem;
+	}
+}
+
+/* Phones turn each row into a short stack. In the chart the name and its
+   note take the whole line with code and balance beneath; this month's
+   change waits in the drawer. In the journal the memo and amount share
+   the first line, the accounts the second, date and status the third. */
+@media (max-width: 767.98px) {
+	.acc-scroll {
+		margin: 0;
+		overflow: visible;
+	}
+	.acc-table thead {
+		display: none;
+	}
+	.acc-table,
+	.acc-table tbody {
+		display: block;
+	}
+	.acc-table > tbody > tr {
+		display: grid;
+		gap: 0.3rem 1rem;
+		align-items: start;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.acc-table > tbody > tr > * {
+		display: block;
+		width: auto;
+		border: 0;
+	}
+	.acc-table > :not(caption) > * > *,
+	.acc-table > :not(caption) > * > :first-child,
+	.acc-table > :not(caption) > * > :last-child {
+		padding: 0;
+	}
+
+	.acc-table-chart > tbody > tr {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "name name" "code bal";
+	}
+	.acc-table-chart > tbody > tr > .acc-cell-name {
+		grid-area: name;
+		min-width: 0;
+	}
+	.acc-table-chart > tbody > tr > .acc-cell-bal {
+		grid-area: bal;
+	}
+	.acc-table-chart > tbody > tr > .acc-col-code {
+		grid-area: code;
+	}
+	.acc-table-chart > tbody > tr > .acc-col-month {
+		display: none;
+	}
+	.acc-table-chart > tbody > tr.acc-group {
+		grid-template-areas: "name bal";
+		margin: 0 calc(-1 * var(--acc-inset));
+		padding: 1.1rem var(--acc-inset) 0.9rem;
+		background: color-mix(in srgb, var(--acc-tone) 7%, var(--basalt-plane));
+	}
+	.acc-group > th,
+	.acc-group > td {
+		background: none;
+	}
+	.acc-group-toggle {
+		flex-wrap: wrap;
+	}
+	.acc-group-count {
+		flex-basis: 100%;
+		margin: 0.2rem 0 0 2.4rem;
+	}
+	.acc-table-chart > tbody > tr.acc-group > :empty {
+		display: none;
+	}
+	.acc-table-chart > tbody > tr.acc-more {
+		display: block;
+		padding: 0.8rem 0;
+	}
+
+	.acc-table-journal > tbody > tr {
+		grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+		grid-template-areas: "entry entry amount" "lines lines lines" "date status status";
+	}
+	.acc-table-journal > tbody > tr > .acc-cell-entry {
+		grid-area: entry;
+		min-width: 0;
+	}
+	.acc-table-journal > tbody > tr > .acc-col-amount {
+		grid-area: amount;
+	}
+	.acc-table-journal > tbody > tr > .acc-col-lines {
+		grid-area: lines;
+	}
+	.acc-table-journal > tbody > tr > .acc-col-date {
+		grid-area: date;
+		font-size: 0.8rem;
+	}
+	.acc-table-journal > tbody > tr > .acc-col-status {
+		grid-area: status;
+	}
+	.acc-table > tbody > .basalt-empty-row {
+		display: block;
+		padding: 0;
+	}
+	.acc-table > tbody > .basalt-empty-row > td {
+		display: block;
+	}
+}
+
+/* The two drawers share a width, an icon tile in the header and a stack
+   of titled sections. */
+.acc-drawer {
+	--bs-offcanvas-width: min(480px, 100vw);
+
+	& .offcanvas-header {
+		gap: 0.75rem;
+	}
+	& .basalt-drawer-foot > [hidden] {
+		display: none;
+	}
+	& .basalt-drawer-foot > [data-acc-e-act="delete"],
+	& .basalt-drawer-foot > [data-acc-e-act="reverse"] {
+		margin-right: auto;
+	}
+}
+.acc-drawer-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--acc-tone, var(--basalt-hue)) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--acc-tone, var(--basalt-hue)) 14%, var(--basalt-plane));
+}
+.acc-d-section {
+	margin-bottom: 1.5rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+.acc-d-heading {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.acc-d-lead {
+	margin: 0;
+	font-size: 0.95rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 700;
+	}
+}
+.acc-d-note {
+	margin: 0.3rem 0 0;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--acc-quiet);
+}
+.acc-d-note-status {
+	margin-top: 0.6rem;
+}
+.acc-d-link {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-top: 1.5rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--acc-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The account drawer lists the month's movements between the opening
+   and closing balance. */
+.acc-d-moves {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.acc-d-move {
+	display: grid;
+	gap: 0.2rem 0.75rem;
+	grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+	align-items: baseline;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.84rem;
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.acc-d-move-date {
+	white-space: nowrap;
+	color: var(--acc-quiet);
+}
+.acc-d-move-what {
+	min-width: 0;
+	color: var(--basalt-copy);
+
+	& .acc-open {
+		font-weight: 500;
+	}
+}
+.acc-d-move-edge .acc-d-move-what {
+	color: var(--basalt-copy-body);
+}
+.acc-d-move-total {
+	border-bottom: 0;
+
+	& .acc-d-move-what,
+	& .acc-amount {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.acc-d-empty {
+	margin: 0;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.84rem;
+	color: var(--acc-quiet);
+}
+
+/* The entry drawer shows the lines as a small debit and credit table. On
+   phones the two amount columns would squeeze the names, so each line
+   becomes the account on the left and its amount on the right, marked Dr
+   or Cr as in the journal. */
+.acc-d-lines {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin: 0;
+	font-size: 0.84rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.5rem;
+		vertical-align: baseline;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--acc-quiet);
+	}
+	& th[scope="col"]:not(:first-child) {
+		width: 7.25rem;
+	}
+	& tfoot > tr > * {
+		border-bottom: 0;
+		border-top: 1px solid var(--basalt-edge-strong);
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& tfoot .acc-amount {
+		font-weight: 700;
+	}
+}
+@media (max-width: 575.98px) {
+	.acc-d-lines thead {
+		display: none;
+	}
+	.acc-d-lines,
+	.acc-d-lines > tbody,
+	.acc-d-lines > tfoot {
+		display: block;
+	}
+	.acc-d-lines tr {
+		display: grid;
+		gap: 0.25rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.acc-d-lines tfoot > tr {
+		border-bottom: 0;
+		border-top: 1px solid var(--basalt-edge-strong);
+	}
+	.acc-d-lines tr > * {
+		grid-column: 2;
+		padding: 0;
+		border: 0;
+	}
+	.acc-d-lines > :not(caption) > tr > :first-child {
+		grid-column: 1;
+		grid-row: 1;
+		padding: 0;
+	}
+	.acc-d-lines tfoot > tr > :first-child {
+		grid-row: 1 / span 2;
+	}
+	.acc-d-lines tfoot > tr > * {
+		border: 0;
+	}
+	.acc-d-lines td:empty {
+		display: none;
+	}
+	.acc-d-lines td[data-side]::before {
+		content: attr(data-side);
+		margin-right: 0.4rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		color: var(--acc-quiet);
+	}
+}
+.acc-d-facts {
+	display: grid;
+	gap: 1rem 1.25rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--acc-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The dialogs: form rows, a help line and the optional tag on a label. */
+.acc-form-row {
+	margin-bottom: 1.25rem;
+}
+.acc-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--acc-quiet);
+}
+.acc-optional {
+	margin-left: 0.25rem;
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--acc-quiet);
+}
+
+/* The lines of a new entry: a header row, then one grid row per line with
+   the account, two amounts and a remove button. An entry needs two lines,
+   so the first two remove buttons stay out of sight rather than grayed. */
+.acc-lines {
+	min-width: 0;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	border: 0;
+}
+.acc-lines-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.acc-lines-head,
+.acc-line {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: minmax(0, 1fr) 8.5rem 8.5rem 2.25rem;
+	align-items: center;
+}
+.acc-lines-head {
+	padding-bottom: 0.4rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--acc-quiet);
+}
+.acc-lines-list {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0 0 0.9rem;
+	padding: 0;
+	list-style: none;
+}
+.acc-line .form-control {
+	text-align: right;
+}
+.acc-line-remove {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: var(--basalt-edge);
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	padding: 0;
+
+	&:disabled {
+		visibility: hidden;
+	}
+}
+.acc-line-label {
+	display: none;
+}
+
+/* The running totals under the lines say whether they balance yet. */
+.acc-totals {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane-alt);
+}
+.acc-totals-sums {
+	display: flex;
+	gap: 0.25rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		margin-left: 0.3rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.acc-totals-state {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.84rem;
+	font-weight: 600;
+	color: var(--acc-quiet);
+
+	&.is-ok {
+		color: var(--acc-good);
+	}
+	&.is-off {
+		color: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	}
+	&.is-error {
+		color: var(--acc-bad);
+	}
+}
+.acc-entry-form .basalt-dialog-foot > .btn {
+	white-space: nowrap;
+}
+
+/* Phones: three footer buttons do not fit one row, so Cancel and Save as
+   draft share one and Post entry takes the full row under them. Each line
+   stacks too: the account across the full width, the two amounts side by
+   side under it with their labels, and the remove button after them. */
+@media (max-width: 575.98px) {
+	.acc-entry-form .basalt-dialog-foot {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+	.acc-entry-form .basalt-dialog-foot > [data-acc-f="post"] {
+		grid-column: 1 / -1;
+	}
+
+	.acc-lines-head {
+		display: none;
+	}
+	.acc-line {
+		column-gap: 0;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+		grid-template-areas: "acct acct acct" "dr cr remove";
+		align-items: end;
+		padding-bottom: 0.9rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.acc-line-acct {
+		grid-area: acct;
+	}
+	.acc-line-dr {
+		grid-area: dr;
+		margin-right: 0.6rem;
+	}
+	.acc-line-cr {
+		grid-area: cr;
+	}
+	.acc-line-remove {
+		grid-area: remove;
+		margin-left: 0.6rem;
+	}
+	.acc-line-remove:disabled {
+		display: none;
+	}
+	.acc-line-label {
+		display: block;
+		margin-bottom: 0.3rem;
+		font-size: 0.77rem;
+		color: var(--acc-quiet);
+	}
+}

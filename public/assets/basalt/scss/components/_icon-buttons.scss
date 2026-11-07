@@ -1,0 +1,102 @@
+/* An icon button is a quiet square with no border. Its icon color is the
+   muted token pulled toward the text color, so it reads against the page
+   and the top bar in every palette. */
+.btn-icon {
+	--bs-btn-padding-x: 0.5rem;
+	--bs-btn-padding-y: 0.5rem;
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 0;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	line-height: 1;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	background: transparent;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-copy);
+		background-color: var(--basalt-wash);
+	}
+}
+
+/* The unread dot and the count follow a live number, so they must be able
+   to disappear: the class with [hidden] outranks their display below. */
+.basalt-pip[hidden],
+.basalt-tally[hidden],
+[data-basalt-mark-read][hidden] {
+	display: none;
+}
+
+.basalt-pip {
+	position: absolute;
+	top: 6px;
+	right: 8px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	border: 2px solid var(--basalt-plane);
+}
+.basalt-tally {
+	position: absolute;
+	top: 2px;
+	right: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	border-radius: 999px;
+	border: 2px solid var(--basalt-plane);
+	font-size: 0.625rem;
+	font-weight: 700;
+	color: #fff;
+}
+
+/* The account button: avatar, then name over role. Both lines refuse to
+   wrap, which keeps the column from shrinking to fit and breaking a
+   two-word name; the width cap then bounds that, so a longer name than the
+   demo's ends in an ellipsis instead of widening the bar. */
+.basalt-me {
+	display: inline-flex;
+	gap: 0.625rem;
+	align-items: center;
+	padding: 0.3rem 0.5rem;
+	border: 0;
+	border-radius: 10px;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		background-color: var(--basalt-wash);
+	}
+}
+.basalt-me-info {
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	max-width: 11rem;
+	line-height: 1.15;
+	text-align: left;
+	white-space: nowrap;
+}
+.basalt-me-name,
+.basalt-me-job {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.basalt-me-name {
+	font-weight: 600;
+	font-size: 0.81rem;
+}
+.basalt-me-job {
+	font-size: 0.6875rem;
+	color: var(--basalt-copy-muted);
+}

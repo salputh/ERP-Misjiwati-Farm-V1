@@ -1,0 +1,809 @@
+/*
+ * Price list (price-list.html). Every class here starts with .acl-.
+ * Styles the price checker, the ranked rule list, the rule side panel
+ * and the create/edit dialog. The page header, sortable list, status
+ * pills, custom selects, number stepper, choice tiles, drawer and dialog
+ * frames and toasts all come from the shared stylesheet.
+ */
+
+/* Page tokens. Quiet text leans toward the body color so it still
+   clears 4.5:1 on pale palettes and hovered rows. */
+.acl-page,
+.acl-layer {
+	--acl-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--acl-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+}
+
+/* Inputs sit on the card color with a firm edge, on the page and in
+   the panels alike. */
+.acl-page .form-control,
+.acl-page .form-select,
+.acl-layer .form-control,
+.acl-layer .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.acl-page .form-control::placeholder,
+.acl-layer .form-control::placeholder {
+	color: var(--acl-quiet);
+	opacity: 1;
+}
+
+/* Outlined gray buttons keep a legible label, and no button wraps. */
+.acl-layer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+}
+.acl-page .btn,
+.acl-layer .btn {
+	white-space: nowrap;
+}
+
+/* Cards stack with a steady gap, and each body is a size container
+   the layouts below respond to. */
+.acl-card + .acl-card {
+	margin-top: 1.5rem;
+}
+.acl-card.basalt-box .card-body {
+	container: acl-card / inline-size;
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+.acl-card-head {
+	margin-bottom: 1.5rem;
+}
+.acl-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.acl-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--acl-quiet);
+}
+
+/* The checker puts its fields in a column beside the result on a wide
+   card and above it on a narrow one. */
+.acl-check {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@container acl-card (min-width: 760px) {
+	.acl-check {
+		gap: 2rem;
+		grid-template-columns: 17rem minmax(0, 1fr);
+	}
+}
+.acl-check-form {
+	display: grid;
+	gap: 1.25rem;
+	align-content: start;
+}
+/* Above the result, the three fields share one row while there is room. */
+@container acl-card (min-width: 560px) and (max-width: 759.98px) {
+	.acl-check-form {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+	}
+}
+.acl-field .form-label,
+.acl-form .form-label,
+.acl-legend {
+	display: block;
+	margin-bottom: 0.4rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.acl-field .form-select {
+	max-width: 17rem;
+}
+
+/* The result panel: the price on the left and, once wide enough, the
+   reasoning in a ruled column on the right. */
+.acl-result {
+	container: acl-result / inline-size;
+	padding: 1.75rem;
+	border-radius: 16px;
+	background: var(--basalt-grad-soft);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+:root[data-basalt-gradients="off"] .acl-result {
+	background: var(--basalt-plane-alt);
+}
+.acl-result-grid {
+	display: grid;
+	gap: 1.5rem;
+}
+@container acl-result (min-width: 560px) {
+	.acl-result-grid {
+		gap: 2rem;
+		grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+	}
+	.acl-result-why {
+		padding-left: 2rem;
+		border-left: 1px solid color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+	}
+}
+.acl-result-label {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.acl-result-price {
+	margin: 0.3rem 0 0;
+	font-size: 2.5rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+
+	@media (max-width: 575.98px) {
+		font-size: 2rem;
+	}
+}
+.acl-result-was {
+	margin: 0.5rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.acl-result-save {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 1rem 0 0;
+	padding: 0.3rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	background: var(--basalt-plane);
+}
+.acl-result-eyebrow,
+.acl-result-sub {
+	margin: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-body);
+}
+.acl-result .acl-result-sub {
+	margin: 1.75rem 0 0.25rem;
+}
+.acl-result-none {
+	margin: 0.5rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.acl-result-rule {
+	margin: 0.6rem 0 0;
+	font-size: 0.95rem;
+}
+
+/* A rule named in the result is a text button led by its rank chip. */
+.acl-linkbtn {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	text-align: start;
+	color: var(--acl-link);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+.acl-chip {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	min-width: 1.5rem;
+	height: 1.5rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 58%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.acl-result .acl-chip {
+	background: var(--basalt-plane);
+}
+
+/* Outranked rules are listed with the price each would have given. */
+.acl-also {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+		font-size: 0.875rem;
+	}
+	& li:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.acl-also-price {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.acl-result-hint {
+	display: flex;
+	gap: 0.5rem;
+	margin: 1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-copy));
+	}
+}
+
+/* Search grows to fill the toolbar, the status select keeps its own
+   width and the count closes the line; phones stack all three. */
+.acl-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.acl-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--acl-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+	}
+}
+.acl-select {
+	width: auto;
+	min-width: 10rem;
+}
+.acl-toolbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--acl-quiet);
+
+	@media (max-width: 575.98px) {
+		width: 100%;
+		margin-left: 0;
+	}
+}
+
+/* The column labels and every rule row share one grid template, so
+   values line up down the list; side padding pulls the text back
+   under the card title. */
+.acl-cols,
+.acl-rules > .acl-rule {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 4.25rem minmax(0, 1fr) 12.5rem 8.5rem 7rem 2.25rem;
+	align-items: center;
+	padding-left: 0.75rem;
+	padding-right: 0.75rem;
+}
+.acl-cols {
+	margin: 0 -0.75rem;
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+	border-bottom: 1px solid var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--acl-quiet);
+}
+.acl-rules.basalt-sortable {
+	gap: 0;
+	margin: 0 -0.75rem;
+}
+
+/* Rows read as table lines until one is picked up, when it lifts into
+   a rounded card outlined in the brand color. */
+.acl-rules > .acl-rule.basalt-sortable-item {
+	padding-top: var(--basalt-pad-row-y);
+	padding-bottom: var(--basalt-pad-row-y);
+	border: 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	border-radius: 0;
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition: background-color 130ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&.is-dragging,
+	&.is-grabbed {
+		border: 1px solid var(--basalt-hue);
+		border-radius: 12px;
+		background: var(--basalt-plane);
+	}
+	&.is-dragging {
+		box-shadow: 0 16px 32px -16px var(--basalt-scrim);
+	}
+}
+.acl-rule[hidden] {
+	display: none;
+}
+
+/* The ripple: each row's content lifts a little and its line washes in
+   the brand color, one row after another. Rows past the tenth stay still. */
+.acl-rules.is-waving > .acl-rule.in-wave {
+	animation: acl-wave-row 620ms ease calc(var(--wave-i, 0) * 70ms) backwards;
+
+	& > * {
+		animation: acl-wave 620ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--wave-i, 0) * 70ms) backwards;
+	}
+}
+@keyframes acl-wave {
+	35% {
+		transform: translateY(-5px);
+	}
+}
+@keyframes acl-wave-row {
+	35% {
+		background-color: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.acl-rules.is-waving > .acl-rule.in-wave {
+		&,
+		& > * {
+			animation: none;
+		}
+	}
+}
+
+/* Handles disappear while a search or filter is on, because a partial
+   list cannot be reordered. */
+.acl-rule-lead {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+.acl-rules.is-filtered .basalt-sortable-handle {
+	visibility: hidden;
+}
+
+.acl-rule-main {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.acl-rule-text {
+	min-width: 0;
+}
+
+/* Each discount kind keeps one chart color and glyph, matching its
+   tile in the dialog; idle rules fade theirs to gray. */
+.acl-kind {
+	--acl-tone: var(--basalt-series-1);
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--acl-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--acl-tone) 16%, var(--basalt-plane));
+}
+.acl-kind-amount {
+	--acl-tone: var(--basalt-series-5);
+}
+.acl-kind-tiers {
+	--acl-tone: var(--basalt-series-3);
+}
+.acl-kind-fixed {
+	--acl-tone: var(--basalt-series-4);
+}
+.acl-rule.is-idle .acl-kind {
+	color: var(--acl-quiet);
+	background: color-mix(in srgb, var(--basalt-copy) 6%, var(--basalt-plane));
+}
+
+.acl-rule-name {
+	display: block;
+	max-width: 100%;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	font-weight: 600;
+	font-size: 0.9rem;
+	text-align: start;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+.acl-rule-sub {
+	margin: 0.25rem 0 0;
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--acl-quiet);
+}
+.acl-rule-facts {
+	display: contents;
+}
+.acl-rule-disc {
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.acl-rule-when {
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--acl-quiet);
+}
+.acl-rule-open {
+	justify-self: end;
+}
+
+/* Paused, draft and ended rules sit back a shade. */
+.acl-rule.is-idle .acl-rule-name,
+.acl-rule.is-idle .acl-rule-disc {
+	color: var(--basalt-copy-body);
+}
+
+/* In a narrow card the labels go and each row stacks: audience and
+   products by the name, then discount and dates, then the status. */
+@container acl-card (max-width: 760px) {
+	.acl-cols {
+		display: none;
+	}
+	.acl-rules {
+		border-top: 1px solid var(--basalt-edge-strong);
+	}
+	.acl-rules > .acl-rule {
+		row-gap: 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas:
+			"lead main open"
+			". facts ."
+			". status .";
+		align-items: start;
+	}
+	.acl-rule-lead {
+		grid-area: lead;
+	}
+	.acl-rule-main {
+		grid-area: main;
+		align-items: flex-start;
+	}
+	.acl-rule-text {
+		padding-top: 0.1rem;
+	}
+	.acl-rule-facts {
+		display: flex;
+		gap: 0.25rem 1rem;
+		flex-wrap: wrap;
+		grid-area: facts;
+	}
+	.acl-rule-status {
+		grid-area: status;
+	}
+	.acl-rule-open {
+		grid-area: open;
+	}
+	.acl-rule-name,
+	.acl-rule-sub {
+		white-space: normal;
+	}
+}
+/* On a phone the kind tile is dropped so the name gets the width. */
+@container acl-card (max-width: 479.98px) {
+	.acl-rule-main .acl-kind {
+		display: none;
+	}
+}
+
+/* Price samples, shared by the side panel and the dialog preview:
+   product on the left, old and new price stacked on the right. */
+.acl-prices {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.acl-prices > li {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+	&.acl-prices-more {
+		display: block;
+		font-size: 0.8rem;
+		color: var(--acl-quiet);
+	}
+}
+.acl-prices-note {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--acl-quiet);
+}
+.acl-prices-cost {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.acl-prices-was {
+	font-size: 0.8rem;
+	text-decoration: line-through;
+	color: var(--acl-quiet);
+}
+.acl-prices a {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--acl-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+.acl-prices-now {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.acl-prices-tight > li {
+	gap: 0.75rem;
+	padding: 0.6rem 0;
+	font-size: 0.8rem;
+}
+
+/* The rule side panel: a larger kind tile in the header, a status
+   line, then the facts as a two-column definition list. */
+.acl-drawer {
+	--bs-offcanvas-width: min(460px, 100vw);
+
+	& .offcanvas-header {
+		gap: 0.75rem;
+		align-items: flex-start;
+	}
+}
+.acl-drawer-kind .acl-kind {
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+}
+.acl-d-status-text {
+	margin: 0.6rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.acl-d-sub {
+	margin: 1.75rem 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.acl-d-facts {
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		border-bottom: 0;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--acl-quiet);
+	}
+	& dd {
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+	& a {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--acl-link);
+	}
+	& a:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+
+/* The dialog form is one column of fields; plain fieldsets lose their
+   browser frame. */
+.acl-form {
+	display: grid;
+	gap: 1.25rem;
+	container: acl-form / inline-size;
+	min-width: 0;
+
+	& fieldset {
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+}
+.acl-legend {
+	float: none;
+	width: 100%;
+	padding: 0;
+	line-height: 1.5;
+}
+
+/* Discount kinds go two by two, then four across in a roomy dialog. */
+.acl-kinds.basalt-choices {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@container acl-form (min-width: 440px) {
+	.acl-kinds.basalt-choices {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.acl-kinds > legend {
+	margin-bottom: 0.4rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.acl-short {
+	max-width: 10rem;
+}
+.acl-optional {
+	font-weight: 400;
+	color: var(--acl-quiet);
+}
+.acl-hint {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--acl-quiet);
+}
+
+/* Paired fields share a row once the dialog is wide enough. */
+.acl-pair {
+	display: grid;
+	gap: 1.25rem;
+
+	& > [hidden] {
+		display: none;
+	}
+}
+@container basalt-dialog (min-width: 480px) {
+	.acl-pair {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Quantity steps read as a sentence: From [n] units, [x]% off. */
+.acl-tiers {
+	display: grid;
+	gap: 0.6rem;
+}
+.acl-tier {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& .form-control {
+		width: 5.5rem;
+	}
+}
+.acl-tier-pct {
+	flex-wrap: nowrap;
+	width: auto;
+}
+
+/* Fixed prices list each product with its list price and a box for
+   the new one. */
+.acl-fixed {
+	display: grid;
+}
+.acl-fixed-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) 9rem;
+	align-items: center;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.acl-fixed-list {
+	display: block;
+	font-size: 0.8rem;
+	color: var(--acl-quiet);
+}
+
+.acl-preview-note {
+	margin: 0.9rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--acl-quiet);
+}

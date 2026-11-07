@@ -1,0 +1,30 @@
+/* A strip that scrolls sideways dims whichever edge still hides content.
+   basalt.js measures each strip and toggles has-fade-start and has-fade-end;
+   each class widens its side of the mask from nothing to --basalt-fade.
+   Print drops the mask, since paper cannot scroll. */
+$edge-mask: linear-gradient(
+	to right,
+	transparent,
+	#000 var(--basalt-fade-start),
+	#000 calc(100% - var(--basalt-fade-end)),
+	transparent
+);
+
+.basalt-scroll-fade {
+	--basalt-fade: 2.75rem;
+	--basalt-fade-start: 0px;
+	--basalt-fade-end: 0px;
+	-webkit-mask-image: $edge-mask;
+	mask-image: $edge-mask;
+
+	&.has-fade-start {
+		--basalt-fade-start: var(--basalt-fade);
+	}
+	&.has-fade-end {
+		--basalt-fade-end: var(--basalt-fade);
+	}
+	@media print {
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
+}

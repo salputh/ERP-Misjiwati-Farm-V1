@@ -1,0 +1,63 @@
+/*
+ * Basalt, a Bootstrap 5.3 admin template. SCSS entry point; compiles to
+ * assets/basalt/css/basalt.css, which loads after assets/basalt/css/bootstrap.css (built
+ * from bootstrap.scss beside this file).
+ *
+ * The partials hold the same rules, in the same order, as the shipped
+ * basalt.css; compiling this file reproduces it. Edit a partial, then
+ * rebuild (see documentation.html, "Compiling SCSS").
+ */
+
+@use "base/fonts";
+@use "themes/light";
+@use "themes/dark";
+@use "themes/gradient-switch";
+@use "themes/extra-palettes";
+@use "themes/neutral-surfaces";
+@use "components/bootstrap-bridge";
+@use "base/reset";
+@use "layout/app";
+@use "layout/sidebar";
+@use "components/brand";
+@use "components/nav";
+@use "layout/header";
+@use "components/icon-buttons";
+@use "components/search";
+@use "components/card";
+@use "components/avatar";
+@use "components/badge";
+@use "components/dropdown";
+@use "components/table";
+@use "components/charts";
+@use "components/theme-toggle";
+@use "layout/main";
+@use "components/buttons";
+@use "themes/dark-tweaks";
+@use "components/appearance";
+@use "components/ui-patterns";
+@use "components/hero";
+@use "components/select";
+@use "components/illustration";
+@use "components/button-types";
+@use "components/menu-types";
+@use "components/command";
+@use "components/alert";
+@use "components/toast";
+@use "components/badge-types";
+@use "components/avatar-types";
+@use "components/empty-base";
+@use "components/modal";
+@use "components/offcanvas";
+@use "components/tabs";
+@use "components/pager";
+@use "components/tooltip";
+@use "components/typography";
+@use "components/scroll-fade";
+@use "components/search-clear";
+@use "components/table-scroll";
+@use "components/motion" as motion-opt-in;
+@use "components/quick-view";
+@use "components/breadcrumb";
+@use "components/shortcuts";
+@use "components/value-classes";
+@use "components/photo-placeholder";

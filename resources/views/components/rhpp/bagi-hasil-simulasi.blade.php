@@ -1,10 +1,10 @@
 @props(['periodeKandang', 'masukan', 'abk', 'entertain', 'pemodal', 'proyeksi', 'hasil', 'sumberAsumsi', 'siapSimulasi', 'tarifDariMaster' => false])
 
-<div class="col-12 mb-25">
+<div class="col-12 mb-4">
     <div class="row">
-        <div class="col-12 mb-25">
-            <div class="card card-default card-md">
-                <div class="card-body">
+        <div class="col-12 mb-4">
+            <section class="card basalt-box db-card">
+<div class="db-card-body">
                     <x-info class="mb-0">
                         <x-info.butir label="Inti">PT. Indojaya Agrinusa</x-info.butir>
                         <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
@@ -17,11 +17,12 @@
                             <x-info.butir label="Controller">{{ $hasil['identitas']['controller'] }}</x-info.butir>
                         @endif
                     </x-info>
-                </div>
-            </div>
+                
+</div>
+</section>
         </div>
 
-        <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="$proyeksi && $proyeksi['laba'] !== null ? \App\Support\Format::juta($proyeksi['laba']) : '—'" label="Jumlah pendapatan" ikon="uil-bill" warna="primary">
+        <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="$proyeksi && $proyeksi['laba'] !== null ? \App\Support\Format::juta($proyeksi['laba']) : '—'" label="Jumlah pendapatan" ikon="bi-receipt" warna="primary">
             @if ($proyeksi && $proyeksi['laba'] !== null)
                 <small>Rp @angka($proyeksi['laba']) dari RHPP simulasi untuk bagi hasil</small>
             @elseif ($proyeksi)
@@ -31,7 +32,7 @@
             @endif
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="$hasil ? \App\Support\Format::juta($hasil['ringkasan']['pengeluaran']) : '—'" label="Total operasional pemeliharaan" ikon="uil-arrow-circle-up" warna="warning">
+        <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="$hasil ? \App\Support\Format::juta($hasil['ringkasan']['pengeluaran']) : '—'" label="Total operasional pemeliharaan" ikon="bi-arrow-up-circle" warna="warning">
             @if ($hasil)
                 <small>Rp @angka($hasil['ringkasan']['pengeluaran'])</small>
             @else
@@ -39,7 +40,7 @@
             @endif
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="$hasil ? \App\Support\Format::juta($hasil['ringkasan']['sisa_akhir']) : '—'" label="Sisa akhir diperoleh" ikon="uil-wallet" :warna="$hasil && $hasil['ringkasan']['sisa_akhir'] < 0 ? 'danger' : 'success'">
+        <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="$hasil ? \App\Support\Format::juta($hasil['ringkasan']['sisa_akhir']) : '—'" label="Sisa akhir diperoleh" ikon="bi-wallet2" :warna="$hasil && $hasil['ringkasan']['sisa_akhir'] < 0 ? 'danger' : 'success'">
             @if ($hasil)
                 <small>Rp @angka($hasil['ringkasan']['sisa_akhir']) untuk pemodal</small>
             @else
@@ -47,7 +48,7 @@
             @endif
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="$hasil ? \App\Support\Format::juta($hasil['ringkasan']['abk']) : '—'" label="Total pendapatan ABK" ikon="uil-users-alt" warna="info">
+        <x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="$hasil ? \App\Support\Format::juta($hasil['ringkasan']['abk']) : '—'" label="Total pendapatan ABK" ikon="bi-people" warna="info">
             @if ($hasil)
                 <small>Rp @angka($hasil['ringkasan']['abk']) untuk @angka($hasil['ringkasan']['jumlah_abk']) ABK</small>
             @else
@@ -60,14 +61,14 @@
         <div class="row">
         <div class="col-xxl-6 tumpuk-lebur">
             <div class="row h-100">
-                <x-rhpp.rincian judul="Pendapatan" lebar="col-12 order-1 rincian-kas">
+                <x-rhpp.rincian judul="Pendapatan" lebar="col-12 order-1">
                     @foreach ($hasil['pendapatan'] as $baris)
                         <x-rhpp.baris :label="$baris['label']" :angka="$baris['jumlah']" :satuan="$baris['rumus']" :tebal="$baris['tebal']" :sorot="$baris['sorot']" />
                     @endforeach
                     <x-slot:catatan>Pendapatan dan biaya sapronak mengikuti RHPP simulasi pada periode ini.</x-slot:catatan>
                 </x-rhpp.rincian>
 
-                <x-rhpp.rincian judul="Sisa diperoleh" lebar="col-12 order-3 rincian-kas">
+                <x-rhpp.rincian judul="Sisa diperoleh" lebar="col-12 order-3">
                     @foreach ($hasil['sisa'] as $baris)
                         <x-rhpp.baris :label="$baris['label']" :angka="$baris['jumlah']" :satuan="$baris['rumus']" :tebal="$baris['tebal']" :sorot="$baris['sorot']" :masukan="$baris['masukan']" kurung />
                     @endforeach
@@ -77,7 +78,7 @@
 
         <div class="col-xxl-6 tumpuk-lebur">
             <div class="row h-100">
-                <x-rhpp.rincian judul="Pengeluaran" lebar="col-12 order-2 rincian-kas">
+                <x-rhpp.rincian judul="Pengeluaran" lebar="col-12 order-2">
                     @foreach ($hasil['pengeluaran'] as $baris)
                         <x-rhpp.baris :label="$baris['label']" :angka="$baris['jumlah']" :satuan="$baris['rumus']" :tebal="$baris['tebal']" :sorot="$baris['sorot']" :masukan="$baris['masukan']" />
                     @endforeach
@@ -92,14 +93,14 @@
         </div>
     @endif
 
-    <div class="card card-default card-md">
-        <div class="card-header">
-            <div>
-                <h6>Simulasi bagi hasil {{ $periodeKandang->kandang->nama }}</h6>
-                <span class="d-block fs-13 color-light fw-400 tanpa-kapital">Pendapatan dan sapronak mengikuti simulasi RHPP periode ini. Hasil berubah otomatis saat asumsi diubah dan tidak disimpan.</span>
+    <section class="card basalt-box db-card">
+<div class="db-card-body">
+<header class="db-card-head">
+<div>
+                <h2 class="db-card-title">Simulasi bagi hasil {{ $periodeKandang->kandang->nama }}</h2>
+                <span class="d-block small text-body-secondary fw-normal tanpa-kapital">Pendapatan dan sapronak mengikuti simulasi RHPP periode ini. Hasil berubah otomatis saat asumsi diubah dan tidak disimpan.</span>
             </div>
-        </div>
-        <div class="card-body">
+</header>
             @if ($sumberAsumsi)
                 <x-peringatan warna="info">
                     Periode ini belum memiliki asumsi bagi hasil. Nilai awal ABK, @unless ($tarifDariMaster)tarif, @endunless entertain, dan pemodal diambil dari {{ $sumberAsumsi }} sebagai referensi simulasi; ubah sesuai kebutuhan periode ini.
@@ -118,7 +119,7 @@
             @endunless
 
             <div>
-                <h6 class="fs-15 mb-20">Pengeluaran dan tarif</h6>
+                <h6 class="mb-3">Pengeluaran dan tarif</h6>
                 <div class="row">
                     <div class="col-md-4">
                         <x-masukan id="simulasi-bagi-hasil-operasional" tipe="text" inputmode="numeric" x-data="isianRibuan('masukanBagiHasil.operasional', ',', true)" x-on:input="format" x-on:blur="kirim" label="Operasional kandang (Rp)" keterangan="Nilai awal dari total biaya kas Kandang 2 periode ini, tidak termasuk pinjaman. Bisa diubah untuk simulasi." :kesalahan="$errors->first('masukanBagiHasil.operasional')" />
@@ -153,8 +154,8 @@
                     <x-peringatan warna="danger">{{ $message }}</x-peringatan>
                 @enderror
 
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-20">
-                    <h6 class="fs-15 mb-0">Daftar ABK dan premi tetap</h6>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <h6 class="mb-0">Daftar ABK dan premi tetap</h6>
                     <x-tombol variasi="outlined" wire:click="tambahAbkSimulasi">Tambah ABK</x-tombol>
                 </div>
                 @foreach ($abk as $indeks => $satu)
@@ -168,7 +169,7 @@
                         <div class="col-md-3">
                             <x-masukan :id="'simulasi-bagi-hasil-abk-premi-'.$indeks" tipe="text" inputmode="numeric" x-data="isianRibuan('abkSimulasi.{{ $indeks }}.jumlah', ',', true)" x-on:input="format" x-on:blur="kirim" label="Premi tetap (Rp)" :kesalahan="$errors->first('abkSimulasi.'.$indeks.'.jumlah')" />
                         </div>
-                        <div class="col-md-1 pt-md-35">
+                        <div class="col-md-1 pt-md-5">
                             <x-aksi.ikon :aksi="[
                                 ['kelas' => 'remove', 'label' => 'Hapus ABK '.($satu['nama'] ?: 'tanpa nama'), 'click' => 'mintaHapus(\'abk\', '.$indeks.')', 'modal' => '#konfirmasi-hapus-bagi-hasil-simulasi'],
                             ]" />
@@ -176,8 +177,8 @@
                     </div>
                 @endforeach
 
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-10 mb-20">
-                    <h6 class="fs-15 mb-0">Entertain</h6>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2 mb-3">
+                    <h6 class="mb-0">Entertain</h6>
                     <x-tombol variasi="outlined" wire:click="tambahEntertainSimulasi">Tambah penerima</x-tombol>
                 </div>
                 @foreach ($entertain as $indeks => $satu)
@@ -188,7 +189,7 @@
                         <div class="col-md-5">
                             <x-masukan :id="'simulasi-bagi-hasil-entertain-jumlah-'.$indeks" tipe="text" inputmode="numeric" x-data="isianRibuan('entertainSimulasi.{{ $indeks }}.jumlah', ',', true)" x-on:input="format" x-on:blur="kirim" label="Jumlah (Rp)" :kesalahan="$errors->first('entertainSimulasi.'.$indeks.'.jumlah')" />
                         </div>
-                        <div class="col-md-2 pt-md-35">
+                        <div class="col-md-2 pt-md-5">
                             <x-aksi.ikon :aksi="[
                                 ['kelas' => 'remove', 'label' => 'Hapus penerima entertain '.($satu['nama'] ?: 'tanpa nama'), 'click' => 'mintaHapus(\'entertain\', '.$indeks.')', 'modal' => '#konfirmasi-hapus-bagi-hasil-simulasi'],
                             ]" />
@@ -196,8 +197,8 @@
                     </div>
                 @endforeach
 
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-10 mb-20">
-                    <h6 class="fs-15 mb-0">Pembagian pemodal</h6>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2 mb-3">
+                    <h6 class="mb-0">Pembagian pemodal</h6>
                     <x-tombol variasi="outlined" wire:click="tambahPemodalSimulasi">Tambah pemodal</x-tombol>
                 </div>
                 @foreach ($pemodal as $indeks => $satu)
@@ -208,7 +209,7 @@
                         <div class="col-md-5">
                             <x-masukan :id="'simulasi-bagi-hasil-pemodal-persen-'.$indeks" tipe="number" min="0" max="100" step="0.001" label="Porsi (%)" wire:model.live.debounce.300ms="pemodalSimulasi.{{ $indeks }}.persen" :kesalahan="$errors->first('pemodalSimulasi.'.$indeks.'.persen')" />
                         </div>
-                        <div class="col-md-2 pt-md-35">
+                        <div class="col-md-2 pt-md-5">
                             <x-aksi.ikon :aksi="[
                                 ['kelas' => 'remove', 'label' => 'Hapus pemodal '.($satu['nama'] ?: 'tanpa nama'), 'click' => 'mintaHapus(\'pemodal\', '.$indeks.')', 'modal' => '#konfirmasi-hapus-bagi-hasil-simulasi'],
                             ]" />
@@ -217,8 +218,9 @@
                 @endforeach
 
             </div>
-        </div>
-    </div>
+        
+</div>
+</section>
 
     <x-konfirmasi id="konfirmasi-hapus-bagi-hasil-simulasi" judul="Hapus dari daftar simulasi?" aksi="konfirmasiHapus" tombol="Ya, hapus" warna="danger" memuat="konfirmasiHapus">
         {{ $this->namaHapusTarget() ?: 'Data ini' }} akan dihapus dari daftar simulasi bagi hasil.

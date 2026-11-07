@@ -1,0 +1,1172 @@
+/* Styles for stock-transfers.html, all under .stx-*. The page head, cards,
+   tabs, drawer, dialog, choice cards, stepper, avatars, status pills and
+   empty state come from basalt.css; this file lays out the shipment tracks,
+   the approval requests, the transfer table and what the drawer and the
+   dialog hold. Every color is a token. */
+
+.stx-page {
+	/* The quiet gray is the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--stx-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* The primary alone misses 4.5:1 as link text in a few light palettes. */
+	--stx-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--stx-line: var(--basalt-edge);
+}
+/* The drawer and the dialog sit outside .stx-page, so they carry the same tokens. */
+.stx-drawer,
+.stx-modal {
+	--stx-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--stx-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--stx-line: var(--basalt-edge);
+}
+
+/* Each warehouse keeps the chart color it has on the Stock Levels page. */
+.stx-site-1 {
+	--stx-site: var(--basalt-series-1);
+}
+.stx-site-3 {
+	--stx-site: var(--basalt-series-3);
+}
+.stx-site-7 {
+	--stx-site: var(--basalt-series-7);
+}
+.stx-site-8 {
+	--stx-site: var(--basalt-series-8);
+}
+
+/* Each way of shipping has a color of its own. */
+.stx-mode-road {
+	--stx-mode: var(--basalt-series-2);
+}
+.stx-mode-air {
+	--stx-mode: var(--basalt-series-5);
+}
+.stx-mode-sea {
+	--stx-mode: var(--basalt-series-4);
+}
+
+/* Product families color the small product tiles. */
+.stx-cat-1 {
+	--stx-cat: var(--basalt-series-1);
+}
+.stx-cat-2 {
+	--stx-cat: var(--basalt-series-2);
+}
+.stx-cat-3 {
+	--stx-cat: var(--basalt-series-3);
+}
+.stx-cat-4 {
+	--stx-cat: var(--basalt-series-4);
+}
+.stx-cat-5 {
+	--stx-cat: var(--basalt-series-5);
+}
+.stx-cat-6 {
+	--stx-cat: var(--basalt-series-6);
+}
+
+/* Stages: amber while a decision is pending, the chart ramp while stock
+   moves, green once it is in, gray when declined. */
+.stx-tone-approval {
+	--stp-tone: var(--basalt-warning);
+}
+.stx-tone-packing {
+	--stp-tone: var(--basalt-series-8);
+}
+.stx-tone-transit {
+	--stp-tone: var(--basalt-series-1);
+}
+.stx-tone-customs {
+	--stp-tone: var(--basalt-series-5);
+}
+.stx-tone-received {
+	--stp-tone: var(--basalt-success);
+}
+.stx-tone-declined {
+	--stp-tone: var(--basalt-copy-faint);
+}
+/* Chart colors run pale in a few light palettes, so the pill text leans
+   further toward the text color than the shared pill does. */
+.basalt-status[class*="stx-tone-"] {
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--stp-tone) 40%, var(--basalt-copy));
+}
+
+/* The three cards share one head: a title with a line under it, and room for a button on the right. */
+.stx-card.card {
+	display: flex;
+	flex-direction: column;
+	container-type: inline-size;
+	overflow: hidden;
+}
+.stx-cardhead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 1rem;
+
+	& > div {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+	& > .btn {
+		white-space: nowrap;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	@media print {
+		& > .btn {
+			display: none;
+		}
+	}
+}
+.stx-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+}
+.stx-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--stx-quiet);
+}
+.stx-tabs {
+	padding: 0 var(--basalt-pad-x);
+
+	& .nav-link {
+		white-space: nowrap;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	@media print {
+		display: none;
+	}
+}
+
+/* On the way. Every shipment is a track from the sending warehouse's dot to
+   the receiving one's, filled in the shipping color up to its vehicle. --p
+   runs from 0 to 1 and the vehicle rolls out to it when the page loads. */
+.stx-trips {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) 0.5rem;
+	list-style: none;
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+.stx-trip {
+	padding: 1.1rem 0;
+	border-top: 1px solid var(--stx-line);
+}
+.stx-trip-top {
+	display: flex;
+	gap: 0.3rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.stx-trip-what {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	min-width: 0;
+
+	& .stx-link {
+		display: inline;
+	}
+}
+.stx-trip-eta {
+	font-size: 0.875rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.stx-trip-track {
+	--p: 0;
+	--stx-rail: calc(100% - 1.5rem);
+	position: relative;
+	height: 2.25rem;
+	margin: 0.5rem 0 0.3rem;
+
+	/* The dotted rail the vehicle travels along. */
+	&::before {
+		content: "";
+		position: absolute;
+		top: 50%;
+		right: 0.75rem;
+		left: 0.75rem;
+		height: 2px;
+		margin-top: -1px;
+		background: repeating-linear-gradient(90deg, var(--basalt-edge-strong) 0 6px, transparent 6px 11px);
+	}
+}
+.stx-trip-fill {
+	position: absolute;
+	top: 50%;
+	left: 0.75rem;
+	width: calc(var(--stx-rail) * var(--p));
+	height: 4px;
+	margin-top: -2px;
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--stx-mode) 75%, var(--basalt-plane));
+	transition: width 500ms cubic-bezier(0.25, 0.8, 0.3, 1);
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+	@media print {
+		transition: none;
+	}
+}
+.stx-trip-end {
+	position: absolute;
+	top: 50%;
+	left: 0.4rem;
+	width: 0.7rem;
+	height: 0.7rem;
+	margin-top: -0.35rem;
+	border-radius: 50%;
+	background: var(--stx-site);
+	box-shadow: 0 0 0 3px var(--basalt-plane);
+}
+.stx-trip-end-to {
+	right: 0.4rem;
+	left: auto;
+}
+.stx-trip-mover {
+	position: absolute;
+	top: 50%;
+	left: calc(0.75rem + var(--stx-rail) * var(--p));
+	transform: translate(-50%, -50%);
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--stx-mode) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stx-mode) 18%, var(--basalt-plane));
+	box-shadow:
+		0 0 0 3px var(--basalt-plane),
+		inset 0 0 0 1.5px color-mix(in srgb, var(--stx-mode) 55%, var(--basalt-plane));
+	transition: left 1100ms cubic-bezier(0.25, 0.8, 0.3, 1);
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+	@media print {
+		transition: none;
+	}
+}
+.stx-mode-air:not(.is-packing) .stx-trip-mover .bi {
+	transform: rotate(90deg);
+}
+/* A shipment still being packed waits at the start of its rail in the quiet colors. */
+.stx-trip.is-packing .stx-trip-mover {
+	left: 1.1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+	box-shadow:
+		0 0 0 3px var(--basalt-plane),
+		inset 0 0 0 1.5px var(--basalt-edge-strong);
+}
+.stx-trip-note {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--stx-quiet);
+}
+.stx-trip-held {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+
+/* Waiting for you: one request per block, with who asked, why, the route, the products and two buttons. */
+.stx-asks {
+	flex: 1 1 auto;
+	margin: 0;
+	padding: 0 var(--basalt-pad-x);
+	list-style: none;
+
+	&:has(.stx-asks-none) {
+		display: flex;
+		flex-direction: column;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+.stx-ask {
+	display: grid;
+	gap: 1rem;
+	padding: 1.35rem 0;
+	border-top: 1px solid var(--stx-line);
+}
+.stx-ask-who {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.stx-ask-name {
+	font-size: 0.9375rem;
+	font-weight: 700;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--stx-link);
+	}
+}
+/* The reason is quoted on a soft panel with an amber bar down its left. */
+.stx-ask-why {
+	position: relative;
+	margin: 0;
+	padding: 0.7rem 1rem 0.7rem 1.1rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.65rem;
+		bottom: 0.65rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-plane));
+	}
+	& a {
+		font-weight: 600;
+		color: var(--stx-link);
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+}
+.stx-ask-items {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.stx-chip {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.25rem 0.7rem 0.25rem 0.25rem;
+	border: 1px solid var(--stx-line);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.stx-chip-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--stx-cat) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stx-cat) 16%, var(--basalt-plane));
+}
+.stx-ask-acts {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .btn {
+		white-space: nowrap;
+	}
+
+	@media print {
+		display: none;
+	}
+}
+/* With nothing left to approve, the message sits in the middle of the card. */
+.stx-asks-none {
+	display: grid;
+	flex: 1 1 auto;
+	align-content: center;
+	padding: 1.5rem 0 2rem;
+	border-top: 1px solid var(--stx-line);
+}
+.stx-asks-card-foot {
+	margin-top: auto;
+}
+
+/* The list's toolbar: a search box that stops growing at a comfortable width, and the warehouse select. */
+.stx-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.5rem var(--basalt-pad-x) 1.25rem;
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	@media print {
+		display: none;
+	}
+}
+.stx-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 13rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--stx-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.stx-site-filter {
+	flex: 0 0 auto;
+}
+.stx-summary {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) 1rem;
+	font-size: 0.8rem;
+	color: var(--stx-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The transfer table. Rows open the drawer, so the whole row is a pointer target. */
+.stx-table-wrap {
+	border-top: 1px solid var(--stx-line);
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.stx-table {
+	--bs-table-bg: transparent;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		border-color: var(--stx-line);
+		vertical-align: top;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& thead th {
+		padding-top: 0.85rem;
+		padding-bottom: 0.85rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		vertical-align: middle;
+		color: var(--stx-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& tbody tr[data-stx-id] {
+		cursor: pointer;
+	}
+	& tbody tr[data-stx-id]:hover > *,
+	& tbody tr.is-selected > * {
+		background: var(--basalt-wash);
+	}
+	& tbody tr.is-new > :first-child {
+		box-shadow: inset 3px 0 0 var(--basalt-hue);
+	}
+	& th.stx-col-value,
+	& td.stx-col-value {
+		text-align: right;
+		white-space: nowrap;
+	}
+	& td.stx-col-act {
+		width: 1%;
+		text-align: right;
+	}
+	& td.stx-col-route {
+		min-width: 15rem;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		& tbody tr {
+			transition: none;
+		}
+	}
+	@media print {
+		& tbody tr {
+			transition: none;
+		}
+	}
+}
+.stx-col-id,
+.stx-col-status {
+	white-space: nowrap;
+}
+@media print {
+	.stx-col-act {
+		display: none;
+	}
+}
+
+/* The transfer number is a button styled as a link. */
+.stx-link {
+	display: block;
+	padding: 0;
+	border: 0;
+	font-size: 0.9375rem;
+	font-weight: 700;
+	line-height: 1.4;
+	text-decoration: none;
+	text-underline-offset: 0.2em;
+	color: var(--stx-link);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.stx-line {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.stx-sub {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.77rem;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--stx-quiet);
+}
+.stx-money {
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.stx-money-void {
+	text-decoration: line-through;
+	color: var(--stx-quiet);
+}
+
+/* From and to: two warehouse names, each with its color dot, joined by an arrow. */
+.stx-route-line {
+	display: flex;
+	gap: 0.2rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.stx-place {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+}
+.stx-dot {
+	flex-shrink: 0;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--stx-site);
+}
+.stx-arrow {
+	font-size: 0.8rem;
+	color: var(--stx-quiet);
+}
+
+/* How it ships: the mode's icon in its color, then the word. */
+.stx-mode {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	white-space: nowrap;
+
+	& > .bi {
+		font-size: 0.85rem;
+		color: color-mix(in srgb, var(--stx-mode) 55%, var(--basalt-copy));
+	}
+}
+.stx-mode-air > .bi {
+	transform: rotate(90deg);
+}
+
+.stx-empty {
+	padding: 2.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--stx-line);
+
+	&[hidden] {
+		display: none;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+.stx-foot {
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--stx-line);
+	font-size: 0.8rem;
+	color: var(--stx-quiet);
+
+	& a {
+		font-weight: 600;
+		color: var(--stx-link);
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* In a narrower card each transfer turns into a two-line record: number,
+   route and value on top; items, status and the action underneath. */
+@container (max-width: 900px) {
+	.stx-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.stx-table,
+	.stx-table tbody,
+	.stx-table tr,
+	.stx-table td,
+	.stx-table th {
+		display: block;
+		width: 100%;
+	}
+	.stx-table tbody tr[data-stx-id] {
+		display: grid;
+		gap: 0.9rem 1.25rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr) minmax(0, 1fr) 5.5rem;
+		grid-template-areas:
+			"id route  route  value"
+			".  items  status act";
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--stx-line);
+	}
+	.stx-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.stx-table tbody tr[data-stx-id] > *,
+	.stx-table tbody tr[data-stx-id] > :first-child,
+	.stx-table tbody tr[data-stx-id] > :last-child {
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.stx-table tbody tr[data-stx-id]:hover > *,
+	.stx-table tbody tr.is-selected > * {
+		background: none;
+	}
+	.stx-table tbody tr[data-stx-id]:hover,
+	.stx-table tbody tr.is-selected {
+		background: var(--basalt-wash);
+	}
+	.stx-table tbody tr.is-new {
+		box-shadow: inset 3px 0 0 var(--basalt-hue);
+	}
+	.stx-table tbody tr.is-new > :first-child {
+		box-shadow: none;
+	}
+	.stx-table td.stx-col-id {
+		grid-area: id;
+	}
+	.stx-table td.stx-col-route {
+		grid-area: route;
+	}
+	.stx-table td.stx-col-items {
+		grid-area: items;
+	}
+	.stx-table td.stx-col-status {
+		grid-area: status;
+	}
+	.stx-table td.stx-col-value {
+		grid-area: value;
+		justify-self: end;
+		width: auto;
+	}
+	.stx-table td.stx-col-act {
+		grid-area: act;
+		width: auto;
+		text-align: left;
+	}
+	.stx-table td.stx-col-act:not(:empty) {
+		align-self: end;
+		justify-self: end;
+	}
+	.stx-table td.stx-col-act:empty {
+		display: none;
+	}
+}
+/* On a phone the record rows take the narrow side padding like every other block. */
+@media (max-width: 575.98px) {
+	.stx-table tbody tr[data-stx-id] {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+@container (max-width: 560px) {
+	.stx-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	/* All three tabs fit a phone without scrolling. */
+	.stx-tabs .basalt-tabs-list > .nav-link {
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
+	}
+	.stx-table tbody tr[data-stx-id] {
+		gap: 0.85rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"id     value"
+			"route  route"
+			"items  items"
+			"status act";
+	}
+}
+
+/* On a phone a transfer keeps its number, the route, the value and its
+   status. How it travels, the products and the notes under the number
+   and the status wait in the quick view. */
+@media (max-width: 575.98px) {
+	.stx-table tbody tr {
+		grid-template-areas:
+			"id     value"
+			"route  route"
+			"status act";
+	}
+	.stx-table td.stx-col-items,
+	.stx-table :is(td.stx-col-id, td.stx-col-route, td.stx-col-status) :is(.stx-sub, .stx-mode) {
+		display: none;
+	}
+}
+
+/* The transfer drawer: a status line, the lines, the tracking and the next action. */
+.stx-drawer {
+	--bs-offcanvas-width: 480px;
+
+	& .offcanvas-title {
+		white-space: nowrap;
+	}
+	& a:not(.btn) {
+		font-weight: 600;
+		color: var(--stx-link);
+	}
+	& a:not(.btn):hover {
+		color: var(--basalt-copy);
+	}
+	& .basalt-drawer-foot > .btn {
+		white-space: nowrap;
+	}
+	& .basalt-drawer-foot:empty {
+		display: none;
+	}
+}
+.stx-nw {
+	white-space: nowrap;
+}
+.stx-drawer-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+
+	@media (max-width: 575.98px) {
+		display: none;
+	}
+}
+.stx-r-state {
+	margin-bottom: 1.5rem;
+}
+.stx-r-note {
+	margin: 0.85rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+/* The requester's note, quoted with a bar in the primary down its left. */
+.stx-r-quote {
+	position: relative;
+	margin: 1rem 0 0;
+	padding: 0.85rem 1rem 0.85rem 1.1rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.75rem;
+		bottom: 0.75rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-plane));
+	}
+	& p {
+		margin: 0;
+	}
+	& footer {
+		margin-top: 0.4rem;
+		font-size: 0.77rem;
+		color: var(--stx-quiet);
+	}
+}
+
+/* The lines: a product tile, name and figures, and the line value on the right. */
+.stx-tile {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--stx-cat, var(--basalt-copy-muted)) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stx-cat, var(--basalt-copy-muted)) 16%, var(--basalt-plane));
+}
+.stx-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.stx-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--stx-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.stx-lines-total {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin: 0;
+	padding-top: 0.85rem;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& .stx-money {
+		font-weight: 700;
+	}
+}
+
+/* Tracking: numbered markers joined by a line. Done steps carry a check, the
+   current one its number on the primary, and later ones stay pale. */
+.stx-track {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.stx-step {
+	position: relative;
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 1.75rem minmax(0, 1fr);
+	padding-bottom: 1.25rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.95rem;
+		bottom: 0.2rem;
+		left: calc(0.875rem - 1px);
+		width: 2px;
+		border-radius: 2px;
+		background: var(--stx-line);
+	}
+	&:last-child::before {
+		display: none;
+	}
+	&.is-done::before {
+		background: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-plane));
+	}
+}
+/* A filled line grows down from its marker the first time a transfer is
+   on screen, each one a beat behind the one above. */
+.stx-track.is-waiting .stx-step.is-done::before {
+	transform: scaleY(0);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.stx-track.is-drawing .stx-step.is-done::before {
+		transform-origin: top;
+		animation: stx-trail-grow 600ms ease-out both;
+	}
+	.stx-track.is-drawing .stx-step.is-done:nth-child(2)::before {
+		animation-delay: 300ms;
+	}
+	.stx-track.is-drawing .stx-step.is-done:nth-child(3)::before {
+		animation-delay: 600ms;
+	}
+	.stx-track.is-drawing .stx-step.is-done:nth-child(4)::before {
+		animation-delay: 900ms;
+	}
+	@keyframes stx-trail-grow {
+		from {
+			transform: scaleY(0);
+		}
+	}
+}
+.stx-step-mark {
+	display: inline-grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--stx-quiet);
+	background: var(--basalt-plane-alt);
+}
+.stx-step.is-done .stx-step-mark {
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	background: var(--basalt-success-soft);
+}
+.stx-step.is-current .stx-step-mark {
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 20%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-plane));
+}
+.stx-step.is-stopped .stx-step-mark {
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.stx-step-title {
+	display: block;
+	padding-top: 0.2rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.stx-step.is-later .stx-step-title {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+
+/* The New transfer dialog: route, products, shipping, reason and a running summary. */
+.stx-form-row {
+	min-width: 0;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	border: 0;
+}
+.stx-modal legend.form-label {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+}
+.stx-optional {
+	font-weight: 400;
+	color: var(--stx-quiet);
+}
+
+/* From and to side by side with a swap button between them; stacked on a phone, where the arrow turns downward. */
+.stx-route {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+
+	@media (max-width: 575.98px) {
+		flex-wrap: wrap;
+	}
+}
+.stx-route-field {
+	flex: 0 1 15rem;
+	min-width: 0;
+
+	@media (max-width: 575.98px) {
+		flex: 1 1 100%;
+	}
+}
+.stx-route-swap {
+	flex-shrink: 0;
+	margin-top: 2rem;
+
+	@media (max-width: 575.98px) {
+		margin-top: 0;
+		& .bi {
+			transform: rotate(90deg);
+		}
+	}
+}
+
+/* Product lines: a select, a quantity stepper, a remove button and the free-stock note under them. */
+.stx-pick {
+	display: grid;
+	gap: 0.85rem;
+	margin: 0 0 0.85rem;
+	padding: 0;
+	list-style: none;
+}
+.stx-pick-row {
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& > .form-select,
+	& > .basalt-select-trigger {
+		flex: 0 1 17rem;
+		min-width: 0;
+	}
+
+	@media (max-width: 575.98px) {
+		& > .form-select,
+		& > .basalt-select-trigger {
+			flex: 1 1 100%;
+		}
+	}
+}
+.stx-pick-qty {
+	flex-shrink: 0;
+
+	/* Clicking + or − keeps the pill quiet; it rings for typing and the keyboard. */
+	&.basalt-stepper:not(.is-invalid):focus-within:not(
+			:has(.basalt-stepper-input:focus, .basalt-stepper-btn:focus-visible)
+		) {
+		border-color: var(--basalt-control-line);
+		box-shadow: none;
+	}
+	&.is-invalid {
+		border-color: var(--basalt-danger);
+	}
+	&.basalt-stepper.is-invalid:focus-within {
+		border-color: var(--basalt-danger);
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-danger) 18%, transparent);
+	}
+}
+.stx-pick-remove[hidden] {
+	display: none;
+}
+.stx-pick-free {
+	flex: 1 1 100%;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--stx-quiet);
+
+	&.is-invalid {
+		color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+	}
+}
+
+/* The three ways of shipping as choice cards in one row, stacked on a phone. */
+.stx-modes {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	& .basalt-choice-card-icon {
+		grid-row: span 2;
+		align-self: center;
+		margin: 0;
+	}
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.stx-new-sum {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}

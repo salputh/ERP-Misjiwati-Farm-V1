@@ -1,0 +1,158 @@
+/* A tray is a top-bar dropdown laid out as a card: a title row, the rows,
+   and a link row at the foot. */
+.basalt-tray {
+	min-width: 320px;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	background-color: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.basalt-tray-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.875rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	a {
+		text-decoration: none;
+		color: var(--basalt-hue);
+	}
+}
+/* The tray's one action, a plain-text button in the accent color. */
+.basalt-tray-action {
+	padding: 0;
+	border: 0;
+	color: var(--basalt-hue);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+.basalt-tray-rows {
+	max-height: 320px;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	list-style: none;
+
+	&::-webkit-scrollbar {
+		width: 6px;
+	}
+	&::-webkit-scrollbar-thumb {
+		border-radius: 6px;
+		background: var(--basalt-edge-strong);
+	}
+}
+
+/* A row is the avatar, then a line of what happened over a smaller line of
+   when or a preview. */
+.basalt-tray-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	text-decoration: none;
+	color: var(--basalt-copy);
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background-color: var(--basalt-wash);
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+	small {
+		font-size: 0.6875rem;
+	}
+}
+.basalt-tray-what {
+	display: block;
+	font-size: 0.81rem;
+}
+
+/* An unread row is tinted, a little bolder and marked with a dot at its
+   end. The header mark counts these rows, so the two always agree. */
+.basalt-tray-row-new {
+	position: relative;
+	background-color: var(--basalt-flare-soft);
+
+	&:hover {
+		background-color: var(--basalt-wash);
+	}
+	.basalt-tray-what {
+		font-weight: 600;
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		right: 0.85rem;
+		width: 0.4rem;
+		height: 0.4rem;
+		margin-top: -0.2rem;
+		border-radius: 50%;
+		background-color: var(--basalt-flare);
+	}
+	> .basalt-tray-copy {
+		padding-right: 0.9rem;
+	}
+}
+
+.basalt-tray-end {
+	padding: 0.625rem 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	text-align: center;
+
+	a {
+		font-size: 0.81rem;
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--basalt-hue);
+	}
+}
+
+/* The account tray opens on the person, then plain links with an icon each. */
+.basalt-tray-account {
+	min-width: 240px;
+
+	.dropdown-item {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		padding: 0.5rem 1rem;
+		font-size: 0.875rem;
+
+		i {
+			width: 20px;
+			font-size: 1rem;
+			color: var(--basalt-copy-muted);
+		}
+	}
+}
+.basalt-tray-me {
+	gap: 0.5rem;
+	justify-content: flex-start;
+}
+
+/* Every Bootstrap dropdown, not just the trays, sits on the page surface. */
+.dropdown-menu {
+	border-color: var(--basalt-edge);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.dropdown-divider {
+	border-color: var(--basalt-edge);
+}
+.dropdown-item {
+	color: var(--basalt-copy);
+}
+.dropdown-item:hover,
+.dropdown-item:focus {
+	color: var(--basalt-copy);
+	background-color: var(--basalt-wash);
+}

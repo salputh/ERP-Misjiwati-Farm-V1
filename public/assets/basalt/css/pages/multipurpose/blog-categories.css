@@ -1,0 +1,1003 @@
+/**
+ * Basalt: the Blog Categories page (blog-categories.html), everything
+ * under .cc-*. In page order: the tabs and cards, the content mix bar,
+ * the toolbar, the category tree and the tag list, then the category
+ * drawer with its color and icon pickers and search preview, and the
+ * import dialog. The page header, tabs, styled selects, choice tiles,
+ * drawer, dialogs, empty states and toasts are shared components from
+ * basalt.css. Every color is a --basalt-* token.
+ */
+
+/* The page and its drawer and dialogs share two text tones. Small gray
+   text is the muted token pulled toward the body color, so it clears
+   4.5:1 on light palettes and hovered rows; links are the primary pulled
+   the same way, since the primary alone falls short in a few palettes. */
+.cc-page,
+.cc-drawer,
+.cc-delete-dialog,
+.cc-import-dialog,
+.cc-tag-dialog {
+	--cc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--cc-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+}
+
+/* A category's color is one of the palette's chart colors, so it keeps
+   its place in the ramp when the viewer changes palette. */
+.cc-tone-1 {
+	--cc-tone: var(--basalt-series-1);
+}
+.cc-tone-2 {
+	--cc-tone: var(--basalt-series-2);
+}
+.cc-tone-3 {
+	--cc-tone: var(--basalt-series-3);
+}
+.cc-tone-4 {
+	--cc-tone: var(--basalt-series-4);
+}
+.cc-tone-5 {
+	--cc-tone: var(--basalt-series-5);
+}
+.cc-tone-6 {
+	--cc-tone: var(--basalt-series-6);
+}
+.cc-tone-7 {
+	--cc-tone: var(--basalt-series-7);
+}
+.cc-tone-8 {
+	--cc-tone: var(--basalt-series-8);
+}
+
+/* The tabs, then one card per tab. The card's inset is a variable so the
+   table can run out to its edges. */
+.cc-tabs {
+	display: block;
+	margin-bottom: 1.5rem;
+}
+.cc-card {
+	--cc-inset: 1.75rem;
+	min-width: 0;
+	padding: var(--cc-inset);
+
+	@media (max-width: 575.98px) {
+		--cc-inset: 1.25rem;
+	}
+}
+.cc-card-head {
+	margin-bottom: 1.25rem;
+}
+.cc-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cc-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cc-quiet);
+}
+
+/* The content mix: one bar with a segment per category in its color,
+   and a legend that wraps rather than sitting under each segment, so
+   names never collide at narrow widths. Each entry jumps to its row. */
+.cc-mix {
+	margin-bottom: 1.5rem;
+}
+.cc-mix-sum {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.cc-mix-bar {
+	display: flex;
+	gap: 4px;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cc-mix-seg {
+	flex: var(--cc-w, 1) 1 0;
+	min-width: 0.5rem;
+	height: 0.75rem;
+	border-radius: 999px;
+	background: var(--cc-tone);
+}
+.cc-mix-legend {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 0.9rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+	@media (max-width: 575.98px) {
+		display: none;
+	}
+}
+.cc-mix-key {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: none;
+
+	& .cc-dot {
+		width: 0.6rem;
+		height: 0.6rem;
+	}
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.cc-mix-num {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Fields on the page and in its drawer and dialogs sit on the plane with
+   a strong edge; placeholders use the quiet tone at full opacity. */
+.cc-page .form-control,
+.cc-page .form-select,
+.cc-drawer .form-control,
+.cc-import-dialog .form-control,
+.cc-tag-dialog .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.cc-page .form-control::placeholder,
+.cc-drawer .form-control::placeholder,
+.cc-import-dialog .form-control::placeholder,
+.cc-tag-dialog .form-control::placeholder {
+	color: var(--cc-quiet);
+	opacity: 1;
+}
+
+/* A button that reads as a link: Collapse all, Use an example, and the
+   search-fields toggle. */
+.cc-linkbtn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	--bs-btn-font-size: 0.85rem;
+	--bs-btn-font-weight: 600;
+	--bs-btn-color: var(--cc-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	text-decoration: none;
+	white-space: nowrap;
+
+	&:hover {
+		text-decoration: underline;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+/* The toolbar. The search stops growing at a comfortable width so the
+   filter sits right beside it; spare room goes to the end of the bar. */
+.cc-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.75rem;
+
+	& .cc-linkbtn {
+		margin-left: auto;
+	}
+}
+.cc-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--cc-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+		max-width: none;
+	}
+}
+.cc-select {
+	width: auto;
+	min-width: 10rem;
+
+	@media (max-width: 575.98px) {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+}
+
+/* The tables run to the card's edges; their outer cells keep the inset,
+   so the first column lines up with the title and the toolbar. */
+.cc-scroll {
+	margin: 0 calc(-1 * var(--cc-inset));
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.cc-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		vertical-align: middle;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--cc-inset);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--cc-inset);
+	}
+	& > thead th {
+		padding-top: 0.9rem;
+		padding-bottom: 0.9rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--cc-quiet);
+	}
+	& > tbody > tr:last-child > td {
+		border-bottom: 0;
+	}
+}
+.cc-col-type {
+	width: 13rem;
+}
+.cc-col-cat {
+	width: 12rem;
+}
+.cc-col-date {
+	width: 8.5rem;
+}
+.cc-col-items {
+	width: 6.5rem;
+	text-align: right;
+}
+.cc-col-act {
+	width: 1%;
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* A row tints on hover, and a row the script just changed glows for a
+   moment. While a row is dragged it fades, and the row under the
+   pointer draws a line above or below itself. */
+.cc-row {
+	&:hover > td {
+		background: var(--basalt-wash);
+	}
+	&.is-fresh > td {
+		animation: cc-fresh 2.4s ease-out;
+	}
+	&.is-dragging {
+		opacity: 0.45;
+	}
+	&.is-dragging .cc-grip {
+		cursor: grabbing;
+	}
+	&.is-drop-above > td {
+		box-shadow: inset 0 2px 0 var(--basalt-hue);
+	}
+	&.is-drop-below > td {
+		box-shadow: inset 0 -2px 0 var(--basalt-hue);
+	}
+}
+@keyframes cc-fresh {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+	to {
+		background: transparent;
+	}
+}
+
+/* The category cell: grip, fold arrow, then a tile in the category's
+   color or, for a subcategory, a dot. Subcategories hang from a branch
+   line in the same color, drawn through their dots. --cc-branch is the
+   distance from the cell's edge to the middle of the tile. */
+.cc-table {
+	--cc-branch: 4.625rem;
+}
+.cc-cat {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 15rem;
+}
+.cc-cat-child {
+	padding-left: 2.95rem;
+}
+.cc-grip {
+	flex-shrink: 0;
+	width: 1.25rem;
+	height: 1.5rem;
+	margin-left: -0.35rem;
+	font-size: 1rem;
+	text-align: center;
+	color: var(--cc-quiet);
+	cursor: grab;
+}
+.cc-grip-off {
+	visibility: hidden;
+}
+.cc-fold {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	padding: 0;
+	border: 0;
+	border-radius: 6px;
+	color: var(--basalt-copy-body);
+	background: none;
+
+	& .bi {
+		font-size: 0.8rem;
+		transition: transform 170ms ease;
+	}
+	&[aria-expanded="false"] .bi {
+		transform: rotate(-90deg);
+	}
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.cc-fold-none {
+	visibility: hidden;
+}
+.cc-dot {
+	flex-shrink: 0;
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 50%;
+	background: var(--cc-tone);
+}
+.cc-cat-child .cc-dot {
+	position: relative;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.3rem;
+}
+.cc-tile {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	margin-right: 0.25rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--cc-tone) 78%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cc-tone) 16%, var(--basalt-plane));
+}
+.cc-tile-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	margin: 0;
+	border-radius: 12px;
+	font-size: 1.25rem;
+}
+
+/* The branch line runs from under an open category's tile, through each
+   subcategory's dot, and stops at the last one. */
+.cc-row-open > td:first-child,
+.cc-row-child > td:first-child {
+	position: relative;
+}
+.cc-row-open > td:first-child::before,
+.cc-row-child > td:first-child::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: calc(var(--cc-inset) + var(--cc-branch) - 1px);
+	width: 2px;
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--cc-tone) 45%, transparent);
+}
+.cc-row-open > td:first-child::before {
+	top: calc(50% + 1.125rem + 0.25rem);
+}
+.cc-row-last > td:first-child::before {
+	bottom: 50%;
+}
+
+.cc-cat-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cc-cat-name {
+	align-self: flex-start;
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.cc-cat-child .cc-cat-name {
+	font-weight: 500;
+}
+.cc-cat-desc {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+
+	/* Under 1200px the description waits in the drawer. */
+	@media (max-width: 1199.98px) {
+		display: none;
+	}
+}
+.cc-cat-desc-blank {
+	font-style: italic;
+}
+.cc-type-inline {
+	display: none;
+}
+
+/* The item count and the chips saying what a category is used for. */
+.cc-num {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cc-num-none {
+	font-weight: 500;
+	color: var(--cc-quiet);
+}
+.cc-chips {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.cc-chip {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	& .bi {
+		font-size: 0.85em;
+		color: var(--cc-quiet);
+	}
+}
+
+/* The row menu button and its danger item. */
+.cc-iconbtn {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: var(--basalt-edge);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.cc-page .dropdown-item {
+	& .bi {
+		margin-right: 0.5rem;
+	}
+	&.cc-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+	}
+	&.cc-danger-item:hover,
+	&.cc-danger-item:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	}
+}
+
+/* Phones and small tablets: the type column folds into the name cell,
+   the grip goes, and the branch moves in with the smaller tile. */
+@media (max-width: 767.98px) {
+	.cc-col-type,
+	.cc-col-cat,
+	.cc-col-date,
+	.cc-table td.cc-col-type,
+	.cc-table td.cc-col-cat,
+	.cc-table td.cc-col-date {
+		display: none;
+	}
+	.cc-type-inline {
+		display: block;
+		font-size: 0.8rem;
+		color: var(--cc-quiet);
+	}
+	.cc-cat {
+		gap: 0.4rem;
+		min-width: 0;
+	}
+	.cc-col-items {
+		width: auto;
+	}
+	.cc-grip {
+		display: none;
+	}
+	.cc-fold {
+		width: 1.35rem;
+	}
+	.cc-tile {
+		width: 2rem;
+		height: 2rem;
+		font-size: 0.95rem;
+	}
+	.cc-cat-child {
+		padding-left: 2.475rem;
+	}
+	.cc-table {
+		--cc-branch: 2.75rem;
+	}
+	.cc-row-open > td:first-child::before {
+		top: calc(50% + 1rem + 0.25rem);
+	}
+	.cc-table > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	.cc-table > :not(caption) > * > .cc-col-act {
+		padding-left: 0.25rem;
+	}
+}
+
+/* The tag list. A tag wears the color of the category most of its posts
+   sit in; one without posts is gray. */
+.cc-tag {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-self: flex-start;
+	align-items: center;
+	padding: 0.2rem 0.65rem 0.2rem 0.5rem;
+	border: 1px solid color-mix(in srgb, var(--cc-tone) 32%, var(--basalt-plane));
+	border-radius: 999px;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--cc-tone) 12%, var(--basalt-plane));
+
+	& .bi {
+		font-size: 0.9em;
+		color: color-mix(in srgb, var(--cc-tone) 80%, var(--basalt-copy));
+	}
+}
+.cc-tag-unused {
+	border-color: var(--basalt-edge);
+	background: var(--basalt-plane-alt);
+
+	& .bi {
+		color: var(--cc-quiet);
+	}
+}
+.cc-tag-cell {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+}
+.cc-tag-like {
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+.cc-tag-cat {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	color: var(--basalt-copy);
+
+	& .cc-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		margin: 0;
+	}
+}
+.cc-unused {
+	color: var(--cc-quiet);
+}
+.cc-date {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cc-tag-acts {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+
+	& > .btn {
+		white-space: nowrap;
+	}
+	@media (max-width: 767.98px) {
+		& > .btn {
+			display: none;
+		}
+	}
+}
+
+/* The line under the tag list: how many more there are, and a button to
+   show them all. */
+.cc-more {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.cc-more-text {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--cc-quiet);
+}
+
+/* The category drawer: help and error lines under fields, the address
+   prefix, a label with a counter at its end, and the selects that stop
+   at a readable width. */
+.cc-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+}
+.cc-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cc-prefix {
+	border-color: var(--basalt-edge-strong);
+	color: var(--cc-quiet);
+	background: var(--basalt-plane-alt);
+}
+.cc-label-row {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+
+	& > .basalt-drawer-legend,
+	& > .form-label {
+		margin-bottom: 0.75rem;
+	}
+}
+.cc-counter {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--cc-quiet);
+}
+.cc-parent,
+.cc-move {
+	max-width: 18rem;
+}
+.cc-foot-delete {
+	margin-right: auto;
+}
+.cc-drawer .offcanvas-header {
+	gap: 1rem;
+}
+
+/* The icon picker: radios drawn as tiles. The chosen one takes the
+   category's color, which doubles as its focus marker. */
+.cc-look[hidden] {
+	display: none;
+}
+.cc-icons {
+	display: grid;
+	gap: 0.4rem;
+	grid-template-columns: repeat(6, 2.4rem);
+	margin-top: 1rem;
+}
+.cc-icon {
+	position: relative;
+	margin: 0;
+	cursor: pointer;
+
+	& input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+	&:hover .cc-icon-face {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	& input:checked + .cc-icon-face {
+		border-color: var(--cc-tone);
+		color: color-mix(in srgb, var(--cc-tone) 78%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--cc-tone) 16%, var(--basalt-plane));
+	}
+	& input:focus-visible:not(:checked) + .cc-icon-face {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.cc-icon-face {
+	display: grid;
+	place-items: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: var(--basalt-copy-body);
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease,
+		color 130ms ease;
+}
+
+/* The color swatches: radios drawn as dots. The chosen one carries a
+   ring, which doubles as its focus marker. */
+.cc-swatches {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.cc-swatch {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	width: 1.95rem;
+	height: 1.95rem;
+	margin: 0;
+	cursor: pointer;
+
+	& input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+	&:hover .cc-swatch-dot {
+		transform: scale(1.08);
+	}
+	& input:checked + .cc-swatch-dot {
+		box-shadow:
+			0 0 0 3px var(--basalt-plane),
+			0 0 0 5px var(--cc-tone);
+	}
+	& input:focus-visible:not(:checked) + .cc-swatch-dot {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.cc-swatch-dot {
+	width: 1.45rem;
+	height: 1.45rem;
+	border-radius: 50%;
+	background: var(--cc-tone);
+	transition:
+		transform 130ms ease,
+		box-shadow 130ms ease;
+}
+
+.cc-types {
+	--basalt-choice-min: 88px;
+}
+
+/* How the category reads in a search engine's results, and the two
+   fields that override it. */
+.cc-serp {
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-canvas);
+
+	& p {
+		margin: 0;
+		overflow-wrap: anywhere;
+	}
+}
+.cc-serp-url {
+	font-size: 0.77rem;
+	color: var(--cc-quiet);
+}
+.cc-serp-title {
+	margin-top: 0.2rem;
+	font-size: 1.02rem;
+	font-weight: 600;
+	line-height: 1.35;
+	color: var(--cc-link);
+}
+.cc-serp-desc {
+	margin-top: 0.25rem;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.cc-seo {
+	display: grid;
+	gap: 1.25rem;
+	padding-top: 1.25rem;
+
+	& .form-label {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The import dialog: the outline on the left, what it will add on the
+   right. A line that will be skipped is struck through with a gray dot. */
+.cc-import {
+	display: grid;
+	gap: 1.5rem;
+
+	@media (min-width: 768px) {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+}
+.cc-import-text {
+	font-family: var(--bs-font-monospace);
+	font-size: 0.85rem;
+	line-height: 1.6;
+}
+.cc-import-preview {
+	padding: 1.1rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-canvas);
+}
+.cc-import-head {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cc-import-list {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&:empty {
+		display: none;
+	}
+}
+.cc-import-item {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	& .cc-dot {
+		width: 0.6rem;
+		height: 0.6rem;
+		margin: 0;
+	}
+}
+.cc-import-item-child {
+	padding-left: 1.4rem;
+
+	& .cc-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+	}
+}
+.cc-import-item-skip {
+	color: var(--cc-quiet);
+
+	& .cc-import-name {
+		text-decoration: line-through;
+	}
+	& .cc-dot {
+		background: var(--basalt-edge-strong);
+	}
+}
+.cc-import-note {
+	margin-left: auto;
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--cc-quiet);
+}
+.cc-import-sum {
+	margin: 0.9rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+}
+.cc-import-list:empty + .cc-import-sum {
+	margin-top: 0;
+}
+
+/* With reduced motion rows do not glow and nothing turns or grows. */
+@media (prefers-reduced-motion: reduce) {
+	.cc-row > td,
+	.cc-fold .bi,
+	.cc-swatch-dot,
+	.cc-icon-face {
+		transition: none;
+	}
+	.cc-row.is-fresh > td {
+		animation: none;
+	}
+}

@@ -1,0 +1,870 @@
+/* Styles for table-basics.html, all under .tb-*. The tables are plain
+   Bootstrap .table markup; this file points Bootstrap's table variables at
+   the --basalt-* tokens and lays out the page around them: the chip rows,
+   the card grid, the tools above a table, pills, pager, selection, inline
+   edit, footer totals, expandable and grouped rows, and the code snippets. */
+
+.tb-page {
+	/* The quiet gray is the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes. Bootstrap's text-body-secondary
+     would not: it sits just under on a few palettes and is !important. */
+	--tb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	/* The sticky top bar's height, so pinned table heads sit right under it. */
+	--tb-sticky-top: var(--basalt-header-h, 72px);
+}
+
+/* Chip rows: the page filter above the grid and the class toggles inside the playground card. */
+.tb-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+
+	@media print {
+		display: none;
+	}
+}
+.tb-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.tb-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	/* A pressed chip inverts to the text color. */
+	&[aria-pressed="true"],
+	&[aria-pressed="true"]:hover {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.tb-chip-sm {
+	padding: 0.3rem 0.75rem;
+	font-size: 0.77rem;
+}
+.tb-count,
+.tb-note {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--tb-quiet);
+}
+.tb-note {
+	margin-top: 1rem;
+}
+
+/* A twelve-column grid. Every card spans it below 1200px; from there a half
+   card takes six columns, and a half card left without a partner takes all twelve. */
+.tb-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.tb-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+
+		@media print {
+			display: block;
+		}
+	}
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.75rem;
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem;
+		}
+	}
+}
+@media (min-width: 1200px) {
+	.tb-card-half {
+		grid-column: span 6;
+	}
+	.tb-grid .tb-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* The card head. The kind pill comes after the title in the markup (so it is
+   read second) but is drawn above it. */
+.tb-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.tb-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tb-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tb-quiet);
+}
+.tb-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--tb-quiet);
+}
+
+/* The row of tools above a table: chips, a class readout, a search box, a select. */
+.tb-tools {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+
+	& .tb-count {
+		margin-left: auto;
+	}
+
+	@media (max-width: 575.98px) {
+		& > .tb-select {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+	}
+	@media print {
+		display: none;
+	}
+}
+.tb-classline {
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--tb-quiet);
+
+	& code {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.77rem;
+		color: var(--basalt-copy);
+	}
+
+	@media (min-width: 768px) {
+		margin-left: auto;
+	}
+}
+.tb-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 20rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--tb-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+
+	@media (max-width: 575.98px) {
+		flex: 1 1 100%;
+		max-width: none;
+	}
+}
+/* A stock count beside a "Low" flag keeps a fixed slot on the right, so the flags line up. */
+.tb-count-n {
+	display: inline-block;
+	min-width: 2.5ch;
+	margin-left: 0.5rem;
+	font-variant-numeric: tabular-nums;
+}
+.tb-select {
+	width: auto;
+	min-width: 9rem;
+}
+.tb-page .form-control,
+.tb-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.tb-page .form-control:focus,
+.tb-page .form-select:focus-visible {
+	border-color: var(--basalt-hue);
+}
+.tb-page .form-control::placeholder {
+	color: var(--tb-quiet);
+	opacity: 1;
+}
+
+/* The tables. The wrapper is positioned so visually hidden header text stays
+   inside the scroll box instead of widening the page on a phone. */
+.tb-card .table-responsive {
+	position: relative;
+}
+.tb-card .table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-striped-bg: color-mix(in srgb, var(--basalt-copy) 4%, transparent);
+	--bs-table-striped-color: var(--basalt-copy-body);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	--bs-table-active-bg: color-mix(in srgb, var(--basalt-hue) 11%, transparent);
+	--bs-table-active-color: var(--basalt-copy);
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.85rem 0.75rem;
+	}
+	/* Column labels use the template's one small-caps style over a firm rule. */
+	& thead th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--tb-quiet);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& tbody th {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& caption {
+		color: var(--tb-quiet);
+	}
+	&.caption-top > caption {
+		padding: 0 0 0.75rem;
+		caption-side: top;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.tb-card .table-sm > :not(caption) > * > * {
+	padding: 0.4rem 0.6rem;
+}
+.tb-card .table-bordered {
+	--bs-table-border-color: var(--basalt-edge-strong);
+}
+.tb-mono,
+.tb-card .table tbody th.tb-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+/* Cells stay on one line; a name marked .tb-wrap may take two in a narrow card. */
+.tb-card .table th,
+.tb-card .table td {
+	white-space: nowrap;
+}
+.tb-card .table .tb-wrap {
+	min-width: 7.5rem;
+	white-space: normal;
+}
+
+/* Status pills: a soft tint of the tone with a dot, the text pulled toward
+   the body color so it reads on the tint in every palette. */
+.tb-tone {
+	--tb-tone: var(--basalt-hue);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--tb-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tb-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--tb-tone);
+	}
+}
+.tb-tone-success {
+	--tb-tone: var(--basalt-success);
+}
+.tb-tone-warning {
+	--tb-tone: var(--basalt-warning);
+}
+.tb-tone-danger {
+	--tb-tone: var(--basalt-danger);
+}
+.tb-tone-info {
+	--tb-tone: var(--basalt-info);
+}
+.tb-tone-neutral {
+	--tb-tone: var(--basalt-copy-muted);
+}
+
+/* Row tones: a wash of the tone across the row and a bar down its left edge. */
+.tb-card .table > tbody > tr.tb-row-danger {
+	--tb-row: var(--basalt-danger);
+}
+.tb-card .table > tbody > tr.tb-row-warning {
+	--tb-row: var(--basalt-warning);
+}
+.tb-card .table > tbody > tr.tb-row-success {
+	--tb-row: var(--basalt-success);
+}
+.tb-card .table > tbody > tr[class*="tb-row-"] {
+	--bs-table-bg: color-mix(in srgb, var(--tb-row) 7%, transparent);
+
+	& > :first-child {
+		box-shadow: inset 3px 0 0 var(--tb-row);
+	}
+}
+
+/* Sortable headers are buttons that inherit the header text style. */
+.tb-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .bi {
+		font-size: 0.7rem;
+		opacity: 0.5;
+	}
+}
+th[aria-sort="ascending"] .tb-sort,
+th[aria-sort="descending"] .tb-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort="ascending"] .tb-sort .bi,
+th[aria-sort="descending"] .tb-sort .bi {
+	opacity: 1;
+}
+/* In a right-aligned column the arrow leads, so the label lines up with the figures. */
+.text-end > .tb-sort {
+	flex-direction: row-reverse;
+}
+
+/* An account name with its billing address under it. */
+.tb-person {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tb-sub {
+	display: block;
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--tb-quiet);
+}
+
+/* Under a paged table: rows per page, the range shown, and the pager. */
+.tb-pager {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+
+	@media print {
+		display: none;
+	}
+}
+.tb-pager-info {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.tb-pager-size {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	& .form-select {
+		width: auto;
+		min-width: 4.5rem;
+	}
+}
+.tb-pager-label {
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--tb-quiet);
+}
+/* The pager is a row of bordered squares with chevrons at the ends; the
+   current page fills with the text color, like a pressed chip. */
+.tb-page .pagination {
+	--bs-pagination-color: var(--basalt-copy-body);
+	--bs-pagination-bg: var(--basalt-plane);
+	--bs-pagination-border-color: var(--basalt-edge-strong);
+	--bs-pagination-hover-color: var(--basalt-copy);
+	--bs-pagination-hover-bg: var(--basalt-wash);
+	--bs-pagination-hover-border-color: var(--basalt-edge-strong);
+	--bs-pagination-focus-color: var(--basalt-copy);
+	--bs-pagination-focus-bg: var(--basalt-wash);
+	--bs-pagination-focus-box-shadow: 0 0 0 0.2rem var(--basalt-hue-border);
+	--bs-pagination-active-color: var(--basalt-plane);
+	--bs-pagination-active-bg: var(--basalt-copy);
+	--bs-pagination-active-border-color: var(--basalt-copy);
+	--bs-pagination-disabled-color: var(--tb-quiet);
+	--bs-pagination-disabled-bg: var(--basalt-plane);
+	--bs-pagination-disabled-border-color: var(--basalt-edge);
+	--bs-pagination-border-radius: 8px;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& .page-link {
+		min-width: 2rem;
+		margin-left: 0;
+		border-radius: 8px;
+		font-weight: 600;
+		text-align: center;
+		color: var(--bs-pagination-color);
+	}
+	& .page-link:hover {
+		color: var(--bs-pagination-hover-color);
+	}
+	& .active > .page-link {
+		border-color: var(--bs-pagination-active-border-color);
+		color: var(--bs-pagination-active-color);
+		background-color: var(--bs-pagination-active-bg);
+	}
+	& .disabled > .page-link {
+		color: var(--bs-pagination-disabled-color);
+	}
+}
+
+/* Row selection: the checkbox column, the bulk bar above the table, and link-styled buttons. */
+.tb-check {
+	width: 2.5rem;
+}
+.tb-page .form-check-input {
+	margin-top: 0;
+	/* A box edge needs 3:1 against the card to read as a control. */
+	border-color: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+	background-color: var(--basalt-plane);
+	cursor: pointer;
+
+	&:checked,
+	&:indeterminate {
+		border-color: var(--basalt-hue);
+		background-color: var(--basalt-hue);
+	}
+}
+.tb-bulk {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 2.25rem;
+	margin-bottom: 1.25rem;
+
+	@media print {
+		display: none;
+	}
+}
+.tb-bulk-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.tb-page .tb-link {
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration-thickness: 2px;
+		color: var(--basalt-copy);
+	}
+	&:disabled {
+		text-decoration: none;
+		color: var(--tb-quiet);
+	}
+}
+.tb-page .btn-outline-secondary:disabled {
+	color: var(--tb-quiet);
+}
+
+/* Inline edit: the actions column, the price inputs, and the row while it is open. */
+.tb-actions {
+	width: 1%;
+
+	& .btn + .btn {
+		margin-left: 0.3rem;
+	}
+}
+.tb-price {
+	width: 5.75rem;
+	margin-left: auto;
+	text-align: right;
+}
+.tb-editing > * {
+	background-color: color-mix(in srgb, var(--basalt-hue) 6%, transparent);
+}
+/* Save uses the on-primary text color instead of Bootstrap's white, and in
+   light mode a primary pulled a little toward the text (as basalt.css does
+   for .btn-success), since white on the Verdant and Pastel Pop primaries is
+   under 4.5:1. */
+.tb-page .btn-primary {
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-active-color: var(--basalt-on-hue);
+}
+:root:not([data-bs-theme="dark"]) .tb-page .btn-primary {
+	--bs-btn-bg: color-mix(in srgb, var(--basalt-hue) 80%, var(--basalt-copy));
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-hue) 80%, var(--basalt-copy));
+}
+
+/* Footer totals: steppers in the body, a ruled footer with the total in bold. */
+.tb-qty {
+	vertical-align: middle;
+}
+.tb-card .tb-totals {
+	& tbody td:has(> .tb-qty) {
+		padding-top: 0.25rem;
+		padding-bottom: 0.25rem;
+	}
+	& tfoot th {
+		font-weight: 500;
+		text-align: right;
+		color: var(--tb-quiet);
+	}
+	& tfoot td {
+		color: var(--basalt-copy);
+	}
+	& tfoot tr:first-child > * {
+		border-top: 1px solid var(--basalt-edge-strong);
+	}
+	& tfoot tr > * {
+		padding-top: 0.4rem;
+		padding-bottom: 0.4rem;
+		border-bottom: 0;
+	}
+	& tfoot tr:first-child > * {
+		padding-top: 0.9rem;
+	}
+	& tfoot .tb-total > * {
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+
+	@media (max-width: 575.98px) {
+		& .tb-wrap {
+			min-width: 6.5rem;
+		}
+	}
+}
+
+/* Expandable rows: a chevron button in the first column opens a nested table under its row. */
+.tb-toggle-cell {
+	width: 2.75rem;
+}
+.tb-card .table > :not(caption) > * > .tb-toggle-cell {
+	padding-right: 0;
+}
+.tb-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	& .bi {
+		font-size: 0.75rem;
+		transition: transform 170ms ease;
+	}
+	&[aria-expanded="true"] .bi {
+		transform: rotate(90deg);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		& .bi {
+			transition: none;
+		}
+	}
+}
+.tb-card .tb-expandable > tbody > tr.tb-detail > td {
+	padding: 0.5rem 1rem 1rem 3.65rem;
+	background-color: color-mix(in srgb, var(--basalt-copy) 3%, transparent);
+}
+.tb-card .tb-detail .table {
+	--bs-table-bg: transparent;
+	font-size: 0.8rem;
+
+	& thead th {
+		font-size: 0.71rem;
+		font-weight: 700;
+		color: var(--tb-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+}
+
+/* Grouped rows with a pinned head. There is no inner scroll: the table grows
+   and the page scrolls. Clip (not auto) keeps the rounded corners without
+   making a scroll box, so the head can stick under the top bar; phones keep
+   the sideways scroll of .table-responsive. */
+.tb-scroll {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	@media (min-width: 576px) {
+		overflow: clip;
+	}
+	@media print {
+		max-height: none;
+		overflow: visible;
+	}
+}
+.tb-card .tb-sticky {
+	& thead th {
+		position: sticky;
+		top: var(--tb-sticky-top);
+		z-index: 2;
+		background-color: var(--basalt-plane);
+		/* The pinned head casts a soft shadow onto the rows passing under it. */
+		box-shadow:
+			inset 0 -1px 0 var(--basalt-edge-strong),
+			0 12px 24px -18px var(--basalt-scrim);
+	}
+	& > tbody > tr.tb-group > th {
+		padding: 0;
+		background-color: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	}
+}
+.tb-group-btn {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.65rem 0.9rem;
+	border: 0;
+	font: inherit;
+	font-weight: 650;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	& .bi {
+		font-size: 0.71rem;
+		transition: transform 170ms ease;
+	}
+	&[aria-expanded="false"] .bi {
+		transform: rotate(-90deg);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		& .bi {
+			transition: none;
+		}
+	}
+}
+.tb-group-count {
+	margin-left: auto;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--tb-quiet);
+}
+
+/* The row a searched table shows when nothing matches. */
+.tb-card .table > tbody > tr.tb-empty > td {
+	padding: 2rem 1rem;
+	text-align: center;
+	white-space: normal;
+	color: var(--tb-quiet);
+}
+.tb-empty strong {
+	color: var(--basalt-copy);
+}
+
+/* The code snippet at the foot of a card. The auto top margin pushes it to
+   the bottom, so the snippets of paired cards line up. */
+.tb-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:hover {
+		color: var(--basalt-copy);
+	}
+	& summary:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		& summary .bi {
+			transition: none;
+		}
+	}
+	@media print {
+		display: none;
+	}
+}
+/* Whatever sits right above the snippet keeps its distance from it. */
+.tb-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.5rem;
+}
+
+/* Disabled buttons. Bootstrap fades them and gives outline buttons a fixed
+   gray, which drops the label under 4.5:1; a muted but readable label on a
+   faint fill says "not now" in every palette. The same rule sits on every
+   table page. */
+:root .tb-page .btn:disabled,
+:root .tb-page .btn.disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--bs-btn-disabled-bg: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	--bs-btn-disabled-border-color: var(--basalt-edge);
+	opacity: 1;
+}
+
+/* Number boxes. Counts use the shared .basalt-stepper; any other number input
+   on the page loses the browser's spin arrows too. On a phone a stepper in a
+   table cell gets a slimmer box, since counts here stop at three digits. */
+.tb-page input[type="number"] {
+	appearance: textfield;
+}
+.tb-page input[type="number"]::-webkit-outer-spin-button,
+.tb-page input[type="number"]::-webkit-inner-spin-button {
+	margin: 0;
+	-webkit-appearance: none;
+}
+@media (max-width: 575.98px) {
+	.tb-page td .basalt-stepper {
+		gap: 0;
+	}
+	.tb-page td .basalt-stepper-input {
+		width: 2rem;
+	}
+}

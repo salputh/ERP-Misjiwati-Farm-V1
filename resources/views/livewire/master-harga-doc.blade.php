@@ -1,4 +1,4 @@
-<div class="col-12 mb-25">
+<div class="col-12 mb-4">
     <x-kartu judul="Master harga DOC" subjudul="Nilai global yang digunakan dalam perhitungan biaya DOC simulasi RHPP.">
         <x-slot:ekstra>
             <x-tombol wire:click="ubah" data-bs-toggle="modal" data-bs-target="#modal-harga-doc">Ubah master DOC</x-tombol>
@@ -8,15 +8,15 @@
             <x-peringatan warna="success" bisaDitutup="true">{{ $pesan }}</x-peringatan>
         @endif
 
-        {{-- Statistik template (HexaDash: Statistics, Basic) --}}
-        <div class="dm-statistics-wrap d-flex">
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Harga per ekor</span>
-                <p class="statistics-item__number">Rp @angka($this->hargaDoc->harga_per_ekor)</p>
+        {{-- Statistik template  --}}
+        <div class="d-flex">
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Harga per ekor</span>
+                <p class="h5 mb-0">Rp @angka($this->hargaDoc->harga_per_ekor)</p>
             </div>
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Jumlah DOC</span>
-                <p class="statistics-item__number">@angka($this->hargaDoc->jumlah_ekor) ekor</p>
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Jumlah DOC</span>
+                <p class="h5 mb-0">@angka($this->hargaDoc->jumlah_ekor) ekor</p>
             </div>
         </div>
     </x-kartu>

@@ -1,0 +1,574 @@
+/* Basalt - Voice Call (voice-call.html)
+   Namespaced under .vo-*
+   Built from shared parts: the plain page header, avatars, segmented
+   controls and the dialog. This file lays out the call card, its
+   controls and keypad, and the list of recent calls beside it. */
+
+.vo-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on every palette. */
+	--vo-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--vo-missed: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+}
+
+/* The call and the history side by side from 992px, ending level. */
+.vo-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 1.5rem;
+}
+@media (min-width: 992px) {
+	.vo-grid {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+}
+@media (min-width: 1200px) {
+	.vo-grid {
+		grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+	}
+}
+
+/* The call */
+.vo-call.card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 1.75rem var(--basalt-pad-x) 2rem;
+	text-align: center;
+}
+.vo-call-state {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--vo-quiet);
+}
+.vo-call-dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--basalt-success);
+	box-shadow: 0 0 0 0 color-mix(in srgb, var(--basalt-success) 45%, transparent);
+	animation: vo-live 2s ease-out infinite;
+}
+@keyframes vo-live {
+	to {
+		box-shadow: 0 0 0 0.4rem transparent;
+	}
+}
+.vo-call-sep {
+	color: var(--vo-quiet);
+}
+
+.vo-who {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	margin-top: auto;
+	padding-top: 2rem;
+}
+
+.vo-faces {
+	display: flex;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+	justify-content: center;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+.vo-face {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: center;
+}
+.vo-face .basalt-avatar {
+	position: relative;
+	box-shadow:
+		0 0 0 5px var(--basalt-plane),
+		0 0 0 6px var(--basalt-edge);
+}
+.vo-face-name {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Whoever is speaking gets a ring that pulses out from them. */
+.vo-face.is-speaking .basalt-avatar {
+	box-shadow:
+		0 0 0 5px var(--basalt-plane),
+		0 0 0 7px var(--basalt-hue);
+}
+.vo-face.is-speaking::before {
+	content: "";
+	position: absolute;
+	top: -7px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: calc(var(--vo-size, 96px) + 14px);
+	height: calc(var(--vo-size, 96px) + 14px);
+	border: 2px solid var(--basalt-hue);
+	border-radius: 50%;
+	pointer-events: none;
+	animation: vo-ring 1.8s ease-out infinite;
+}
+.vo-faces.is-group {
+	gap: 1.75rem;
+}
+.vo-faces.is-group .vo-face {
+	--vo-size: 72px;
+}
+@keyframes vo-ring {
+	from {
+		transform: translateX(-50%) scale(1);
+		opacity: 0.8;
+	}
+	to {
+		transform: translateX(-50%) scale(1.3);
+		opacity: 0;
+	}
+}
+/* Someone being added: faded until they answer. */
+.vo-face.is-ringing .basalt-avatar {
+	opacity: 0.55;
+	animation: vo-ringing 1.2s ease-in-out infinite;
+}
+.vo-face.is-ringing .vo-face-name {
+	color: var(--vo-quiet);
+}
+@keyframes vo-ringing {
+	50% {
+		opacity: 0.9;
+	}
+}
+
+.vo-who-name {
+	max-width: 100%;
+	margin: 0;
+	font-size: 1.35rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.vo-who-name:focus {
+	outline: none;
+	box-shadow: none;
+}
+.vo-who-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.9rem;
+	color: var(--vo-quiet);
+}
+
+/* Who is speaking, with four bars that move while someone talks. */
+.vo-speaking {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 1.1rem 0 0;
+	padding: 0.3rem 0.8rem;
+	border-radius: 999px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.vo-speaking.is-quiet {
+	color: var(--vo-quiet);
+	background: var(--basalt-plane-alt);
+}
+.vo-bars {
+	display: inline-flex;
+	gap: 2px;
+	align-items: center;
+	height: 0.85rem;
+}
+.vo-bars span {
+	width: 3px;
+	height: 100%;
+	border-radius: 2px;
+	background: currentColor;
+	animation: vo-bars 900ms ease-in-out infinite;
+}
+.vo-bars span:nth-child(2) {
+	animation-delay: -250ms;
+}
+.vo-bars span:nth-child(3) {
+	animation-delay: -500ms;
+}
+.vo-bars span:nth-child(4) {
+	animation-delay: -750ms;
+}
+.vo-speaking.is-quiet .vo-bars span {
+	transform: scaleY(0.3);
+	animation: none;
+}
+@keyframes vo-bars {
+	0%,
+	100% {
+		transform: scaleY(0.3);
+	}
+	50% {
+		transform: scaleY(1);
+	}
+}
+
+/* Keypad */
+.vo-keypad {
+	width: 100%;
+	max-width: 17rem;
+	margin-top: 1.25rem;
+}
+.vo-keypad-display {
+	min-height: 2rem;
+	margin: 0 0 0.75rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	color: var(--basalt-copy);
+}
+.vo-keypad-keys {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(3, 1fr);
+	justify-items: center;
+}
+.vo-key {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 3.75rem;
+	height: 3.75rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 50%;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+	transition: background-color 170ms ease;
+}
+.vo-key:hover {
+	background: var(--basalt-wash);
+}
+.vo-key:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.vo-key-digit {
+	font-size: 1.1rem;
+	font-weight: 600;
+	line-height: 1.1;
+}
+.vo-key-letters {
+	min-height: 0.8rem;
+	font-size: 0.62rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	color: var(--vo-quiet);
+}
+
+/* Controls */
+.vo-controls {
+	display: flex;
+	gap: 1.25rem;
+	justify-content: center;
+	margin-top: 2rem;
+}
+.vo-ctl {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: none;
+}
+.vo-ctl-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 50%;
+	font-size: 1.2rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+}
+.vo-ctl:hover .vo-ctl-icon {
+	background: var(--basalt-wash);
+}
+.vo-ctl:focus-visible {
+	outline: none;
+}
+.vo-ctl:focus-visible .vo-ctl-icon {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.vo-ctl-label {
+	white-space: nowrap;
+}
+.vo-ctl[aria-pressed="true"] .vo-ctl-icon {
+	border-color: transparent;
+	color: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.vo-ctl[data-vo-ctl="mute"][aria-pressed="true"] .vo-ctl-icon {
+	color: var(--vo-missed);
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+
+.vo-end {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 1.5rem;
+	margin-bottom: auto;
+	padding: 0.6rem 1.5rem;
+	border-radius: 999px;
+	font-size: 0.9rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.vo-end .bi {
+	font-size: 1.1rem;
+}
+
+@media (max-width: 575.98px) {
+	.vo-controls {
+		gap: 0.75rem;
+	}
+	.vo-ctl-icon {
+		width: 3rem;
+		height: 3rem;
+		font-size: 1.1rem;
+	}
+	.vo-faces.is-group {
+		gap: 1.25rem;
+	}
+	.vo-faces.is-group .vo-face {
+		--vo-size: 60px;
+	}
+	.vo-faces.is-group .basalt-avatar {
+		width: 60px;
+		height: 60px;
+		font-size: 1.25rem;
+	}
+}
+
+/* After the call */
+.vo-call.is-idle > :not(.vo-idle) {
+	display: none;
+}
+.vo-idle {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin: auto 0;
+	padding: 2rem 0;
+}
+.vo-idle-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3.5rem;
+	height: 3.5rem;
+	margin-bottom: 1rem;
+	border-radius: 50%;
+	font-size: 1.4rem;
+	color: var(--vo-quiet);
+	background: var(--basalt-plane-alt);
+}
+.vo-idle-title {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.vo-idle-title:focus {
+	outline: none;
+	box-shadow: none;
+}
+.vo-idle-text {
+	max-width: 26rem;
+	margin: 0.4rem 0 1.25rem;
+	font-size: 0.9rem;
+	color: var(--vo-quiet);
+}
+
+/* Recent calls */
+.vo-recent.card {
+	padding: 1.5rem var(--basalt-pad-x);
+}
+.vo-recent-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.vo-recent-title {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.vo-recent-desc {
+	margin: 0.2rem 0 0;
+	font-size: 0.85rem;
+	color: var(--vo-quiet);
+}
+
+.vo-day {
+	margin: 1.25rem 0 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--vo-quiet);
+}
+.vo-day:first-child {
+	margin-top: 0;
+}
+.vo-calls {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.vo-calls-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	cursor: pointer;
+}
+.vo-calls-row:last-child {
+	border-bottom: 0;
+}
+.vo-calls-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.vo-calls-name {
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.vo-calls-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.vo-calls-meta {
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--vo-quiet);
+}
+.vo-calls-meta .bi {
+	margin-right: 0.3rem;
+}
+.vo-calls-row.is-missed .vo-calls-name,
+.vo-calls-row.is-missed .vo-calls-meta {
+	color: var(--vo-missed);
+}
+.vo-calls-call {
+	flex-shrink: 0;
+}
+.vo-days-empty {
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	color: var(--vo-quiet);
+}
+
+/* Add someone */
+.vo-find {
+	position: relative;
+}
+.vo-find .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--vo-quiet);
+	pointer-events: none;
+}
+.vo-find .form-control {
+	padding-left: 2.4rem;
+}
+.vo-find-note {
+	margin: 0.75rem 0 0.25rem;
+	font-size: 0.8rem;
+	color: var(--vo-quiet);
+}
+.vo-dialog {
+	--vo-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+}
+.vo-pick {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.vo-pick-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.vo-pick-row:last-child {
+	border-bottom: 0;
+}
+.vo-pick-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.vo-pick-name {
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.vo-pick-title {
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--vo-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.vo-call-dot,
+	.vo-bars span,
+	.vo-face.is-speaking::before,
+	.vo-face.is-ringing .basalt-avatar {
+		animation: none;
+	}
+	.vo-face.is-speaking::before {
+		opacity: 0;
+	}
+}

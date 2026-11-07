@@ -1,0 +1,676 @@
+/* Bootstrap's tooltip and popover take their colors, type and radii from the
+   Basalt tokens here, and every hint built on top of them lives alongside:
+   tinted tips, key-combination hints, clipped text that explains itself,
+   confirm and edit popovers, the toggletip, the person card and the guided
+   tour. tooltips.html shows each one; Basalt.tips in basalt.js reads
+   the [data-basalt-*] attributes that switch them on. */
+
+$quiet-ink: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+$hue-ink: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+$font-text: "Schibsted Grotesk", sans-serif;
+$font-code: "Chivo Mono", monospace;
+
+/* Soft tips borrow one status color for the fill, the text and the outline. */
+$soft-tones: (
+	success: var(--basalt-success),
+	warning: var(--basalt-warning),
+	danger: var(--basalt-danger),
+);
+
+/* Bootstrap reads each component's settings from --bs-<component>-* custom
+   properties, so a whole set is written from one map. */
+@mixin bs-settings($component, $settings) {
+	@each $key, $value in $settings {
+		--bs-#{$component}-#{$key}: #{$value};
+	}
+}
+
+/* Keyboard focus draws a solid outline instead of Bootstrap's glow. */
+@mixin focus-outline($offset) {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: $offset;
+	box-shadow: none;
+}
+
+/* Status tips keep their text near the body color, so contrast holds 4.5:1. */
+%soft-tip {
+	@include bs-settings(
+		tooltip,
+		(
+			bg: color-mix(in srgb, var(--basalt-tip-tone) 16%, var(--basalt-plane)),
+			color: color-mix(in srgb, var(--basalt-tip-tone) 38%, var(--basalt-copy)),
+		)
+	);
+	filter: drop-shadow(0 0 1px color-mix(in srgb, var(--basalt-tip-tone) 70%, transparent))
+		drop-shadow(0 6px 14px color-mix(in srgb, var(--basalt-copy) 12%, transparent));
+}
+
+/* A bare tooltip is dark ink on the page color, left-aligned, in the UI face. */
+.tooltip {
+	@include bs-settings(
+		tooltip,
+		(
+			bg: var(--basalt-copy),
+			color: var(--basalt-plane),
+			font-size: 0.8rem,
+			padding-x: 0.65rem,
+			padding-y: 0.4rem,
+			border-radius: 8px,
+			max-width: 240px,
+			opacity: 1,
+		)
+	);
+	font-family: $font-text;
+	font-weight: 500;
+	line-height: 1.4;
+
+	.tooltip-inner {
+		text-align: left;
+
+		strong {
+			font-weight: 700;
+		}
+	}
+}
+
+/* Tones come from data-bs-custom-class; the plain ink tip needs none. The
+   light tip gets a hairline and a lift because its fill matches the cards. */
+.tooltip {
+	&.basalt-tip-light {
+		@include bs-settings(
+			tooltip,
+			(
+				bg: var(--basalt-plane),
+				color: var(--basalt-copy),
+			)
+		);
+		filter: drop-shadow(0 0 1px color-mix(in srgb, var(--basalt-copy) 45%, transparent))
+			drop-shadow(0 6px 14px color-mix(in srgb, var(--basalt-copy) 16%, transparent));
+	}
+
+	&.basalt-tip-primary {
+		@include bs-settings(
+			tooltip,
+			(
+				bg: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy)),
+				color: var(--basalt-on-hue),
+			)
+		);
+	}
+
+	@each $tone, $color in $soft-tones {
+		&.basalt-tip-#{$tone} {
+			@extend %soft-tip;
+			--basalt-tip-tone: #{$color};
+		}
+	}
+
+	&[class*="basalt-tip--"] .tooltip-inner .bi {
+		margin-right: 0.3rem;
+	}
+}
+
+/* Shortcut hints set the label and its keys on one line, keys in mono caps. */
+.basalt-tip-row {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	white-space: nowrap;
+}
+
+.basalt-tip-keys {
+	display: inline-flex;
+	gap: 0.2rem;
+
+	kbd {
+		min-width: 1.35rem;
+		padding: 0.1rem 0.3rem;
+		border-radius: 5px;
+		font-family: $font-code;
+		font-size: 0.7rem;
+		font-weight: 500;
+		line-height: 1.3;
+		text-align: center;
+		color: inherit;
+		background: color-mix(in srgb, var(--bs-tooltip-color) 18%, transparent);
+		box-shadow: none;
+	}
+}
+
+/* Clipped text only earns its dotted underline and tab stop once it is cut. */
+.basalt-ellipsis {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+
+	&.is-truncated {
+		text-decoration: underline dotted color-mix(in srgb, var(--basalt-copy-muted) 60%, transparent);
+		text-underline-offset: 3px;
+		cursor: help;
+	}
+
+	&:focus-visible {
+		@include focus-outline(2px);
+		border-radius: 3px;
+	}
+}
+
+/* Popovers sit on the card surface with the card shadow and token text. */
+.popover {
+	@include bs-settings(
+		popover,
+		(
+			bg: var(--basalt-plane),
+			border-color: var(--basalt-edge-strong),
+			border-radius: 12px,
+			inner-border-radius: 11px,
+			box-shadow: var(--basalt-card-shadow),
+			font-size: 0.85rem,
+			max-width: 300px,
+			header-bg: var(--basalt-plane),
+			header-color: var(--basalt-copy),
+			header-font-size: 0.9rem,
+			header-padding-x: 1rem,
+			header-padding-y: 0.75rem,
+			body-color: var(--basalt-copy-body),
+			body-padding-x: 1rem,
+			body-padding-y: 0.8rem,
+		)
+	);
+	font-family: $font-text;
+	line-height: 1.5;
+	box-shadow: var(--bs-popover-box-shadow);
+
+	.popover-header {
+		border-bottom-color: var(--basalt-edge);
+		font-weight: 650;
+	}
+
+	.popover-body {
+		ul {
+			margin: 0;
+			padding-left: 1.1rem;
+		}
+
+		li + li {
+			margin-top: 0.25rem;
+		}
+	}
+}
+
+/* A confirm popover asks one question and puts its answers bottom right. */
+.popover.basalt-popconfirm {
+	--bs-popover-max-width: 280px;
+}
+
+.basalt-popconfirm-title {
+	margin: 0 0 0.3rem;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	.bi {
+		margin-right: 0.3rem;
+		color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+	}
+}
+
+.basalt-popconfirm-text {
+	margin: 0 0 0.9rem;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+.basalt-popconfirm-actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+}
+
+/* The edit popover is a one-field form that validates before it saves; an
+   invalid value gets a red edge and ring instead of Bootstrap's icon. */
+.popover.basalt-edit {
+	--bs-popover-max-width: 260px;
+	width: 260px;
+	max-width: calc(100vw - 2rem);
+}
+
+.basalt-edit .form-label {
+	margin-bottom: 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.basalt-edit-actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 0.8rem;
+}
+
+.basalt-edit {
+	.invalid-feedback {
+		font-size: 0.75rem;
+		color: color-mix(in srgb, var(--basalt-danger) 58%, var(--basalt-copy));
+	}
+
+	.form-control.is-invalid {
+		padding-right: 0.75rem;
+		border-color: var(--basalt-danger);
+		background-image: none;
+
+		&:focus {
+			box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-danger) 30%, transparent);
+		}
+	}
+
+	.input-group-text {
+		border-color: var(--basalt-edge-strong);
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+		background: var(--basalt-plane-alt);
+	}
+}
+
+/* A hint is a small (i) after a figure's label. It sits on the text's
+   baseline at the label's own size, so adding one never changes a line. */
+/* A control at a limit (Basalt.limit) keeps its disabled look but stays
+   under the pointer, so its tooltip can say why. */
+.btn.disabled[data-basalt-limit] {
+	pointer-events: auto;
+	cursor: not-allowed;
+}
+
+[data-basalt-limit][aria-disabled="true"]:not(.btn) {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.basalt-hint {
+	display: inline-grid;
+	place-items: center;
+	width: 1.05em;
+	height: 1.05em;
+	margin-inline-start: 0.3em;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	font-size: 0.9em;
+	line-height: 1;
+	vertical-align: -0.12em;
+	color: $quiet-ink;
+	background: transparent;
+	opacity: 0.75;
+	cursor: help;
+	transition:
+		color 150ms ease,
+		opacity 150ms ease;
+
+	/* The glyph fills the button's box exactly, so the box's middle is the
+	   circle's middle and the -0.12em above lands it on the capitals' middle. */
+	& .bi,
+	& .bi::before {
+		display: block;
+		font-size: 1em;
+		line-height: 1;
+		vertical-align: 0;
+	}
+	&:hover,
+	&[aria-describedby] {
+		color: $hue-ink;
+		opacity: 1;
+	}
+	&:focus-visible {
+		opacity: 1;
+		@include focus-outline(1px);
+	}
+}
+
+/* The label's last word and its (i) never part across lines. */
+.basalt-hint-tail {
+	white-space: nowrap;
+}
+
+/* A toggletip opens on click rather than hover, so touch and screen readers get it too. */
+.basalt-toggletip {
+	position: relative;
+	display: inline-flex;
+	vertical-align: middle;
+}
+
+.basalt-toggletip-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	font-size: 0.9rem;
+	color: $quiet-ink;
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	&[aria-expanded="true"] {
+		color: $hue-ink;
+		background: var(--basalt-hue-soft);
+	}
+
+	&:focus-visible {
+		@include focus-outline(1px);
+	}
+}
+
+/* The bubble hangs under its button; the script nudges it and its arrow inside the viewport. */
+.basalt-toggletip-bubble {
+	--basalt-toggletip-shift: 0px;
+	--basalt-toggletip-arrow: 1rem;
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	left: calc(-0.5rem + var(--basalt-toggletip-shift));
+	z-index: 20;
+	width: max-content;
+	max-width: min(17rem, calc(100vw - 2.5rem));
+	padding: 0.7rem 0.85rem;
+	border-radius: 10px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	line-height: 1.45;
+	text-align: left;
+	white-space: normal;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+	box-shadow: 0 10px 24px color-mix(in srgb, var(--basalt-copy) 22%, transparent);
+
+	&[hidden] {
+		display: none;
+	}
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: -5px;
+		left: calc(var(--basalt-toggletip-arrow) - 5px);
+		transform: rotate(45deg);
+		width: 10px;
+		height: 10px;
+		border-radius: 2px 0 0 0;
+		background: inherit;
+	}
+}
+
+/* The hover card previews a person and stays open while the pointer rests on it. */
+.popover.basalt-hovercard {
+	@include bs-settings(
+		popover,
+		(
+			max-width: 320px,
+			body-padding-x: 0,
+			body-padding-y: 0,
+		)
+	);
+	width: 320px;
+	max-width: calc(100vw - 2rem);
+}
+
+.basalt-hovercard-head {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 1rem 1rem 0.85rem;
+}
+
+.basalt-hovercard-avatar {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 46px;
+	height: 46px;
+	border-radius: 50%;
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: $hue-ink;
+	background: var(--basalt-hue-soft);
+}
+
+.basalt-hovercard-name {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 650;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+
+.basalt-hovercard-role {
+	margin: 0;
+	font-size: 0.8rem;
+	color: $quiet-ink;
+}
+
+/* Three figures share a ruled strip, each value printed above its label. */
+.basalt-hovercard-stats {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	border-top: 1px solid var(--basalt-edge);
+	border-bottom: 1px solid var(--basalt-edge);
+
+	> div {
+		display: flex;
+		gap: 0.1rem;
+		flex-direction: column-reverse;
+		padding: 0.7rem 1rem;
+	}
+
+	> div + div {
+		border-left: 1px solid var(--basalt-edge);
+	}
+
+	dt {
+		font-weight: 500;
+		font-size: 0.71rem;
+		color: $quiet-ink;
+	}
+
+	dd {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+.basalt-hovercard-note {
+	margin: 0;
+	padding: 0.75rem 1rem 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+.basalt-hovercard-actions {
+	display: flex;
+	gap: 0.5rem;
+	padding: 0.85rem 1rem 1rem;
+
+	.btn {
+		flex: 1 1 0;
+	}
+}
+
+.basalt-hovercard-status {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-top: 0.1rem;
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 42%, var(--basalt-copy));
+
+	&::before {
+		content: "";
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--basalt-success);
+	}
+}
+
+/* The tour rings the step it describes and walks forward one popover at a time. */
+.basalt-tour-scope {
+	position: relative;
+}
+
+.basalt-tour-target {
+	position: relative;
+	z-index: 2;
+	border-radius: 8px;
+	box-shadow:
+		0 0 0 3px var(--basalt-plane),
+		0 0 0 5px var(--basalt-hue);
+	animation: basalt-tour-ring 1.6s ease-out infinite;
+}
+
+@keyframes basalt-tour-ring {
+	0% {
+		box-shadow:
+			0 0 0 3px var(--basalt-plane),
+			0 0 0 5px var(--basalt-hue),
+			0 0 0 5px color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+	}
+	100% {
+		box-shadow:
+			0 0 0 3px var(--basalt-plane),
+			0 0 0 5px var(--basalt-hue),
+			0 0 0 14px color-mix(in srgb, var(--basalt-hue) 0%, transparent);
+	}
+}
+
+.popover.basalt-tour {
+	--bs-popover-max-width: 300px;
+	width: 300px;
+	max-width: calc(100vw - 2.5rem);
+
+	.popover-body {
+		position: relative;
+		padding: 1rem 1.1rem 1rem;
+	}
+}
+
+.basalt-tour-count {
+	margin: 0 0 0.3rem;
+	font-family: $font-code;
+	font-size: 0.7rem;
+	font-weight: 500;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: $hue-ink;
+}
+
+.basalt-tour-title {
+	margin: 0 1.75rem 0.3rem 0;
+	font-size: 0.95rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.basalt-tour-text {
+	margin: 0 0 1rem;
+	font-size: 0.83rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+.basalt-tour-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+}
+
+/* Progress dots: the current step stretches into a short bar. */
+.basalt-tour-dots {
+	display: inline-flex;
+	gap: 0.3rem;
+
+	span {
+		width: 6px;
+		height: 6px;
+		border-radius: 3px;
+		background: var(--basalt-edge-strong);
+		transition:
+			width 200ms ease,
+			background-color 200ms ease;
+
+		&.is-on {
+			width: 16px;
+			background: var(--basalt-hue);
+		}
+	}
+}
+
+.basalt-tour-nav {
+	display: inline-flex;
+	gap: 0.4rem;
+}
+
+.basalt-tour-close {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	display: inline-grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	padding: 0;
+	border: 0;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	color: $quiet-ink;
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	&:focus-visible {
+		@include focus-outline(1px);
+	}
+}
+
+/* Reduced motion stills the ring, the dots and Bootstrap's fades. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-toggletip-btn,
+	.basalt-tour-dots span,
+	.tooltip.fade,
+	.popover.fade {
+		transition: none;
+	}
+
+	.basalt-tour-target {
+		animation: none;
+	}
+}
+
+/* On paper nothing floats, and the ring holds still. */
+@media print {
+	.tooltip,
+	.popover {
+		display: none;
+	}
+
+	.basalt-tour-target {
+		animation: none;
+	}
+}

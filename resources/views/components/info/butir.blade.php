@@ -1,7 +1,7 @@
 @props(['label'])
 
-{{-- Satu butir identitas: label color-light fs-12 dan nilai fs-14 fw-500 color-dark (HexaDash: Project, media-ui__start). --}}
+{{-- Satu butir identitas: label text-body-secondary small dan nilai  fw-medium text-body . --}}
 <div {{ $attributes }}>
-    <span class="d-block color-light fs-12">{{ $label }}</span>
-    <p class="fs-14 fw-500 color-dark mb-0">{{ $slot }}</p>
+    <span class="d-block text-body-secondary small">{{ $label }}</span>
+    <p class="fw-medium text-body mb-0">{{ $slot }}</p>
 </div>

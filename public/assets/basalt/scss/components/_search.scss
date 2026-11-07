@@ -1,0 +1,107 @@
+/*
+ * The top-bar find box, read left to right: a lens tucked inside the field,
+ * the field itself, and a ⌘K key that bows out as soon as there is a query.
+ * The second half styles what a list search leaves behind: hidden matches
+ * and the "nothing found" panel.
+ */
+
+.basalt-find {
+	position: relative;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	max-width: 320px;
+}
+
+/* Both decorations float over the field, centered on its height. */
+.basalt-find-lens,
+.basalt-find-hint {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.basalt-find-lens {
+	left: 0.75rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-muted);
+	pointer-events: none;
+}
+
+/* The field leaves room for the lens on the left and the key on the right,
+   and gives that right-hand room back once the key is gone. */
+.basalt-find .form-control {
+	padding-left: 2.25rem;
+	padding-right: 3rem;
+	border-color: transparent;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	background-color: var(--basalt-wash);
+
+	&:focus {
+		border-color: var(--basalt-hue);
+		background-color: var(--basalt-plane);
+		box-shadow: 0 0 0 3px var(--basalt-hue-border);
+	}
+	&:not(:placeholder-shown) {
+		padding-right: 0.75rem;
+
+		~ .basalt-find-hint {
+			display: none;
+		}
+	}
+}
+
+.basalt-find-hint {
+	right: 0.5rem;
+	min-width: 0;
+	padding: 0.1rem 0.3rem;
+	border: 0;
+	border-radius: 6px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	line-height: inherit;
+	color: var(--basalt-copy-muted);
+	background-color: var(--basalt-wash);
+}
+
+/* When nothing matches, a centered panel says so. In a grid it spans every
+   column, and in a table it sits in a row whose cell drops its own chrome. */
+.basalt-empty {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	grid-column: 1 / -1;
+	align-items: center;
+	padding: 2.5rem 1rem;
+	text-align: center;
+}
+.basalt-empty-icon {
+	display: grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.5rem;
+	border-radius: 50%;
+	font-size: 1.25rem;
+	color: var(--basalt-hue);
+	background-color: var(--basalt-hue-soft);
+}
+.basalt-empty-title {
+	max-width: 32rem;
+	margin: 0;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.basalt-empty-text {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-muted);
+}
+.basalt-empty-row > td,
+.table-hover > tbody > .basalt-empty-row > td {
+	--bs-table-bg-state: transparent;
+	padding: 0;
+	border-bottom: 0;
+	box-shadow: none;
+}

@@ -34,7 +34,7 @@ enum ModulAktivitas: string
      * @var array<string, array{ikon: string, label: string, isi: ?string}>
      */
     private const TANPA_MENU = [
-        'farm' => ['ikon' => 'uil-building', 'label' => 'Farm', 'isi' => 'Identitas dan konteks farm'],
+        'farm' => ['ikon' => 'bi-building', 'label' => 'Farm', 'isi' => 'Identitas dan konteks farm'],
     ];
 
     public function label(): string

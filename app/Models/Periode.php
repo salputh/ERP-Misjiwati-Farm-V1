@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Carbon\CarbonInterface;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 class Periode extends Model
 {
@@ -80,7 +80,6 @@ class Periode extends Model
     protected function casts(): array
     {
         return [
-            'nomor_siklus' => 'integer',
             'tanggal_chick_in' => 'date',
             'rekap_pakan_zak' => 'float',
         ];
@@ -151,6 +150,27 @@ class Periode extends Model
     public function umurPada(CarbonInterface $tanggal): int
     {
         return (int) $this->tanggal_chick_in->diffInDays($tanggal->copy()->startOfDay());
+    }
+
+    /**
+     * Nomor siklus tiap kandang pada periode ini, mis. "Kandang 1: 18 · Kandang 2: 19".
+     * Bila semua kandang sama, cukup satu nomor.
+     */
+    public function labelSiklus(): string
+    {
+        $this->loadMissing('kandangPeriode.kandang');
+
+        $siklus = $this->kandangPeriode->filter(fn (PeriodeKandang $satu): bool => $satu->nomor_siklus !== null);
+
+        if ($siklus->isEmpty()) {
+            return '-';
+        }
+
+        if ($siklus->pluck('nomor_siklus')->unique()->count() === 1) {
+            return (string) $siklus->first()->nomor_siklus;
+        }
+
+        return $siklus->map(fn (PeriodeKandang $satu): string => $satu->kandang->nama.' '.$satu->nomor_siklus)->implode(' · ');
     }
 
     /**

@@ -1,0 +1,696 @@
+/* Basalt - Trials (trials.html)
+   Namespaced under .trl-*
+   Built from shared parts: the Headers component (glow), the
+   segmented control, status pills, plan badges, avatars, row actions,
+   empty states and the side panel.
+   This file lays them out and styles what belongs to this page only:
+   the nudge band, the list of trials with its 14-day strips and setup
+   dots, and the quick view.
+   Four type sizes: the card title, the section heading, body text
+   (--trl-fs-body) and one small size (--trl-fs-small). */
+
+.trl-page,
+.trl-drawer {
+	/* Small gray text pulled toward the body color, so it clears 4.5:1
+     on the lighter palettes and on hovered rows. */
+	--trl-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--trl-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--trl-late: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	--trl-line: var(--basalt-edge);
+	--trl-empty: color-mix(in srgb, var(--basalt-copy) 10%, var(--basalt-plane));
+	--trl-fs-body: 0.875rem;
+	--trl-fs-small: 0.77rem;
+}
+.trl-page .basalt-status,
+.trl-drawer .basalt-status {
+	font-size: var(--trl-fs-small);
+}
+
+/* Industry mark
+   A small square tile in the industry's chart color. */
+.trl-mark {
+	--trl-tone: var(--basalt-hue);
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--trl-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--trl-tone) 16%, var(--basalt-plane));
+}
+
+/* The nudge band
+   One calm line above the list: who ends soon with setup half done,
+   and a single button. */
+.trl-nudge {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 1rem var(--basalt-pad-x);
+	border: 1px solid color-mix(in srgb, var(--basalt-warning) 35%, var(--basalt-edge));
+	border-radius: var(--bs-border-radius-xl, 1rem);
+	background: color-mix(in srgb, var(--basalt-warning) 9%, var(--basalt-plane));
+}
+.trl-nudge.is-done {
+	border-color: color-mix(in srgb, var(--basalt-success) 35%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--basalt-success) 9%, var(--basalt-plane));
+}
+.trl-nudge-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: var(--trl-late);
+	background: var(--basalt-plane);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--basalt-warning) 30%, var(--basalt-edge));
+}
+.trl-nudge.is-done .trl-nudge-icon {
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--basalt-success) 30%, var(--basalt-edge));
+}
+.trl-nudge.is-done .trl-nudge-icon .bi {
+	animation: trl-pop 360ms ease-out;
+}
+.trl-nudge-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.trl-nudge-title {
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+.trl-nudge-desc {
+	margin: 0.2rem 0 0;
+	font-size: var(--trl-fs-body);
+	color: var(--basalt-copy);
+}
+.trl-nudge-desc a {
+	font-weight: 600;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--basalt-copy) 35%, transparent);
+	text-underline-offset: 3px;
+	color: inherit;
+}
+.trl-nudge-desc a:hover {
+	text-decoration-color: currentColor;
+}
+.trl-nudge-btn {
+	flex: none;
+	white-space: nowrap;
+}
+@keyframes trl-pop {
+	from {
+		transform: scale(0.4);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+
+/* The list card */
+.trl-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.trl-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--trl-line);
+}
+.trl-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.trl-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--trl-fs-body);
+	color: var(--trl-quiet);
+}
+
+.trl-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-head);
+}
+.trl-search {
+	position: relative;
+	flex: 0 1 24rem;
+	min-width: 12rem;
+}
+.trl-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--trl-quiet);
+	pointer-events: none;
+}
+.trl-search .form-control {
+	padding-left: 2.4rem;
+	font-size: var(--trl-fs-body);
+}
+
+/* The table
+   Team, Plan, Trial, Setup, then the row's two icons. */
+.trl-table-wrap {
+	overflow: hidden;
+}
+.trl-table {
+	--bs-table-bg: transparent;
+	table-layout: fixed;
+}
+.trl-table .trl-col-plan {
+	width: 9rem;
+}
+.trl-table .trl-col-trial {
+	width: 13rem;
+}
+.trl-table .trl-col-setup {
+	width: 9.5rem;
+}
+.trl-table .trl-col-open {
+	width: 6rem;
+}
+.trl-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 1rem;
+	border-color: var(--trl-line);
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.trl-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.trl-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+	text-align: right;
+}
+.trl-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--trl-quiet);
+}
+.trl-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+
+.trl-row[data-trl-id] {
+	cursor: pointer;
+}
+.trl-row[data-trl-id]:hover > * {
+	background: var(--basalt-wash);
+}
+.trl-row.is-open > * {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+.trl-team {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.trl-team-text {
+	min-width: 0;
+}
+.trl-team-name,
+.trl-team-meta {
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.trl-team-name {
+	font-size: var(--trl-fs-body);
+	font-weight: 600;
+}
+.trl-team-meta {
+	margin-top: 0.25rem;
+	font-size: var(--trl-fs-small);
+	color: var(--trl-quiet);
+}
+.trl-team-link {
+	border-radius: 3px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.trl-team-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.trl-team-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+.trl-cell-sub {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: var(--trl-fs-small);
+	white-space: nowrap;
+	color: var(--trl-quiet);
+}
+.trl-cell-sub-late {
+	font-weight: 600;
+	color: var(--trl-late);
+}
+.trl-row-plan .badge {
+	font-size: var(--trl-fs-small);
+}
+
+/* Day X of 14 with its strip */
+.trl-day {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	white-space: nowrap;
+}
+.trl-day-n {
+	font-size: var(--trl-fs-body);
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+.trl-day-of {
+	font-weight: 400;
+	color: var(--trl-quiet);
+}
+
+/* Fourteen blocks: past days filled, today stronger, the rest empty.
+   The last two days turn warm; a closed trial goes calm. */
+.trl-strip {
+	--trl-fill: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-plane));
+	--trl-now: var(--basalt-hue);
+	display: inline-grid;
+	gap: 2px;
+	grid-template-columns: repeat(14, 4px);
+	height: 14px;
+}
+.trl-strip > span {
+	border-radius: 1px;
+	background: var(--trl-empty);
+}
+.trl-strip > .is-past {
+	background: var(--trl-fill);
+}
+.trl-strip > .is-today {
+	background: var(--trl-now);
+}
+.trl-strip.is-late {
+	--trl-fill: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-plane));
+	--trl-now: var(--basalt-warning);
+}
+.trl-strip.is-paid {
+	--trl-fill: color-mix(in srgb, var(--basalt-success) 40%, var(--basalt-plane));
+	--trl-now: color-mix(in srgb, var(--basalt-success) 80%, var(--basalt-copy));
+}
+.trl-strip.is-closed {
+	--trl-fill: color-mix(in srgb, var(--basalt-copy-muted) 35%, var(--basalt-plane));
+	--trl-now: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-plane));
+}
+.trl-strip-big {
+	display: grid;
+	gap: 4px;
+	grid-template-columns: repeat(14, minmax(0, 1fr));
+	height: 22px;
+	margin: 1rem 0 0.75rem;
+}
+.trl-strip-big > span {
+	border-radius: 3px;
+}
+
+/* Setup: four dots and a count */
+.trl-row-setup {
+	white-space: nowrap;
+}
+.trl-dots {
+	display: inline-flex;
+	gap: 4px;
+	margin-right: 0.6rem;
+	vertical-align: middle;
+}
+.trl-dots > span {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--trl-empty);
+}
+.trl-dots > .is-done {
+	background: color-mix(in srgb, var(--basalt-success) 80%, var(--basalt-copy));
+}
+.trl-dots-n {
+	font-size: var(--trl-fs-body);
+	vertical-align: middle;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Empty and no results */
+.trl-empty {
+	max-width: 30rem;
+	margin: 1.5rem auto;
+	text-align: center;
+}
+.trl-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.6rem;
+	border-radius: 14px;
+	font-size: var(--basalt-fs-card-title);
+	color: var(--trl-link);
+	background: var(--basalt-hue-soft);
+}
+.trl-empty .basalt-empty-title {
+	font-size: var(--basalt-fs-section);
+}
+.trl-empty .basalt-empty-text {
+	font-size: var(--trl-fs-body);
+	color: var(--trl-quiet);
+}
+.trl-empty .basalt-empty-actions {
+	justify-content: center;
+}
+
+/* Medium cards: no Plan column, and the industry is left to the icon.
+   The team's name and town wrap on whole words instead of cutting off. */
+@container (max-width: 860px) {
+	.trl-table .trl-col-plan,
+	.trl-row-plan,
+	.trl-team-ind {
+		display: none;
+	}
+	.trl-team-name,
+	.trl-team-meta {
+		white-space: normal;
+	}
+}
+
+/* Narrow cards: each trial becomes a small record. The team and its
+   icons on top, then the trial and setup on one line under the name. */
+@container (max-width: 620px) {
+	.trl-card-head {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.trl-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.trl-table {
+		table-layout: auto;
+	}
+	.trl-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.trl-table,
+	.trl-table tbody,
+	.trl-table td {
+		display: block;
+		width: 100%;
+	}
+	.trl-table tbody tr {
+		display: grid;
+		gap: 0.75rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "team open" "trial setup";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--trl-line);
+	}
+	.trl-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.trl-table > :not(caption) > * > *,
+	.trl-table > :not(caption) > * > :first-child,
+	.trl-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: transparent;
+	}
+	.trl-row[data-trl-id]:hover {
+		background: var(--basalt-wash);
+	}
+	.trl-row.is-open {
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	}
+	.trl-row-team {
+		grid-area: team;
+	}
+	.trl-row-trial {
+		grid-area: trial;
+	}
+	.trl-team-name {
+		white-space: normal;
+	}
+	.trl-row-setup {
+		grid-area: setup;
+		align-self: start;
+		width: auto;
+		text-align: right;
+	}
+	.trl-row-open {
+		grid-area: open;
+		width: auto;
+	}
+	.trl-table td.trl-row-plan {
+		display: none;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.trl-nudge {
+		flex-wrap: wrap;
+		align-items: flex-start;
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.trl-nudge-text {
+		flex-basis: calc(100% - 3.25rem);
+	}
+	.trl-nudge-btn {
+		margin-left: 3.25rem;
+	}
+}
+
+/* The quick view */
+.trl-drawer.offcanvas {
+	--bs-offcanvas-width: min(520px, 100vw);
+}
+.trl-drawer .offcanvas-header {
+	gap: 0.75rem;
+	align-items: flex-start;
+	border-bottom: 1px solid var(--trl-line);
+}
+.trl-drawer .offcanvas-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.trl-drawer .offcanvas-title:focus {
+	outline: none;
+}
+.trl-drawer .offcanvas-title:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.trl-drawer .basalt-drawer-sub {
+	margin-top: 0.3rem;
+	font-size: var(--trl-fs-small);
+	color: var(--trl-quiet);
+}
+.trl-drawer .offcanvas-body {
+	padding-top: var(--basalt-pad-head);
+	padding-bottom: var(--basalt-pad-head);
+}
+.trl-drawer .basalt-drawer-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+}
+.trl-drawer .basalt-drawer-foot .btn {
+	white-space: nowrap;
+}
+
+.trl-d-sec + .trl-d-sec {
+	margin-top: var(--basalt-pad-head);
+	padding-top: var(--basalt-pad-head);
+	border-top: 1px solid var(--trl-line);
+}
+.trl-d-h {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.trl-d-count {
+	font-size: var(--trl-fs-small);
+	font-weight: 600;
+	color: var(--trl-quiet);
+}
+.trl-d-tags {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.trl-d-tags .badge {
+	font-size: var(--trl-fs-small);
+}
+.trl-d-tag {
+	font-size: var(--trl-fs-small);
+	color: var(--trl-quiet);
+}
+.trl-d-line {
+	margin: 0;
+	font-size: var(--trl-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.trl-d-quiet {
+	margin: 0.3rem 0 0;
+	font-size: var(--trl-fs-small);
+	color: var(--trl-quiet);
+}
+.trl-d-tip {
+	display: flex;
+	gap: 0.6rem;
+	margin: 0.9rem 0 0;
+	padding: 0.65rem 0.85rem;
+	border-radius: 10px;
+	font-size: var(--trl-fs-small);
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.trl-d-tip > .bi {
+	flex: none;
+	color: var(--trl-link);
+}
+
+/* The setup checklist */
+.trl-check {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.trl-check > li {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.4rem 0;
+	font-size: var(--trl-fs-body);
+}
+.trl-check-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	border: 1px dashed color-mix(in srgb, var(--basalt-copy-muted) 55%, var(--basalt-plane));
+	font-size: 0.8rem;
+	color: var(--trl-quiet);
+}
+.trl-check > .is-done .trl-check-icon {
+	border: 0;
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+}
+.trl-check-label {
+	flex: 1;
+	min-width: 0;
+	color: var(--basalt-copy);
+}
+.trl-check > :not(.is-done) .trl-check-label {
+	color: var(--trl-quiet);
+}
+.trl-check-when {
+	font-size: var(--trl-fs-small);
+	white-space: nowrap;
+	color: var(--trl-quiet);
+}
+
+/* People and the latest lines */
+.trl-people,
+.trl-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.trl-people > li {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.4rem 0;
+}
+.trl-people-text {
+	flex: 1;
+	min-width: 0;
+}
+.trl-people-name {
+	display: block;
+	font-size: var(--trl-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.trl-people-role,
+.trl-people-when {
+	font-size: var(--trl-fs-small);
+	color: var(--trl-quiet);
+}
+.trl-people-when {
+	white-space: nowrap;
+}
+.trl-feed > li {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 3.5rem minmax(0, 1fr);
+	padding: 0.4rem 0;
+	font-size: var(--trl-fs-body);
+}
+.trl-feed-when {
+	font-size: var(--trl-fs-small);
+	line-height: 1.6;
+	white-space: nowrap;
+	color: var(--trl-quiet);
+}
+.trl-feed-what {
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.trl-nudge.is-done .trl-nudge-icon .bi {
+		animation: none;
+	}
+	.trl-row[data-trl-id] {
+		transition: none;
+	}
+}

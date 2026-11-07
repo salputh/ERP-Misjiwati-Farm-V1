@@ -1,0 +1,2848 @@
+/*
+ * Styles for the standalone status screens that sit outside the app frame:
+ * 404-not-found.html, 500-server-error.html, coming-soon-1.html, coming-soon-2-2.html and
+ * down-for-maintenance.html. Everything is prefixed stp- and drawn from the
+ * basalt.css tokens, so palettes, dark mode and flat mode all reach it.
+ */
+
+/* Every screen shares the frame below: body, blobs, shell, top bar and footer. */
+
+/* The body is a full-height column; the quiet tone is the muted token pulled
+   toward the copy color so small gray text clears 4.5:1 on every palette. */
+.stp-body {
+	--stp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	overflow-x: hidden;
+}
+
+/* Two soft color blobs sit behind everything and never catch the pointer. */
+.stp-ambient {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+.stp-ambient-blob {
+	position: absolute;
+	width: 480px;
+	height: 480px;
+	border-radius: 50%;
+	opacity: 0.35;
+	filter: blur(90px);
+
+	[data-bs-theme="dark"] & {
+		opacity: 0.25;
+	}
+}
+.stp-ambient-blob-a {
+	top: -160px;
+	left: -140px;
+	background: radial-gradient(
+		circle,
+		color-mix(in srgb, var(--basalt-series-1) 76%, var(--basalt-copy)),
+		transparent 65%
+	);
+}
+.stp-ambient-blob-b {
+	right: -120px;
+	bottom: -180px;
+	background: radial-gradient(circle, var(--basalt-series-3), transparent 65%);
+}
+.stp-ambient-blob-c {
+	top: 40%;
+	left: 55%;
+	background: radial-gradient(circle, var(--basalt-series-1), transparent 65%);
+}
+
+/* The shell centers the content column and stacks above the blobs. */
+.stp-shell {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	width: 100%;
+	max-width: 1240px;
+	margin: 0 auto;
+	padding: 1.25rem 1.25rem 2.25rem;
+}
+
+.stp-topbar {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.25rem 0.25rem 1.5rem;
+}
+.stp-topbar-actions {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+/* The wordmark pairs a tinted logo tile with gradient lettering. */
+.stp-brand {
+	display: inline-flex;
+	gap: 0.625rem;
+	align-items: center;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.stp-brand-logo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border-radius: 12px;
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, color-mix(in srgb, var(--basalt-series-1) 74%, var(--basalt-plane)) 14%, transparent),
+		color-mix(in srgb, var(--basalt-series-3) 14%, transparent)
+	);
+
+	& svg {
+		width: 26px;
+		height: 26px;
+	}
+}
+.stp-brand-text {
+	font-size: 1.1rem;
+	font-weight: 800;
+	-webkit-text-fill-color: transparent;
+	color: color-mix(in srgb, var(--basalt-series-1) 65%, var(--basalt-copy));
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--basalt-series-1) 65%, var(--basalt-copy)),
+		color-mix(in srgb, var(--basalt-series-3) 45%, var(--basalt-copy))
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+}
+
+/* The mode switch shows the moon in light mode and the sun in dark mode. */
+.stp-theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		transform 170ms ease;
+
+	&:hover {
+		transform: translateY(-1px);
+		background: var(--basalt-wash);
+	}
+	& .bi {
+		font-size: 1.05rem;
+	}
+	[data-bs-theme="light"] & .bi-brightness-high {
+		display: none;
+	}
+	[data-bs-theme="dark"] & .bi-moon {
+		display: none;
+	}
+}
+
+.stp-footer {
+	position: relative;
+	z-index: 1;
+	padding: 1.5rem 1.25rem;
+	font-size: 0.81rem;
+	text-align: center;
+	color: var(--stp-quiet);
+}
+
+/* The eyebrow, title, lead copy and buttons read the same on all five screens. */
+
+/* The eyebrow is a small uppercase pill; tone variants recolor only its fill and text. */
+.stp-eyebrow {
+	display: inline-flex;
+	gap: 0.375rem;
+	align-items: center;
+	margin-bottom: 1rem;
+	padding: 0.375rem 0.75rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-series-1) 54%, var(--basalt-copy));
+	background: color-mix(in srgb, color-mix(in srgb, var(--basalt-series-1) 76%, var(--basalt-copy)) 12%, transparent);
+
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--basalt-series-1) 58%, var(--basalt-copy));
+		background: color-mix(
+			in srgb,
+			color-mix(in srgb, var(--basalt-series-1) 76%, var(--basalt-copy)) 18%,
+			transparent
+		);
+	}
+}
+.stp-eyebrow-danger {
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 12%, transparent);
+}
+.stp-eyebrow-amber {
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 16%, transparent);
+}
+
+.stp-title {
+	margin: 0 0 0.75rem;
+	font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.stp-lead {
+	margin-bottom: 1.5rem;
+	font-size: 1rem;
+	line-height: 1.65;
+	color: var(--stp-quiet);
+}
+
+.stp-cta-row {
+	display: flex;
+	gap: 0.625rem;
+	flex-wrap: wrap;
+	margin-bottom: 2rem;
+}
+
+/* Filled buttons and the preview's lock badge take the sign-in button's fill;
+   both stops hold the label at 4.5:1 or better across all nine palettes. */
+.stp-btn-primary,
+.stp-subscribe-btn,
+.stp-soon-lock {
+	--stp-fill-a: color-mix(in srgb, var(--basalt-hue) 65%, var(--basalt-hue-deep));
+	--stp-fill-b: var(--basalt-hue-deep);
+}
+[data-bs-theme="dark"] :is(.stp-btn-primary, .stp-subscribe-btn, .stp-soon-lock) {
+	--stp-fill-a: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--stp-fill-b: var(--basalt-hue);
+}
+
+.stp-btn-primary {
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-bg: var(--stp-fill-b);
+	--bs-btn-border-color: transparent;
+	padding: 0.625rem 1.1rem;
+	border: 0;
+	border-radius: 12px;
+	font-weight: 600;
+	color: var(--basalt-on-hue);
+	background: linear-gradient(135deg, var(--stp-fill-a), var(--stp-fill-b)) var(--stp-fill-b);
+	box-shadow: 0 12px 28px
+		color-mix(in srgb, color-mix(in srgb, var(--basalt-series-1) 58%, var(--basalt-copy)) 25%, transparent);
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease,
+		filter 180ms ease;
+
+	&:hover,
+	&:focus-visible {
+		transform: translateY(-1px);
+		color: var(--basalt-on-hue);
+		box-shadow: 0 16px 34px
+			color-mix(in srgb, color-mix(in srgb, var(--basalt-series-1) 58%, var(--basalt-copy)) 32%, transparent);
+		filter: brightness(1.05);
+	}
+}
+
+.stp-btn-ghost {
+	padding: 0.625rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: transparent;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-copy-muted);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* The 404 dead end runs from its route art down to the section directory. */
+
+.stp-404 {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 1rem 0 2rem;
+}
+
+/* The 404 is drawn as three routes; each layer drifts with the pointer by its own depth. */
+.stp-404-art {
+	--px: 0;
+	--py: 0;
+	width: 100%;
+	max-width: 460px;
+	margin-bottom: 1.5rem;
+}
+.stp-404-svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	overflow: visible;
+}
+.stp-404-layer {
+	--depth: 0.6;
+	transform: translate(calc(var(--px) * var(--depth) * 14px), calc(var(--py) * var(--depth) * 10px));
+	transition: transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* The front layer moves furthest. */
+.stp-404-layer.is-front {
+	--depth: 1;
+}
+
+/* Each digit has a faint track under the route that draws itself on load. */
+.stp-404-track,
+.stp-404-route {
+	fill: none;
+	stroke-width: 30;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.stp-404-track {
+	stroke: color-mix(in srgb, var(--basalt-series-1) 10%, var(--basalt-wash));
+}
+.stp-404-route {
+	filter: drop-shadow(0 14px 24px color-mix(in srgb, var(--basalt-series-1) 28%, transparent));
+	stroke: url(#route404);
+	stroke-dasharray: 1 1;
+	stroke-dashoffset: 1;
+	animation: stp-route-draw 1.1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.stp-404-route-zero {
+	animation-delay: 0.25s;
+}
+.stp-404-route-late {
+	animation-delay: 0.5s;
+}
+@keyframes stp-route-draw {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+.stp-404-stop-from {
+	stop-color: color-mix(in srgb, var(--basalt-series-1) 76%, var(--basalt-copy));
+}
+.stp-404-stop-mid {
+	stop-color: var(--basalt-series-1);
+}
+.stp-404-stop-to {
+	stop-color: var(--basalt-series-3);
+}
+
+/* The glowing dot runs the zero; sparks flash where it leaves the gap. */
+.stp-404-dot {
+	filter: drop-shadow(0 0 8px color-mix(in srgb, var(--basalt-series-3) 80%, transparent));
+	fill: var(--basalt-series-3);
+}
+.stp-404-sparks line {
+	opacity: 0;
+	stroke: var(--basalt-series-3);
+	stroke-width: 4;
+	stroke-linecap: round;
+	animation: stp-spark 3.8s ease-out infinite;
+	animation-delay: 1.4s;
+
+	&:nth-child(2) {
+		animation-delay: 1.45s;
+	}
+	&:nth-child(3) {
+		animation-delay: 1.5s;
+	}
+}
+@keyframes stp-spark {
+	0%,
+	62% {
+		opacity: 0;
+	}
+	66% {
+		opacity: 1;
+	}
+	80%,
+	100% {
+		opacity: 0;
+	}
+}
+
+.stp-404-intro {
+	width: 100%;
+	max-width: 640px;
+	text-align: center;
+
+	& .stp-lead {
+		max-width: 540px;
+		margin-left: auto;
+		margin-right: auto;
+		text-wrap: balance;
+	}
+	& .stp-cta-row {
+		justify-content: center;
+	}
+}
+
+/* The trace shows the request that failed, struck through, beside the closest real page. */
+.stp-404-trace {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: stretch;
+	justify-content: center;
+	margin-bottom: 1.25rem;
+}
+.stp-404-path {
+	display: inline-flex;
+	gap: 0.625rem;
+	align-items: center;
+	min-width: 0;
+	padding: 0.5rem 0.875rem;
+	border-radius: 12px;
+	border: 1px dashed color-mix(in srgb, var(--basalt-copy-muted) 45%, transparent);
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.81rem;
+	background: var(--basalt-plane);
+
+	& code {
+		font-size: inherit;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& mark {
+		padding: 0 0.1rem;
+		border-radius: 4px;
+		text-decoration: line-through;
+		text-decoration-color: color-mix(in srgb, var(--basalt-danger) 70%, transparent);
+		text-decoration-thickness: 2px;
+		color: inherit;
+		background: none;
+	}
+}
+.stp-404-verb {
+	font-weight: 700;
+	font-size: 0.6875rem;
+	letter-spacing: 0.055em;
+	color: var(--stp-quiet);
+}
+.stp-404-match {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.5rem 0.875rem;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--basalt-series-3) 40%, transparent);
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-series-3) 14%, var(--basalt-plane));
+	transition:
+		transform 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		transform: translateX(2px);
+		border-color: var(--basalt-series-3);
+		color: var(--basalt-copy);
+	}
+	& .bi {
+		transition: transform 170ms ease;
+	}
+	&:hover .bi {
+		transform: translateX(2px);
+	}
+}
+.stp-404-match-label {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The finder is one wide field with the icon and the / hint laid over it. */
+.stp-404-search {
+	position: relative;
+	max-width: 520px;
+	margin: 0 auto 1.25rem;
+	text-align: left;
+}
+.stp-404-search-icon {
+	position: absolute;
+	top: 50%;
+	left: 1rem;
+	transform: translateY(-50%);
+	color: var(--stp-quiet);
+	pointer-events: none;
+}
+.stp-404-search-input {
+	width: 100%;
+	padding: 0.8rem 3rem 0.8rem 2.6rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.95rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 10px 30px color-mix(in srgb, var(--basalt-series-1) 8%, transparent);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&::placeholder {
+		color: var(--stp-quiet);
+	}
+	&:focus {
+		border-color: color-mix(in srgb, var(--basalt-series-1) 55%, transparent);
+		outline: none;
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-series-1) 16%, transparent);
+	}
+	&::-webkit-search-cancel-button {
+		display: none;
+	}
+}
+.stp-404-kbd {
+	position: absolute;
+	top: 50%;
+	right: 0.75rem;
+	transform: translateY(-50%);
+	min-width: 1.6rem;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	border: 1px solid var(--basalt-edge);
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.75rem;
+	text-align: center;
+	color: var(--stp-quiet);
+	background: var(--basalt-wash);
+	box-shadow: none;
+}
+
+/* Matches drop below the field; the highlighted option and a hovered one share the wash. */
+.stp-404-results {
+	position: absolute;
+	top: calc(100% + 0.375rem);
+	right: 0;
+	left: 0;
+	z-index: 5;
+	margin: 0;
+	padding: 0.375rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	list-style: none;
+	box-shadow: 0 24px 48px rgba(25, 20, 48, 0.12);
+
+	[data-bs-theme="dark"] & {
+		box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+	}
+	& a {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.5rem 0.75rem;
+		border-radius: 10px;
+		font-size: 0.875rem;
+		font-weight: 500;
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+	& [aria-selected="true"] a,
+	& a:hover {
+		background: var(--basalt-wash);
+	}
+}
+.stp-404-result-group {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--stp-quiet);
+}
+.stp-404-results-empty {
+	padding: 0.5rem 0.75rem;
+	font-size: 0.875rem;
+	color: var(--stp-quiet);
+}
+
+/* Below a rule, the sections of the app sit in a grid of cards that rise in one after another. */
+.stp-404-directory {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	width: 100%;
+	margin-top: 1rem;
+	padding-top: 2rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	@media (max-width: 991.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	@media (max-width: 575.98px) {
+		gap: 0.625rem;
+	}
+	@media (max-width: 339.98px) {
+		grid-template-columns: 1fr;
+	}
+}
+/* This narrow padding precedes the card rule below, which therefore keeps its own padding. */
+@media (max-width: 575.98px) {
+	.stp-404-group {
+		padding: 0.9rem 1rem;
+	}
+}
+.stp-404-group {
+	transform: translateY(8px);
+	padding: 1.1rem 1.25rem;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-plane) 75%, transparent);
+	opacity: 0;
+	backdrop-filter: blur(6px);
+	animation: stp-rise 400ms ease forwards;
+	animation-delay: calc(300ms + var(--i, 0) * 50ms);
+
+	&:nth-child(2) {
+		--i: 1;
+	}
+	&:nth-child(3) {
+		--i: 2;
+	}
+	&:nth-child(4) {
+		--i: 3;
+	}
+	&:nth-child(5) {
+		--i: 4;
+	}
+	&:nth-child(6) {
+		--i: 5;
+	}
+	& ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	& a {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.3rem 0;
+		font-size: 0.875rem;
+		font-weight: 500;
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+	& a::after {
+		content: "\2192";
+		transform: translateX(-4px);
+		color: var(--basalt-series-1);
+		opacity: 0;
+		transition:
+			opacity 170ms ease,
+			transform 170ms ease;
+	}
+	& a:hover {
+		color: color-mix(in srgb, var(--basalt-series-1) 60%, var(--basalt-copy));
+	}
+	& a:hover::after {
+		transform: none;
+		opacity: 1;
+	}
+}
+@keyframes stp-rise {
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+.stp-404-group-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.625rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+
+	& .bi {
+		font-size: 0.95rem;
+		color: var(--basalt-series-1);
+	}
+}
+
+/* With reduced motion the routes arrive drawn, the art holds still and the cards are simply there. */
+@media (prefers-reduced-motion: reduce) {
+	.stp-404-route {
+		stroke-dashoffset: 0;
+		animation: none;
+	}
+	.stp-404-sparks line {
+		animation: none;
+	}
+	.stp-404-layer {
+		transform: none;
+		transition: none;
+	}
+	.stp-404-group {
+		transform: none;
+		opacity: 1;
+		animation: none;
+	}
+}
+
+/* The 404 page also opens a short dialog for reporting the broken link. */
+
+/* A narrow rounded dialog with a gradient strip across its top edge. */
+.stp-report {
+	& .modal-dialog {
+		max-width: 520px;
+	}
+	& .modal-content {
+		border: 1px solid var(--basalt-edge);
+		border-radius: 22px;
+		overflow: hidden;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: 0 30px 70px rgba(25, 20, 48, 0.18);
+	}
+	[data-bs-theme="dark"] & .modal-content {
+		box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+	}
+	& .modal-content::before {
+		content: "";
+		display: block;
+		height: 4px;
+		background: linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--basalt-series-1) 76%, var(--basalt-copy)),
+			var(--basalt-series-1),
+			var(--basalt-series-3)
+		);
+	}
+}
+
+.stp-report-head {
+	display: flex;
+	gap: 0.875rem;
+	align-items: flex-start;
+	padding: 1.35rem 1.5rem 0.5rem;
+
+	& .btn-close {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+}
+.stp-report-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 14px;
+	font-size: 1.2rem;
+	color: var(--basalt-series-1);
+	background: color-mix(in srgb, var(--basalt-series-1) 12%, transparent);
+}
+.stp-report-title {
+	margin: 0 0 0.1rem;
+	font-size: 1.1rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+}
+.stp-report-sub {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--stp-quiet);
+}
+
+.stp-report-body {
+	padding: 0.75rem 1.5rem 1.25rem;
+}
+.stp-report-label {
+	display: block;
+	margin-bottom: 0.5rem;
+	padding: 0;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--stp-quiet);
+}
+.stp-report-optional {
+	margin-left: 0.3rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	text-transform: none;
+	opacity: 0.75;
+}
+
+/* The address being reported reads as a dashed code slip. */
+.stp-report-address {
+	margin-bottom: 1.1rem;
+	padding: 0.625rem 0.875rem;
+	border-radius: 12px;
+	border: 1px dashed color-mix(in srgb, var(--basalt-copy-muted) 45%, transparent);
+	background: var(--basalt-canvas);
+
+	& .stp-report-label {
+		margin-bottom: 0.2rem;
+	}
+	& code {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.81rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Source tiles reuse the shared .basalt-choice in this page's accent: icons
+   stay gray until picked, and a tile lifts slightly under the pointer. */
+.stp-report-sources {
+	min-width: 0;
+	margin: 0 0 1.1rem;
+	padding: 0;
+	border: 0;
+}
+.stp-report-grid {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	@media (max-width: 479.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.stp-report .basalt-choice {
+	--basalt-choice-tone: var(--basalt-series-1);
+	gap: 0.4rem;
+	padding: 0.7rem 0.75rem;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease,
+		box-shadow 170ms ease,
+		transform 170ms ease;
+
+	& > .bi {
+		display: inline-flex;
+		line-height: 1;
+		color: var(--stp-quiet);
+		transition: color 170ms ease;
+	}
+	&:hover {
+		transform: translateY(-1px);
+	}
+	&:has(input:checked) > .bi {
+		color: var(--basalt-choice-tone);
+	}
+}
+
+/* The source error stays hidden until a submit attempt leaves the choice empty. */
+.stp-report-error {
+	display: none;
+	margin-top: 0.4rem;
+	font-size: 0.81rem;
+	color: var(--basalt-danger);
+}
+.stp-report-checked .stp-report-sources:has(input:invalid) {
+	& .stp-report-error {
+		display: block;
+	}
+	& .basalt-choice {
+		border-color: color-mix(in srgb, var(--basalt-danger) 45%, transparent);
+	}
+}
+
+.stp-report-field {
+	border-radius: 12px;
+	border-color: var(--basalt-edge);
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:focus {
+		border-color: color-mix(in srgb, var(--basalt-series-1) 55%, transparent);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-series-1) 16%, transparent);
+	}
+	&::placeholder {
+		color: var(--stp-quiet);
+		opacity: 0.8;
+	}
+}
+
+.stp-report-foot {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem 1.5rem 1.35rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	@media (max-width: 479.98px) {
+		& .btn {
+			width: 100%;
+		}
+	}
+}
+.stp-report-note {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.81rem;
+	color: var(--stp-quiet);
+}
+
+/* Once sent, a receipt with a self-drawing check takes the form's place in the dialog. */
+.stp-report-done {
+	padding: 2.25rem 1.5rem 1.75rem;
+	text-align: center;
+
+	& code {
+		font-family: "Chivo Mono", monospace;
+		color: var(--basalt-copy);
+	}
+}
+.stp-report-done-text {
+	max-width: 320px;
+	margin: 0 auto 1.25rem;
+	font-size: 0.9rem;
+	color: var(--stp-quiet);
+}
+.stp-report-check {
+	display: block;
+	width: 72px;
+	height: 72px;
+	margin: 0 auto 1rem;
+
+	& circle,
+	& path {
+		fill: none;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-dasharray: 1 1;
+		stroke-dashoffset: 1;
+	}
+	/* A circle cannot take pathLength, so its dash runs on the measured length:
+     175.645 is Chrome's getTotalLength for r=28, and the longer gap keeps the
+     ring invisible until it draws. */
+	& circle {
+		stroke: var(--basalt-series-1);
+		stroke-width: 4;
+		stroke-dasharray: 175.645 176;
+		stroke-dashoffset: 175.645;
+	}
+	& path {
+		stroke: var(--basalt-series-3);
+		stroke-width: 6;
+	}
+}
+.stp-report-done:not([hidden]) {
+	& circle {
+		animation: stp-route-draw 600ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+	}
+	& path {
+		animation: stp-route-draw 400ms cubic-bezier(0.65, 0, 0.35, 1) 450ms forwards;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.stp-report-done:not([hidden]) circle,
+	.stp-report-done:not([hidden]) path {
+		stroke-dashoffset: 0;
+		animation: none;
+	}
+	.stp-report .basalt-choice,
+	.stp-report .basalt-choice > .bi {
+		transition: none;
+	}
+}
+
+/* The 500 page maps the failed request and lists what it keeps checking. */
+
+.stp-500 {
+	display: flex;
+	gap: 3rem;
+	flex-direction: column;
+	padding: 2rem 0 1.5rem;
+
+	& .stp-title {
+		text-wrap: balance;
+	}
+}
+
+/* The request map is a dotted board with service nodes joined by dashed links. */
+.stp-500-map {
+	display: flex;
+	align-items: center;
+	padding: 2rem clamp(1rem, 4vw, 3rem);
+	border-radius: 24px;
+	border: 1px solid var(--basalt-edge);
+	background:
+		radial-gradient(circle at 1px 1px, var(--basalt-edge) 1px, transparent 0) 0 0 / 22px 22px,
+		color-mix(in srgb, var(--basalt-plane) 75%, transparent);
+	backdrop-filter: blur(8px);
+}
+.stp-500-node {
+	display: flex;
+	gap: 0.2rem;
+	flex-shrink: 0;
+	flex-direction: column;
+	align-items: center;
+	width: clamp(84px, 14vw, 130px);
+	text-align: center;
+}
+.stp-500-node-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: clamp(52px, 7vw, 72px);
+	height: clamp(52px, 7vw, 72px);
+	margin-bottom: 0.5rem;
+	border-radius: 20px;
+	border: 1px solid var(--basalt-edge);
+	font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+	background: var(--basalt-plane);
+	box-shadow: 0 12px 28px rgba(25, 20, 48, 0.08);
+}
+.stp-500-node-name {
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.stp-500-node-state {
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+/* A healthy node is accented; the failing one is red and pulses an alarm ring. */
+.stp-500-node.is-ok {
+	& .stp-500-node-icon {
+		color: var(--basalt-series-1);
+	}
+	& .stp-500-node-state {
+		color: var(--bs-success-text-emphasis);
+	}
+}
+.stp-500-node.is-down {
+	& .stp-500-node-icon {
+		border-color: color-mix(in srgb, var(--basalt-danger) 45%, transparent);
+		color: var(--basalt-danger);
+		animation: stp-500-alarm 2s ease-in-out infinite;
+	}
+	& .stp-500-node-state {
+		color: var(--bs-danger-text-emphasis);
+	}
+}
+@keyframes stp-500-alarm {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--basalt-danger) 35%, transparent);
+	}
+	50% {
+		box-shadow: 0 0 0 12px color-mix(in srgb, var(--basalt-danger) 0%, transparent);
+	}
+}
+
+/* Links are plain boxes, so packets travel in real pixels at any width. */
+.stp-500-link {
+	position: relative;
+	flex: 1;
+	height: 4px;
+	margin: 0 0.5rem 3.2rem;
+	border-radius: 4px;
+	background: repeating-linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--basalt-series-1) 40%, transparent) 0 8px,
+		transparent 8px 14px
+	);
+}
+.stp-500-link-broken {
+	background:
+		linear-gradient(90deg, transparent 52%, var(--basalt-canvas) 52%, var(--basalt-canvas) 64%, transparent 64%),
+		repeating-linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--basalt-danger) 45%, transparent) 0 8px,
+			transparent 8px 14px
+		);
+}
+
+/* One packet crosses each healthy link; on the broken one it turns red at the gap and bounces back. */
+.stp-500-packet {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	width: 12px;
+	height: 12px;
+	margin: -6px 0 0 -6px;
+	border-radius: 50%;
+	background: var(--basalt-series-1);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--basalt-series-1) 70%, transparent);
+	animation: stp-500-flow 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes stp-500-flow {
+	0% {
+		left: 0;
+		opacity: 0;
+	}
+	10% {
+		opacity: 1;
+	}
+	90% {
+		opacity: 1;
+	}
+	100% {
+		left: 100%;
+		opacity: 0;
+	}
+}
+.stp-500-packet-bounce {
+	opacity: 0;
+	animation: stp-500-bounce 2.4s cubic-bezier(0.45, 0, 0.55, 1) 1.2s infinite;
+}
+@keyframes stp-500-bounce {
+	0% {
+		left: 0;
+		background: var(--basalt-series-1);
+		opacity: 0;
+	}
+	8% {
+		opacity: 1;
+	}
+	45% {
+		left: 50%;
+		background: var(--basalt-series-1);
+	}
+	52% {
+		left: 50%;
+		transform: scale(1.3);
+		background: var(--basalt-danger);
+	}
+	80% {
+		left: 22%;
+		transform: scale(1);
+		background: var(--basalt-danger);
+		opacity: 0.9;
+	}
+	100% {
+		left: 10%;
+		background: var(--basalt-danger);
+		opacity: 0;
+	}
+}
+.stp-500-spark {
+	position: absolute;
+	top: 50%;
+	left: 58%;
+	transform: translate(-50%, -50%);
+	font-size: 1.1rem;
+	color: var(--basalt-danger);
+	animation: stp-500-spark 2.4s ease-out 1.2s infinite;
+}
+@keyframes stp-500-spark {
+	0%,
+	44% {
+		transform: translate(-50%, -50%) scale(0.9);
+		opacity: 0.35;
+	}
+	52% {
+		transform: translate(-50%, -50%) scale(1.35);
+		opacity: 1;
+	}
+	70%,
+	100% {
+		transform: translate(-50%, -50%) scale(0.9);
+		opacity: 0.35;
+	}
+}
+
+/* The message sits beside the status card, then above it once the screen narrows. */
+.stp-500-body {
+	display: grid;
+	gap: 3rem;
+	grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+	align-items: start;
+
+	@media (max-width: 991.98px) {
+		gap: 2rem;
+		grid-template-columns: 1fr;
+	}
+}
+.stp-500-intro .stp-lead {
+	max-width: 560px;
+}
+.stp-500-meanwhile {
+	display: flex;
+	gap: 0.4rem 0.9rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.875rem;
+	color: var(--stp-quiet);
+
+	& a {
+		border-bottom: 1px solid var(--basalt-edge);
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+	& a:hover {
+		border-color: currentColor;
+		color: var(--basalt-series-1);
+	}
+}
+
+.stp-500-status {
+	padding: 1.5rem;
+	border-radius: 20px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	box-shadow: 0 25px 60px rgba(25, 20, 48, 0.07);
+
+	[data-bs-theme="dark"] & {
+		box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+	}
+}
+.stp-500-status-title {
+	margin: 0 0 0.75rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--stp-quiet);
+}
+
+/* Each check row is icon, service, then the status word in a fixed track
+   that starts at the same x on every row. */
+.stp-500-checks {
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.6rem;
+		grid-template-columns: auto minmax(0, 1fr) 7.5rem;
+		align-items: center;
+		padding: 0.6rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--basalt-copy);
+	}
+	& li span {
+		font-size: 0.81rem;
+		font-weight: 600;
+	}
+	& .is-ok .bi {
+		color: var(--basalt-success);
+	}
+	& .is-ok span {
+		color: var(--bs-success-text-emphasis);
+	}
+	& .is-down .bi {
+		color: var(--basalt-danger);
+	}
+	& .is-down span {
+		color: var(--bs-danger-text-emphasis);
+	}
+	& .is-down {
+		font-weight: 700;
+	}
+}
+
+/* The last-checked line blinks its dot, and turns it amber while a check runs. */
+.stp-500-checked {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-bottom: 1rem;
+	font-size: 0.81rem;
+	color: var(--stp-quiet);
+}
+.stp-500-checked-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--basalt-series-1);
+	animation: stp-500-blink 1.8s ease-in-out infinite;
+
+	.stp-500-checked.is-checking & {
+		background: var(--basalt-warning);
+	}
+}
+@keyframes stp-500-blink {
+	50% {
+		opacity: 0.35;
+	}
+}
+
+/* The incident reference reads as a dashed slip with a copy button. */
+.stp-500-ref {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.6rem 0.75rem;
+	border-radius: 12px;
+	border: 1px dashed color-mix(in srgb, var(--basalt-copy-muted) 40%, transparent);
+	font-size: 0.81rem;
+	color: var(--stp-quiet);
+	background: var(--basalt-canvas);
+
+	& code {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.81rem;
+		color: var(--basalt-copy);
+	}
+}
+.stp-500-copy {
+	padding: 0.25rem 0.6rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 8px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-series-1) 40%, transparent);
+	}
+}
+.stp-500-ref-note {
+	margin: 0.5rem 0 0;
+	font-size: 0.75rem;
+	color: var(--stp-quiet);
+}
+
+/* On phones the map shrinks its nodes and links so all of it fits on one line. */
+@media (max-width: 575.98px) {
+	.stp-500-map {
+		padding: 1.25rem 0.75rem;
+	}
+	.stp-500-node {
+		width: 62px;
+	}
+	.stp-500-node-icon {
+		width: 46px;
+		height: 46px;
+		margin-bottom: 0.3rem;
+		border-radius: 14px;
+		font-size: 1.1rem;
+	}
+	.stp-500-node-name {
+		font-size: 0.8rem;
+	}
+	.stp-500-node-state {
+		font-size: 0.625rem;
+		line-height: 1.2;
+	}
+	.stp-500-link {
+		margin: 0 0.2rem 2.9rem;
+	}
+	.stp-500-ref {
+		flex-wrap: wrap;
+	}
+}
+/* With reduced motion one packet rests mid-link and nothing pulses. */
+@media (prefers-reduced-motion: reduce) {
+	.stp-500-node.is-down .stp-500-node-icon,
+	.stp-500-packet,
+	.stp-500-spark,
+	.stp-500-checked-dot {
+		animation: none;
+	}
+	.stp-500-packet {
+		left: 50%;
+		opacity: 1;
+	}
+	.stp-500-packet-bounce {
+		display: none;
+	}
+}
+
+/* Both coming-soon screens share everything from here to the sneak peek. */
+
+.stp-body-soon {
+	background: var(--basalt-canvas);
+}
+
+/* A blurred color wheel lights the page from behind, fading to the canvas at the edges. */
+.stp-soon-bg {
+	position: fixed;
+	inset: -20%;
+	z-index: 0;
+	transform: translateZ(0);
+	/* It is painted once and kept on a layer of its own; a large blur that
+     moved, or sat under other blurs, made scrolling heavy. */
+	will-change: transform;
+	background: conic-gradient(
+		from 0deg at 50% 50%,
+		var(--basalt-series-1) 0%,
+		var(--basalt-series-3) 25%,
+		color-mix(in srgb, var(--basalt-series-1) 60%, var(--basalt-plane)) 50%,
+		var(--basalt-series-7) 75%,
+		var(--basalt-series-1) 100%
+	);
+	opacity: 0.28;
+	filter: blur(90px) saturate(1.1);
+	pointer-events: none;
+
+	[data-bs-theme="dark"] & {
+		opacity: 0.3;
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(ellipse at center, transparent 0%, var(--basalt-canvas) 75%);
+	}
+}
+
+.stp-soon {
+	display: flex;
+	gap: 3.5rem;
+	flex-direction: column;
+	padding: 2rem 0 1.5rem;
+}
+.stp-soon-hero {
+	display: grid;
+	gap: 3.5rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+	align-items: center;
+
+	@media (max-width: 991.98px) {
+		gap: 2.5rem;
+		grid-template-columns: 1fr;
+	}
+}
+
+.stp-soon-eyebrow {
+	display: inline-flex;
+	gap: 0.375rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+	padding: 0.375rem 0.875rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-series-1) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-plane) 86%, transparent);
+}
+.stp-soon-title {
+	margin: 0 0 1rem;
+	font-size: clamp(2.25rem, 4.6vw, 3.6rem);
+	font-weight: 800;
+	line-height: 1.02;
+	letter-spacing: -0.035em;
+	-webkit-text-fill-color: transparent;
+	text-wrap: balance;
+	color: var(--basalt-copy);
+	background: linear-gradient(
+		100deg,
+		var(--basalt-copy) 35%,
+		color-mix(in srgb, var(--basalt-series-1) 80%, var(--basalt-copy)) 75%,
+		color-mix(in srgb, var(--basalt-series-3) 60%, var(--basalt-copy))
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+}
+.stp-soon-subtitle {
+	max-width: 560px;
+	margin: 0 0 2rem;
+	font-size: 1.05rem;
+	line-height: 1.65;
+	color: var(--stp-quiet);
+}
+
+/* Countdown tiles hold NumberFlow digits above a small spaced-out unit label. */
+.stp-countdown {
+	display: flex;
+	gap: 0.75rem;
+	margin-bottom: 2rem;
+
+	& number-flow {
+		--number-flow-mask-height: 0.2em;
+		font-size: clamp(1.9rem, 4vw, 2.75rem);
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: -0.03em;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+.stp-countdown-unit {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	max-width: 112px;
+	padding: 0.9rem 0.5rem 0.75rem;
+	border-radius: 18px;
+	border: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-plane) 88%, transparent);
+
+	& > span {
+		margin-top: 0.25rem;
+		font-size: 0.625rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--stp-quiet);
+	}
+}
+
+/* The sign-up is a single pill: a bare input with the button tucked inside its right end. */
+.stp-subscribe {
+	width: 100%;
+	max-width: 480px;
+	margin: 0 0 0.75rem;
+}
+.stp-subscribe-inner {
+	display: flex;
+	gap: 0.5rem;
+	padding: 0.3rem 0.3rem 0.3rem 1.1rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-plane) 94%, transparent);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:focus-within {
+		border-color: color-mix(in srgb, var(--basalt-series-1) 50%, transparent);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-series-1) 15%, transparent);
+	}
+}
+/* A zero width keeps the input's built-in size from widening the column on a phone; flex fills the pill. */
+.stp-subscribe-input {
+	flex: 1;
+	width: 0;
+	min-width: 0;
+	border: 0;
+	outline: none;
+	font-size: 0.95rem;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:focus {
+		box-shadow: none;
+	}
+	&::placeholder {
+		color: var(--stp-quiet);
+	}
+}
+.stp-subscribe-btn {
+	padding: 0.6rem 1.25rem;
+	border: 0;
+	border-radius: 999px;
+	font-weight: 600;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--basalt-on-hue);
+	background: linear-gradient(135deg, var(--stp-fill-a), var(--stp-fill-b)) var(--stp-fill-b);
+	transition:
+		transform 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 10px 24px color-mix(in srgb, var(--basalt-series-1) 30%, transparent);
+	}
+}
+.stp-subscribe-feedback {
+	min-height: 1.25rem;
+	margin-top: 0.5rem;
+	font-size: 0.81rem;
+	color: var(--basalt-danger);
+
+	&.is-ok {
+		color: var(--basalt-success);
+	}
+}
+
+/* The waitlist line leads with a row of overlapping initials, each in its own series shade. */
+.stp-soon-waitlist {
+	display: inline-flex;
+	gap: 0.625rem;
+	align-items: center;
+	font-size: 0.875rem;
+	color: var(--stp-quiet);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.stp-soon-avatars {
+	display: inline-flex;
+
+	& span {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		margin-left: -6px;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-canvas);
+		font-size: 0.625rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		color: #fff;
+		background: color-mix(in srgb, var(--basalt-series-1) 45%, #000);
+	}
+	& span:first-child {
+		margin-left: 0;
+	}
+	& span:nth-child(2) {
+		background: color-mix(in srgb, var(--basalt-series-3) 50%, #000);
+	}
+	& span:nth-child(3) {
+		background: color-mix(in srgb, var(--basalt-series-4) 50%, #000);
+	}
+	& span:nth-child(4) {
+		background: color-mix(in srgb, var(--basalt-series-7) 50%, #000);
+	}
+}
+
+/* The roadmap runs in three columns split by hairlines, and stacks on small screens. */
+.stp-soon-features-title {
+	margin: 0 0 1.25rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--stp-quiet);
+}
+.stp-soon-cols {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	& > div {
+		padding: 0 1.75rem;
+		border-left: 1px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		padding-left: 0;
+		border-left: 0;
+	}
+	@media (max-width: 767.98px) {
+		gap: 1.25rem;
+		grid-template-columns: 1fr;
+
+		& > div {
+			padding: 0;
+			border-left: 0;
+		}
+	}
+	& h3 {
+		margin: 0 0 0.3rem;
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& p {
+		margin: 0;
+		font-size: 0.875rem;
+		line-height: 1.55;
+		color: var(--stp-quiet);
+	}
+}
+.stp-soon-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	margin-bottom: 0.75rem;
+	border-radius: 12px;
+	color: var(--basalt-series-1);
+	background: color-mix(in srgb, var(--basalt-series-1) 12%, transparent);
+}
+
+.stp-socials {
+	display: inline-flex;
+	gap: 0.5rem;
+}
+.stp-socials-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 1.05rem;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-plane) 72%, transparent);
+	transition:
+		transform 170ms ease,
+		border-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		transform: translateY(-2px);
+		border-color: color-mix(in srgb, var(--basalt-series-1) 40%, transparent);
+		color: var(--basalt-series-1);
+	}
+}
+
+/* Coming soon 1 hides its preview under frost the pointer can see through. */
+
+/* The spotlight rests at these coordinates and moves only with the pointer;
+   drifting on its own kept the whole preview repainting. */
+@property --mx {
+	syntax: "<percentage>";
+	inherits: true;
+	initial-value: 30%;
+}
+@property --my {
+	syntax: "<percentage>";
+	inherits: true;
+	initial-value: 40%;
+}
+
+/* A one-pixel gradient rim wraps the preview window. */
+.stp-soon-peek {
+	position: relative;
+	padding: 1px;
+	border-radius: 24px;
+	background: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--basalt-series-1) 55%, transparent),
+		var(--basalt-edge) 40%,
+		color-mix(in srgb, var(--basalt-series-3) 55%, transparent)
+	);
+	box-shadow: 0 40px 80px color-mix(in srgb, var(--basalt-series-1) 16%, transparent);
+	cursor: crosshair;
+	touch-action: pan-y;
+}
+.stp-soon-window {
+	border-radius: 23px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.stp-soon-chrome {
+	display: flex;
+	gap: 0.875rem;
+	align-items: center;
+	padding: 0.8rem 1.1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.stp-soon-dots {
+	display: inline-flex;
+	gap: 0.3rem;
+
+	& i {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--basalt-edge);
+	}
+	& i:first-child {
+		background: color-mix(in srgb, var(--basalt-danger) 70%, transparent);
+	}
+	& i:nth-child(2) {
+		background: color-mix(in srgb, var(--basalt-warning) 70%, transparent);
+	}
+	& i:nth-child(3) {
+		background: color-mix(in srgb, var(--basalt-success) 70%, transparent);
+	}
+}
+
+/* Inside the window: three figure tiles, then rows with a bar and a status chip. */
+.stp-soon-kpis {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	padding: 1.1rem;
+
+	& > div {
+		display: flex;
+		gap: 0.1rem;
+		flex-direction: column;
+		padding: 0.8rem 0.9rem;
+		border-radius: 14px;
+		border: 1px solid var(--basalt-edge);
+		background: var(--basalt-canvas);
+	}
+	& span {
+		font-size: 0.6875rem;
+		font-weight: 600;
+		color: var(--stp-quiet);
+	}
+	& strong {
+		font-size: 1.5rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		color: var(--basalt-copy);
+	}
+	& em {
+		font-style: normal;
+		font-size: 0.6875rem;
+		color: var(--stp-quiet);
+	}
+	& em.is-up {
+		font-weight: 700;
+		color: var(--bs-success-text-emphasis);
+	}
+}
+.stp-soon-rows {
+	margin: 0;
+	padding: 0 1.1rem 1.1rem;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.65rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.81rem;
+		color: var(--basalt-copy);
+	}
+	& li span {
+		overflow: hidden;
+		font-weight: 500;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	& b {
+		position: relative;
+		height: 8px;
+		border-radius: 999px;
+		overflow: hidden;
+		background: var(--basalt-wash);
+	}
+	& b::after {
+		content: "";
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: var(--share);
+		border-radius: inherit;
+		background: linear-gradient(90deg, var(--basalt-series-1), var(--basalt-series-3));
+	}
+	& em {
+		padding: 0.2rem 0.5rem;
+		border-radius: 999px;
+		font-style: normal;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+	& .is-ok {
+		color: var(--bs-success-text-emphasis);
+		background: color-mix(in srgb, var(--basalt-success) 12%, transparent);
+	}
+	& .is-warn {
+		color: var(--bs-warning-text-emphasis);
+		background: color-mix(in srgb, var(--basalt-warning) 14%, transparent);
+	}
+	& .is-low {
+		color: var(--bs-danger-text-emphasis);
+		background: color-mix(in srgb, var(--basalt-danger) 12%, transparent);
+	}
+}
+
+/* Frost covers the preview except for a soft hole at --mx / --my. */
+.stp-soon-frost {
+	position: absolute;
+	inset: 1px;
+	border-radius: 23px;
+	background: color-mix(in srgb, var(--basalt-plane) 40%, transparent);
+	-webkit-backdrop-filter: blur(10px) saturate(1.1);
+	backdrop-filter: blur(10px) saturate(1.1);
+	-webkit-mask-image: radial-gradient(circle 160px at var(--mx) var(--my), transparent 45%, #000 100%);
+	mask-image: radial-gradient(circle 160px at var(--mx) var(--my), transparent 45%, #000 100%);
+	pointer-events: none;
+}
+
+/* Two floating pills: the lock badge at the top corner and the hint hanging off the bottom edge. */
+.stp-soon-lock,
+.stp-soon-hint {
+	position: absolute;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	pointer-events: none;
+}
+.stp-soon-lock {
+	top: 0.65rem;
+	right: 0.9rem;
+	color: var(--basalt-on-hue);
+	background: linear-gradient(135deg, var(--stp-fill-a), var(--stp-fill-b)) var(--stp-fill-b);
+	box-shadow: 0 8px 20px color-mix(in srgb, var(--basalt-series-1) 30%, transparent);
+}
+.stp-soon-hint {
+	bottom: -0.9rem;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 1px solid var(--basalt-edge);
+	white-space: nowrap;
+	color: var(--stp-quiet);
+	background: var(--basalt-plane);
+}
+/* The hint names the gesture the visitor actually has. */
+.stp-soon-hint-touch {
+	display: none;
+}
+@media (pointer: coarse) {
+	.stp-soon-hint-fine {
+		display: none;
+	}
+	.stp-soon-hint-touch {
+		display: inline;
+	}
+}
+/* On phones the preview drops its title, its third tile and the row bars. */
+@media (max-width: 575.98px) {
+	.stp-soon-chrome-title {
+		display: none;
+	}
+	.stp-soon-kpis {
+		grid-template-columns: 1fr 1fr;
+	}
+	.stp-soon-kpis > div:last-child {
+		display: none;
+	}
+	.stp-soon-rows li {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.stp-soon-rows b {
+		display: none;
+	}
+}
+
+/* Coming soon 2 tilts its preview back and lets it play by itself. */
+
+.stp-soon-showcase {
+	gap: 3rem;
+}
+.stp-soon-center {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	max-width: 760px;
+	margin: 0 auto;
+	text-align: center;
+
+	& .stp-soon-subtitle {
+		margin-left: auto;
+		margin-right: auto;
+		text-wrap: balance;
+	}
+	& .stp-countdown {
+		justify-content: center;
+		width: 100%;
+	}
+	& .stp-subscribe {
+		margin-left: auto;
+		margin-right: auto;
+	}
+}
+
+/* The stage gives the preview depth and fades its lower edge away. */
+.stp-soon-stage {
+	position: relative;
+	perspective: 1600px;
+	width: 100%;
+	max-width: 980px;
+	margin: 0 auto;
+	padding: 1.5rem 5% 0;
+	-webkit-mask-image: linear-gradient(#000 70%, transparent);
+	mask-image: linear-gradient(#000 70%, transparent);
+}
+
+/* The preview rises into a backward tilt, then floats gently. */
+.stp-soon-tilt {
+	position: relative;
+	transform-origin: 50% 0;
+	transform: rotateX(16deg) translateY(30px);
+	padding: 1px;
+	border-radius: 24px;
+	background: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--basalt-series-1) 55%, transparent),
+		var(--basalt-edge) 40%,
+		color-mix(in srgb, var(--basalt-series-3) 55%, transparent)
+	);
+	opacity: 0;
+	box-shadow: 0 50px 90px color-mix(in srgb, var(--basalt-series-1) 18%, transparent);
+	animation:
+		stp-soon-rise 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s forwards,
+		stp-soon-float 7s ease-in-out 1.5s infinite;
+
+	/* A sheen sweeps across the glass every few seconds. */
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: linear-gradient(
+			105deg,
+			transparent 35%,
+			color-mix(in srgb, #fff 35%, transparent) 50%,
+			transparent 65%
+		);
+		background-size: 250% 100%;
+		background-position: 150% 0;
+		pointer-events: none;
+		animation: stp-soon-sheen 5.5s ease-in-out 1.6s infinite;
+	}
+}
+[data-bs-theme="dark"] .stp-soon-tilt::after {
+	background-image: linear-gradient(
+		105deg,
+		transparent 35%,
+		color-mix(in srgb, #fff 10%, transparent) 50%,
+		transparent 65%
+	);
+}
+@keyframes stp-soon-rise {
+	to {
+		transform: rotateX(10deg) translateY(0);
+		opacity: 1;
+	}
+}
+@keyframes stp-soon-float {
+	0%,
+	100% {
+		transform: rotateX(10deg) translateY(0);
+	}
+	50% {
+		transform: rotateX(10deg) translateY(-8px);
+	}
+}
+@keyframes stp-soon-sheen {
+	0% {
+		background-position: 150% 0;
+	}
+	45%,
+	100% {
+		background-position: -50% 0;
+	}
+}
+
+/* Three notifications take turns sliding in around the preview. */
+.stp-soon-toast {
+	position: absolute;
+	z-index: 2;
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	padding: 0.7rem 0.95rem;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	text-align: left;
+	background: color-mix(in srgb, var(--basalt-plane) 97%, transparent);
+	opacity: 0;
+	box-shadow: 0 18px 40px rgba(25, 20, 48, 0.12);
+	animation: stp-soon-toast 9s ease-in-out infinite;
+
+	[data-bs-theme="dark"] & {
+		box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+	}
+	& .bi {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 10px;
+		color: var(--basalt-series-1);
+		background: color-mix(in srgb, var(--basalt-series-1) 14%, transparent);
+	}
+	& strong {
+		display: block;
+		font-size: 0.81rem;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.75rem;
+		color: var(--stp-quiet);
+	}
+}
+.stp-soon-toast-a {
+	top: 18%;
+	left: 0;
+	animation-delay: 1.8s;
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 75%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-warning) 16%, transparent);
+	}
+}
+.stp-soon-toast-b {
+	top: 6%;
+	right: 0;
+	animation-delay: 4.8s;
+}
+.stp-soon-toast-c {
+	top: 48%;
+	right: 2%;
+	animation-delay: 7.8s;
+
+	& .bi {
+		color: var(--basalt-success);
+		background: color-mix(in srgb, var(--basalt-success) 14%, transparent);
+	}
+}
+@keyframes stp-soon-toast {
+	0% {
+		transform: translateY(12px) scale(0.96);
+		opacity: 0;
+	}
+	6%,
+	30% {
+		transform: none;
+		opacity: 1;
+	}
+	36%,
+	100% {
+		transform: translateY(-8px) scale(0.98);
+		opacity: 0;
+	}
+}
+@media (max-width: 767.98px) {
+	.stp-soon-stage {
+		padding: 0;
+	}
+	.stp-soon-toast {
+		display: none;
+	}
+}
+
+/* With reduced motion the preview sits tilted, without sheen, and two notes stay put. */
+@media (prefers-reduced-motion: reduce) {
+	.stp-soon-bg,
+	.stp-soon-peek {
+		animation: none;
+	}
+	.stp-soon-tilt {
+		transform: rotateX(10deg);
+		opacity: 1;
+		animation: none;
+	}
+	.stp-soon-tilt::after {
+		display: none;
+		animation: none;
+	}
+	.stp-soon-toast {
+		opacity: 1;
+		animation: none;
+	}
+	.stp-soon-toast-c {
+		display: none;
+	}
+}
+
+/* The maintenance screen reports an upgrade while it is under way. */
+
+.stp-maint {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+	padding: 1.5rem 0 1rem;
+}
+.stp-maint-hero {
+	display: grid;
+	gap: 3rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+	align-items: center;
+	margin-bottom: 1.5rem;
+
+	@media (max-width: 991.98px) {
+		gap: 2rem;
+		grid-template-columns: 1fr;
+	}
+}
+.stp-maint-intro .stp-title {
+	text-wrap: balance;
+}
+
+/* Small uppercase labels shared by the countdown, the section titles and the wait columns. */
+.stp-maint-back-label,
+.stp-maint-section-title,
+.stp-maint-wait-head {
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--stp-quiet);
+}
+
+/* The big countdown, with the expected return time under it. */
+.stp-maint-back {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+}
+.stp-maint-countdown {
+	font-size: clamp(2.5rem, 6vw, 3.5rem);
+	font-weight: 800;
+	line-height: 1.05;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.stp-maint-back-at {
+	font-size: 0.9rem;
+	color: var(--stp-quiet);
+
+	& time {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The notify field and its button share one bordered bar until the screen gets narrow. */
+.stp-maint-notify {
+	display: flex;
+	gap: 0.5rem;
+	max-width: 480px;
+	padding: 0.3rem;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:focus-within {
+		border-color: color-mix(in srgb, var(--basalt-series-1) 50%, transparent);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-series-1) 14%, transparent);
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.stp-maint-notify-input {
+	flex: 1;
+	min-width: 0;
+	padding: 0 0.75rem;
+	border: 0;
+	outline: none;
+	font-size: 0.92rem;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:focus {
+		outline: none;
+		box-shadow: none;
+	}
+	&::placeholder {
+		color: var(--stp-quiet);
+	}
+}
+@media (max-width: 479.98px) {
+	.stp-maint-notify {
+		flex-direction: column;
+	}
+	.stp-maint-notify-input {
+		padding: 0.6rem 0.75rem;
+	}
+}
+.stp-maint-feedback {
+	min-height: 1.4rem;
+	margin: 0.4rem 0 0.5rem;
+	font-size: 0.81rem;
+	color: var(--basalt-danger);
+
+	&.is-ok {
+		color: var(--basalt-success);
+	}
+}
+
+/* The reload switch is a bare inline toggle in the series accent. */
+.stp-maint-reload {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding-left: 0;
+	font-size: 0.875rem;
+	color: var(--stp-quiet);
+
+	& .form-check-input {
+		flex-shrink: 0;
+		float: none;
+		margin: 0;
+		cursor: pointer;
+	}
+	& .form-check-input:checked {
+		border-color: var(--basalt-series-1);
+		background-color: var(--basalt-series-1);
+	}
+	& .form-check-label {
+		cursor: pointer;
+	}
+}
+
+/* The progress panel: a heading with the percentage, then the grid of work cells. */
+.stp-maint-panel {
+	padding: 1.5rem;
+	border-radius: 22px;
+	border: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-plane) 85%, transparent);
+	box-shadow: 0 25px 60px rgba(25, 20, 48, 0.07);
+	backdrop-filter: blur(8px);
+
+	[data-bs-theme="dark"] & {
+		box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+	}
+}
+.stp-maint-panel-head {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.stp-maint-panel-title {
+	margin: 0 0 0.1rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+}
+.stp-maint-panel-sub {
+	font-size: 0.81rem;
+	color: var(--stp-quiet);
+}
+.stp-maint-pct {
+	font-size: 2rem;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	-webkit-text-fill-color: transparent;
+	color: color-mix(in srgb, var(--basalt-series-1) 80%, var(--basalt-copy));
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--basalt-series-1) 80%, var(--basalt-copy)),
+		color-mix(in srgb, var(--basalt-series-3) 60%, var(--basalt-copy))
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+}
+
+/* Twenty cells to a row; a scan line sweeps across, the page's one continuous motion. */
+.stp-maint-grid {
+	position: relative;
+	display: grid;
+	gap: 4px;
+	grid-template-columns: repeat(20, minmax(0, 1fr));
+	border-radius: 8px;
+	overflow: hidden;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		transform: translateX(-100%);
+		width: 18%;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			color-mix(in srgb, var(--basalt-plane) 55%, transparent),
+			transparent
+		);
+		pointer-events: none;
+		animation: stp-scan 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+	}
+}
+@keyframes stp-scan {
+	to {
+		transform: translateX(560%);
+	}
+}
+
+/* Finished cells shade along the row by --t; the cells being worked on pulse amber. */
+.stp-maint-cell {
+	aspect-ratio: 1;
+	border-radius: 3px;
+	background: var(--basalt-wash);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+	transition:
+		background-color 300ms ease,
+		transform 300ms ease;
+
+	&.is-done {
+		background: color-mix(in srgb, var(--basalt-series-1) calc(100% - var(--t, 0) * 100%), var(--basalt-series-3));
+		box-shadow: none;
+	}
+	&.is-doing {
+		background: var(--basalt-warning);
+		box-shadow: none;
+		animation: stp-cell-pulse 1.2s ease-in-out infinite;
+	}
+	&.is-doing:nth-child(2n) {
+		animation-delay: 0.3s;
+	}
+	&.is-doing:nth-child(3n) {
+		animation-delay: 0.6s;
+	}
+}
+@keyframes stp-cell-pulse {
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	50% {
+		transform: scale(0.8);
+		opacity: 0.45;
+	}
+}
+
+.stp-maint-legend {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	margin-top: 0.875rem;
+	font-size: 0.75rem;
+	color: var(--stp-quiet);
+
+	& span {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.stp-maint-key {
+	width: 10px;
+	height: 10px;
+	border-radius: 3px;
+	background: var(--basalt-wash);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+}
+.stp-maint-key-done {
+	background: linear-gradient(135deg, var(--basalt-series-1), var(--basalt-series-3));
+	box-shadow: none;
+}
+.stp-maint-key-doing {
+	background: var(--basalt-warning);
+	box-shadow: none;
+}
+
+/* The current task sits under a rule, led by a pulsing amber dot. */
+.stp-maint-now {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.stp-maint-now-dot {
+	flex-shrink: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--basalt-warning);
+	animation: stp-now-pulse 1.6s ease-in-out infinite;
+}
+@keyframes stp-now-pulse {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--basalt-warning) 55%, transparent);
+	}
+	50% {
+		box-shadow: 0 0 0 7px color-mix(in srgb, var(--basalt-warning) 0%, transparent);
+	}
+}
+
+/* The steps card and the while-you-wait card share one translucent surface. */
+.stp-maint-steps,
+.stp-maint-wait {
+	padding: 1.5rem;
+	border-radius: 20px;
+	border: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-plane) 75%, transparent);
+}
+.stp-maint-section-title {
+	margin: 0 0 1.25rem;
+}
+
+/* Five steps in a row, each icon joined to the next by a connector; on phones they stack. */
+.stp-maint-stepper {
+	--stp-trail-from: scaleX(0);
+	--stp-trail-origin: left;
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		position: relative;
+		display: flex;
+		gap: 0.2rem;
+		flex-direction: column;
+		font-size: 0.81rem;
+		color: var(--stp-quiet);
+	}
+	& li:not(:last-child)::after {
+		content: "";
+		position: absolute;
+		top: 15px;
+		right: -0.5rem;
+		left: 40px;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+	& li.is-done::after {
+		background: linear-gradient(90deg, var(--basalt-series-1), var(--basalt-series-3));
+	}
+	& li.is-doing::after {
+		background: linear-gradient(90deg, var(--basalt-warning), var(--basalt-edge));
+	}
+	/* The filled connectors grow out of their step the first time the
+	   stepper is on screen, each a beat behind the one before. */
+	&.is-waiting li:is(.is-done, .is-doing):not(:last-child)::after {
+		transform: var(--stp-trail-from);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		&.is-drawing li:is(.is-done, .is-doing):not(:last-child)::after {
+			transform-origin: var(--stp-trail-origin);
+			animation: stp-trail-grow 600ms ease-out both;
+		}
+		&.is-drawing li:is(.is-done, .is-doing):nth-child(2)::after {
+			animation-delay: 300ms;
+		}
+		&.is-drawing li:is(.is-done, .is-doing):nth-child(3)::after {
+			animation-delay: 600ms;
+		}
+		&.is-drawing li:is(.is-done, .is-doing):nth-child(4)::after {
+			animation-delay: 900ms;
+		}
+	}
+	& time {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.75rem;
+	}
+	& strong {
+		font-size: 0.92rem;
+		color: var(--basalt-copy);
+	}
+	& li:not(.is-done):not(.is-doing) strong {
+		color: var(--stp-quiet);
+	}
+}
+.stp-maint-step-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	margin-bottom: 0.5rem;
+	border-radius: 50%;
+	font-size: 0.81rem;
+	font-weight: 700;
+	color: var(--stp-quiet);
+	background: var(--basalt-wash);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+
+	.is-done & {
+		color: var(--basalt-on-hue);
+		background: linear-gradient(135deg, var(--basalt-series-1), var(--basalt-series-3));
+		box-shadow: none;
+	}
+	.is-doing & {
+		color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-warning) 18%, var(--basalt-plane));
+		box-shadow: inset 0 0 0 2px var(--basalt-warning);
+	}
+	.is-doing & i {
+		display: inline-flex;
+		animation: stp-spin 1.4s linear infinite;
+	}
+}
+.is-doing time {
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+}
+@media (max-width: 767.98px) {
+	.stp-maint-stepper {
+		--stp-trail-from: scaleY(0);
+		--stp-trail-origin: top;
+		gap: 0;
+		grid-template-columns: 1fr;
+	}
+	.stp-maint-stepper li {
+		display: grid;
+		column-gap: 0.875rem;
+		grid-template-columns: 32px 1fr;
+		padding-bottom: 1rem;
+	}
+	.stp-maint-stepper li > * {
+		grid-column: 2;
+	}
+	.stp-maint-stepper .stp-maint-step-icon {
+		grid-column: 1;
+		grid-row: 1 / span 3;
+		margin: 0;
+	}
+	.stp-maint-stepper li:not(:last-child)::after {
+		top: 36px;
+		right: auto;
+		bottom: 4px;
+		left: 15px;
+		width: 2px;
+		height: auto;
+	}
+}
+
+@keyframes stp-trail-grow {
+	from {
+		transform: var(--stp-trail-from);
+	}
+}
+
+/* While you wait: three columns of links, with the paused list grayed out. */
+.stp-maint-wait-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	@media (max-width: 767.98px) {
+		grid-template-columns: 1fr;
+	}
+}
+.stp-maint-wait-head {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-bottom: 0.625rem;
+}
+.stp-maint-wait-head-ok .bi {
+	color: var(--basalt-success);
+}
+.stp-maint-wait-head-paused .bi {
+	color: var(--basalt-warning);
+}
+.stp-maint-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		padding: 0.3rem 0;
+		font-size: 0.875rem;
+	}
+	& a {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+		font-weight: 500;
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+	& a .bi {
+		transform: translateX(-4px);
+		font-size: 0.8rem;
+		color: var(--basalt-series-1);
+		opacity: 0;
+		transition:
+			opacity 170ms ease,
+			transform 170ms ease;
+	}
+	& a:hover {
+		color: color-mix(in srgb, var(--basalt-series-1) 60%, var(--basalt-copy));
+	}
+	& a:hover .bi {
+		transform: none;
+		opacity: 1;
+	}
+}
+.stp-maint-list-paused li {
+	color: var(--stp-quiet);
+}
+.stp-maint-updates {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+
+	& .stp-maint-wait-head {
+		margin-bottom: 0.125rem;
+	}
+}
+
+.stp-followup-link {
+	display: inline-flex;
+	gap: 0.375rem;
+	align-items: center;
+	padding: 0.4rem 0.85rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.81rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-series-1) 30%, transparent);
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-series-1) 8%, transparent);
+	}
+}
+
+/* With reduced motion the scan line goes, cells change at once and nothing pulses or spins. */
+@media (prefers-reduced-motion: reduce) {
+	.stp-maint-grid::after {
+		display: none;
+	}
+	.stp-maint-cell {
+		transition: none;
+	}
+	.stp-maint-cell.is-doing,
+	.stp-maint-now-dot,
+	.is-doing .stp-maint-step-icon i {
+		animation: none;
+	}
+}
+
+/* The script adds a few elements of its own, styled here. */
+
+/* Toasts stack in the bottom right corner, above any open dialog. */
+.stp-toaster {
+	position: fixed;
+	right: 1.25rem;
+	bottom: 1.25rem;
+	z-index: 1090;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	max-width: 360px;
+}
+
+/* The inline spinner a busy button shows before its label. */
+.stp-spinner {
+	display: inline-block;
+	width: 1rem;
+	height: 1rem;
+	margin-right: 0.5rem;
+	border: 2px solid color-mix(in srgb, currentColor 40%, transparent);
+	border-top-color: currentColor;
+	border-radius: 50%;
+	vertical-align: -3px;
+	animation: stp-spin 0.8s linear infinite;
+}
+@keyframes stp-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* The class is doubled so it outranks any positioning set on the same element. */
+.stp-visually-hidden.stp-visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	clip-path: inset(50%);
+}
+
+/* Flat mode trades every gradient on these screens for a solid color. */
+
+/* The appearance panel's gradients switch sets data-basalt-gradients="off" on
+   <html>. Every gradient here then becomes a solid token color and purely
+   decorative washes and sheens go, as basalt.css does for the app. */
+:root[data-basalt-gradients="off"] {
+	& .stp-ambient,
+	& .stp-soon-bg,
+	& .stp-soon-tilt::after,
+	& .stp-maint-grid::after {
+		display: none;
+	}
+
+	& .stp-brand-logo {
+		background: color-mix(in srgb, var(--basalt-series-1) 12%, transparent);
+	}
+	& .stp-brand-text,
+	& .stp-maint-pct {
+		-webkit-text-fill-color: currentColor;
+		color: color-mix(in srgb, var(--basalt-series-1) 65%, var(--basalt-copy));
+		background: none;
+	}
+	& .stp-soon-title {
+		-webkit-text-fill-color: currentColor;
+		color: var(--basalt-copy);
+		background: none;
+	}
+
+	& .stp-btn-primary,
+	& .stp-subscribe-btn,
+	& .stp-soon-lock {
+		background: var(--stp-fill-b);
+	}
+
+	& .stp-404-route {
+		stroke: var(--basalt-series-1);
+	}
+	& .stp-report .modal-content::before {
+		background: var(--basalt-series-1);
+	}
+
+	& .stp-soon-peek,
+	& .stp-soon-tilt {
+		background: var(--basalt-edge);
+	}
+	& .stp-soon-rows b::after {
+		background: var(--basalt-series-1);
+	}
+
+	& .stp-maint-cell.is-done,
+	& .stp-maint-key-done,
+	& .stp-maint-stepper li.is-done::after,
+	& .is-done .stp-maint-step-icon {
+		background: var(--basalt-series-1);
+	}
+	& .stp-maint-stepper li.is-doing::after {
+		background: var(--basalt-warning);
+	}
+}

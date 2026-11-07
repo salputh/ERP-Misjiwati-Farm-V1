@@ -1,0 +1,540 @@
+/* Imaging and reports (imaging-and-reports.html): the library of one
+   patient's reports on the left and the open one on the right, laid out
+   like the paper it stands for. Drawn by imaging-and-reports.js. */
+
+.hrp-waiting {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Library and reader sit side by side from 1200px, stacked below. Both
+   cards stretch to the taller one, so they end level. */
+.hrp-layout {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.hrp-layout {
+		grid-template-columns: minmax(20rem, 23rem) minmax(0, 1fr);
+		align-items: stretch;
+	}
+}
+
+/* The library */
+.hrp-library {
+	padding: 1.25rem;
+}
+.hrp-library-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.9rem;
+}
+.hrp-library-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hrp-library-count {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+}
+.hrp-search {
+	position: relative;
+	margin-bottom: 0.75rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.7rem;
+		font-size: 0.85rem;
+		color: var(--basalt-copy-muted);
+		transform: translateY(-50%);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2rem;
+	}
+}
+.hrp-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin-bottom: 0.75rem;
+}
+.hrp-chip {
+	padding: 0.22rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.76rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge-strong));
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		color: color-mix(in srgb, var(--basalt-hue) 75%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-hue) 9%, var(--basalt-plane));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.hrp-list,
+.hrp-year-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hrp-list {
+	margin-top: 1.1rem;
+}
+.hrp-year + .hrp-year {
+	margin-top: 0.9rem;
+}
+.hrp-year-title {
+	margin: 0 0 0.3rem 0.6rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	color: var(--basalt-copy-muted);
+}
+
+/* One report in the list: its kind as a tinted square, the title and where
+   it came from, and a dot while it waits for review. */
+.hrp-item {
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.5rem 0.6rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: inherit;
+	background: none;
+	transition: background-color 150ms ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-hue) 6%, transparent);
+	}
+	&[aria-current="true"] {
+		background: color-mix(in srgb, var(--basalt-hue) 11%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.hrp-item-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+}
+.hrp-item-text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+
+	& b,
+	& span {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	& b {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.76rem;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+}
+.hrp-item.is-new .hrp-item-text b {
+	font-weight: 750;
+}
+.hrp-empty {
+	padding: 1.5rem 0 0.5rem;
+	text-align: center;
+
+	& p {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy-muted);
+	}
+}
+
+/* The reader */
+/* Opening a report scrolls the reader back into view, clear of the top bar. */
+.hrp-reader {
+	padding: 1.25rem;
+	scroll-margin-top: calc(var(--basalt-header-h, 72px) + 1rem);
+}
+@media (min-width: 768px) {
+	.hrp-reader {
+		padding: 1.5rem 1.75rem 1.75rem;
+	}
+}
+
+/* On a phone or tablet the library has the page to itself; a report opens
+   as a full-screen sheet over it, with a Library button pinned at its top. */
+.hrp-sheet-bar {
+	display: none;
+}
+@media (max-width: 1199.98px) {
+	.hrp-reader {
+		display: none;
+	}
+	.hrp-layout.is-reading .hrp-reader {
+		position: fixed;
+		inset: 0;
+		z-index: 1040;
+		display: block;
+		margin: 0;
+		padding: 0 1rem 2rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		border: 0;
+		border-radius: 0;
+		animation: hrp-sheet-in 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.hrp-sheet-bar {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		display: flex;
+		margin: 0 -1rem 1.25rem;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		background: var(--basalt-plane);
+	}
+	body:has(.hrp-layout.is-reading) {
+		overflow: hidden;
+	}
+}
+@keyframes hrp-sheet-in {
+	from {
+		transform: translateY(1.5rem);
+		opacity: 0;
+	}
+}
+.hrp-tools {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.hrp-tools-kind {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: color-mix(in srgb, var(--tone) 70%, var(--basalt-copy));
+	}
+	& .hc-pill {
+		margin-left: 0.25rem;
+	}
+}
+.hrp-tools-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+/* The paper: a plain sheet on the card, a rule under the letterhead and
+   the type of a printed report. */
+/* The report sits straight in the reader card, no box of its own. */
+.hrp-paper {
+	max-width: 52rem;
+	padding-top: 0.5rem;
+	color: var(--basalt-copy-body);
+}
+.hrp-letterhead {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding-bottom: 1rem;
+	border-bottom: 2px solid var(--basalt-hue);
+
+	& p {
+		margin: 0;
+	}
+}
+.hrp-letterhead-place {
+	font-size: 0.95rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.hrp-letterhead-kind {
+	font-size: 0.77rem;
+	color: var(--basalt-copy-muted);
+}
+.hrp-letterhead-ref {
+	font-family: var(--bs-font-monospace);
+	font-size: 0.71rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-muted);
+}
+.hrp-paper-title {
+	margin: 1.4rem 0 0.4rem;
+	font-size: 1.35rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.hrp-patient {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 1rem;
+	margin: 0 0 1.25rem;
+	font-size: 0.85rem;
+
+	& b {
+		color: var(--basalt-copy);
+	}
+}
+.hrp-facts {
+	display: grid;
+	gap: 0.9rem 1.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+	margin: 0 0 1.5rem;
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& dt {
+		font-size: 0.67rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		color: var(--basalt-copy-muted);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+.hrp-line {
+	margin: 0 0 1.25rem;
+	font-size: 0.9rem;
+
+	& span {
+		margin-right: 0.6rem;
+		font-size: 0.67rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		color: var(--basalt-copy-muted);
+	}
+}
+.hrp-section {
+	margin-bottom: 1.5rem;
+
+	& h3 {
+		margin: 0 0 0.6rem;
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& p {
+		margin: 0 0 0.5rem;
+		font-size: 0.9rem;
+		line-height: 1.6;
+	}
+}
+
+/* Results tables: a flagged row is tinted and its flag set in red. */
+.hrp-table {
+	width: 100%;
+	font-size: 0.85rem;
+	border-collapse: collapse;
+
+	& th,
+	& td {
+		padding: 0.4rem 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		text-align: left;
+		vertical-align: top;
+	}
+	& thead th {
+		font-size: 0.67rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		color: var(--basalt-copy-muted);
+	}
+	& tbody th {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& tr.is-out,
+	& tr.is-act {
+		background: color-mix(in srgb, var(--basalt-danger) 7%, transparent);
+	}
+	& tr.is-act {
+		background: color-mix(in srgb, var(--basalt-warning) 10%, transparent);
+	}
+}
+.hrp-range {
+	white-space: nowrap;
+}
+.hrp-value {
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hrp-flag {
+	margin-left: 0.3rem;
+	font-size: 0.7rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-danger) 78%, var(--basalt-copy));
+}
+@media (max-width: 575.98px) {
+	.hrp-prev {
+		display: none;
+	}
+}
+
+/* The study's picture, opening the viewer. */
+.hrp-scan {
+	position: relative;
+	display: block;
+	width: 100%;
+	max-width: 26rem;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	overflow: hidden;
+	border: 0;
+	border-radius: 12px;
+	background: #080a0f;
+
+	& img {
+		display: block;
+		width: 100%;
+		height: auto;
+		transition: transform 300ms ease;
+	}
+	&:hover img {
+		transform: scale(1.03);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.hrp-scan-zoom {
+	position: absolute;
+	right: 0.6rem;
+	bottom: 0.6rem;
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 8px;
+	color: #fff;
+	background: rgb(0 0 0 / 55%);
+}
+.hrp-closing {
+	margin-bottom: 1.75rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-hue) 7%, transparent);
+
+	& h3 {
+		margin: 0 0 0.3rem;
+		font-size: 0.67rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	}
+	& p {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.hrp-sign {
+	padding-top: 1rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+
+	& p {
+		margin: 0;
+	}
+}
+.hrp-sign-wait {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-copy));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hrp-chip,
+	.hrp-item,
+	.hrp-scan img {
+		transition: none;
+	}
+	.hrp-layout.is-reading .hrp-reader {
+		animation: none;
+	}
+}
+
+/* On paper only the report prints, in black on white. */
+@media print {
+	body * {
+		visibility: hidden;
+	}
+	/* An entrance animation leaves a transform behind, which would hold
+	   the sheet in place; on paper nothing moves. */
+	:has(.hrp-paper) {
+		position: static;
+		transform: none;
+		animation: none;
+	}
+	.hrp-paper,
+	.hrp-paper * {
+		visibility: visible;
+	}
+	.hrp-paper {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		max-width: none;
+		border: 0;
+		color: #000;
+		background: #fff;
+	}
+	.hrp-scan-zoom {
+		display: none;
+	}
+}

@@ -1,0 +1,1203 @@
+/* Deals (deals.html), everything under .dls-*. The page head, tabs,
+   styled selects, segmented control, pager, drawer, dialogs, choice
+   cards, segments bar, empty states and avatars come from basalt.css;
+   this sheet arranges them and styles the quarter's target band, the
+   deal list and what the drawer shows. Colors are --basalt-* tokens
+   mixed with color-mix(), so every palette and mode keeps its own hues;
+   the drawer and dialogs sit outside the page container, so they carry
+   the tokens as well. */
+
+.dls-page,
+.dls-drawer,
+.dls-modal {
+	/* Muted text is pulled toward the body color so it holds 4.5:1 on the
+     lighter palettes and on hovered rows; links do the same with the
+     primary hue, which alone falls short in a few light palettes. */
+	--dls-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--dls-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--dls-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--dls-danger: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--dls-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+
+/* One hue per stage from the chart ramp, with the status colors for
+   signed and lost; the band, its key and the stage pills all read it.
+   Company tiles take a hue from 1 to 8 by name, the same one every time. */
+.dls-tone-discovery {
+	--dls-tone: var(--basalt-series-2);
+}
+.dls-tone-proposal {
+	--dls-tone: var(--basalt-series-4);
+}
+.dls-tone-negotiation {
+	--dls-tone: var(--basalt-series-8);
+}
+.dls-tone-signature {
+	--dls-tone: var(--basalt-series-1);
+}
+.dls-tone-signed {
+	--dls-tone: var(--basalt-success);
+}
+.dls-tone-lost {
+	--dls-tone: var(--basalt-danger);
+}
+.dls-tone-1 {
+	--dls-tone: var(--basalt-series-1);
+}
+.dls-tone-2 {
+	--dls-tone: var(--basalt-series-2);
+}
+.dls-tone-3 {
+	--dls-tone: var(--basalt-series-3);
+}
+.dls-tone-4 {
+	--dls-tone: var(--basalt-series-4);
+}
+.dls-tone-5 {
+	--dls-tone: var(--basalt-series-5);
+}
+.dls-tone-6 {
+	--dls-tone: var(--basalt-series-6);
+}
+.dls-tone-7 {
+	--dls-tone: var(--basalt-series-7);
+}
+.dls-tone-8 {
+	--dls-tone: var(--basalt-series-8);
+}
+
+/* Small pieces used all over the page: a quiet second line, an optional
+   mark, a link, the inputs, and the card titles. */
+.dls-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--dls-quiet);
+}
+.dls-optional {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--dls-quiet);
+}
+.dls-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--dls-link);
+
+	&:hover,
+	&:focus-visible {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+.dls-page .form-control,
+.dls-page .form-select,
+.dls-modal .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.dls-page .form-control::placeholder,
+.dls-modal .form-control::placeholder {
+	color: var(--dls-quiet);
+	opacity: 1;
+}
+.dls-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dls-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--dls-quiet);
+}
+
+/* The quarter's target is the first card and the showpiece: a pale wash
+   of the stage colors sits behind the bar, so it reads as the summary of
+   the list under it. The figure is on the left, the bar on the right,
+   stacked under 1200px. */
+.dls-target.basalt-box {
+	background-color: color-mix(in srgb, var(--basalt-series-1) 6%, var(--basalt-plane));
+	background-image: linear-gradient(
+		115deg,
+		color-mix(in srgb, var(--basalt-success) 10%, var(--basalt-plane)),
+		color-mix(in srgb, var(--basalt-series-1) 7%, var(--basalt-plane)) 45%,
+		color-mix(in srgb, var(--basalt-series-8) 11%, var(--basalt-plane))
+	);
+
+	:root[data-basalt-gradients="off"] & {
+		background-color: var(--basalt-plane);
+		background-image: none;
+	}
+}
+.dls-target > .card-body {
+	display: grid;
+	gap: 1.5rem 3rem;
+	grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+	align-items: center;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 1199.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.dls-target-big {
+	display: flex;
+	gap: 0.2rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 1.25rem 0 0;
+
+	@media (max-width: 1199.98px) {
+		margin-top: 0.9rem;
+	}
+}
+.dls-target-signed {
+	font-size: 2rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.dls-target-of {
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--dls-quiet);
+}
+
+/* Ahead of or behind an even pace through the quarter. */
+.dls-target-pace {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.75rem;
+	padding: 0.2rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--dls-pace) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--dls-pace) 14%, var(--basalt-plane));
+
+	&.is-ahead {
+		--dls-pace: var(--basalt-success);
+	}
+	&.is-behind {
+		--dls-pace: var(--basalt-warning);
+	}
+}
+
+/* Deals past their close date get a slim nudge that opens that tab. */
+.dls-late {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	max-width: 100%;
+	margin-top: 1.25rem;
+	padding: 0.4rem 0.9rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 30%, var(--basalt-plane));
+	border-radius: 999px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--dls-danger);
+	background: color-mix(in srgb, var(--basalt-danger) 8%, var(--basalt-plane));
+	transition: background-color 170ms ease;
+
+	&[hidden] {
+		display: none;
+	}
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&:focus:not(:focus-visible) {
+		outline: 0;
+	}
+	& > .bi {
+		flex: none;
+	}
+	& > .bi-arrow-right {
+		transition: transform 170ms ease;
+	}
+	&:hover > .bi-arrow-right {
+		transform: translateX(2px);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+
+		& > .bi-arrow-right {
+			transition: none;
+		}
+	}
+}
+
+/* One bar to the target: signed, out for signature and in negotiation
+   laid end to end, the target marked where it falls. Out for signature is
+   striped, so it still reads apart from Signed in palettes where the two
+   hues sit close. */
+.dls-band {
+	position: relative;
+	padding-top: 1.6rem;
+
+	&.is-start .dls-band-part {
+		flex-basis: 0;
+		transition: none;
+	}
+}
+.dls-band-track {
+	display: flex;
+	gap: 3px;
+	height: 1.1rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+}
+.dls-band-part {
+	flex: 0 0 var(--w);
+	background: var(--dls-tone);
+	transition: flex-basis 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	&:first-child {
+		border-radius: 999px 0 0 999px;
+	}
+	&.dls-tone-signature {
+		background: repeating-linear-gradient(
+			135deg,
+			var(--dls-tone) 0 5px,
+			color-mix(in srgb, var(--dls-tone) 45%, var(--basalt-plane)) 5px 8px
+		);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.dls-band-goal {
+	position: absolute;
+	top: 0;
+	bottom: -0.35rem;
+	left: var(--at, 100%);
+	transform: translateX(-100%);
+	display: flex;
+	align-items: flex-start;
+	padding-right: 0.4rem;
+	border-right: 2px solid var(--basalt-copy);
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.dls-band-key {
+	display: grid;
+	gap: 0.75rem 1.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	@media (max-width: 575.98px) {
+		gap: 0.6rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.dls-key {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: start;
+
+	&.dls-tone-signature .dls-key-dot {
+		background: repeating-linear-gradient(
+			135deg,
+			var(--dls-tone) 0 2px,
+			color-mix(in srgb, var(--dls-tone) 45%, var(--basalt-plane)) 2px 4px
+		);
+	}
+	@media (max-width: 575.98px) {
+		align-items: baseline;
+	}
+}
+.dls-key-dot {
+	width: 0.7rem;
+	height: 0.7rem;
+	margin-top: 0.3rem;
+	border-radius: 3px;
+	background: var(--dls-tone);
+
+	@media (max-width: 575.98px) {
+		margin-top: 0;
+	}
+}
+.dls-key-text {
+	@media (max-width: 575.98px) {
+		display: flex;
+		gap: 0 0.75rem;
+		flex-wrap: wrap;
+		justify-content: space-between;
+
+		.dls-sub {
+			margin-top: 0;
+		}
+	}
+}
+.dls-key-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.dls-key-amt {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.dls-target-note {
+	margin: 1.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--dls-quiet);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The list card is a container, so its table folds by the card's width
+   rather than the window's. */
+.dls-list.basalt-box {
+	container: dls-list / inline-size;
+	scroll-margin-top: 5rem;
+
+	& > .card-body {
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem var(--basalt-pad-x-narrow);
+		}
+	}
+}
+
+/* Search, the two filters and a summary, in one wrapping row. Each
+   select is about as wide as its longest option. */
+.dls-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	padding-top: var(--basalt-pad-head);
+}
+.dls-search {
+	position: relative;
+	flex: 1 1 11rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--dls-quiet);
+		pointer-events: none;
+	}
+	.form-control {
+		padding-left: 2.4rem;
+	}
+}
+.dls-select {
+	flex: 0 0 auto;
+}
+.dls-select-owner {
+	width: 11.5rem;
+}
+.dls-select-type {
+	width: 10.5rem;
+}
+.dls-summary {
+	flex: 1 0 auto;
+	margin: 0;
+	font-size: 0.85rem;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--dls-quiet);
+}
+@media (max-width: 767.98px) {
+	.dls-search {
+		flex: 1 1 100%;
+	}
+	.dls-select {
+		flex: 1 1 0;
+		width: auto;
+		max-width: 11.5rem;
+	}
+	.dls-summary {
+		flex: 1 1 100%;
+		text-align: left;
+	}
+}
+
+/* The table is pulled out by its cells' side padding, so the first
+   column starts on the card's edge under the tabs and the search box. */
+.dls-table-wrap {
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	&[hidden] {
+		display: none;
+	}
+	@media (max-width: 1199.98px) {
+		margin: 0 -0.45rem;
+	}
+}
+.dls-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+
+		@media (max-width: 1199.98px) {
+			padding-left: 0.4rem;
+			padding-right: 0.4rem;
+		}
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--dls-quiet);
+	}
+}
+.dls-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&:hover .dls-sort-idle {
+		opacity: 1;
+	}
+}
+[aria-sort] .dls-sort {
+	color: var(--basalt-copy);
+}
+.dls-sort-idle {
+	opacity: 0.55;
+}
+
+/* Rows: a hover wash, and a glow that fades on a row just added. */
+.dls-row {
+	cursor: pointer;
+
+	&:hover {
+		background: var(--dls-row-hover);
+	}
+	&.is-fresh {
+		animation: dls-fresh 1.8s ease;
+	}
+}
+@keyframes dls-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+/* Column widths, then what each cell holds. */
+.dls-col-deal {
+	min-width: 16rem;
+
+	@media (max-width: 1199.98px) {
+		min-width: 11.5rem;
+	}
+}
+.dls-col-stage {
+	width: 10.5rem;
+}
+.dls-col-value {
+	width: 8.5rem;
+	text-align: right;
+
+	.dls-sort {
+		flex-direction: row-reverse;
+	}
+}
+.dls-col-date {
+	width: 13rem;
+
+	.dls-cell-main {
+		font-weight: 500;
+	}
+	.dls-sub {
+		white-space: nowrap;
+	}
+	@media (max-width: 1199.98px) {
+		width: 11rem;
+	}
+}
+.dls-col-owner {
+	width: 12rem;
+
+	@media (max-width: 1399.98px) {
+		display: none;
+	}
+}
+.dls-col-menu {
+	width: 7.5rem;
+	text-align: right;
+}
+.dls-cell-main {
+	display: block;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+/* The deal: a lettered tile, the company and a quiet line saying what
+   is being sold. */
+.dls-org {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	min-width: 0;
+}
+.dls-org-text {
+	min-width: 0;
+
+	.dls-sub {
+		white-space: nowrap;
+
+		@media (max-width: 1199.98px) {
+			white-space: normal;
+		}
+	}
+}
+.dls-org-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.dls-logo {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 0.8rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--dls-tone) 30%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--dls-tone) 24%, var(--basalt-plane));
+	background-image: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--dls-tone) 34%, var(--basalt-plane)),
+		transparent 70%
+	);
+
+	[data-bs-theme="dark"] & {
+		color: var(--basalt-copy);
+		background-color: color-mix(in srgb, var(--dls-tone) 30%, var(--basalt-plane));
+		background-image: linear-gradient(
+			135deg,
+			transparent 30%,
+			color-mix(in srgb, var(--dls-tone) 18%, var(--basalt-plane))
+		);
+	}
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+}
+.dls-logo-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+}
+
+/* The stage pill in its stage's hue, with a dot. */
+.dls-stage {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--dls-tone) 40%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--dls-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--dls-tone);
+	}
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--dls-tone) 28%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--dls-tone) 22%, var(--basalt-plane));
+	}
+}
+.dls-due-near {
+	font-weight: 600;
+	color: var(--dls-warn);
+}
+.dls-due-late {
+	font-weight: 600;
+	color: var(--dls-danger);
+}
+
+.dls-owner {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.875rem;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	&:hover span {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The row menu and the dangerous item in it, on the page and in the drawer. */
+.dls-page .dls-menu-btn.btn-icon {
+	border-radius: 9px;
+	color: var(--dls-quiet);
+
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.dls-page .dropdown-item .bi,
+.dls-drawer .dropdown-item .bi {
+	width: 1rem;
+	margin-right: 0.5rem;
+	text-align: center;
+}
+.dls-page .dropdown-item.dls-danger-item,
+.dls-drawer .dropdown-item.dls-danger-item {
+	color: var(--dls-danger);
+}
+.dls-page .dropdown-item.dls-danger-item:hover,
+.dls-page .dropdown-item.dls-danger-item:focus,
+.dls-drawer .dropdown-item.dls-danger-item:hover,
+.dls-drawer .dropdown-item.dls-danger-item:focus {
+	color: var(--dls-danger);
+	background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+}
+
+/* When the owner column has no room, the owner folds under the deal;
+   in a narrow list beside the sidebar the stage folds too, so the row's
+   actions keep the card's right edge. */
+.dls-fold {
+	display: none;
+	gap: 0.4rem;
+	align-items: center;
+	margin-top: 0.4rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--dls-quiet);
+
+	.basalt-avatar {
+		width: 20px;
+		height: 20px;
+		font-size: 0.5rem;
+	}
+	@media (max-width: 1399.98px) {
+		display: flex;
+	}
+}
+.dls-stage-fold {
+	display: none;
+}
+@media (min-width: 768px) {
+	@container dls-list (max-width: 46rem) {
+		.dls-table .dls-col-stage {
+			display: none;
+		}
+		.dls-stage-fold {
+			display: flex;
+			margin-top: 0.4rem;
+		}
+		.dls-table .dls-col-value,
+		.dls-table .dls-col-date,
+		.dls-table .dls-col-menu {
+			width: 1%;
+			white-space: nowrap;
+		}
+	}
+}
+
+/* On a phone each row becomes a small stacked card. There are no column
+   headers, so the date and the yearly value say what they are. */
+.dls-phone-label {
+	display: none;
+
+	@media (max-width: 767.98px) {
+		display: inline;
+		font-weight: 400;
+		font-size: 0.85rem;
+		color: var(--dls-quiet);
+	}
+}
+@media (max-width: 767.98px) {
+	.dls-table-wrap {
+		margin: 0;
+		overflow: visible;
+	}
+	.dls-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.dls-table,
+	.dls-table tbody {
+		display: block;
+	}
+	.dls-table tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"deal  deal  menu"
+			"stage value value"
+			"date  date  date";
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.dls-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.dls-table > :not(caption) > * > * {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.dls-table .dls-col-deal {
+		grid-area: deal;
+	}
+	.dls-table .dls-col-stage {
+		grid-area: stage;
+		align-self: center;
+	}
+	.dls-table .dls-col-value {
+		grid-area: value;
+		align-self: center;
+		text-align: right;
+	}
+	.dls-table .dls-col-date {
+		display: flex;
+		gap: 0 0.5rem;
+		flex-wrap: wrap;
+		grid-area: date;
+		align-items: baseline;
+	}
+	.dls-table .dls-col-date .dls-sub {
+		margin: 0;
+	}
+	.dls-table .dls-col-menu {
+		grid-area: menu;
+	}
+}
+/* On a phone a row keeps the deal, its stage and what it is worth. The
+   owner waits in the quick view, and a close date only stays when it is
+   late or within two weeks. */
+@media (max-width: 575.98px) {
+	.dls-table .dls-fold {
+		display: none;
+	}
+	.dls-table .dls-col-date:has(.dls-due):not(:has(.dls-due-late, .dls-due-near)) {
+		display: none;
+	}
+}
+
+/* Nothing matched, and the pager under the table. */
+.dls-empty {
+	margin: 1.5rem 0 0.5rem;
+
+	&[hidden],
+	& [hidden] {
+		display: none;
+	}
+}
+.dls-pager {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	padding-top: var(--basalt-pad-row-y);
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.dls-pager-meta {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--dls-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The drawer. On a phone the company name gets the room: the tile and
+   the position count step aside, the arrows stay. */
+.dls-drawer {
+	.offcanvas-header {
+		gap: 0.9rem;
+	}
+	@media (max-width: 575.98px) {
+		.offcanvas-header .dls-logo,
+		.basalt-drawer-pos {
+			display: none;
+		}
+	}
+}
+.dls-d-lead {
+	margin: 0 0 1.1rem;
+	font-size: 0.95rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.dls-steps-label {
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.75rem;
+
+	.dls-sub {
+		margin: 0;
+	}
+}
+.dls-steps-bar {
+	--segments-tone: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+
+	&.is-lost {
+		--segments-tone: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-plane));
+	}
+}
+.dls-d-next {
+	display: flex;
+	gap: 0.65rem;
+	align-items: flex-start;
+	margin: 1.25rem 0 0;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		margin-top: 0.1rem;
+		color: var(--dls-quiet);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* What the deal covers: yearly lines, the year's total, then one-offs. */
+.dls-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dls-item {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.dls-item-what {
+	min-width: 0;
+	font-weight: 600;
+}
+.dls-item-amt {
+	white-space: nowrap;
+}
+.dls-item-total {
+	margin-top: -1px;
+	border-bottom: 0;
+	border-top: 1px solid var(--basalt-edge-strong);
+	font-weight: 700;
+
+	.dls-item-amt {
+		font-weight: 700;
+	}
+}
+.dls-item-once {
+	padding: 0.5rem 0 0;
+	border-bottom: 0;
+	color: var(--basalt-copy-body);
+
+	.dls-item-what {
+		font-weight: 500;
+	}
+}
+.dls-item-total + .dls-item-once {
+	margin-top: 0.5rem;
+	padding-top: 1rem;
+	border-top: 1px dashed var(--basalt-edge);
+}
+
+/* People on the deal, with their part in it; then the history. */
+.dls-people {
+	display: grid;
+	gap: 0.8rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dls-person {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+}
+.dls-person-text {
+	min-width: 0;
+}
+.dls-person-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.dls-role {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.dls-people-more {
+	padding-top: 0.2rem;
+	font-size: 0.875rem;
+}
+.dls-history {
+	display: grid;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dls-act {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	align-items: start;
+}
+.dls-act-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	color: var(--dls-quiet);
+	background: var(--basalt-plane-alt);
+}
+.dls-act-text {
+	padding-top: 0.2rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+
+/* The dialogs: rows of fields with the Bootstrap row's own gutter
+   allowed for, plan tiles, add-on checks and the running estimate. */
+.dls-form-row + .dls-form-row {
+	margin-top: 1.25rem;
+}
+.dls-form-row + .row.dls-form-row {
+	margin-top: calc(1.25rem - var(--bs-gutter-y));
+}
+.dls-modal {
+	.form-label {
+		display: block;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& fieldset {
+		min-width: 0;
+		margin-left: 0;
+		margin-right: 0;
+		padding-left: 0;
+		padding-right: 0;
+		border: 0;
+	}
+	& legend.form-label {
+		float: none;
+		width: auto;
+		font-size: 0.92rem;
+	}
+	.basalt-dialog-foot .btn {
+		white-space: nowrap;
+	}
+}
+.dls-kind {
+	display: inline-flex;
+}
+.dls-plans {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.dls-addons {
+	padding-top: 0;
+}
+.dls-addons-list {
+	display: flex;
+	gap: 0.4rem 1.5rem;
+	flex-wrap: wrap;
+	padding-top: 0.4rem;
+
+	.form-check {
+		margin: 0;
+	}
+}
+.dls-new-sum {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	margin: 1.5rem 0 0;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	& > .bi {
+		margin-top: 0.1rem;
+		color: var(--dls-quiet);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Reasons a deal was lost: text chips that wrap, one of them chosen. */
+.dls-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.dls-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.3rem 0.8rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .dls-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:focus-visible:not(:checked) + .dls-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}

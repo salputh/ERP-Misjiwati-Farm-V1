@@ -1,0 +1,917 @@
+/* Styles for connection-details.html, all under the .idt- prefix: the
+   header for one linked service, the reason it needs attention, and the
+   health, account, activity, flow, settings and disconnect cards below.
+   Colors come only from --basalt-* tokens, so every palette and the dark
+   theme apply without extra rules. */
+
+/* Page-wide shades. Quiet text leans toward the body color so it keeps
+   its contrast; --idt-tone is the service's series color, set by the
+   script once it knows which service is on show. */
+.idt-page {
+	--idt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--idt-line: var(--basalt-edge);
+	--idt-ok: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+	--idt-warn: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+	--idt-bad: color-mix(in srgb, var(--basalt-danger) 58%, var(--basalt-copy));
+	--idt-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--idt-tone: var(--basalt-series-3);
+
+	& .dropdown-item {
+		& .bi {
+			margin-right: 0.6rem;
+		}
+
+		/* Disconnect is the one red entry in the overflow menu. */
+		&.idt-danger-item {
+			color: var(--idt-bad);
+		}
+
+		&.idt-danger-item:hover,
+		&.idt-danger-item:focus {
+			color: var(--idt-bad);
+			background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+		}
+	}
+}
+
+/* The header sets name and actions side by side, aligned on their last line. */
+.basalt-hero-detail.idt-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+
+.idt-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+
+.idt-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+
+.idt-who-text {
+	min-width: 0;
+}
+
+/* The service mark is its initials on a light wash of its own color, matching the list page. */
+.idt-logo {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.01em;
+	color: color-mix(in srgb, var(--idt-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--idt-tone) 18%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--idt-tone) 30%, transparent);
+}
+
+.idt-logo-xl {
+	width: 4.25rem;
+	height: 4.25rem;
+	border-radius: 18px;
+	font-size: 1.45rem;
+}
+
+.idt-tags {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+
+.idt-tags-when {
+	font-size: 0.8rem;
+	color: var(--idt-quiet);
+}
+
+/* On phones the actions drop under the name and the mark shrinks. */
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.idt-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.idt-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.idt-logo-xl {
+		width: 3.5rem;
+		height: 3.5rem;
+		border-radius: 15px;
+		font-size: 1.2rem;
+	}
+}
+
+/* A single bordered line explains a warning, failing, paused or disconnected state. */
+.idt-notice {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		flex: none;
+		color: var(--idt-quiet);
+	}
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+.idt-notice-warning {
+	border-color: color-mix(in srgb, var(--basalt-warning) 40%, var(--basalt-edge));
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 10%, var(--basalt-plane));
+
+	& > .bi {
+		color: var(--idt-warn);
+	}
+}
+
+.idt-notice-danger {
+	border-color: color-mix(in srgb, var(--basalt-danger) 40%, var(--basalt-edge));
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-danger) 9%, var(--basalt-plane));
+
+	& > .bi {
+		color: var(--idt-bad);
+	}
+}
+
+/* Cards stack one per row until 1200px. From there health pairs with the
+   account card and activity with the flows, each pair ending level, and
+   settings and disconnect run the full width. */
+.idt-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1200px) {
+	.idt-grid {
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+	}
+
+	.idt-card-health,
+	.idt-card-activity {
+		grid-column: span 7;
+	}
+
+	.idt-card-conn,
+	.idt-card-does {
+		grid-column: span 5;
+	}
+
+	.idt-card-settings,
+	.idt-card-end {
+		grid-column: span 12;
+	}
+}
+
+/* Every card body is a column, so a footer can sink to the bottom edge. */
+.idt-card {
+	min-width: 0;
+}
+
+.idt-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+
+@media (max-width: 575.98px) {
+	.idt-card.basalt-box .card-body {
+		padding: 1.5rem var(--basalt-pad-x-narrow, 1rem);
+	}
+}
+
+.idt-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+	& > .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+
+.idt-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.idt-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--idt-quiet);
+}
+
+/* Both footers spread their contents across the row and wrap when tight. */
+.idt-card-foot,
+.idt-settings-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.idt-card-foot {
+	margin-top: auto;
+	padding-top: 1.5rem;
+
+	& > .btn[hidden] {
+		display: none;
+	}
+	& > .idt-link {
+		margin-left: auto;
+	}
+}
+
+.idt-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.idt-hint {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--idt-quiet);
+}
+.idt-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+}
+
+.idt-link {
+	border-radius: 4px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--idt-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+.idt-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--idt-bad);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Health opens with the ring and its figure, with the week's facts beside them. */
+.idt-health {
+	display: flex;
+	gap: 1.25rem 2rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+
+.idt-health-score {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+}
+.idt-ring {
+	--basalt-tone: var(--basalt-success);
+	width: 3.75rem;
+	height: 3.75rem;
+}
+.idt-health-value {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 700;
+	line-height: 1.15;
+	color: var(--basalt-copy);
+}
+.idt-health-label {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--idt-quiet);
+}
+
+.idt-health-facts {
+	display: flex;
+	gap: 0.75rem 2.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& dt {
+		font-size: 0.77rem;
+		font-weight: 600;
+		color: var(--idt-quiet);
+	}
+	& dd {
+		margin: 0.2rem 0 0;
+		font-size: 1.05rem;
+		font-weight: 650;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& .idt-bad {
+		color: var(--idt-bad);
+	}
+}
+
+/* The bar chart and the first-day placeholder take the same stretch of
+   card; a service linked today shows the placeholder in place of bars. */
+.idt-chart,
+.idt-first {
+	flex: 1 1 auto;
+	min-height: 15rem;
+}
+
+.idt-chart {
+	position: relative;
+
+	& canvas {
+		position: absolute;
+		inset: 0;
+	}
+}
+
+.idt-first {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.idt-chart[hidden],
+.idt-legend[hidden],
+.idt-first[hidden] {
+	display: none;
+}
+
+.idt-chart-foot {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin-top: 1.25rem;
+}
+
+.idt-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		white-space: nowrap;
+	}
+}
+
+.idt-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--idt-bar, var(--idt-tone));
+}
+.idt-legend-swatch-fail {
+	background: var(--basalt-danger);
+}
+.idt-note {
+	flex: 1 1 18rem;
+	margin: 0;
+	font-size: 0.8rem;
+	line-height: 1.55;
+	color: var(--idt-quiet);
+}
+
+/* Account facts sit as label and value rows, divided by hairlines. */
+.idt-card-conn {
+	container-type: inline-size;
+}
+
+.idt-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--idt-line);
+	}
+
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--idt-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& dd small {
+		display: block;
+		margin-top: 0.1rem;
+		font-size: 0.77rem;
+		color: var(--idt-quiet);
+	}
+	& dd small.is-warn {
+		font-weight: 600;
+		color: var(--idt-warn);
+	}
+}
+
+/* In a narrow card the label moves above its value, so an email address never breaks mid-word. */
+@container (max-width: 24rem) {
+	.idt-facts > div {
+		gap: 0.2rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.idt-hook {
+	margin-top: 1.5rem;
+
+	& .btn-copy {
+		white-space: nowrap;
+	}
+}
+
+.idt-hook-label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Activity is a vertical timeline joined by a thin rail; failures read in red. */
+.idt-switch .form-check-label {
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+
+.idt-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.idt-event {
+	position: relative;
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.25rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+
+.idt-event-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--idt-ok);
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+
+.idt-event-body {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.idt-event-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+}
+.idt-event-time {
+	font-size: 0.77rem;
+	color: var(--idt-quiet);
+}
+
+.idt-event.is-failed {
+	& .idt-event-icon {
+		color: var(--idt-bad);
+		background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+	}
+	& .idt-event-text {
+		font-weight: 550;
+		color: var(--idt-bad);
+	}
+}
+
+.idt-event.is-info .idt-event-icon {
+	color: var(--idt-link);
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+
+/* An entry added on this visit pops its icon once. */
+.idt-event.is-fresh .idt-event-icon {
+	animation: idt-pop 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes idt-pop {
+	0% {
+		transform: scale(0.6);
+	}
+	60% {
+		transform: scale(1.12);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* Flows list what crosses between the two sides, each with an icon in its own series color. */
+.idt-flows {
+	display: grid;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.idt-flow {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr);
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--idt-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+	&.is-off {
+		opacity: 0.55;
+	}
+}
+
+.idt-flow-icon {
+	--idt-flow: var(--basalt-series-1);
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--idt-flow) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--idt-flow) 15%, var(--basalt-plane));
+}
+
+.idt-flow-2 .idt-flow-icon {
+	--idt-flow: var(--basalt-series-2);
+}
+.idt-flow-3 .idt-flow-icon {
+	--idt-flow: var(--basalt-series-4);
+}
+.idt-flow-4 .idt-flow-icon {
+	--idt-flow: var(--basalt-series-5);
+}
+
+.idt-flow-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.idt-flow-name {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.idt-flow-note {
+	font-size: 0.8rem;
+	color: var(--idt-quiet);
+}
+.idt-flow-dir {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+
+/* Permissions follow the flows under a divider; the closing "never" line is muted. */
+.idt-block {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--idt-line);
+}
+
+.idt-perms {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: baseline;
+		font-size: 0.875rem;
+		color: var(--basalt-copy-body);
+	}
+	& .bi {
+		color: var(--idt-ok);
+	}
+
+	& .is-never,
+	& .is-never .bi {
+		color: var(--idt-quiet);
+	}
+}
+
+/* Settings rows pair a label with its value, and swap the value for a field while editing. */
+.idt-settings {
+	display: flex;
+	flex-direction: column;
+}
+.idt-set {
+	display: grid;
+	column-gap: 3rem;
+}
+
+.idt-set-row {
+	display: grid;
+	gap: 0.5rem 1.5rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 16.5rem);
+	align-items: center;
+	padding: 1rem 0;
+	border-top: 1px solid var(--idt-line);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+
+.idt-set-label {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.idt-set-help {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--idt-quiet);
+}
+.idt-set-value {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+
+.idt-set-value[hidden],
+.idt-set-field[hidden] {
+	display: none;
+}
+
+.idt-set-field {
+	min-width: 0;
+
+	& .form-switch {
+		display: flex;
+		padding-left: 0;
+	}
+	& .form-switch .form-check-input {
+		float: none;
+		width: 2.5em;
+		height: 1.35em;
+		margin: 0;
+	}
+}
+
+/* A second column of rows opens only where both still fit their labels; its first row loses the divider. */
+@media (min-width: 1400px) {
+	.idt-set {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.idt-set-row:nth-child(2) {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.idt-set-row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.idt-set-row:has(.form-switch) {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+}
+
+.idt-settings-foot {
+	margin-top: 1.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.idt-settings-status {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--idt-quiet);
+}
+
+.idt-settings-actions {
+	display: flex;
+	gap: 0.5rem;
+	margin-left: auto;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* The disconnect card is one line of explanation beside an outlined red button. */
+.idt-end {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+
+	& > div {
+		flex: 1 1 20rem;
+		min-width: 0;
+	}
+	& > .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+
+.idt-page .btn.idt-danger {
+	color: var(--idt-bad);
+
+	&:hover,
+	&:focus-visible {
+		border-color: color-mix(in srgb, var(--basalt-danger) 45%, var(--basalt-edge-strong));
+		color: var(--idt-bad);
+		background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+	}
+}
+
+/* The first time the activity, flows and permissions come into view, their
+   rows rise in one after another and the timeline rail draws down behind
+   them. The script only sets these classes when motion is welcome. */
+.idt-feed,
+.idt-flows,
+.idt-perms {
+	&.is-waiting > li {
+		opacity: 0;
+	}
+	&.is-drawing > li {
+		animation: idt-rise 450ms ease-out calc(var(--idt-at, 0) * 80ms) both;
+	}
+	&.is-drawing > li:nth-child(2) {
+		--idt-at: 1;
+	}
+	&.is-drawing > li:nth-child(3) {
+		--idt-at: 2;
+	}
+	&.is-drawing > li:nth-child(4) {
+		--idt-at: 3;
+	}
+	&.is-drawing > li:nth-child(5) {
+		--idt-at: 4;
+	}
+	&.is-drawing > li:nth-child(n + 6) {
+		--idt-at: 5;
+	}
+}
+.idt-feed.is-drawing > .idt-event:not(:last-child)::before {
+	transform-origin: top;
+	animation: idt-rail 400ms ease-out calc(var(--idt-at, 0) * 80ms + 250ms) both;
+}
+
+@keyframes idt-rise {
+	from {
+		opacity: 0;
+		transform: translateY(0.4rem);
+	}
+}
+@keyframes idt-rail {
+	from {
+		transform: scaleY(0);
+	}
+}
+
+/* Reduced motion and print both skip the icon pop and the ring fill. */
+@media (prefers-reduced-motion: reduce), print {
+	.idt-event.is-fresh .idt-event-icon {
+		animation: none;
+	}
+	.idt-ring .basalt-mini-ring-bar {
+		transition: none;
+	}
+}

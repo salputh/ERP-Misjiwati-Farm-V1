@@ -1,0 +1,996 @@
+/*
+ * Projects overview (projects.html). Every class here starts with .pj-.
+ * This file covers the standing card, the project table, the throughput
+ * chart, the due-soon list, the quick-view panel and the New project
+ * dialog. Page header, segmented switch, status pills, steps, drawer
+ * shell, dialog shell, choice tiles, empty state and toasts come from
+ * the shared stylesheet.
+ */
+
+/* Page-wide tokens. The quiet gray leans toward body text so it keeps
+   4.5:1 on light palettes and hovered rows; links get the same lift
+   because the bare primary falls short on a few light palettes. */
+.pj-page,
+.pj-layer {
+	--pj-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--pj-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--pj-danger-text: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	--pj-track: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+	--pj-finished: var(--basalt-series-1);
+	--pj-opened: var(--basalt-series-3);
+}
+
+/* Each status maps to one of the theme's state colors. */
+.pj-page {
+	--pj-on-track: var(--basalt-success);
+	--pj-at-risk: var(--basalt-warning);
+	--pj-blocked: var(--basalt-danger);
+	--pj-not-started: color-mix(in srgb, var(--basalt-copy-muted) 45%, var(--basalt-plane));
+	--pj-done: var(--basalt-hue);
+}
+
+/* A project borrows one of the eight chart colors as its own. */
+.pj-tone-1 {
+	--pj-tone: var(--basalt-series-1);
+}
+.pj-tone-2 {
+	--pj-tone: var(--basalt-series-2);
+}
+.pj-tone-3 {
+	--pj-tone: var(--basalt-series-3);
+}
+.pj-tone-4 {
+	--pj-tone: var(--basalt-series-4);
+}
+.pj-tone-5 {
+	--pj-tone: var(--basalt-series-5);
+}
+.pj-tone-6 {
+	--pj-tone: var(--basalt-series-6);
+}
+.pj-tone-7 {
+	--pj-tone: var(--basalt-series-7);
+}
+.pj-tone-8 {
+	--pj-tone: var(--basalt-series-8);
+}
+
+/* Outlined gray buttons stay legible against the card surface. */
+.pj-page .btn-outline-secondary,
+.pj-layer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+	white-space: nowrap;
+}
+
+/* The twelve-column grid gives every card a full row until 1200px;
+   wider than that the chart and the due list sit side by side. */
+.pj-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.pj-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+@media (min-width: 1200px) {
+	.pj-card-wide,
+	.pj-card-narrow {
+		grid-column: span 6;
+	}
+}
+@media (min-width: 1500px) {
+	.pj-card-wide {
+		grid-column: span 7;
+	}
+	.pj-card-narrow {
+		grid-column: span 5;
+	}
+}
+
+/* Card bodies run as a column so a footer link can sink to the bottom. */
+.pj-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.pj-card.basalt-box .card-body {
+		padding: 1.5rem var(--basalt-pad-x-narrow, 1rem);
+	}
+}
+.pj-card-head {
+	margin-bottom: 1.5rem;
+}
+.pj-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pj-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pj-quiet);
+}
+
+/* The footer link is pushed down with an auto margin, which lines up
+   the bottoms of paired cards. */
+.pj-card-more {
+	align-self: flex-start;
+	margin-top: auto;
+	padding-top: 1.5rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--pj-link);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	& .bi {
+		display: inline-block;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+	&:hover .bi {
+		transform: translateX(3px);
+	}
+}
+
+/* The standing bar is one thick strip whose segments grow to each
+   status's share; the legend under it repeats the counts as figures. */
+.pj-mix {
+	display: flex;
+	gap: 4px;
+	height: 14px;
+}
+.pj-mix-seg {
+	transform-origin: left center;
+	flex: var(--pj-n) 1 0;
+	min-width: 10px;
+	border-radius: 7px;
+	background: var(--pj-seg);
+	animation: pj-grow 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+@keyframes pj-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+.pj-mix-seg-on-track,
+.pj-mix-key-item-on-track {
+	--pj-seg: var(--pj-on-track);
+}
+.pj-mix-seg-at-risk,
+.pj-mix-key-item-at-risk {
+	--pj-seg: var(--pj-at-risk);
+}
+.pj-mix-seg-blocked,
+.pj-mix-key-item-blocked {
+	--pj-seg: var(--pj-blocked);
+}
+.pj-mix-seg-not-started,
+.pj-mix-key-item-not-started {
+	--pj-seg: var(--pj-not-started);
+}
+.pj-mix-seg-done,
+.pj-mix-key-item-done {
+	--pj-seg: var(--pj-done);
+}
+
+.pj-mix-key {
+	display: flex;
+	gap: 1rem 2.75rem;
+	flex-wrap: wrap;
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.pj-mix-key-item {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+}
+.pj-mix-key-n {
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+}
+.pj-mix-key-label {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.85rem;
+	color: var(--pj-quiet);
+
+	&::before {
+		content: "";
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 3px;
+		background: var(--pj-seg);
+	}
+}
+
+/* A ruled subheading separates the bar from the tiles below it. */
+.pj-sub {
+	margin: 2rem 0 1rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Help tiles go three across only when the card is wide enough for all
+   three, so no row is ever left part empty. */
+.pj-health {
+	container-type: inline-size;
+}
+.pj-help {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& > li {
+		display: flex;
+		min-width: 0;
+	}
+}
+@container (min-width: 54rem) {
+	.pj-help {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+/* A tile shows its status as an upright bar just inside its left edge. */
+.pj-help-tile {
+	position: relative;
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	width: 100%;
+	padding: 1.25rem 1.25rem 1.25rem 1.6rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	font: inherit;
+	text-align: left;
+	color: inherit;
+	background: color-mix(in srgb, var(--pj-seg) 6%, var(--basalt-plane));
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.1rem;
+		bottom: 1.1rem;
+		left: 0.6rem;
+		width: 4px;
+		border-radius: 4px;
+		background: var(--pj-seg);
+	}
+	&:hover {
+		border-color: color-mix(in srgb, var(--pj-seg) 45%, var(--basalt-edge));
+		box-shadow: 0 6px 18px -10px color-mix(in srgb, var(--pj-seg) 60%, transparent);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.pj-help-tile-at-risk {
+	--pj-seg: var(--pj-at-risk);
+}
+.pj-help-tile-blocked {
+	--pj-seg: var(--pj-blocked);
+}
+.pj-help-top {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.pj-help-who {
+	min-width: 0;
+}
+.pj-help-name {
+	display: block;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pj-help-lead {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--pj-quiet);
+}
+.pj-help-note {
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.pj-help-next {
+	width: 100%;
+	margin-top: auto;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pj-help-none {
+	font-size: 0.9rem;
+	color: var(--pj-quiet);
+}
+
+/* Search leads the toolbar, the status switch follows and the count
+   closes the line; a phone gives the search a row of its own. */
+.pj-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+.pj-search {
+	position: relative;
+	flex: 1 1 16rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.9rem;
+		transform: translateY(-50%);
+		color: var(--pj-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.5rem;
+	}
+}
+.pj-toolbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--pj-quiet);
+}
+@media (max-width: 1199.98px) {
+	.pj-toolbar-count {
+		margin-left: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.pj-search {
+		flex-basis: 100%;
+	}
+}
+
+/* The table is pulled out by its cell padding so the first column's
+   text lines up with the card title above it. It is also the container
+   the row layouts below measure, since the sidebar changes its width as
+   much as the window does. */
+.pj-scroll {
+	container: pj-list / inline-size;
+	margin: 0 -0.75rem;
+}
+.pj-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+}
+.pj-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+}
+.pj-table > thead > tr > th {
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--pj-quiet);
+}
+.pj-table > tbody > tr:last-child > * {
+	border-bottom-width: 0;
+}
+.pj-table > tbody > tr[data-pj-row] {
+	cursor: pointer;
+}
+.pj-table > tbody > tr[data-pj-row]:hover > * {
+	--bs-table-bg-state: var(--basalt-wash);
+}
+.pj-table > tbody > tr.is-new > * {
+	animation: pj-new 1.6s ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+@keyframes pj-new {
+	from {
+		box-shadow: inset 0 0 0 9999px var(--basalt-hue-soft);
+	}
+}
+.pj-empty-row > td {
+	padding: 2.5rem 0;
+}
+
+/* First column: a tinted icon tile, the project name as the row's link
+   and its lead underneath. */
+.pj-proj {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.pj-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--pj-tone, var(--basalt-hue)) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pj-tone, var(--basalt-hue)) 15%, var(--basalt-plane));
+}
+.pj-proj-text {
+	min-width: 0;
+}
+.pj-proj-name {
+	display: block;
+	font-weight: 650;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--pj-link);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.pj-proj-lead {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--pj-quiet);
+}
+
+/* Team faces overlap, ringed in the card color; extras show as +N. */
+.pj-table .basalt-avatar-group .basalt-avatar {
+	border: 2px solid var(--basalt-plane);
+}
+.pj-more-people {
+	margin-left: 0.4rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--pj-quiet);
+}
+
+/* Progress is a slim bar in the project's own color with the share
+   printed right after it. */
+.pj-progress {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	min-width: 9rem;
+}
+.pj-bar {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 5rem;
+	height: 6px;
+	border-radius: 6px;
+	overflow: hidden;
+	background: var(--pj-track);
+}
+.pj-bar-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--pj-pct, 0%);
+	border-radius: inherit;
+	background: var(--pj-tone, var(--basalt-hue));
+}
+.pj-progress-pct {
+	flex-shrink: 0;
+	min-width: 2.2rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+/* The next milestone reads name first, date second; a late date turns red. */
+.pj-next {
+	display: block;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pj-when {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--pj-quiet);
+
+	&.is-late {
+		font-weight: 600;
+		color: var(--pj-danger-text);
+	}
+}
+.pj-col-go {
+	width: 6rem;
+}
+
+/* A hyphenated word such as sign-off never breaks at its hyphen. */
+.pj-unbroken {
+	white-space: nowrap;
+}
+
+/* Short of a very wide list the team column drops out (the side panel
+   lists everyone) and a long milestone may wrap, keeping the row icons
+   on the card edge. */
+@container pj-list (max-width: 1039.98px) {
+	.pj-col-team {
+		display: none;
+	}
+	.pj-next {
+		white-space: normal;
+	}
+}
+
+/* A narrower list turns each row into a small stacked record: project
+   over its bar, milestone beside, status last. Narrower still, the status
+   sits under the milestone, and the narrowest moves the milestone below
+   the bar and the status up beside the name. */
+@container pj-list (max-width: 879.98px) {
+	.pj-table,
+	.pj-table > tbody {
+		display: block;
+	}
+	.pj-table > thead {
+		display: none;
+	}
+	.pj-table > tbody > tr {
+		display: grid;
+		gap: 0.9rem 1.5rem;
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 7.5rem auto;
+		grid-template-areas: "proj next status go" "prog next status go";
+		align-items: center;
+		padding: 1.2rem 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+
+		&:last-child {
+			border-bottom: 0;
+		}
+		&[data-pj-row]:hover {
+			background: var(--basalt-wash);
+		}
+		& > * {
+			display: block;
+			padding: 0;
+			border: 0;
+		}
+		& > .pj-cell-proj {
+			grid-area: proj;
+			min-width: 0;
+		}
+		& > .pj-cell-prog {
+			grid-area: prog;
+			padding-left: 3.4rem;
+		}
+		& > .pj-cell-next {
+			grid-area: next;
+			min-width: 0;
+		}
+		& > .pj-cell-status {
+			grid-area: status;
+		}
+		& > .pj-col-go {
+			grid-area: go;
+			width: auto;
+		}
+		& > .pj-col-team {
+			display: none;
+		}
+		&.pj-empty-row {
+			display: block;
+			margin: 0;
+			padding: 0;
+		}
+		&.pj-empty-row > td {
+			padding: 2rem 0;
+		}
+	}
+	.pj-proj-name,
+	.pj-next,
+	.pj-when {
+		white-space: normal;
+	}
+}
+@container pj-list (max-width: 719.98px) {
+	.pj-table > tbody > tr {
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+		grid-template-areas: "proj next go" "prog status go";
+
+		& > .pj-cell-status {
+			justify-self: start;
+		}
+	}
+}
+@container pj-list (max-width: 559.98px) {
+	.pj-table > tbody > tr {
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "proj status" "prog prog" "next go";
+
+		& > .pj-cell-next {
+			align-self: center;
+			padding-left: 3.4rem;
+		}
+	}
+}
+/* On a phone a project keeps its name, status, progress and next step;
+   who leads it waits on the project's page. */
+@container pj-list (max-width: 419.98px) {
+	.pj-table .pj-proj-lead {
+		display: none;
+	}
+}
+
+/* Above the chart: the two totals on the left, the legend on the right. */
+.pj-trend-bar {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.pj-keys {
+	display: flex;
+	gap: 1rem 2.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& dt {
+		margin-bottom: 0.25rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--pj-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.35rem;
+		font-weight: 700;
+		line-height: 1.2;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+}
+.pj-legend {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+/* Finished is a square like the bars; opened is a short stroke like the line. */
+.pj-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+}
+.pj-legend-swatch-finished {
+	background: var(--pj-finished);
+}
+.pj-legend-swatch-opened {
+	height: 3px;
+	border-radius: 2px;
+	background: var(--pj-opened);
+}
+.pj-chart {
+	position: relative;
+	flex: 1 1 0;
+	min-height: 280px;
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+}
+
+/* Due-soon rows are full-width buttons with a calendar chip, the
+   milestone and a when-pill, separated by hairlines. */
+.pj-due {
+	container-type: inline-size;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pj-due-item + .pj-due-item {
+	border-top: 1px solid var(--basalt-edge);
+}
+.pj-due-btn {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) 6.5rem;
+	align-items: center;
+	width: calc(100% + 1.5rem);
+	margin: 0 -0.75rem;
+	padding: 0.9rem 0.75rem;
+	border: 0;
+	border-radius: 10px;
+	font: inherit;
+	text-align: left;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.pj-date {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 11px;
+	line-height: 1;
+	color: color-mix(in srgb, var(--pj-tone, var(--basalt-hue)) 38%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pj-tone, var(--basalt-hue)) 13%, var(--basalt-plane));
+}
+.pj-date-day {
+	font-size: 1.05rem;
+	font-weight: 750;
+}
+.pj-date-month {
+	margin-top: 0.2rem;
+	font-size: 0.66rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+}
+.pj-due-text {
+	min-width: 0;
+}
+.pj-due-name {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pj-due-project {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--pj-quiet);
+}
+.pj-due-when {
+	justify-self: start;
+}
+/* A narrow card drops the pill below the milestone rather than
+   crushing the name onto three lines. */
+@container (max-width: 26rem) {
+	.pj-due-btn {
+		row-gap: 0.5rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-areas: "date text" "date when";
+	}
+	.pj-date {
+		grid-area: date;
+	}
+	.pj-due-text {
+		grid-area: text;
+	}
+	.pj-due-when {
+		grid-area: when;
+	}
+}
+.pj-due-more {
+	margin: 0.9rem 0 0;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--pj-quiet);
+}
+
+/* The quick-view panel is a little wider than the stock drawer. */
+.pj-drawer {
+	--bs-offcanvas-width: 480px;
+
+	& .offcanvas-header {
+		gap: 0.9rem;
+		align-items: flex-start;
+	}
+	& .offcanvas-body {
+		padding: 1.5rem;
+	}
+	& .basalt-drawer-sub a {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--pj-link);
+	}
+	& .basalt-drawer-sub a:hover {
+		text-decoration: underline;
+	}
+}
+/* On a phone the position count and the icon yield to the name; the
+   arrows stay put. */
+@container basalt-drawer (max-width: 420px) {
+	.pj-drawer .basalt-drawer-pos,
+	.pj-drawer .offcanvas-header > .pj-icon {
+		display: none;
+	}
+}
+.pj-d-section + .pj-d-section {
+	margin-top: 1.75rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.pj-d-sub {
+	margin: 0 0 1rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pj-d-summary {
+	margin: 0.75rem 0 1rem;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.pj-d-progress {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+
+	& .pj-bar {
+		height: 8px;
+	}
+}
+.pj-d-progress-pct {
+	flex-shrink: 0;
+	font-size: 0.85rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+/* An off-track project gets a tinted note under its bar, amber for at
+   risk and red once blocked. */
+.pj-d-note {
+	display: flex;
+	gap: 0.6rem;
+	margin: 1rem 0 0;
+	padding: 0.75rem 0.9rem;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--pj-note-tone, var(--basalt-warning)) 11%, var(--basalt-plane));
+
+	& .bi {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--pj-note-tone, var(--basalt-warning)) 60%, var(--basalt-copy));
+	}
+	&.is-blocked {
+		--pj-note-tone: var(--basalt-danger);
+	}
+}
+.pj-d-steps {
+	& .basalt-steps-list {
+		--steps-dot: 2.1rem;
+	}
+	& .basalt-steps-hint.is-late {
+		font-weight: 600;
+		color: var(--pj-danger-text);
+	}
+}
+.pj-d-team {
+	display: flex;
+	gap: 0.8rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+	}
+	& a {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+	& a:hover {
+		text-decoration: underline;
+		color: var(--pj-link);
+	}
+}
+.pj-d-team-role {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--pj-quiet);
+}
+
+/* The New project dialog spaces its fields and narrows the plan tiles. */
+.pj-field {
+	margin-bottom: 1.25rem;
+}
+.pj-layer .basalt-choices {
+	--basalt-choice-min: 92px;
+}
+.pj-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--pj-danger-text);
+}

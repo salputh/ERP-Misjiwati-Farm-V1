@@ -1,0 +1,1294 @@
+/**
+ * Basalt: the media library (media.html), everything under .med-*.
+ * In page order: the collection cards, the library card with its views,
+ * toolbar, grid, list and selection bar, then the file viewer and the
+ * upload dialog. The page header, pill views, segmented switch, selects,
+ * dialogs, drop zone, upload queue, empty states and toasts are shared
+ * components from basalt.css.
+ */
+
+/* The viewer and the upload dialog sit outside the page container and
+   need the same tokens. Small gray text is the muted token pulled toward
+   the body color, so it clears 4.5:1 on light palettes and hovered rows. */
+.med-page,
+.med-view,
+.med-dialog {
+	--med-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--med-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--med-danger: color-mix(in srgb, var(--basalt-danger) 72%, var(--basalt-copy));
+	--med-warn-text: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	--med-art-bg: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	--med-radius: 14px;
+}
+
+/* Collection cards: six across on wide screens, each with a fanned stack
+   of its newest pictures. Narrower, the stack sits beside the name three
+   to a row; on phones the cards become one sideways strip. */
+.med-collections {
+	margin-bottom: 1.5rem;
+}
+.med-cols {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.med-col {
+	display: flex;
+	gap: 0.9rem;
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	padding: 1.25rem 1rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: var(--med-radius);
+	text-align: center;
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+	}
+}
+.btn-check:checked + .med-col {
+	border-color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	box-shadow: 0 0 0 1px var(--basalt-hue);
+}
+.btn-check:focus-visible:not(:checked) + .med-col {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* The stack: up to three small cards, the outer two turned away from the
+   middle and turned further on hover. */
+.med-col-stack {
+	position: relative;
+	display: block;
+	width: 100%;
+	height: 4.25rem;
+}
+.med-col-card {
+	--med-turn: 0deg;
+	--med-shift: 0rem;
+	position: absolute;
+	top: 0.2rem;
+	left: 50%;
+	transform: translateX(calc(-50% + var(--med-shift))) rotate(var(--med-turn));
+	width: 4.4rem;
+	height: 3.3rem;
+	border-radius: 8px;
+	border: 2px solid var(--basalt-plane);
+	overflow: hidden;
+	background: var(--med-art-bg);
+	box-shadow: 0 4px 12px color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	&:nth-child(1):not(:last-child) {
+		--med-turn: -9deg;
+		--med-shift: -1.3rem;
+	}
+	&:nth-child(2):not(:last-child) {
+		--med-turn: 9deg;
+		--med-shift: 1.3rem;
+	}
+	& .med-art-logo svg {
+		width: 1.4rem;
+		height: 1.4rem;
+	}
+}
+.med-col:hover .med-col-card:nth-child(1):not(:last-child) {
+	--med-turn: -13deg;
+	--med-shift: -1.7rem;
+}
+.med-col:hover .med-col-card:nth-child(2):not(:last-child) {
+	--med-turn: 13deg;
+	--med-shift: 1.7rem;
+}
+.med-col-card > img,
+.med-col-card > .med-art {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	font-size: 1rem;
+}
+.med-col-card .med-art-word,
+.med-col-card .med-art-ext {
+	display: none;
+}
+
+.med-col-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.med-col-name {
+	font-size: 0.9rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.med-col-meta {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--med-quiet);
+}
+
+@media (max-width: 1399.98px) {
+	.med-cols {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.med-col {
+		gap: 1rem;
+		flex-direction: row;
+		padding: 0.85rem 1rem 0.85rem 0.9rem;
+		text-align: left;
+	}
+	.med-col-stack {
+		flex: 0 0 4.25rem;
+		width: 4.25rem;
+		height: 3.25rem;
+	}
+	.med-col-card {
+		top: 0.4rem;
+		width: 3rem;
+		height: 2.3rem;
+		border-radius: 6px;
+	}
+	.med-col-card:nth-child(1):not(:last-child) {
+		--med-shift: -0.6rem;
+	}
+	.med-col-card:nth-child(2):not(:last-child) {
+		--med-shift: 0.6rem;
+	}
+	.med-col:hover .med-col-card:nth-child(1):not(:last-child) {
+		--med-shift: -0.8rem;
+	}
+	.med-col:hover .med-col-card:nth-child(2):not(:last-child) {
+		--med-shift: 0.8rem;
+	}
+}
+@media (max-width: 767.98px) {
+	.med-cols {
+		display: flex;
+		gap: 0.75rem;
+		margin: -2px;
+		padding: 2px;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: none;
+	}
+	.med-col {
+		flex: 0 0 auto;
+	}
+}
+
+/* The library card. Its views wrap onto a second line rather than
+   scrolling. */
+.med-library.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) 1.75rem 1.75rem;
+
+	@media (max-width: 767.98px) {
+		padding: 1.5rem 1rem 1.5rem;
+	}
+}
+.med-views .basalt-tabs-list {
+	flex-wrap: wrap;
+	overflow: visible;
+}
+@media (max-width: 575.98px) {
+	.med-views .basalt-tabs-list > .nav-link {
+		padding: 0.5rem 0.75rem;
+	}
+}
+
+/* The toolbar: search, sort, then the summary and the layout switch at
+   the end. Each select is about as wide as its longest option. */
+.med-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: var(--basalt-pad-row-y) 0 1.5rem;
+	padding-top: var(--basalt-pad-row-y);
+	border-top: 1px solid var(--basalt-edge);
+
+	& .med-select-sort {
+		flex: 0 0 auto;
+		width: 11.5rem;
+	}
+}
+.med-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--med-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.med-select-collection {
+	width: 13.5rem;
+	max-width: 100%;
+}
+.med-toolbar-end {
+	display: flex;
+	gap: 0.75rem 1rem;
+	align-items: center;
+	margin-left: auto;
+}
+.med-summary {
+	margin: 0;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--med-quiet);
+}
+@media (max-width: 767.98px) {
+	.med-toolbar-end {
+		justify-content: space-between;
+		width: 100%;
+		margin-left: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.med-search {
+		flex-basis: 100%;
+	}
+	.med-toolbar .med-select-sort {
+		flex: 1 1 0;
+		width: auto;
+		min-width: 0;
+	}
+}
+
+/* The grid of tiles. A tile is its picture, a checkbox over the picture,
+   and the name and details as one button under it. */
+.med-grid {
+	display: grid;
+	gap: 1.5rem 1.25rem;
+	grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.med-tile {
+	position: relative;
+	min-width: 0;
+}
+.med-tile-thumb {
+	position: relative;
+	aspect-ratio: 4 / 3;
+	border-radius: var(--med-radius);
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--med-art-bg);
+	cursor: pointer;
+}
+.med-tile-thumb > img,
+.med-tile-thumb > .med-art {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.med-tile:hover .med-tile-thumb > img {
+	transform: scale(1.03);
+}
+.med-tile.is-picked .med-tile-thumb {
+	border-color: var(--basalt-hue);
+	box-shadow: 0 0 0 2px var(--basalt-hue);
+}
+
+/* The checkbox on the picture shows on hover, on keyboard focus, and on
+   every tile once something is picked. Touch screens always show it. */
+.med-tile-check.form-check-input {
+	position: absolute;
+	top: 0.7rem;
+	left: 0.7rem;
+	z-index: 2;
+	width: 1.25rem;
+	height: 1.25rem;
+	margin: 0;
+	border-color: var(--basalt-edge-strong);
+	opacity: 0;
+	box-shadow: 0 1px 4px color-mix(in srgb, var(--basalt-copy) 25%, transparent);
+	transition: opacity 170ms ease;
+}
+.med-tile:hover .med-tile-check,
+.med-tile-check:focus-visible,
+.med-tile-check:checked,
+.med-page.is-picking .med-tile-check {
+	opacity: 1;
+}
+@media (hover: none) {
+	.med-tile-check.form-check-input {
+		opacity: 1;
+	}
+}
+
+.med-tile-open {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	width: 100%;
+	min-width: 0;
+	margin-top: 0.75rem;
+	padding: 0;
+	border: 0;
+	text-align: left;
+	color: inherit;
+	background: none;
+
+	&:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	&:focus:not(:focus-visible) {
+		outline: 0;
+	}
+	&:hover .med-tile-name {
+		color: var(--med-link);
+	}
+}
+.med-tile-name {
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.med-tile-meta {
+	font:
+		400 0.76rem/1.4 "Chivo Mono",
+		monospace;
+	white-space: nowrap;
+	color: var(--med-quiet);
+}
+
+/* Two tiles to a row on phones; long names wrap instead of losing their
+   end. */
+@media (max-width: 767.98px) {
+	.med-grid {
+		gap: 1.25rem 1rem;
+		grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+	}
+	.med-tile-name {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+}
+
+/* Flags on the picture say what needs a look; a video shows its length
+   bottom right. */
+.med-flags {
+	position: absolute;
+	bottom: 0.6rem;
+	left: 0.6rem;
+	z-index: 1;
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.med-flag {
+	padding: 0.22rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 650;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+.med-flag-warning {
+	border-color: color-mix(in srgb, var(--basalt-warning) 40%, var(--basalt-plane));
+	color: var(--med-warn-text);
+	background: color-mix(in srgb, var(--basalt-warning) 16%, var(--basalt-plane));
+}
+.med-tile-dur {
+	position: absolute;
+	right: 0.6rem;
+	bottom: 0.6rem;
+	z-index: 1;
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.2rem 0.5rem 0.2rem 0.3rem;
+	border-radius: 999px;
+	font:
+		600 0.71rem/1.2 "Chivo Mono",
+		monospace;
+	color: var(--basalt-plane);
+	background: color-mix(in srgb, var(--basalt-copy) 82%, transparent);
+}
+
+/* Files without a photo get a drawing: an icon on a wash, the logo on a
+   plain board, or a document as a page standing on its collection's
+   color. */
+.med-art {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	font-size: 1.75rem;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: var(--med-art-bg);
+}
+.med-art-logo {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: center;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	& svg {
+		width: 2.6rem;
+		height: 2.6rem;
+		fill: currentColor;
+	}
+	& svg circle {
+		fill: var(--basalt-series-2);
+	}
+}
+.med-art-dark {
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.med-art-word {
+	font-size: 1.45rem;
+	font-weight: 750;
+	letter-spacing: -0.02em;
+}
+.med-art-doc {
+	--med-doc-tone: var(--basalt-series-1);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	background: color-mix(in srgb, var(--med-doc-tone) 14%, var(--basalt-plane));
+}
+.med-art-brand {
+	--med-doc-tone: var(--basalt-series-2);
+}
+.med-art-sales {
+	--med-doc-tone: var(--basalt-series-3);
+}
+.med-art-stories {
+	--med-doc-tone: var(--basalt-series-4);
+}
+.med-art-page {
+	position: relative;
+	display: flex;
+	gap: 6%;
+	flex-direction: column;
+	width: 46%;
+	height: 80%;
+	padding: 9% 9% 0;
+	border-radius: 8px 8px 0 0;
+	background: var(--basalt-plane);
+	box-shadow: 0 6px 22px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+}
+.med-art-band {
+	height: 14%;
+	border-radius: 3px;
+	background: var(--med-doc-tone);
+}
+.med-art-line {
+	height: 5%;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+}
+.med-art-line-short {
+	width: 60%;
+}
+.med-art-ext {
+	position: absolute;
+	bottom: 12%;
+	left: 9%;
+	padding: 0.12rem 0.4rem;
+	border-radius: 5px;
+	font:
+		700 0.66rem/1.2 "Chivo Mono",
+		monospace;
+	color: color-mix(in srgb, var(--med-doc-tone) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--med-doc-tone) 16%, var(--basalt-plane));
+}
+
+/* The list. Fixed column widths; the file column takes what is left. */
+.med-table-wrap[hidden] {
+	display: none;
+}
+.med-table {
+	width: 100%;
+	margin: 0;
+	table-layout: fixed;
+	border-collapse: collapse;
+
+	& thead th {
+		padding: 0.7rem 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		text-align: left;
+		white-space: nowrap;
+		color: var(--med-quiet);
+	}
+	& td {
+		padding: 0.8rem 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+		vertical-align: middle;
+		color: var(--basalt-copy-body);
+	}
+	& tbody tr:hover,
+	& tbody tr.is-picked {
+		background: var(--basalt-wash);
+	}
+	& tbody tr:last-child td {
+		border-bottom: 0;
+	}
+	& th:first-child,
+	& td:first-child {
+		padding-left: 0;
+	}
+	& th:last-child,
+	& td:last-child {
+		padding-right: 0;
+	}
+	& td:nth-child(2) {
+		overflow: hidden;
+	}
+	& th.med-table-size,
+	& td.med-table-size {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.8rem;
+		text-align: right;
+		white-space: nowrap;
+	}
+	& th.med-table-size {
+		width: 6rem;
+	}
+}
+.med-table-check {
+	width: 2.25rem;
+
+	& .form-check-input {
+		margin: 0;
+	}
+}
+.med-table-type {
+	width: 8.5rem;
+}
+.med-table-used {
+	width: 7.5rem;
+}
+.med-table-date {
+	width: 6.5rem;
+}
+.med-table-type,
+.med-table-used,
+.med-table-date {
+	white-space: nowrap;
+}
+.med-muted {
+	color: var(--med-quiet);
+}
+@media (max-width: 991.98px) {
+	.med-table-type,
+	.med-table-date {
+		display: none;
+	}
+}
+@media (max-width: 767.98px) {
+	.med-table-used {
+		display: none;
+	}
+}
+
+/* The file cell: a small picture, then the name as a button with the
+   collection under it. */
+.med-file {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+
+	@media (max-width: 575.98px) {
+		gap: 0.7rem;
+	}
+}
+.med-file-thumb {
+	flex: 0 0 auto;
+	width: 4rem;
+	height: 3rem;
+	border-radius: 9px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	cursor: pointer;
+
+	& .med-art-logo svg {
+		width: 1.3rem;
+		height: 1.3rem;
+	}
+	& .med-art-word {
+		display: none;
+	}
+	& .med-art-ext {
+		display: none;
+	}
+	@media (max-width: 575.98px) {
+		width: 3rem;
+		height: 2.25rem;
+	}
+}
+.med-file-thumb > img,
+.med-file-thumb > .med-art {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	font-size: 1.1rem;
+}
+.med-file-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.med-file-name {
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	font-weight: 650;
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		color: var(--med-link);
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&:focus:not(:focus-visible) {
+		outline: 0;
+	}
+	@media (max-width: 575.98px) {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+}
+.med-file-sub {
+	font-size: 0.8rem;
+	color: var(--med-quiet);
+}
+.med-file-warn {
+	font-weight: 600;
+	color: var(--med-warn-text);
+}
+
+/* The selection bar sticks to the bottom of the window while files are
+   ticked, so it never pushes the grid under the pointer. On phones the
+   count and Clear share a line and the three actions one even row. */
+.med-bulk {
+	position: sticky;
+	bottom: 1rem;
+	z-index: 3;
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	width: fit-content;
+	max-width: 100%;
+	margin: 1.5rem auto 0;
+	padding: 0.75rem 0.75rem 0.75rem 1.25rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-hue-border);
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	box-shadow: 0 12px 32px color-mix(in srgb, var(--basalt-copy) 18%, transparent);
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn {
+		white-space: nowrap;
+		background-color: var(--basalt-plane);
+	}
+	& .btn-link {
+		background-color: transparent;
+	}
+}
+.med-bulk-count {
+	font-size: 0.875rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.med-bulk-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.med-link.btn-link {
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--med-link);
+}
+.med-danger.btn {
+	color: var(--med-danger);
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-danger) 40%, var(--basalt-edge));
+		color: var(--med-danger);
+		background-color: var(--basalt-danger-soft);
+	}
+}
+@media (max-width: 575.98px) {
+	.med-bulk {
+		gap: 0.75rem 0.5rem;
+		width: 100%;
+		padding: 0.85rem 1rem;
+	}
+	.med-bulk-actions {
+		display: contents;
+	}
+	.med-bulk-count {
+		flex: 1 1 calc(100% - 8rem);
+	}
+	.med-bulk .btn-link {
+		padding: 0;
+	}
+	.med-bulk .dropup,
+	.med-bulk-actions > .btn-outline-secondary {
+		flex: 1 1 auto;
+		order: 1;
+	}
+	.med-bulk .dropup > .btn {
+		justify-content: center;
+		width: 100%;
+	}
+	.med-bulk .btn-outline-secondary > .bi {
+		display: none;
+	}
+}
+
+/* The foot: Show more, with the storage line under it when both show. */
+.med-foot {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	margin-top: 1.75rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& > .btn:not([hidden]) + .med-foot-storage {
+		flex-basis: 100%;
+		text-align: center;
+	}
+}
+.med-foot-storage {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--med-quiet);
+}
+
+/* The file viewer: the file on a plain stage on the left with an arrow
+   either side, and its details in a column on the right. Below 992px it
+   fills the screen and scrolls as one, name and actions pinned. */
+.med-view .modal-content {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 25rem;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	grid-template-areas: "stage head" "stage body" "stage foot";
+	overflow: hidden;
+}
+@media (min-width: 992px) {
+	.med-view .modal-dialog {
+		max-width: min(1240px, calc(100vw - 3rem));
+	}
+	.med-view .modal-content {
+		height: min(780px, calc(100vh - 3.5rem));
+	}
+}
+@media (max-width: 991.98px) {
+	.med-view .modal-content {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto auto auto auto;
+		grid-template-areas: "head" "stage" "body" "foot";
+		overflow-y: auto;
+	}
+}
+
+.med-view-stage {
+	position: relative;
+	grid-area: stage;
+	min-height: 0;
+	border-right: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-canvas));
+
+	@media (max-width: 991.98px) {
+		height: clamp(17rem, 68vw, 58vh);
+		border-right: 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+}
+.med-view-media {
+	position: absolute;
+	inset: 2.25rem 4.5rem 3.5rem;
+	display: grid;
+	place-items: center;
+	container-type: size;
+	margin: 0;
+
+	&.is-stepping {
+		animation: basalt-slide-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	&.is-back {
+		animation-name: basalt-slide-back;
+	}
+	@media (max-width: 991.98px) {
+		inset: 1.25rem 4rem 2.75rem;
+	}
+	@media (max-width: 575.98px) {
+		inset: 1rem 1rem 3.4rem;
+	}
+}
+
+/* A picture keeps its own shape and fits the stage. */
+.med-view-frame {
+	position: relative;
+	display: block;
+
+	& > img {
+		display: block;
+		width: auto;
+		max-width: 100cqw;
+		height: auto;
+		max-height: 100cqh;
+		box-shadow: 0 18px 40px -24px var(--basalt-scrim);
+	}
+	& > .med-art {
+		width: 60cqw;
+		height: 45cqw;
+		max-height: 100cqh;
+		font-size: 3rem;
+	}
+	& .med-tile-dur {
+		right: 0.85rem;
+		bottom: 0.85rem;
+	}
+}
+
+/* A logo sits on a board of its own proportions. */
+.med-view-board {
+	display: block;
+	width: min(80cqw, calc(80cqh * var(--med-ratio)));
+	aspect-ratio: var(--med-ratio);
+	border: 1px solid var(--basalt-edge);
+
+	& > .med-art {
+		height: 100%;
+	}
+	& .med-art-logo svg {
+		width: 22%;
+		height: auto;
+		max-height: 60%;
+		aspect-ratio: 1;
+	}
+	& .med-art-word {
+		font-size: clamp(1.5rem, 9cqw, 4rem);
+	}
+	& .med-art-logo {
+		gap: 3%;
+	}
+}
+
+/* A document is a page in its collection's color. */
+.med-view-doc {
+	display: flex;
+	gap: 3cqh;
+	flex-direction: column;
+	container-type: size;
+	height: min(92cqh, 120cqw);
+	aspect-ratio: 1 / 1.414;
+	padding: 9% 9% 0;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+	box-shadow: 0 18px 40px -24px var(--basalt-scrim);
+}
+.med-view-doc-band {
+	flex: 0 0 6cqh;
+	margin-bottom: 2cqh;
+	background: var(--med-doc-tone);
+}
+.med-view-doc-line {
+	flex: 0 0 1.5cqh;
+	background: color-mix(in srgb, var(--basalt-copy) 11%, transparent);
+
+	&:nth-child(3n) {
+		width: 82%;
+	}
+	&:nth-child(4n) {
+		width: 64%;
+	}
+}
+.med-view-doc-ext {
+	align-self: flex-start;
+	margin-top: auto;
+	margin-bottom: 7cqh;
+	padding: 0.2rem 0.5rem;
+	font:
+		700 0.8rem/1.2 "Chivo Mono",
+		monospace;
+	color: color-mix(in srgb, var(--med-doc-tone) 32%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--med-doc-tone) 16%, var(--basalt-plane));
+}
+
+/* The arrows and the "3 of 12" readout. On phones the arrows drop to the
+   bottom corners of the stage. */
+.med-view-nav {
+	position: absolute;
+	top: 50%;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin-top: -1.375rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 50%;
+	font-size: 1.1rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&:focus:not(:focus-visible) {
+		outline: 0;
+	}
+	&:disabled {
+		visibility: hidden;
+	}
+	@media (max-width: 575.98px) {
+		top: auto;
+		bottom: 0.3rem;
+		width: 2.5rem;
+		height: 2.5rem;
+		margin-top: 0;
+	}
+}
+.med-view-nav-prev {
+	left: 1rem;
+
+	@media (max-width: 575.98px) {
+		left: 0.75rem;
+	}
+}
+.med-view-nav-next {
+	right: 1rem;
+
+	@media (max-width: 575.98px) {
+		right: 0.75rem;
+	}
+}
+.med-view-pos {
+	position: absolute;
+	right: 0;
+	bottom: 1.1rem;
+	left: 0;
+	margin: 0;
+	font:
+		400 0.8rem/1.4 "Chivo Mono",
+		monospace;
+	text-align: center;
+	color: var(--med-quiet);
+
+	@media (max-width: 991.98px) {
+		bottom: 0.75rem;
+	}
+	@media (max-width: 575.98px) {
+		bottom: 1.05rem;
+	}
+}
+
+/* The head: name and type, the close button at the end. */
+.med-view-head {
+	display: flex;
+	gap: 1rem;
+	grid-area: head;
+	align-items: flex-start;
+	padding: 1.5rem 1.5rem 1rem;
+	background: var(--basalt-plane);
+
+	& .btn-close {
+		flex-shrink: 0;
+		margin: 0.1rem 0 0 auto;
+	}
+	@media (max-width: 991.98px) {
+		position: sticky;
+		top: 0;
+		z-index: 3;
+		padding: 1rem 1rem 0.9rem 1.25rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+}
+.med-view-heading {
+	min-width: 0;
+}
+.med-view-title {
+	margin: 0 0 0.25rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.med-view-sub {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--med-quiet);
+}
+
+/* The body: the text field with its hint, the link, where the file is
+   used, and the facts. While the field asks for text, the hint is the
+   error. */
+.med-view-body {
+	grid-area: body;
+	min-height: 0;
+	padding: 0.75rem 1.5rem 1.5rem;
+	overflow-y: auto;
+
+	@media (max-width: 991.98px) {
+		padding: 1.5rem 1.25rem;
+		overflow: visible;
+	}
+}
+.med-view-section + .med-view-section {
+	margin-top: 1.75rem;
+}
+.med-view-label.form-label,
+.med-view-label {
+	display: block;
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.med-view-hint {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--med-quiet);
+
+	&.is-error > p {
+		font-weight: 600;
+		color: var(--med-danger);
+	}
+}
+.med-view-chars {
+	font-family: "Chivo Mono", monospace;
+	white-space: nowrap;
+}
+.med-view-save {
+	display: block;
+	margin: 0.85rem 0 0 auto;
+}
+.med-link-field {
+	& .form-control {
+		font:
+			400 0.8rem/1.5 "Chivo Mono",
+			monospace;
+		color: var(--basalt-copy-body);
+		background: var(--basalt-canvas);
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.med-used {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.med-used-item {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+	align-items: baseline;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& > .bi {
+		color: var(--med-quiet);
+	}
+	& a {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+	& a:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--med-link);
+	}
+}
+.med-used-kind {
+	font-size: 0.77rem;
+	color: var(--med-quiet);
+}
+.med-used-none {
+	font-size: 0.875rem;
+	color: var(--med-quiet);
+}
+
+.med-facts {
+	margin: 0;
+}
+.med-facts-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+	padding: 0.5rem 0;
+	font-size: 0.875rem;
+
+	& dt {
+		font-weight: 400;
+		color: var(--med-quiet);
+	}
+	& dd {
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+	& a {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--med-link);
+	}
+	@media (max-width: 575.98px) {
+		grid-template-columns: 6.5rem minmax(0, 1fr);
+	}
+}
+
+/* The foot: Delete at the start, Replace and Download at the end; on
+   phones the three share the width. */
+.med-view-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	grid-area: foot;
+	padding: 1rem 1.5rem 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+
+	& .btn {
+		white-space: nowrap;
+	}
+	@media (max-width: 991.98px) {
+		position: sticky;
+		bottom: 0;
+		z-index: 3;
+		padding: 0.85rem 1.25rem;
+	}
+	@media (max-width: 575.98px) {
+		& > .btn {
+			flex: 1 1 0;
+			justify-content: center;
+		}
+	}
+}
+
+/* The upload dialog: the drop zone and the queue under it, each finished
+   row going green. */
+.med-drop {
+	position: relative;
+	padding: 2rem 1.25rem;
+}
+.med-queue.basalt-file-queue {
+	margin-top: 1.25rem;
+}
+.med-queue {
+	&[hidden] {
+		display: none;
+	}
+	& .basalt-file-queue-item.is-done .progress-bar {
+		background-color: var(--basalt-success);
+	}
+	& .is-done [data-med-q-pct] {
+		font-size: 1rem;
+		color: var(--basalt-success);
+	}
+}
+
+/* With reduced motion nothing slides, turns or grows. */
+@media (prefers-reduced-motion: reduce) {
+	.med-view-media.is-stepping {
+		animation: none;
+	}
+	.med-tile-thumb > img,
+	.med-tile-check.form-check-input,
+	.med-col-card {
+		transition: none;
+	}
+	.med-tile:hover .med-tile-thumb > img {
+		transform: none;
+	}
+}

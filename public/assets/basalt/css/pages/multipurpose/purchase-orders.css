@@ -1,0 +1,1534 @@
+/*
+ * Purchase orders (purchase-orders.html). Everything here is prefixed .po-
+ * and colored only through --basalt-* tokens, so palettes and dark mode
+ * follow without extra rules. Cards, tabs, selects, pills, choice tiles,
+ * the stepper, the drawer, the dialog, empty states and toasts come from
+ * the shared stylesheet; this file arranges the list, the single order
+ * and the order form, and draws the parts only this page has.
+ */
+
+/* The drawer sits outside the page wrapper, so it receives the same
+   local tokens. The quiet text mixes the muted gray toward the body color
+   to keep 4.5:1 contrast on the lightest palettes. */
+.po-page,
+.po-drawer {
+	--po-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--po-line: var(--basalt-edge);
+	--po-track: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+	--po-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+
+/* Only one view shows at a time. Its title receives focus on a switch so
+   screen readers announce it, and as it is no control it draws no ring. */
+.po-view[hidden] {
+	display: none;
+}
+.po-view h1[tabindex="-1"]:focus {
+	outline: 0;
+	box-shadow: none;
+}
+
+/* Every card is a size container, so its insides respond to the card's
+   own width rather than the window's. */
+.po-card.card {
+	container-type: inline-size;
+	min-width: 0;
+}
+.po-card.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@container (max-width: 520px) {
+	.po-card.basalt-box > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.po-cardhead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.po-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.po-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--po-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.po-block-head {
+	margin-bottom: 1.25rem;
+}
+.po-block-head-link {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+
+/* Supplier and location marks carry two letters or an icon on a tile in
+   the supplier's chart color; product tiles match the Stock Levels page. */
+.po-mono {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 0.8rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--po-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--po-tone) 16%, var(--basalt-plane));
+
+	& .bi {
+		font-size: 1.1rem;
+	}
+}
+.po-mono-lg {
+	width: 2.85rem;
+	height: 2.85rem;
+	font-size: 0.9rem;
+}
+.po-tile {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--po-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--po-tone) 15%, var(--basalt-plane));
+}
+.po-code {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+/* A name over its detail line stacks the same way wherever it appears. */
+.po-spend-who,
+.po-parcel-text,
+.po-org-text,
+.po-product-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+
+/* Text links come in two weights: tinted ones darken on hover, and bold
+   item names take the tint on hover. All of them share one focus ring. */
+.po-link {
+	flex: none;
+	border-radius: 4px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--po-link);
+}
+.po-link-plain {
+	font-weight: 400;
+	white-space: normal;
+}
+.po-link:hover,
+.po-id:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.po-trip-what:hover,
+.po-product-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--po-link);
+}
+.po-link:focus-visible,
+.po-trip-what:focus-visible,
+.po-id:focus-visible,
+.po-product-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Menu icons keep a gap from their label, and the destructive entry
+   reads red at rest and on hover. */
+.po-page .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+.po-danger-item.dropdown-item {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+
+	&:hover,
+	&:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* The small uppercase labels: group titles and both tables' headers. */
+.po-group,
+.po-table thead th,
+.po-lines-table thead th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--po-quiet);
+}
+
+/* On wide screens the two summary cards above the table share a row,
+   seven parts to five. */
+.po-top {
+	display: grid;
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+@media (min-width: 1200px) {
+	.po-top {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		align-items: stretch;
+	}
+}
+
+/* Coming in lists deliveries under way, then drafts still to send, each
+   as a mark, a description, a date and one button. */
+.po-coming-body {
+	padding: 0.5rem var(--basalt-pad-x) 1rem;
+
+	& .basalt-empty {
+		padding: 2rem 0;
+	}
+}
+.po-group {
+	margin: 1rem 0 0;
+}
+.po-trips {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& > li:last-child {
+		border-bottom: 0;
+	}
+}
+.po-trip,
+.po-draft {
+	display: grid;
+	gap: 0.75rem 1.1rem;
+	grid-template-columns: auto minmax(0, 1fr) 7.5rem auto;
+	align-items: center;
+	padding: 1.1rem 0;
+	border-bottom: 1px solid var(--po-line);
+}
+.po-trip-main {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.po-trip-what {
+	align-self: flex-start;
+	border-radius: 4px;
+	font-size: 0.92rem;
+	font-weight: 700;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.po-trip-sub {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--po-quiet);
+}
+.po-trip-when {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--po-quiet);
+
+	& strong {
+		font-size: 0.875rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.po-trip.is-late .po-trip-when strong {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.po-trip > .btn,
+.po-draft > .btn {
+	white-space: nowrap;
+}
+
+/* The track runs from the day an order was sent to its due date; the fill
+   reaches today in the supplier's color and the van rides its tip. */
+.po-trip-track {
+	position: relative;
+	height: 6px;
+	margin: 0.65rem 0.9rem 0.4rem 0;
+	border-radius: 99px;
+	background: var(--po-track);
+}
+.po-trip-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	transform-origin: left center;
+	width: var(--po-pct);
+	border-radius: inherit;
+	background: linear-gradient(90deg, color-mix(in srgb, var(--po-tone) 35%, var(--basalt-plane)), var(--po-tone));
+	animation: po-grow 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+:root[data-basalt-gradients="off"] .po-trip-fill {
+	background: var(--po-tone);
+}
+.po-trip-van {
+	position: absolute;
+	top: 50%;
+	left: var(--po-pct);
+	transform: translate(-50%, -50%);
+	display: grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	font-size: 0.8rem;
+	color: var(--basalt-plane);
+	background: var(--po-tone);
+	animation: po-drive 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes po-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+@keyframes po-drive {
+	from {
+		left: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.po-trip-fill,
+	.po-trip-van {
+		animation: none;
+	}
+}
+
+/* In a narrow card the mark and description take the first line, and the
+   date and button share the second. */
+@container (max-width: 560px) {
+	.po-trip,
+	.po-draft {
+		row-gap: 0.85rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas: "mark main main" ". when act";
+	}
+	.po-trip > .po-mono,
+	.po-draft > .po-mono {
+		grid-area: mark;
+		align-self: start;
+	}
+	.po-trip > .po-trip-main,
+	.po-draft > .po-trip-main {
+		grid-area: main;
+	}
+	.po-trip > .po-trip-when,
+	.po-draft > .po-trip-when {
+		gap: 0.1rem 0.5rem;
+		flex-flow: row wrap;
+		grid-area: when;
+		align-items: baseline;
+		white-space: normal;
+	}
+	.po-trip-when > * {
+		white-space: nowrap;
+	}
+	.po-trip > .btn,
+	.po-draft > .btn {
+		grid-area: act;
+	}
+}
+
+/* Spend by supplier ranks each supplier on a bar scaled to the largest,
+   with the amount at the end of the row. */
+.po-spend {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	justify-content: space-evenly;
+	margin: 0;
+	padding: 0.75rem var(--basalt-pad-x) 1.25rem;
+	list-style: none;
+}
+.po-spend-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(7rem, 9rem) minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.85rem 0;
+}
+.po-spend-name {
+	font-size: 0.92rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.po-spend-count {
+	font-size: 0.77rem;
+	color: var(--po-quiet);
+}
+.po-spend-bar {
+	height: 8px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--po-track);
+
+	& > span {
+		transform-origin: left center;
+		display: block;
+		width: var(--po-pct);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--po-tone);
+		animation: po-grow 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	}
+}
+.po-spend-value {
+	min-width: 5.5rem;
+	font-size: 0.92rem;
+	font-weight: 700;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+@media (prefers-reduced-motion: reduce) {
+	.po-spend-bar > span {
+		animation: none;
+	}
+}
+/* With little room the bar drops under the supplier's name. */
+@container (max-width: 560px) {
+	.po-spend-row {
+		row-gap: 0.6rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+	.po-spend-bar {
+		grid-column: 2 / -1;
+		grid-row: 2;
+	}
+}
+
+/* The orders card opens with status tabs and a toolbar: search, two
+   filters and a live count pushed to the far end. */
+.po-tabs {
+	margin: 1.25rem var(--basalt-pad-x) 0;
+}
+.po-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--po-line);
+}
+.po-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 13rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--po-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.po-toolbar-select {
+	flex: 0 0 auto;
+
+	& .form-select {
+		width: auto;
+		min-width: 10.5rem;
+	}
+}
+.po-toolbar-count {
+	margin: 0 0 0 auto;
+	padding-left: 0.5rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--po-quiet);
+}
+
+/* The order table. Header cells are quiet labels, body cells align to
+   their top line, and the outer columns line up with the card padding. */
+.po-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.po-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy);
+	min-width: 100%;
+
+	& > :not(caption) > * > * {
+		border-bottom-color: var(--po-line);
+	}
+	& thead th {
+		padding: 0.75rem 1rem;
+		white-space: nowrap;
+		background: transparent;
+	}
+	& tbody td {
+		padding: var(--basalt-pad-row-y) 1rem;
+		font-size: 0.875rem;
+		vertical-align: top;
+	}
+	& tr > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& tr > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& tbody tr:last-child td {
+		border-bottom: 0;
+	}
+	& tbody tr[data-po-id] {
+		cursor: pointer;
+	}
+	& tbody tr[data-po-id]:hover > td {
+		background: var(--basalt-wash);
+	}
+	& .basalt-empty-row > td {
+		padding: 2.5rem var(--basalt-pad-x);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.po-table tbody tr[data-po-id] {
+		transition: none;
+	}
+}
+
+/* Sortable headers are bare buttons; the active one darkens and its
+   arrow comes up to full strength. */
+.po-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .bi {
+		font-size: 0.8rem;
+		opacity: 0.55;
+	}
+}
+th[aria-sort="ascending"] .po-sort,
+th[aria-sort="descending"] .po-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort="ascending"] .po-sort .bi,
+th[aria-sort="descending"] .po-sort .bi {
+	opacity: 1;
+}
+
+/* Fixed widths for every column but Items, which takes what is left and
+   is the first to go as the card narrows. */
+.po-col-id {
+	width: 8rem;
+}
+.po-col-supplier {
+	width: 12.5rem;
+}
+.po-col-when {
+	width: 9rem;
+}
+.po-col-status {
+	width: 10rem;
+}
+.po-col-total {
+	width: 7.5rem;
+	text-align: right;
+}
+.po-col-act {
+	width: 8.5rem;
+}
+.po-table thead .po-col-total .po-sort {
+	flex-direction: row-reverse;
+}
+@container (max-width: 1080px) {
+	.po-col-supplier {
+		width: 10rem;
+	}
+	.po-col-act {
+		width: 7.5rem;
+	}
+}
+@container (max-width: 940px) {
+	.po-col-items {
+		display: none;
+	}
+}
+
+/* Cell contents: a bold line over a quiet one, the order number as a
+   link, and the action button held to the right edge. */
+.po-id {
+	border-radius: 4px;
+	font-weight: 700;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--po-link);
+}
+.po-who {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	min-width: 0;
+}
+.po-who-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.po-main {
+	display: block;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.po-main-plain {
+	font-weight: 400;
+	white-space: normal;
+	color: var(--basalt-copy-body);
+}
+.po-sub {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--po-quiet);
+}
+.po-sub-late {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.po-money {
+	display: block;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.po-act {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+@container (max-width: 1080px) {
+	.po-who .po-mono {
+		display: none;
+	}
+}
+
+.po-list-foot {
+	margin: 0;
+	padding: 1.1rem var(--basalt-pad-x) 1.3rem;
+	border-top: 1px solid var(--po-line);
+	font-size: 0.8rem;
+	color: var(--po-quiet);
+
+	& a {
+		color: var(--po-link);
+	}
+}
+
+/* Below 760px of card width the list tightens its gutters, the search
+   takes a row of its own above the two filters, and each order becomes
+   a stacked record: number and status, supplier and total, delivery and
+   the action. */
+@container (max-width: 760px) {
+	.po-cardhead,
+	.po-coming-body,
+	.po-spend,
+	.po-list-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.po-tabs {
+		margin-left: var(--basalt-pad-x-narrow);
+		margin-right: var(--basalt-pad-x-narrow);
+	}
+	.po-toolbar {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 13.75rem));
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.po-search {
+		grid-column: 1 / -1;
+		min-width: 0;
+		max-width: 28rem;
+	}
+	.po-toolbar-select .form-select {
+		width: 100%;
+		min-width: 0;
+	}
+	.po-toolbar-count {
+		grid-column: 1 / -1;
+		margin: 0.25rem 0 0;
+		padding: 0;
+	}
+
+	.po-table thead {
+		display: none;
+	}
+	.po-table,
+	.po-table tbody {
+		display: block;
+	}
+	.po-table tbody tr[data-po-id] {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "id status" "who total" "when act";
+		padding: 1.2rem var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--po-line);
+
+		&:last-child {
+			border-bottom: 0;
+		}
+		& > td {
+			display: block;
+			width: auto;
+			padding: 0;
+			border: 0;
+		}
+		& > td.po-col-id {
+			display: flex;
+			gap: 0.1rem 0.75rem;
+			flex-wrap: wrap;
+			grid-area: id;
+			align-items: baseline;
+		}
+		& > td.po-col-id .po-sub {
+			margin: 0;
+		}
+		& > td.po-col-supplier {
+			grid-area: who;
+		}
+		& > td.po-col-items {
+			display: none;
+		}
+		& > td.po-col-when {
+			grid-area: when;
+			align-self: center;
+		}
+		& > td.po-col-status {
+			display: flex;
+			flex-direction: column;
+			grid-area: status;
+			align-items: flex-end;
+			text-align: right;
+		}
+		& > td.po-col-total {
+			grid-area: total;
+			align-self: center;
+		}
+		& > td.po-col-act {
+			grid-area: act;
+			align-self: center;
+		}
+	}
+	.po-table .basalt-empty-row,
+	.po-table .basalt-empty-row > td {
+		display: block;
+	}
+	.po-who .po-mono {
+		display: inline-grid;
+	}
+	.po-main,
+	.po-sub {
+		white-space: normal;
+	}
+	.po-table tbody tr[data-po-id] .po-col-when .po-main {
+		display: inline;
+	}
+	.po-table tbody tr[data-po-id] .po-col-when .po-sub {
+		display: inline;
+		margin-left: 0.4rem;
+	}
+}
+
+/* On a phone an order keeps its number, the supplier, the date, the total
+   and its status; the notes under each of them step aside. */
+@media (max-width: 575.98px) {
+	.po-table .po-sub {
+		display: none;
+	}
+}
+
+/* The single order's header keeps its title block and its actions on
+   one line, bottoms aligned, until a phone stacks them. */
+.basalt-hero-detail.po-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.po-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+.po-tags {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.75rem;
+
+	&:empty {
+		display: none;
+	}
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+.po-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.5rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+
+	& .btn.disabled {
+		opacity: 0.4;
+	}
+}
+@media (max-width: 767.98px) {
+	.basalt-hero-detail.po-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.po-head .basalt-hero-actions {
+		flex-wrap: wrap;
+	}
+	.po-pager {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+
+/* Cards pair up from 992px so the ones in a row end level: delivery and
+   items each span the page, supplier sits beside the address, and the
+   activity log spans the page again. */
+.po-grid {
+	display: grid;
+	gap: 1.5rem;
+}
+@media (min-width: 992px) {
+	.po-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.po-card-wide {
+		grid-column: 1 / -1;
+	}
+}
+
+/* Delivery steps run down the card with a rail between markers, and turn
+   into one row of columns once the card is 620px wide. */
+.po-steps {
+	--po-trail-from: scaleY(0);
+	--po-trail-origin: top;
+	display: grid;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.po-step {
+	position: relative;
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	align-content: start;
+	padding-bottom: 1.25rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.25rem;
+		bottom: 0.25rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.po-step.is-done:not(:last-child)::before {
+	background: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-plane));
+}
+/* A filled line grows out of its marker the first time an order is on
+   screen, each one a beat behind the one before. */
+.po-steps.is-waiting .po-step.is-done:not(:last-child)::before {
+	transform: var(--po-trail-from);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.po-steps.is-drawing .po-step.is-done:not(:last-child)::before {
+		transform-origin: var(--po-trail-origin);
+		animation: po-trail-grow 600ms ease-out both;
+	}
+	.po-steps.is-drawing .po-step.is-done:nth-child(2)::before {
+		animation-delay: 300ms;
+	}
+	.po-steps.is-drawing .po-step.is-done:nth-child(3)::before {
+		animation-delay: 600ms;
+	}
+	.po-steps.is-drawing .po-step.is-done:nth-child(4)::before {
+		animation-delay: 900ms;
+	}
+	@keyframes po-trail-grow {
+		from {
+			transform: var(--po-trail-from);
+		}
+	}
+}
+.po-step-marker {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--po-quiet);
+	background: var(--basalt-plane-alt);
+}
+.po-step.is-done .po-step-marker {
+	font-size: 0.95rem;
+	color: var(--basalt-plane);
+	background: var(--basalt-success);
+}
+.po-step.is-next .po-step-marker {
+	color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+}
+.po-step.is-stopped .po-step-marker {
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 16%, var(--basalt-plane));
+}
+.po-step-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.po-step-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.po-step.is-todo .po-step-label {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.po-step-when {
+	font-size: 0.77rem;
+	line-height: 1.5;
+	color: var(--po-quiet);
+}
+@container (min-width: 620px) {
+	.po-steps {
+		--po-trail-from: scaleX(0);
+		--po-trail-origin: left;
+		grid-template-columns: repeat(var(--po-count, 4), minmax(0, 1fr));
+	}
+	.po-step {
+		row-gap: 0.7rem;
+		grid-template-columns: minmax(0, 1fr);
+		padding-bottom: 0;
+
+		&:not(:last-child)::before {
+			top: calc(1rem - 1px);
+			right: 0.6rem;
+			bottom: auto;
+			left: 2.6rem;
+			width: auto;
+			height: 2px;
+		}
+	}
+	.po-step-text {
+		padding-top: 0;
+		padding-right: 0.75rem;
+	}
+}
+
+/* Under the steps, the shipment and the note to the supplier are two
+   matching panels: side by side on a wide card, stacked otherwise. */
+.po-extras {
+	display: grid;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+}
+@container (min-width: 760px) {
+	.po-extras {
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+	}
+}
+.po-parcel,
+.po-note {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.po-extras[hidden],
+.po-parcel[hidden],
+.po-note[hidden] {
+	display: none;
+}
+.po-parcel-icon,
+.po-note-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+.po-parcel-carrier {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.po-parcel-ref {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.po-note-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.1rem;
+}
+.po-note-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.po-note-body {
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* The items table runs edge to edge inside its card; the product column
+   absorbs the spare width and the rest stay on one line. */
+.po-lines-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		border-bottom-color: var(--po-line);
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		padding-bottom: 0.8rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		white-space: nowrap;
+	}
+	& tbody td {
+		white-space: nowrap;
+	}
+	& tbody td:first-child {
+		width: 100%;
+		white-space: normal;
+	}
+}
+.po-col-num {
+	text-align: right;
+}
+.po-line-total {
+	font-weight: 650;
+}
+.po-product {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.po-product-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.po-got {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	color: var(--basalt-copy-body);
+}
+.po-meter {
+	display: block;
+	width: 4.5rem;
+	height: 6px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--po-track);
+
+	& > span {
+		display: block;
+		width: var(--po-pct);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-warning);
+	}
+}
+.po-meter-done > span {
+	background: var(--basalt-success);
+}
+.po-lines-table-unsent .po-col-got {
+	display: none;
+}
+
+/* As the card narrows, SKU and unit cost fold under the product name,
+   and on a phone the quantities fold there too. */
+.po-fold {
+	display: none;
+	font-size: 0.77rem;
+	color: var(--po-quiet);
+}
+@container (max-width: 640px) {
+	.po-col-sku,
+	.po-col-cost {
+		display: none;
+	}
+	.po-fold {
+		display: block;
+	}
+	.po-meter {
+		display: none;
+	}
+}
+.po-fold-qty {
+	display: none;
+}
+@container (max-width: 400px) {
+	.po-product .po-tile,
+	.po-col-qty,
+	.po-col-got {
+		display: none;
+	}
+	.po-fold-qty {
+		display: block;
+	}
+}
+
+/* Totals sit at the right of the items card with the sum ruled off
+   underneath; the order form's summary reuses them at full width. */
+.po-totals {
+	display: grid;
+	gap: 0.7rem;
+	width: min(100%, 24rem);
+	margin: 1.5rem 0 0 auto;
+	font-size: 0.875rem;
+
+	& > div {
+		display: flex;
+		gap: 1.5rem;
+		align-items: baseline;
+		justify-content: space-between;
+	}
+	& dt {
+		display: flex;
+		gap: 0.1rem;
+		flex-direction: column;
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+	& dt small {
+		font-size: 0.77rem;
+		font-weight: 400;
+		color: var(--po-quiet);
+	}
+	& dd {
+		margin: 0;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& .po-totals-sum {
+		padding-top: 0.85rem;
+		border-top: 1px solid var(--basalt-edge-strong);
+	}
+}
+.po-totals .po-totals-sum dt,
+.po-totals .po-totals-sum dd {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* The supplier and address cards open with a large mark and name, then
+   a ruled list of facts with labels in a narrow first column. */
+.po-org {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.po-org-name {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.po-org-meta {
+	font-size: 0.8rem;
+	color: var(--po-quiet);
+}
+.po-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 7rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--po-line);
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--po-quiet);
+	}
+}
+@container (max-width: 400px) {
+	.po-facts > div {
+		grid-template-columns: 5.5rem minmax(0, 1fr);
+	}
+}
+.po-facts dd {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* The activity log is a rail of round icons, newest at the top; entries
+   added in this visit take the accent tint. */
+.po-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.po-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.po-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.po-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 650;
+	}
+}
+.po-feed-time {
+	font-size: 0.77rem;
+	color: var(--po-quiet);
+}
+.po-feed-item.is-fresh .po-feed-icon {
+	color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+
+/* The order form puts its cards in one column and, from 1200px, keeps
+   the summary beside them, pinned below the header while the form
+   scrolls and lifted with a soft shadow. */
+.po-editor {
+	display: grid;
+	gap: 1.5rem;
+	align-items: start;
+}
+.po-editor-main {
+	display: grid;
+	gap: 1.5rem;
+	min-width: 0;
+}
+@media (min-width: 1200px) {
+	.po-editor {
+		grid-template-columns: minmax(0, 1fr) 22rem;
+	}
+	.po-editor-side {
+		position: sticky;
+		top: calc(var(--basalt-header-h, 64px) + 1.5rem);
+	}
+	.po-summary.card {
+		box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+	}
+}
+.po-summary-who {
+	margin: 0.5rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.po-summary .po-totals {
+	width: 100%;
+	margin-top: 1.25rem;
+}
+.po-summary-acts {
+	display: grid;
+	gap: 0.6rem;
+	margin-top: 1.5rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.po-summary-foot {
+	margin: 1rem 0 0;
+	font-size: 0.77rem;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+	color: var(--po-quiet);
+}
+
+/* Form fields: controls only as wide as their content, quiet help that
+   disappears when empty, and a red message under a field that fails. */
+.po-field {
+	margin-bottom: 1.25rem;
+}
+.po-field-select {
+	width: auto;
+	min-width: 13rem;
+	max-width: 100%;
+}
+.po-field-date {
+	width: auto;
+	max-width: 100%;
+}
+.po-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--po-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.po-error {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.po-sitepick {
+	--basalt-choice-min: 8.5rem;
+
+	& > legend {
+		font-size: var(--bs-body-font-size);
+		font-weight: 500;
+	}
+}
+.po-lines-edit {
+	min-width: 0;
+	margin: 1.5rem 0 0;
+	padding: 0;
+	border: 0;
+}
+.po-low {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+}
+
+/* Quantity rows in the order form and the receiving drawer read tile,
+   name with its detail line, stepper, then the line total. */
+.po-qtys {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&.is-invalid .basalt-stepper {
+		border-color: var(--basalt-danger);
+	}
+}
+.po-qty {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1rem 0;
+	border-top: 1px solid var(--po-line);
+
+	& .basalt-stepper {
+		flex: none;
+	}
+}
+.po-drawer .po-qty:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+.po-qty-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	flex: 1 1 12rem;
+	min-width: 0;
+}
+.po-qty-name {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.po-qty-sub {
+	font-size: 0.8rem;
+	color: var(--po-quiet);
+}
+.po-qty-total {
+	flex: none;
+	min-width: 5.5rem;
+	font-size: 0.9rem;
+	font-weight: 650;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+@container (max-width: 520px) {
+	.po-qty-total {
+		min-width: 0;
+		margin-left: auto;
+	}
+}
+.po-after {
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.po-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

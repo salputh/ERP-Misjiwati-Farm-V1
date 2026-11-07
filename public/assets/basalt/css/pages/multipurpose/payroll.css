@@ -1,0 +1,732 @@
+/**
+ * Payroll page (payroll.html), everything under .pr-.
+ *
+ * Assembled from shared parts: the plain page header, status pills,
+ * avatars, styled selects, choice tiles, empty states, the drawer, row
+ * actions, dialogs and toasts. What this file adds is the layout and
+ * the pieces only this page has: the run card, the three tables (and
+ * the stacked form they take when narrow), and the payslip shown in
+ * the quick views.
+ */
+
+.pr-page,
+.pr-drawer,
+.pr-approve-dialog {
+	/* Muted text leans toward the body color, which keeps it above 4.5:1
+     on the paler palettes and on a hovered row. */
+	--pr-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--pr-line: var(--basalt-edge);
+}
+
+.pr-quiet {
+	color: var(--pr-quiet);
+}
+.pr-num {
+	color: var(--basalt-copy);
+}
+
+/* Gray outline buttons sit on the card color and keep their label's
+   contrast on hover and press, in the page and in what it opens. */
+.pr-page .btn-outline-secondary,
+.pr-drawer .btn-outline-secondary,
+.pr-approve-dialog .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+}
+.pr-page .btn-outline-primary {
+	--bs-btn-color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-plane));
+}
+
+/* Text-styled buttons and links share one keyboard ring. */
+.pr-who-name:focus-visible,
+.pr-open:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Links inside the run facts and the quick view facts take the hue,
+   pulled toward the text color for contrast. */
+.pr-run-facts a,
+.pr-d-facts a {
+	text-underline-offset: 0.2em;
+}
+.pr-run-facts a {
+	color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+}
+.pr-d-facts a {
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+}
+.pr-run-facts a:hover,
+.pr-d-facts a:hover {
+	color: var(--basalt-copy);
+}
+
+/* The four cards stack with an even gap and share one head: title and
+   a line of help on the left, an action on the right. */
+.pr-stack {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+.pr-card {
+	container: pr-card / inline-size;
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		padding: 1.75rem;
+	}
+}
+.pr-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+	& > .btn {
+		white-space: nowrap;
+	}
+	& > .btn[hidden] {
+		display: none;
+	}
+}
+.pr-card-title {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+
+	/* The title takes focus from "To approve"; only the keyboard sees it. */
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+}
+.pr-card-sub {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pr-quiet);
+}
+
+/* The run card. Gross pay is the one large figure on the page; the
+   other facts sit beside it at body size. */
+.pr-run {
+	display: flex;
+	gap: 1.5rem 3rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.pr-run-total {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	margin: 0;
+}
+.pr-run-figure {
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.015em;
+	color: var(--basalt-copy);
+}
+.pr-run-unit {
+	font-size: 0.875rem;
+	color: var(--pr-quiet);
+}
+.pr-run-facts {
+	display: grid;
+	gap: 1rem 2.5rem;
+	flex: 1 1 32rem;
+	grid-template-columns: repeat(5, minmax(0, auto));
+	justify-content: start;
+	margin: 0;
+
+	& dt {
+		margin: 0 0 0.2rem;
+		font-size: 0.8rem;
+		font-weight: 400;
+		white-space: nowrap;
+		color: var(--pr-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		font-weight: 650;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+}
+@container pr-card (max-width: 720px) {
+	.pr-run-facts {
+		flex-basis: 100%;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+@container pr-card (max-width: 420px) {
+	.pr-run-facts {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.pr-card-head > .btn {
+		flex: 1 1 100%;
+	}
+}
+
+/* The people toolbar: a search box with its icon inside, and a team pick. */
+.pr-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.pr-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--pr-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.pr-select {
+	width: auto;
+	min-width: 9rem;
+}
+.pr-page .form-control,
+.pr-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.pr-page .form-control::placeholder {
+	color: var(--pr-quiet);
+	opacity: 1;
+}
+
+/* The three tables keep every cell on one line. They hang out of the
+   card by the cells' side padding, so the first column's text lines up
+   with the title above. */
+.pr-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	width: calc(100% + 1.5rem);
+	margin: 0 -0.75rem;
+	font-size: 0.875rem;
+
+	&[hidden] {
+		display: none;
+	}
+
+	& > :not(caption) > * > * {
+		padding: 0.85rem 0.75rem;
+		vertical-align: middle;
+	}
+
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--pr-quiet);
+	}
+
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& td {
+		white-space: nowrap;
+	}
+	& tbody tr {
+		cursor: pointer;
+	}
+	& tbody tr:hover > * {
+		--bs-table-bg-state: var(--basalt-wash);
+		color: var(--basalt-copy);
+	}
+
+	& .pr-pick {
+		width: 2.5rem;
+		padding-right: 0;
+	}
+	& .form-check-input {
+		display: block;
+		margin: 0;
+		border-color: var(--basalt-edge-strong);
+		cursor: pointer;
+	}
+	& .form-check-input:disabled {
+		cursor: default;
+	}
+}
+.pr-table-review tr.is-done .pr-note {
+	color: var(--pr-quiet);
+}
+
+/* The details column gives way first, trimming with an ellipsis. */
+.pr-note {
+	width: 100%;
+	max-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.pr-who {
+	display: inline-flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+	max-width: 100%;
+
+	& .basalt-avatar {
+		flex-shrink: 0;
+	}
+}
+.pr-who-name {
+	min-width: 0;
+	border-radius: 4px;
+	overflow: hidden;
+	font-weight: 650;
+	text-overflow: ellipsis;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+}
+
+/* A change's kind and a run's month are buttons that open the quick view. */
+.pr-open {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+}
+
+.pr-acts {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: flex-end;
+
+	& .btn-icon {
+		width: 32px;
+		height: 32px;
+		padding: 0;
+	}
+}
+
+.pr-empty {
+	padding: 2rem 1rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Under a table: how many rows show, and the button that shows the rest. */
+.pr-more {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden],
+	& .btn[hidden] {
+		display: none;
+	}
+}
+.pr-more-range {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--pr-quiet);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Narrower than the full table, each row becomes a calm record: the
+   first line holds who (or which run) and the figure or actions, and
+   everything else follows as one quiet line beneath. */
+@container pr-card (max-width: 700px) {
+	.pr-table {
+		width: 100%;
+		margin: 0;
+	}
+	.pr-table,
+	.pr-table > tbody {
+		display: block;
+	}
+	.pr-table > thead {
+		display: none;
+	}
+	.pr-table > tbody > tr {
+		display: flex;
+		column-gap: 0.75rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: 0.9rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.pr-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.pr-table > tbody > tr > td {
+		display: block;
+		width: auto;
+		max-width: none;
+		padding: 0;
+		border: 0;
+	}
+	.pr-table > tbody > tr::after {
+		content: "";
+		flex-basis: 100%;
+		order: 2;
+	}
+	.pr-table
+		> tbody
+		> tr
+		> td:not(
+			[data-cell="who"],
+			[data-cell="month"],
+			[data-cell="pick"],
+			[data-cell="act"],
+			[data-cell="go"],
+			[data-cell="status"]
+		) {
+		order: 3;
+		margin-top: 0.3rem;
+		font-size: 0.8rem;
+		color: var(--pr-quiet);
+	}
+	.pr-table-review [data-cell="note"]::before,
+	.pr-table-people [data-cell="gross"]::before,
+	.pr-table-people [data-cell="net"]::before,
+	.pr-table-past [data-cell="people"]::before,
+	.pr-table-past [data-cell="gross"]::before,
+	.pr-table-past [data-cell="net"]::before {
+		content: "\00b7\2002";
+		margin-left: -0.35rem;
+	}
+	.pr-table [data-cell="who"],
+	.pr-table [data-cell="month"] {
+		flex: 1 1 0;
+		order: 1;
+		min-width: 0;
+	}
+	.pr-table [data-cell="pick"],
+	.pr-table [data-cell="act"],
+	.pr-table [data-cell="go"],
+	.pr-table [data-cell="status"] {
+		order: 1;
+	}
+	.pr-table .pr-pick:empty {
+		display: none;
+	}
+	.pr-table-review > tbody > tr {
+		padding-left: 0;
+	}
+	.pr-table-review [data-cell="kind"] .pr-open {
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+	}
+	.pr-table-review [data-cell="note"] {
+		flex: 1 1 0;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.pr-table-people [data-cell="gross"]::after,
+	.pr-table-past [data-cell="gross"]::after {
+		content: " gross";
+	}
+	.pr-table-people [data-cell="net"]::after,
+	.pr-table-past [data-cell="net"]::after {
+		content: " net";
+	}
+	.pr-table-past [data-cell="people"]::after {
+		content: " people";
+	}
+	.pr-table .pr-num {
+		color: var(--basalt-copy-body);
+	}
+}
+/* At phone width the review buttons drop to a line of their own so the
+   name keeps its room. */
+@container pr-card (max-width: 480px) {
+	.pr-table-review [data-cell="act"] {
+		flex-basis: 100%;
+		order: 4;
+		margin-top: 0.75rem;
+	}
+	.pr-table-review [data-cell="act"] .pr-acts {
+		justify-content: flex-start;
+	}
+	/* A past run's net lives on in its quick view, so the line still fits. */
+	.pr-table-past [data-cell="net"] {
+		display: none;
+	}
+	.pr-table-people [data-cell="status"] {
+		flex-basis: 100%;
+		order: 4;
+		margin-top: 0.5rem;
+	}
+	.pr-table-people [data-cell="status"]:has(> .pr-quiet) {
+		display: none;
+	}
+}
+
+/* The quick view drawers: a status block, then sections of facts. */
+.pr-drawer {
+	--bs-offcanvas-width: min(460px, 100vw);
+}
+.pr-d-state {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin: 0 0 1.5rem;
+
+	& .pr-d-text {
+		margin: 0;
+	}
+}
+.pr-d-text {
+	margin: 0 0 1rem;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.pr-d-note {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--pr-quiet);
+}
+.pr-d-facts {
+	display: grid;
+	gap: 0.65rem 1rem;
+	grid-template-columns: 8.5rem minmax(0, 1fr);
+	margin: 0;
+	font-size: 0.875rem;
+
+	& dt {
+		font-weight: 400;
+		color: var(--pr-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The payslip: earnings, then deductions, then the net pay under a rule. */
+.pr-slip {
+	padding: 1.1rem 1.25rem 1.2rem;
+	border-radius: 12px;
+	border: 1px solid var(--pr-line);
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.pr-slip-group {
+	margin: 0 0 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--pr-quiet);
+}
+.pr-slip-total + .pr-slip-group {
+	margin-top: 1.25rem;
+}
+.pr-slip-lines {
+	display: grid;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0 0 0.7rem;
+	border-bottom: 1px dashed var(--basalt-edge-strong);
+	list-style: none;
+}
+.pr-slip-lines li,
+.pr-slip-total,
+.pr-slip-net {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+}
+.pr-slip-lines li span:last-child,
+.pr-slip-total span:last-child,
+.pr-slip-net span:last-child {
+	white-space: nowrap;
+}
+.pr-slip-total {
+	margin: 0.7rem 0 0;
+	font-weight: 700;
+}
+.pr-slip-net {
+	margin: 1.1rem 0 0;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--basalt-edge-strong);
+	font-weight: 700;
+}
+
+/* The "Add a change" drawer: person, kind tiles, amount and reason, with
+   a live line saying how gross pay moves. */
+.pr-field {
+	margin-bottom: 1.25rem;
+}
+.pr-add .form-label,
+.pr-add .basalt-choices > legend {
+	margin-bottom: 0.4rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pr-kinds {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+
+	& .basalt-choice:has(input:checked) > .bi {
+		color: var(--basalt-choice-tone);
+	}
+}
+.pr-add-who {
+	max-width: 17rem;
+}
+.pr-add-amount {
+	max-width: 12rem;
+
+	&.is-invalid ~ .invalid-feedback {
+		display: block;
+	}
+}
+.pr-add-preview {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--pr-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+@container basalt-drawer (max-width: 420px) {
+	.pr-kinds {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.pr-d-facts {
+		grid-template-columns: 7rem minmax(0, 1fr);
+	}
+}
+
+/* The approve dialog: a boxed summary with the net as its last row, and
+   notes on what approving does. */
+.pr-ap-sum {
+	margin: 0;
+	border: 1px solid var(--pr-line);
+	border-radius: 12px;
+	overflow: hidden;
+
+	& div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.75rem 1rem;
+	}
+	& div + div {
+		border-top: 1px solid var(--pr-line);
+	}
+	& dt {
+		font-weight: 500;
+		font-size: 0.875rem;
+		color: var(--pr-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& .is-total dt {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& .is-total dd {
+		font-weight: 700;
+	}
+}
+.pr-ap-note {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--pr-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+	& .bi {
+		margin-top: 0.1rem;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.pr-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

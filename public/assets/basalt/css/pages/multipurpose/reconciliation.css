@@ -1,0 +1,620 @@
+/* Basalt - Reconciliation (reconciliation.html)
+   Namespaced under .hire-*
+   The header, cards, drawer, dialogs and status pill are the shared
+   components from basalt.css; this file lays out the summary and the
+   rows of bank lines. Every color is a --basalt-* token, mixed with
+   color-mix() so each palette and mode keeps its own hues. The drawer
+   and dialogs sit outside the page container, so they carry the mixes
+   too. */
+
+.hire-page,
+.hire-drawer,
+.hire-modal {
+	/* Small gray text, pulled toward the body color so it clears 4.5:1. */
+	--hire-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--hire-in: color-mix(in srgb, var(--basalt-success) 58%, var(--basalt-copy));
+	--hire-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+.hire-page .btn,
+.hire-drawer .btn,
+.hire-modal .btn {
+	white-space: nowrap;
+}
+.hire-page .btn-outline-secondary,
+.hire-drawer .btn-outline-secondary {
+	background-color: var(--basalt-plane);
+}
+.hire-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+}
+.hire-month {
+	min-width: 11rem;
+}
+
+/* One hue per summary figure, from the theme ramp. */
+.hire-tone-1 {
+	--hire-tone: var(--basalt-series-1);
+}
+.hire-tone-2 {
+	--hire-tone: var(--basalt-series-2);
+}
+.hire-tone-3 {
+	--hire-tone: var(--basalt-series-3);
+}
+.hire-tone-4 {
+	--hire-tone: var(--basalt-series-4);
+}
+
+/* Cards */
+.hire-card {
+	margin-bottom: 1.5rem;
+}
+.hire-card[hidden] {
+	display: none;
+}
+.hire-card.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.hire-card.basalt-box > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.hire-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.hire-card-head > div:first-child {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+.hire-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hire-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--hire-quiet);
+}
+.hire-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hire-card-foot[hidden] {
+	display: none;
+}
+.hire-card-note {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--hire-quiet);
+}
+
+/* Summary
+   The four tiles sit in one row only when the card is wide enough for
+   a full amount beside its icon, which depends on the sidebar as much
+   as the window, so the card is the container. Narrower, they pair up,
+   and on a phone they stack. Each tile is a container too, so an amount
+   shrinks with its tile rather than running past the edge. */
+.hire-summary {
+	container: hire-summary / inline-size;
+}
+.hire-figs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+}
+@container hire-summary (min-width: 1080px) {
+	.hire-figs {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+@container hire-summary (max-width: 419.98px) {
+	.hire-figs {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.hire-fig {
+	container-type: inline-size;
+	position: relative;
+	min-width: 0;
+	/* Room on the left for the icon, which sits inside the dt. */
+	padding: 1rem 1.1rem 1rem calc(1.1rem + 2.5rem + 0.85rem);
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+}
+.hire-fig-icon {
+	position: absolute;
+	top: 1rem;
+	left: 1.1rem;
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--hire-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--hire-tone) 15%, var(--basalt-plane));
+}
+.hire-fig-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--hire-quiet);
+}
+.hire-fig-value {
+	margin: 0.2rem 0 0.1rem;
+	font-size: clamp(1rem, 12.5cqi, 1.3rem);
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hire-fig-note {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--hire-quiet);
+}
+.hire-meter {
+	height: 6px;
+	margin: 0.5rem 0 0;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.hire-meter span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--hire-tone);
+	transition: width 0.4s ease;
+}
+
+.hire-gap {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	margin: 1.25rem 0 0;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+}
+.hire-gap .bi {
+	flex: none;
+	margin-top: 0.1rem;
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+.hire-gap.is-even .bi {
+	color: var(--hire-in);
+}
+.hire-gap strong {
+	font-weight: 650;
+}
+
+/* Rows
+   Wide: one line per bank line, in columns. Narrow: the date, payee
+   and amount on the first line, the entry under them, then the
+   buttons. */
+.hire-list {
+	container: hire-list / inline-size;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hire-row {
+	display: grid;
+	gap: 0.4rem 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-areas:
+		"date who amt"
+		"entry entry conf"
+		"acts acts acts";
+	align-items: center;
+	margin: 0 -0.75rem;
+	padding: 0.9rem 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	cursor: pointer;
+	transition: background-color 130ms ease;
+}
+.hire-row:first-child {
+	border-top-color: transparent;
+}
+.hire-row:hover {
+	background: var(--hire-row-hover);
+}
+.hire-row:hover + .hire-row {
+	border-top-color: transparent;
+}
+.hire-row-mat {
+	grid-template-areas: "date who amt" "entry entry acts";
+}
+.hire-row-date {
+	grid-area: date;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--hire-quiet);
+}
+.hire-row-who {
+	grid-area: who;
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	overflow: hidden;
+	font-weight: 600;
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: none;
+}
+.hire-row-who:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.hire-row-who:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.hire-row-entry {
+	display: flex;
+	gap: 0.4rem;
+	grid-area: entry;
+	align-items: center;
+	min-width: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.hire-row-entry > span:last-child {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.hire-row-entry .bi {
+	flex: none;
+	color: var(--hire-quiet);
+}
+.hire-row-entry-quiet {
+	color: var(--hire-quiet);
+}
+.hire-row-je {
+	flex: none;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+	color: var(--hire-quiet);
+}
+/* On a phone the entry's name gets the room; its number is in the quick view. */
+@container hire-list (max-width: 459.98px) {
+	.hire-row-je {
+		display: none;
+	}
+}
+.hire-row-amt {
+	grid-area: amt;
+	font-weight: 650;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hire-row-amt.is-in {
+	color: var(--hire-in);
+}
+.hire-row .hire-conf {
+	grid-area: conf;
+	justify-self: end;
+}
+.hire-row-acts {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	grid-area: acts;
+	align-items: center;
+}
+.hire-row-mat .hire-row-acts {
+	justify-self: end;
+}
+
+@container hire-list (min-width: 820px) {
+	.hire-row {
+		row-gap: 0;
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+	}
+	.hire-row-sug {
+		grid-template-columns: 3.5rem minmax(8rem, 0.9fr) minmax(0, 1.3fr) 6.5rem 7.5rem auto;
+		grid-template-areas: "date who entry conf amt acts";
+	}
+	.hire-row-rev {
+		grid-template-columns: 3.5rem minmax(8rem, 0.9fr) minmax(0, 1fr) 7.5rem auto;
+		grid-template-areas: "date who entry amt acts";
+	}
+	.hire-row-mat {
+		grid-template-columns: 3.5rem minmax(8rem, 0.9fr) minmax(0, 1.3fr) 7.5rem auto;
+		grid-template-areas: "date who entry amt acts";
+	}
+	.hire-row-acts {
+		flex-wrap: nowrap;
+		justify-content: flex-end;
+	}
+	.hire-row .hire-conf {
+		justify-self: start;
+	}
+}
+
+/* How sure a suggestion is: a short bar and the percentage. */
+.hire-conf {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+}
+.hire-conf-high {
+	--hire-conf: var(--basalt-success);
+}
+.hire-conf-mid {
+	--hire-conf: var(--basalt-info);
+}
+.hire-conf-low {
+	--hire-conf: var(--basalt-warning);
+}
+.hire-conf-bar {
+	width: 2.75rem;
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.hire-conf-bar > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--hire-conf);
+}
+.hire-conf-n {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Done */
+.hire-done .card-body {
+	padding-top: 2.5rem;
+	padding-bottom: 2.5rem;
+	text-align: center;
+}
+.hire-done-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	margin-bottom: 1rem;
+	border-radius: 50%;
+	font-size: 1.5rem;
+	color: var(--hire-in);
+	background: color-mix(in srgb, var(--basalt-success) 15%, var(--basalt-plane));
+}
+.hire-done-title {
+	margin: 0 0 0.4rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hire-done-title:focus {
+	outline: 0;
+}
+.hire-done-title:focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 4px;
+}
+.hire-done-text {
+	max-width: 52ch;
+	margin: 0 auto;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--hire-quiet);
+}
+.hire-done-actions {
+	margin-top: 1.25rem;
+}
+.hire-done-actions[hidden] {
+	display: none;
+}
+
+/* Drawer */
+.hire-drawer .basalt-drawer-full[hidden] {
+	display: none;
+}
+.hire-facts {
+	display: grid;
+	gap: 0.65rem;
+	margin: 0;
+	font-size: 0.875rem;
+}
+.hire-facts > div {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+}
+.hire-facts dt {
+	font-weight: 500;
+	color: var(--hire-quiet);
+}
+.hire-facts dd {
+	min-width: 0;
+	margin: 0;
+	color: var(--basalt-copy);
+}
+.hire-facts-amt {
+	font-weight: 700;
+}
+.hire-facts-amt.is-in {
+	color: var(--hire-in);
+}
+.hire-d-none {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.hire-d-none .bi {
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+.hire-d-text {
+	margin: 0.75rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--hire-quiet);
+}
+
+/* Dialogs */
+.hire-modal .form-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+.hire-modal .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.hire-field {
+	margin-bottom: 1.25rem;
+}
+.hire-help {
+	margin: 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--hire-quiet);
+}
+.hire-search {
+	position: relative;
+}
+.hire-search .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--hire-quiet);
+	pointer-events: none;
+}
+.hire-search .form-control {
+	padding-left: 2.35rem;
+}
+.hire-search .form-control::placeholder {
+	color: var(--hire-quiet);
+	opacity: 1;
+}
+.hire-find-count {
+	margin: 0.75rem 0 0.25rem;
+	font-size: 0.8rem;
+	color: var(--hire-quiet);
+}
+.hire-find-count:empty {
+	display: none;
+}
+.hire-find {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hire-find-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto 5.25rem;
+	align-items: center;
+	padding: 0.7rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.hire-find-row:first-child {
+	border-top: 0;
+}
+.hire-find-text {
+	min-width: 0;
+}
+.hire-find-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hire-find-meta {
+	margin: 0.1rem 0 0;
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--hire-quiet);
+}
+.hire-find-amt {
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.hire-find-off {
+	justify-self: end;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--hire-quiet);
+}
+.hire-find-row .btn {
+	justify-self: end;
+}
+.hire-find-none {
+	padding: 1rem 0 0.25rem;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--hire-quiet);
+}
+@media (max-width: 419.98px) {
+	.hire-find-row {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.hire-find-amt {
+		grid-column: 2;
+		grid-row: 1;
+	}
+	.hire-find-row .btn,
+	.hire-find-off {
+		grid-column: 1 / -1;
+		justify-self: start;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hire-meter span {
+		transition: none;
+	}
+}
+
+/* A locked month's drawer has no actions. */
+.hire-drawer .basalt-drawer-foot[hidden] {
+	display: none;
+}

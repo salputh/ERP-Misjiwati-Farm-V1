@@ -1,33 +1,29 @@
 @props(['nilai', 'id' => null, 'min' => null, 'maks' => null, 'ukuran' => 'sm', 'kesalahan' => false, 'nonaktif' => false])
 
-{{-- Pemilih tanggal bergaya katalog template (HexaDash: Datepicker, jQuery UI), pengganti input type="date" bawaan peramban.
+{{-- Pemilih tanggal Basalt (assets/basalt/js/components/datepicker.js), pengganti input type="date" bawaan peramban.
      Nilai, min, dan maks berformat Y-m-d; tanggal yang dipilih dikirim lewat event "tanggal-dipilih" (detail: Y-m-d).
-     ukuran="sm" untuk saringan di kepala kartu, ukuran="medium" untuk isian form selebar kolom (48 px).
+     ukuran="sm" untuk saringan di kepala kartu, ukuran="medium" untuk isian form selebar kolom.
      Kuncinya mengikuti nilai, sehingga Livewire memasang ulang pemilih saat tanggal diganti dari server. --}}
 <div
-    {{ $attributes->class(['form-group-calender', 'pilih-tanggal' => $ukuran === 'sm']) }}
+    {{ $attributes->class(['basalt-datepicker', 'pilih-tanggal' => $ukuran === 'sm']) }}
+    data-basalt-datepicker
+    @if ($min) data-min="{{ $min }}" @endif
+    @if ($maks) data-max="{{ $maks }}" @endif
     x-data="pilihTanggal"
     data-nilai="{{ $nilai }}"
-    data-min="{{ $min }}"
-    data-maks="{{ $maks }}"
     wire:key="pilih-tanggal-{{ $id }}-{{ $nilai }}"
     wire:ignore
 >
-    <div class="position-relative">
+    <div @class(['input-group', 'input-group-sm' => $ukuran === 'sm'])>
         <input
             type="text"
-            @class([
-                'form-control',
-                'form-control-sm' => $ukuran === 'sm',
-                'ih-medium ip-gray radius-xs b-light px-15' => $ukuran === 'medium',
-                'is-invalid' => $kesalahan,
-            ])
-            x-ref="isian"
-            readonly
+            @class(['form-control', 'is-invalid' => $kesalahan])
             autocomplete="off"
+            placeholder="Pilih tanggal"
             @isset($id) id="{{ $id }}" @endisset
             @disabled($nonaktif)
         >
-        <a href="#" tabindex="-1" aria-hidden="true"><img src="{{ asset('assets/img/svg/calendar.svg') }}" alt="" class="svg"></a>
+        <button type="button" class="btn btn-outline-secondary basalt-datepicker-btn" aria-label="Buka kalender" @disabled($nonaktif)><i class="bi bi-calendar3" aria-hidden="true"></i></button>
     </div>
+    <input type="hidden" value="{{ $nilai }}">
 </div>

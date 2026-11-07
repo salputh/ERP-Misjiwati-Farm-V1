@@ -1,0 +1,1246 @@
+/* Ticket Details (ticket-details.html), everything under .td-*. One ticket
+   on its own page: the reply clock across the top, then the conversation
+   with its reply box beside the ticket's status and owner, the customer,
+   and the history and related tickets below. The queue it came from is
+   Tickets (tickets.html). The detail header, cards, status pills,
+   segmented control, styled selects, tag box, avatars, copy buttons and
+   toasts are shared parts; colors are --basalt-* tokens throughout. */
+
+.td-page {
+	/* Muted text is pulled toward the body color so it holds 4.5:1 on
+     tinted panels; the link color does the same with the primary hue,
+     which on its own falls short in a few light palettes. */
+	--td-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--td-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--td-late: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+	--td-risk: color-mix(in srgb, var(--basalt-warning) 44%, var(--basalt-copy));
+	--td-good: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	/* Body and small text sizes; card titles and section titles come from the shared tokens. */
+	--td-fs-body: 0.9rem;
+	--td-fs-small: 0.77rem;
+}
+
+/* The header puts the subject and its tags on the left and the actions on
+   the right; on a phone the actions drop underneath. */
+.basalt-hero-detail.td-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+
+	@media (max-width: 575.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+.td-head {
+	.basalt-hero-actions {
+		flex-wrap: nowrap;
+		align-self: end;
+		margin: 0;
+	}
+	.basalt-hero-title {
+		max-width: 46rem;
+	}
+}
+.td-id {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.td-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.85rem;
+}
+.td-tag {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 650;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--td-quiet);
+}
+.td-tag-esc {
+	border-color: color-mix(in srgb, var(--basalt-info) 40%, var(--basalt-edge));
+	color: color-mix(in srgb, var(--basalt-info) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-info) 9%, var(--basalt-plane));
+}
+
+/* The priority pill carries a small square mark in the same colors the
+   queue uses; low priority keeps the muted default. */
+.td-prio {
+	--td-prio: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--td-prio) 48%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--td-prio) 13%, transparent);
+
+	&::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 2px;
+		background: var(--td-prio);
+	}
+}
+.td-prio-urgent {
+	--td-prio: var(--basalt-danger);
+}
+.td-prio-high {
+	--td-prio: var(--basalt-warning);
+}
+.td-prio-normal {
+	--td-prio: var(--basalt-hue);
+}
+
+/* Every card shares one head: a title with an optional line under it,
+   and a button or link that keeps to the right. */
+.td-card {
+	min-width: 0;
+}
+.td-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.td-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div:first-child {
+		flex: 1 1 10rem;
+		min-width: 0;
+	}
+	.btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+.td-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.td-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--td-quiet);
+}
+.td-link {
+	flex: none;
+	margin-top: 0.2rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--td-link);
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+/* The reply clock. --td-tone follows its state: the primary hue while
+   there is time, warning when the reply is due soon, danger once it is
+   late, success when answered, muted while paused. */
+.td-clock {
+	--td-tone: var(--basalt-hue);
+	position: relative;
+	margin-bottom: 1.5rem;
+	overflow: hidden;
+	background-image: linear-gradient(110deg, color-mix(in srgb, var(--td-tone) 11%, transparent), transparent 55%);
+
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.25rem;
+		bottom: 1.25rem;
+		left: 0;
+		width: 4px;
+		border-radius: 0 4px 4px 0;
+		background: var(--td-tone);
+	}
+}
+.td-clock-risk {
+	--td-tone: var(--basalt-warning);
+}
+.td-clock-late {
+	--td-tone: var(--basalt-danger);
+}
+.td-clock-done {
+	--td-tone: var(--basalt-success);
+}
+.td-clock-paused {
+	--td-tone: var(--basalt-copy-muted);
+}
+.td-clock-top {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+
+	@media (max-width: 767.98px) {
+		align-items: flex-start;
+	}
+}
+.td-clock-text {
+	min-width: 0;
+}
+
+/* The ring is an SVG circle drawn to 100 units, so --td-off is simply the
+   percentage still to go. */
+.td-ring {
+	position: relative;
+	flex: none;
+	width: 4.5rem;
+	height: 4.5rem;
+
+	@media (max-width: 767.98px) {
+		width: 3.75rem;
+		height: 3.75rem;
+	}
+}
+.td-ring-svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.td-ring-track {
+	fill: none;
+	stroke: color-mix(in srgb, var(--td-tone) 16%, var(--basalt-plane-alt));
+	stroke-width: 6;
+}
+.td-ring-bar {
+	fill: none;
+	stroke: var(--td-tone);
+	stroke-width: 6;
+	stroke-linecap: round;
+	stroke-dasharray: 100;
+	stroke-dashoffset: var(--td-off, 100);
+	transition:
+		stroke-dashoffset 600ms cubic-bezier(0.3, 0.7, 0.2, 1),
+		stroke 300ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.td-ring-num {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: color-mix(in srgb, var(--td-tone) 45%, var(--basalt-copy));
+
+	.bi {
+		font-size: 1.5rem;
+	}
+}
+
+/* The ticket's way so far: five steps across one line, each colored from
+   the chart ramp by position, the live step in the clock's tone. On a
+   phone they stack into a list with the connector running down the side. */
+.td-track {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin: 1.75rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	@media (max-width: 767.98px) {
+		gap: 0;
+		grid-template-columns: minmax(0, 1fr);
+		margin-top: 1.5rem;
+	}
+}
+.td-step {
+	--td-step: var(--basalt-edge-strong);
+	--td-at: 0;
+	--td-line-from: scaleX(0);
+	position: relative;
+	display: grid;
+	gap: 0.2rem;
+	grid-template-rows: auto auto auto;
+	justify-items: start;
+	min-width: 0;
+	padding-right: 0.75rem;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 1rem;
+		right: 0.5rem;
+		left: 2.5rem;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+	&:last-child::after {
+		display: none;
+	}
+	&:nth-child(1) {
+		--td-step: var(--basalt-series-1);
+	}
+	&:nth-child(2) {
+		--td-step: var(--basalt-series-2);
+		--td-at: 1;
+	}
+	&:nth-child(3) {
+		--td-step: var(--basalt-series-4);
+		--td-at: 2;
+	}
+	&:nth-child(4) {
+		--td-at: 3;
+	}
+	&:nth-child(5) {
+		--td-at: 4;
+	}
+	&:nth-child(5).td-step-done {
+		--td-step: var(--basalt-success);
+	}
+
+	@media (max-width: 767.98px) {
+		--td-line-from: scaleY(0);
+		row-gap: 0.1rem;
+		column-gap: 0.85rem;
+		grid-template-columns: 2rem minmax(0, 1fr);
+		grid-template-rows: auto auto;
+		padding: 0 0 1rem;
+
+		&::after {
+			top: 2.35rem;
+			right: auto;
+			bottom: 0.3rem;
+			left: calc(1rem - 1px);
+			width: 2px;
+			height: auto;
+		}
+		&:last-child {
+			padding-bottom: 0;
+		}
+	}
+}
+.td-step-done::after {
+	background: color-mix(in srgb, var(--td-step) 45%, var(--basalt-edge));
+}
+.td-step-now,
+.td-step-now.td-step-done {
+	--td-step: var(--td-tone);
+}
+.td-step-mark {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	margin-bottom: 0.5rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--td-quiet);
+	background: var(--basalt-plane-alt);
+
+	@media (max-width: 767.98px) {
+		grid-row: 1 / 3;
+		margin: 0;
+	}
+}
+.td-step-done .td-step-mark,
+.td-step-now .td-step-mark {
+	color: color-mix(in srgb, var(--td-step) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--td-step) 20%, var(--basalt-plane));
+}
+.td-step-now .td-step-mark {
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--td-step) 16%, transparent);
+}
+.td-step-name {
+	font-size: var(--td-fs-body);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.td-step-sub {
+	font-size: var(--td-fs-small);
+	color: var(--td-quiet);
+}
+.td-step-now .td-step-sub {
+	font-weight: 650;
+	color: color-mix(in srgb, var(--td-step) 45%, var(--basalt-copy));
+}
+
+/* The first time the track is on screen it fills in from the start: each
+   step colors in as the line reaches it, then the line runs on to the
+   next. Until then the steps wait uncolored and the lines undrawn. */
+@media (prefers-reduced-motion: no-preference) {
+	.td-track.is-waiting {
+		& .td-step::after {
+			transform: var(--td-line-from);
+		}
+		& .td-step-mark {
+			opacity: 0.6;
+			filter: grayscale(1);
+		}
+	}
+	.td-track.is-drawing {
+		& .td-step::after {
+			transform-origin: left top;
+			animation: td-line-in 170ms linear calc(var(--td-at) * 170ms + 90ms) both;
+		}
+		& .td-step-mark {
+			animation: td-mark-in 260ms ease-out calc(var(--td-at) * 170ms) both;
+		}
+	}
+}
+@keyframes td-line-in {
+	from {
+		transform: var(--td-line-from);
+	}
+}
+@keyframes td-mark-in {
+	from {
+		opacity: 0.6;
+		filter: grayscale(1);
+		transform: scale(0.8);
+	}
+}
+
+/* Below the clock, two columns from 1200px up: the conversation beside
+   the ticket and customer, then the history beside related tickets. The
+   last card in each column grows so the columns end level. Narrower
+   than that, everything stacks with the conversation first. */
+.td-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+.td-col {
+	display: contents;
+}
+.td-card-thread {
+	order: 1;
+}
+.td-card-props {
+	order: 2;
+}
+.td-card-customer {
+	order: 3;
+}
+.td-card-related {
+	order: 4;
+}
+.td-card-history {
+	order: 5;
+}
+@media (min-width: 1200px) {
+	.td-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		align-items: stretch;
+	}
+	.td-col {
+		display: flex;
+		gap: 1.5rem;
+		flex-direction: column;
+		min-width: 0;
+
+		& > .td-card:last-child {
+			flex-grow: 1;
+		}
+	}
+	.td-col-wide {
+		order: 1;
+	}
+	.td-col-narrow {
+		order: 2;
+	}
+	.td-card-history {
+		order: 3;
+	}
+	.td-card-related {
+		order: 4;
+	}
+}
+
+/* The conversation is a list of messages, each an avatar beside a bubble.
+   Replies take the primary tint, team notes a dashed warning frame, and
+   events sit on their own centered line. */
+.td-show {
+	flex: none;
+}
+.td-thread {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	[hidden] {
+		display: none;
+	}
+}
+.td-msg {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 32px minmax(0, 1fr);
+}
+.td-msg-body {
+	min-width: 0;
+	padding: 0.75rem 1rem 0.85rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px 14px 14px 14px;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 55%, var(--basalt-plane));
+}
+.td-msg-reply {
+	.td-msg-body {
+		border-color: color-mix(in srgb, var(--basalt-hue) 26%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	}
+	.td-msg-role {
+		color: var(--td-link);
+	}
+}
+.td-msg-note {
+	.td-msg-body {
+		border: 1px dashed color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-warning) 11%, var(--basalt-plane));
+	}
+	.td-msg-role {
+		color: var(--td-risk);
+	}
+}
+.td-msg-head {
+	display: flex;
+	gap: 0.1rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin-bottom: 0.3rem;
+}
+.td-msg-who {
+	font-size: var(--td-fs-small);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.td-msg-role {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	font-size: var(--td-fs-small);
+	font-weight: 650;
+	color: var(--td-quiet);
+}
+.td-msg-time {
+	margin-left: auto;
+	font-size: var(--td-fs-small);
+	white-space: nowrap;
+	color: var(--td-quiet);
+}
+.td-msg-text {
+	font-size: var(--td-fs-body);
+	line-height: 1.6;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body);
+}
+.td-files {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.td-file {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.3rem 0.65rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: var(--bs-border-radius);
+	font-size: var(--td-fs-small);
+	color: var(--basalt-copy);
+}
+.td-event {
+	padding: 0 1rem;
+	font-size: var(--td-fs-small);
+	line-height: 1.6;
+	text-align: center;
+	color: var(--td-quiet);
+
+	.bi {
+		margin-right: 0.4rem;
+	}
+	& time {
+		white-space: nowrap;
+	}
+	& time::before {
+		content: "·";
+		margin: 0 0.4rem;
+	}
+}
+
+/* A message or history row that was just added slides in once; the
+   editor and the message text share the same paragraph and list spacing. */
+.td-msg.is-fresh,
+.td-table tr.is-fresh {
+	animation: td-in 280ms ease-out;
+}
+@keyframes td-in {
+	from {
+		transform: translateY(6px);
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.td-msg.is-fresh,
+	.td-table tr.is-fresh {
+		animation: none;
+	}
+}
+.td-msg-text p,
+.td-msg-text ul,
+.td-msg-text ol,
+.td-editor-body p,
+.td-editor-body ul,
+.td-editor-body ol {
+	margin: 0 0 0.6rem;
+}
+.td-msg-text ul,
+.td-msg-text ol,
+.td-editor-body ul,
+.td-editor-body ol {
+	padding-left: 1.3rem;
+}
+.td-msg-text > :last-child,
+.td-editor-body > :last-child {
+	margin-bottom: 0;
+}
+
+/* The reply box sits under the conversation behind a rule: the mode
+   switch and recipient line, the saved replies menu, then the editor. */
+.td-composer {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.td-composer-top {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.85rem;
+}
+.td-composer-to {
+	display: inline-flex;
+	gap: 0.4rem;
+	flex: 1 1 10rem;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	font-size: var(--td-fs-small);
+	color: var(--td-quiet);
+}
+.td-saved .btn {
+	white-space: nowrap;
+}
+.td-saved-menu {
+	--bs-dropdown-min-width: 17rem;
+	max-width: min(20rem, calc(100vw - 2rem));
+
+	.dropdown-item {
+		display: grid;
+		gap: 0.1rem;
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+		white-space: normal;
+	}
+}
+.td-saved-name {
+	font-size: var(--td-fs-body);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.td-saved-sub {
+	font-size: var(--td-fs-small);
+	color: var(--td-quiet);
+}
+
+/* The editor is one frame that lights up on focus; the text area inside
+   it never shows its own outline. In note mode the whole frame takes the
+   dashed warning look that notes have in the conversation. */
+.td-editor {
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease,
+		background-color 150ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue-border);
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+	&.is-invalid {
+		border-color: var(--basalt-danger);
+	}
+	.td-editor-body {
+		min-height: 7.5rem;
+		padding: 0.85rem 1rem;
+		font-size: var(--td-fs-body);
+		line-height: 1.6;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+		cursor: text;
+	}
+	.td-editor-body:focus,
+	.td-editor-body:focus-visible {
+		outline: 0;
+		box-shadow: none;
+	}
+}
+.td-composer.is-note {
+	.td-composer-to {
+		color: var(--td-risk);
+	}
+	.td-editor {
+		border-style: dashed;
+		border-color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-warning) 7%, var(--basalt-plane));
+	}
+	.td-editor:focus-within {
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-warning) 20%, transparent);
+	}
+}
+.td-editor-body:empty::before {
+	content: attr(data-placeholder);
+	color: var(--td-quiet);
+	pointer-events: none;
+}
+.td-toolbar {
+	display: flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.td-toolbar-sep {
+	width: 1px;
+	height: 20px;
+	margin: 0 0.25rem;
+	background: var(--basalt-edge-strong);
+}
+.td-tool {
+	display: inline-grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 110ms ease,
+		color 110ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[aria-pressed="true"] {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+	}
+}
+.td-error {
+	margin: 0.4rem 0 0;
+	font-size: var(--td-fs-small);
+	font-weight: 600;
+	color: var(--td-late);
+}
+
+/* Under the editor: the keyboard hint on the left, the after-sending
+   select and the send button on the right. On a phone the hint goes and
+   the controls stretch across. */
+.td-composer-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	margin-top: 1rem;
+
+	@media (max-width: 575.98px) {
+		justify-content: stretch;
+
+		& > * {
+			flex: 1 1 auto;
+		}
+	}
+}
+.td-composer-hint {
+	margin: 0 auto 0 0;
+	font-size: var(--td-fs-small);
+	white-space: nowrap;
+	color: var(--td-quiet);
+
+	& kbd {
+		padding: 0.05rem 0.3rem;
+		border: 1px solid var(--basalt-edge-strong);
+		border-radius: 5px;
+		font-family: inherit;
+		font-size: 0.71rem;
+		font-weight: 650;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+	@media (max-width: 575.98px) {
+		display: none;
+	}
+}
+.td-after {
+	flex: none;
+	width: auto;
+}
+.td-send {
+	flex: none;
+	white-space: nowrap;
+}
+
+/* Facts are a two-column definition list, used for the ticket and again
+   for the account. Each value can carry a main line and a quieter note. */
+.td-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+
+		@media (max-width: 389.98px) {
+			gap: 0.3rem;
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+	& > div:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+	}
+	& dt {
+		font-size: 0.84rem;
+		font-weight: 500;
+		color: var(--td-quiet);
+	}
+	& dd {
+		display: flex;
+		gap: 0.3rem 0.5rem;
+		flex-wrap: wrap;
+		align-items: center;
+		min-width: 0;
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+.td-fact-main {
+	font-weight: 600;
+}
+.td-fact-strong {
+	font-weight: 700;
+}
+.td-fact-note {
+	flex-basis: 100%;
+	font-size: var(--td-fs-small);
+	color: var(--td-quiet);
+}
+.td-person {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	font-weight: 600;
+}
+.td-chips {
+	gap: 0.4rem;
+}
+.td-chip {
+	padding: 0.1rem 0.5rem;
+	border-radius: 6px;
+	font-size: var(--td-fs-small);
+	font-weight: 650;
+	color: color-mix(in srgb, var(--basalt-series-3) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-3) 13%, var(--basalt-plane));
+}
+.td-chips-none {
+	font-size: var(--td-fs-small);
+	color: var(--td-quiet);
+}
+
+/* Edit swaps the facts for a form with the same fields, saved together. */
+.td-props-form {
+	display: grid;
+	gap: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.td-field {
+	.form-label {
+		margin-bottom: 0.4rem;
+		font-size: 0.84rem;
+		font-weight: 600;
+	}
+	.form-select {
+		max-width: 16rem;
+	}
+}
+.td-props-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	.btn {
+		white-space: nowrap;
+	}
+}
+
+/* The customer card: the company, its account facts with the health bar,
+   then the contact who wrote in. */
+.td-co {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+}
+.td-co-name {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+
+	& a {
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+	& a:hover {
+		text-decoration: underline;
+		color: var(--td-link);
+	}
+}
+.td-co-sub {
+	margin: 0.2rem 0 0;
+	font-size: var(--td-fs-small);
+	color: var(--td-quiet);
+}
+.td-plan {
+	padding: 0.05rem 0.5rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-hue) 40%, var(--basalt-edge));
+	border-radius: 999px;
+	font-size: var(--td-fs-small);
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 48%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+}
+.td-health {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-weight: 650;
+	color: var(--td-good);
+}
+.td-health-score {
+	min-width: 2rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 6px;
+	text-align: center;
+	background: color-mix(in srgb, var(--basalt-success) 15%, var(--basalt-plane));
+}
+.td-health-bar {
+	flex-basis: 100%;
+	height: 6px;
+	margin-top: 0.2rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+
+	& > span {
+		display: block;
+		width: var(--share, 0%);
+		height: 100%;
+		border-radius: inherit;
+		background: linear-gradient(90deg, var(--basalt-series-2), var(--basalt-success));
+	}
+	:root[data-basalt-gradients="off"] & > span {
+		background: var(--basalt-success);
+	}
+}
+.td-sub-block {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.td-sub {
+	margin: 0 0 0.85rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.td-person-lg {
+	display: flex;
+	gap: 0.75rem;
+	margin-bottom: 0.75rem;
+}
+.td-person-name {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.td-person-sub {
+	margin: 0.1rem 0 0;
+	font-size: var(--td-fs-small);
+	font-weight: 400;
+	color: var(--td-quiet);
+}
+.td-line {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 2rem;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	& > .bi {
+		color: var(--td-quiet);
+	}
+}
+.td-line-text {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+/* Related tickets: subject, a meta line, the status with its SLA flag,
+   and the customer's rating when they left one. */
+.td-related {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& > li {
+		padding: 1rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& > li:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& > li:last-child {
+		padding-bottom: 0;
+	}
+}
+.td-related-subject {
+	font-size: var(--td-fs-body);
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+a.td-related-subject:hover {
+	text-decoration: underline;
+	color: var(--td-link);
+}
+.td-related-meta {
+	margin: 0.25rem 0 0;
+	font-size: var(--td-fs-small);
+	color: var(--td-quiet);
+}
+.td-related-badges {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.6rem 0 0;
+}
+.td-flag {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: var(--td-fs-small);
+	font-weight: 650;
+	color: var(--td-good);
+}
+.td-flag-bad {
+	color: var(--td-late);
+}
+.td-rating {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0.75rem 0 0;
+	padding: 0.5rem 0.75rem;
+	border-radius: 10px;
+	font-size: var(--td-fs-small);
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-danger) 8%, var(--basalt-plane));
+
+	& > .bi {
+		flex: none;
+		color: var(--td-late);
+	}
+}
+.td-rating-good {
+	background: color-mix(in srgb, var(--basalt-success) 8%, var(--basalt-plane));
+
+	& > .bi {
+		color: var(--td-good);
+	}
+}
+
+/* The history table loses its head on a phone; each row becomes the
+   change on one line with the time and author under it. */
+.td-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy);
+	margin: 0;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		border-bottom-color: var(--basalt-edge);
+	}
+	& > tbody > tr:last-child > * {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		padding-bottom: 0.65rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--td-quiet);
+	}
+	& td {
+		font-size: 0.875rem;
+	}
+	& td.td-table-when {
+		color: var(--td-quiet);
+	}
+	& td.td-table-by {
+		font-weight: 600;
+	}
+
+	@media (max-width: 767.98px) {
+		& thead {
+			display: none;
+		}
+		& tbody tr {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			padding: 1rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& tbody tr:first-child {
+			padding-top: 0;
+		}
+		& tbody tr:last-child {
+			padding-bottom: 0;
+			border-bottom: 0;
+		}
+		& > tbody > tr > * {
+			width: auto;
+			padding: 0;
+			border: 0;
+		}
+		& > tbody > tr > td:nth-child(2) {
+			grid-column: 1 / -1;
+			order: -1;
+			margin-bottom: 0.3rem;
+		}
+		& > tbody > tr > .td-table-when,
+		& > tbody > tr > .td-table-by {
+			display: inline;
+			font-size: var(--td-fs-small);
+			font-weight: 400;
+		}
+		& > tbody > tr {
+			column-gap: 0.4rem;
+			grid-template-columns: auto minmax(0, 1fr);
+		}
+		& > tbody > tr > .td-table-by::before {
+			content: "· ";
+		}
+	}
+}
+.td-table-when {
+	width: 9rem;
+	white-space: nowrap;
+	color: var(--td-quiet);
+}
+.td-table-by {
+	width: 1%;
+	white-space: nowrap;
+}
+.td-change {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: baseline;
+
+	& > .bi {
+		flex: none;
+		color: var(--td-quiet);
+	}
+}

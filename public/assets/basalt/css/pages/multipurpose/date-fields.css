@@ -1,0 +1,1357 @@
+/* Styles for the date picker showcase (date-fields.html). Every class
+   here starts with .dtp- and every color is drawn from a --basalt-* token,
+   so each calendar follows the chosen palette and dark mode on its own. */
+
+/* Page tokens. The quiet and danger tints lean toward the body copy so small
+   text keeps 4.5:1 in every palette; the fill leans toward the deep primary
+   so on-primary text keeps it too, where plain primary falls just short in
+   Verdant and Pastel Pop light. */
+.dtp-page {
+	--dtp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--dtp-line: color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	--dtp-danger-text: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--dtp-fill: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-hue-deep));
+	--dtp-fill-hover: color-mix(in srgb, var(--dtp-fill) 86%, var(--basalt-copy));
+	--dtp-ring: 0 0 0 3px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+
+	& code {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+	}
+
+	/* Placeholders reach 4.5:1 like the rest of the text. */
+	& .form-control::placeholder {
+		color: var(--dtp-quiet);
+		opacity: 1;
+	}
+
+	/* Primary buttons share the calendar fill and the palette's on-primary
+     text, since Bootstrap's white falls under 4.5:1 on the lighter primaries
+     of the dark themes. */
+	& .btn-primary {
+		--bs-btn-bg: var(--dtp-fill);
+		--bs-btn-border-color: var(--dtp-fill);
+		--bs-btn-hover-bg: var(--dtp-fill-hover);
+		--bs-btn-hover-border-color: var(--dtp-fill-hover);
+		--bs-btn-active-bg: var(--dtp-fill-hover);
+		--bs-btn-active-border-color: var(--dtp-fill-hover);
+		--bs-btn-disabled-bg: var(--dtp-fill);
+		--bs-btn-disabled-border-color: var(--dtp-fill);
+		--bs-btn-color: var(--basalt-on-hue);
+		--bs-btn-hover-color: var(--basalt-on-hue);
+		--bs-btn-active-color: var(--basalt-on-hue);
+		--bs-btn-disabled-color: var(--basalt-on-hue);
+	}
+}
+
+/* Dark palettes put dark text on a light primary, so the fill stays the
+   primary itself there; leaning toward the deep primary would darken it. */
+[data-bs-theme="dark"] .dtp-page {
+	--dtp-fill: var(--basalt-hue);
+}
+
+/* Keyboard focus draws the same primary ring on every custom control; only
+   the gap between ring and edge differs with the control's size. */
+.dtp-chip:focus-visible,
+.dtp-quick-day:focus-visible,
+.dtp-range-btn:focus-visible,
+.dtp-month:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.dtp-cal-navbtn:focus-visible,
+.dtp-preset:focus-visible,
+.dtp-picked-x:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+/* The chip row filters the cards, with a running count on the far side. */
+.dtp-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0.5rem 0 1.75rem;
+}
+.dtp-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .dtp-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.dtp-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.dtp-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--dtp-quiet);
+}
+
+/* Cards sit on a twelve-column grid: a full row each until 1200px, then in
+   pairs, with a card left alone by the filter widening to the full row. */
+.dtp-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.dtp-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.dtp-card.is-hidden {
+	display: none;
+}
+@media (min-width: 1200px) {
+	.dtp-card {
+		grid-column: span 6;
+	}
+	.dtp-card-full {
+		grid-column: span 12;
+	}
+	.dtp-grid.is-filtered .dtp-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Each card body is a column and a size container for the layouts inside. */
+.dtp-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	container-type: inline-size;
+	height: 100%;
+	padding: 1.5rem;
+}
+@media (min-width: 768px) {
+	.dtp-card.basalt-box .card-body {
+		padding: 1.75rem;
+	}
+}
+.dtp-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.5rem;
+}
+
+/* The kind pill shows above the title even though the title leads the markup. */
+.dtp-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.dtp-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dtp-card-desc {
+	max-width: 64ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--dtp-quiet);
+}
+.dtp-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--dtp-quiet);
+}
+
+/* The four states of the plain field line up side by side where they fit. */
+.dtp-simple {
+	display: grid;
+	gap: 1.25rem 1.5rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+	align-items: start;
+}
+.dtp-simple-field {
+	min-width: 0;
+}
+
+/* Field furniture: spacing, help under a field, its error, and the button row. */
+.dtp-block {
+	margin-bottom: 1.5rem;
+}
+.dtp-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--dtp-quiet);
+}
+.dtp-help-after {
+	margin: -0.9rem 0 1.5rem;
+}
+.dtp-error {
+	display: flex;
+	gap: 0.4rem;
+	align-items: flex-start;
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 500;
+	line-height: 1.45;
+	color: var(--dtp-danger-text);
+
+	/* The bi-exclamation-circle glyph leads every message. */
+	&::before {
+		content: "\F33A";
+		font-family: bootstrap-icons;
+		line-height: 1.45;
+	}
+}
+.dtp-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.dtp-side-note {
+	margin: 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--dtp-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.dtp-ok {
+	margin-top: 1rem;
+	color: var(--basalt-copy);
+}
+.dtp-ok .bi,
+.dtp-summary-status .bi {
+	color: var(--basalt-success);
+}
+
+/* A field that opens a calendar panel underneath it. */
+.dtp-field {
+	position: relative;
+}
+.dtp-field.is-open .dtp-field-btn,
+.dtp-field-btn[aria-expanded="true"] {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.dtp-pop {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	left: 0;
+	z-index: 1010;
+	width: 21rem;
+	max-width: 100%;
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+	box-shadow:
+		0 20px 48px color-mix(in srgb, var(--basalt-copy) 18%, transparent),
+		0 2px 6px color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+	animation: dtp-pop-in 170ms ease-out;
+
+	&[hidden] {
+		display: none;
+	}
+}
+@keyframes dtp-pop-in {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+
+/* The key under the visit calendar repeats each day style in miniature. */
+.dtp-legend {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	margin: 0.75rem 0 0;
+	padding: 0.75rem 0 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	color: var(--dtp-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.dtp-legend-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	border-radius: 6px;
+	font-size: 0.67rem;
+	font-weight: 600;
+}
+.dtp-legend-mark-closed {
+	text-decoration: line-through;
+	color: var(--dtp-quiet);
+}
+.dtp-legend-mark-today {
+	color: var(--basalt-copy);
+	box-shadow: inset 0 0 0 1.5px var(--basalt-edge-strong);
+}
+.dtp-legend-mark-pick {
+	color: var(--basalt-on-hue);
+	background: var(--dtp-fill);
+}
+
+/* An inline calendar or month grid gets a framed tile of its own. */
+.dtp-cal-frame,
+.dtp-months {
+	width: 100%;
+	max-width: 21rem;
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+}
+
+/* The calendar the script draws: a title row with arrows, then one table per month. */
+.dtp-cal {
+	width: 100%;
+}
+.dtp-cal-nav {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.6rem;
+}
+.dtp-cal-title {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	text-align: center;
+	color: var(--basalt-copy);
+}
+.dtp-cal-navbtn {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	transition: background-color 150ms ease;
+
+	&:hover:not(:disabled) {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+}
+.dtp-cal-months {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: repeat(var(--dtp-months, 1), minmax(0, 1fr));
+}
+.dtp-cal-caption {
+	padding: 0 0 0.5rem;
+	caption-side: top;
+	font-size: 0.8rem;
+	font-weight: 650;
+	text-align: center;
+	color: var(--basalt-copy);
+}
+.dtp-cal-grid {
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: separate;
+	border-spacing: 0 3px;
+
+	& th {
+		padding: 0 0 0.3rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		text-align: center;
+		color: var(--dtp-quiet);
+	}
+	& abbr {
+		text-decoration: none;
+		cursor: default;
+	}
+	& td {
+		padding: 0;
+		text-align: center;
+	}
+	& .dtp-cal-wk {
+		width: 2rem;
+		font-size: 0.7rem;
+		font-weight: 500;
+		color: var(--dtp-quiet);
+	}
+	& tbody .dtp-cal-wk {
+		padding: 0;
+	}
+	& thead .dtp-cal-wk {
+		font-size: 0.71rem;
+		font-weight: 700;
+	}
+}
+
+/* One day. Later states win over earlier ones, so a picked day reads as
+   picked even when it is also today, and a closed day stays light. */
+.dtp-day {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 2.4rem;
+	padding: 0;
+	border: 0;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: transparent;
+	transition:
+		background-color 110ms ease,
+		color 110ms ease;
+
+	&:hover:not(.is-off):not(.is-selected) {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		z-index: 1;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&.is-today {
+		font-weight: 700;
+		box-shadow: inset 0 0 0 1.5px var(--basalt-edge-strong);
+	}
+	&.is-off {
+		font-weight: 400;
+		color: var(--dtp-quiet);
+		cursor: not-allowed;
+	}
+	&.is-struck {
+		text-decoration: line-through;
+		text-decoration-color: color-mix(in srgb, var(--dtp-quiet) 70%, transparent);
+	}
+
+	/* A range is a square-cornered band, rounded where a week row starts or ends. */
+	&.is-preview {
+		border-radius: 0;
+		background: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	}
+	&.is-between {
+		border-radius: 0;
+		background: var(--basalt-hue-soft);
+	}
+	&.is-preview.is-row-first,
+	&.is-between.is-row-first {
+		border-top-left-radius: 10px;
+		border-bottom-left-radius: 10px;
+	}
+	&.is-preview.is-row-last,
+	&.is-between.is-row-last {
+		border-top-right-radius: 10px;
+		border-bottom-right-radius: 10px;
+	}
+
+	&.is-selected {
+		font-weight: 650;
+		color: var(--basalt-on-hue);
+		background: var(--dtp-fill);
+	}
+	&.is-selected.is-today {
+		box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--basalt-on-hue) 55%, transparent);
+	}
+	&.is-start {
+		border-radius: 10px 0 0 10px;
+	}
+	&.is-end {
+		border-radius: 0 10px 10px 0;
+	}
+	&.is-selected:focus-visible {
+		outline-color: var(--basalt-copy);
+		outline-offset: 1px;
+	}
+
+	/* A marked day carries a small dot under its number. */
+	&.has-dot::after {
+		content: "";
+		position: absolute;
+		bottom: 0.3rem;
+		left: 50%;
+		width: 5px;
+		height: 5px;
+		margin-left: -2.5px;
+		border-radius: 50%;
+		background: var(--basalt-series-2);
+	}
+	&.is-selected.has-dot::after {
+		background: var(--basalt-on-hue);
+	}
+	&.is-off.has-dot::after {
+		opacity: 0.5;
+	}
+}
+
+/* In the week picker the whole row under the pointer takes the preview tint. */
+[data-dtp-week] .dtp-day.is-preview:not(.is-selected):not(.is-between) {
+	background: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+}
+
+/* Calendar and side panel stack on narrow cards and sit side by side from 600px. */
+.dtp-pair {
+	display: grid;
+	gap: 1.75rem;
+}
+@container (min-width: 600px) {
+	.dtp-pair {
+		gap: 2.25rem;
+		grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+	}
+	.dtp-pair-even {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+}
+.dtp-side {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	min-width: 0;
+
+	& .dtp-block {
+		margin-bottom: 0;
+	}
+	& .dtp-actions {
+		margin-top: auto;
+	}
+}
+.dtp-side-row {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.dtp-side-title {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+/* Label and value rows, the label left and the value pushed right. */
+.dtp-rows {
+	margin: 0;
+	font-size: 0.85rem;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--dtp-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-weight: 600;
+		text-align: right;
+		color: var(--basalt-copy);
+	}
+}
+.dtp-rows-code {
+	margin: 1.25rem 0;
+}
+
+/* The visit booking: the form beside a summary once the card passes 760px. */
+.dtp-split {
+	display: grid;
+	gap: 2rem;
+}
+@container (min-width: 760px) {
+	.dtp-split {
+		gap: 3rem;
+		grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+		align-items: start;
+	}
+}
+.dtp-form .form-label {
+	font-weight: 500;
+}
+.dtp-form .basalt-choices > legend {
+	font-size: 1rem;
+}
+
+/* The error summary that takes focus when a submit fails. */
+.dtp-errors {
+	margin-bottom: 1.5rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 45%, transparent);
+	border-radius: 12px;
+	background: var(--basalt-danger-soft);
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-danger);
+		outline-offset: 2px;
+	}
+}
+.dtp-errors-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--basalt-danger);
+	}
+}
+.dtp-errors-list {
+	margin: 0;
+	padding-left: 1.6rem;
+	font-size: 0.85rem;
+
+	& a {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Five tiles for the soonest open days. */
+.dtp-quick {
+	margin-bottom: 1.5rem;
+}
+.dtp-quick-label {
+	margin: 0 0 0.5rem;
+	font-size: 1rem;
+	font-weight: 500;
+	color: var(--basalt-copy);
+}
+.dtp-quick-days {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	max-width: 22rem;
+}
+.dtp-quick-day {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+	padding: 0.5rem 0.25rem 0.4rem;
+	border: 1px solid var(--dtp-line);
+	border-radius: 12px;
+	line-height: 1.15;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--dtp-line));
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 9%, var(--basalt-plane));
+		box-shadow: var(--dtp-ring);
+	}
+}
+.dtp-quick-wd,
+.dtp-quick-m {
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--dtp-quiet);
+}
+.dtp-quick-n {
+	margin: 0.1rem 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+}
+
+/* A disabled arrival tile stays legible: dashed and quiet instead of faded. */
+.dtp-page .basalt-choice:has(input:disabled) {
+	border-style: dashed;
+	color: var(--dtp-quiet);
+	background: transparent;
+	opacity: 1;
+	box-shadow: none;
+
+	& > .bi {
+		color: var(--dtp-quiet);
+	}
+}
+.dtp-page .basalt-choice-hint {
+	color: var(--dtp-quiet);
+}
+
+/* The booking summary, led by the chosen day in large type. */
+.dtp-summary {
+	padding: 1.5rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-hue) 18%, var(--basalt-edge));
+	border-radius: 16px;
+	background: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane));
+}
+.dtp-summary-eyebrow {
+	margin: 0 0 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 650;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--dtp-quiet);
+}
+.dtp-summary-date {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+
+	&.is-empty {
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: var(--dtp-quiet);
+	}
+}
+.dtp-summary-slot {
+	margin: 0.3rem 0 1.25rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+}
+.dtp-summary-status {
+	margin: 1rem 0 0;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: var(--basalt-copy);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* The report period button; its panel measures against the whole bar, not the button. */
+.dtp-report-bar {
+	position: relative;
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .dtp-field {
+		position: static;
+	}
+}
+.dtp-range-btn {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	max-width: 100%;
+	padding: 0.6rem 1rem;
+	border: 1px solid var(--dtp-line);
+	border-radius: 12px;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--dtp-line));
+	}
+	&[aria-expanded="true"] {
+		border-color: var(--basalt-hue);
+		box-shadow: var(--dtp-ring);
+	}
+	& > .bi-calendar-range {
+		color: var(--basalt-hue);
+	}
+}
+.dtp-range-btn-caret {
+	font-size: 0.75rem;
+	transition: transform 170ms ease;
+}
+.dtp-range-btn[aria-expanded="true"] .dtp-range-btn-caret {
+	transform: rotate(180deg);
+}
+
+/* The range panel puts presets above the months, and beside them from 576px. */
+.dtp-pop-range {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	width: max-content;
+	max-width: 100%;
+	padding: 1.1rem;
+}
+.dtp-pop-main {
+	width: 20rem;
+	min-width: 0;
+	max-width: 100%;
+}
+.dtp-presets {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.dtp-preset {
+	padding: 0.4rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	text-align: left;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&[aria-pressed="true"] {
+		border-color: transparent;
+		font-weight: 650;
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+}
+@media (min-width: 576px) {
+	.dtp-pop-range {
+		gap: 1.25rem;
+		flex-direction: row;
+	}
+	.dtp-presets {
+		gap: 0.1rem;
+		flex-direction: column;
+		flex-wrap: nowrap;
+		min-width: 9.5rem;
+		padding-right: 1rem;
+		border-right: 1px solid var(--basalt-edge);
+	}
+	.dtp-preset {
+		padding: 0.5rem 0.75rem;
+		border: 0;
+		border-radius: 8px;
+	}
+}
+@media (min-width: 1200px) {
+	.dtp-pop-main {
+		width: 37rem;
+	}
+}
+.dtp-pop-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.75rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.dtp-pop-summary {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.dtp-pop-btns {
+	display: flex;
+	gap: 0.5rem;
+	margin-left: auto;
+}
+
+/* Side lists drop their bullets and indents. */
+.dtp-deliveries,
+.dtp-events,
+.dtp-picked,
+.dtp-soon-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Upcoming visits, with the ones inside the pause struck through and tagged. */
+.dtp-deliveries-item {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+
+	&.is-skipped > span:first-child {
+		text-decoration: line-through;
+		color: var(--dtp-quiet);
+	}
+	&.is-skipped .dtp-deliveries-state {
+		padding: 0.1rem 0.5rem;
+		border-radius: 999px;
+		color: var(--basalt-copy);
+		background: var(--basalt-warning-soft);
+	}
+}
+.dtp-deliveries-state {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--dtp-quiet);
+}
+
+/* Sessions on the chosen day: a framed row with a colored edge and its action on the right. */
+.dtp-events {
+	display: grid;
+	gap: 0.75rem;
+}
+.dtp-events-item {
+	position: relative;
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "time btn" "name btn" "meta btn";
+	align-items: center;
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.75rem;
+		bottom: 0.75rem;
+		left: -1px;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-series-2);
+	}
+}
+.dtp-events-time {
+	grid-area: time;
+	margin: 0;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--dtp-quiet);
+}
+.dtp-events-name {
+	grid-area: name;
+	margin: 0.1rem 0;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.dtp-events-meta {
+	grid-area: meta;
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--dtp-quiet);
+}
+.dtp-events-item .btn,
+.dtp-events-full {
+	grid-area: btn;
+	white-space: nowrap;
+}
+.dtp-events-full {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--dtp-quiet);
+}
+.dtp-events-empty,
+.dtp-picked-empty {
+	font-size: 0.85rem;
+	color: var(--dtp-quiet);
+}
+@container (max-width: 380px) {
+	.dtp-events-item {
+		grid-template-columns: 1fr;
+		grid-template-areas: "time" "name" "meta" "btn";
+	}
+	.dtp-events-item .btn,
+	.dtp-events-full {
+		justify-self: start;
+		margin-top: 0.6rem;
+	}
+}
+
+/* The next few sessions, each a full-width link to its day. */
+.dtp-soon {
+	margin-top: 0.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.dtp-soon-title {
+	margin: 0 0 0.4rem;
+	font-size: 0.75rem;
+	font-weight: 650;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--dtp-quiet);
+}
+.dtp-soon-item {
+	display: flex;
+	gap: 0.9rem;
+	align-items: baseline;
+	width: 100%;
+	padding: 0.5rem 0.25rem;
+	border: 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.dtp-soon-date {
+	flex: 0 0 6.5rem;
+	font-weight: 600;
+	color: var(--dtp-quiet);
+}
+.dtp-soon-name {
+	min-width: 0;
+	font-weight: 500;
+}
+
+/* Chosen on-call days as removable pills, under a running count. */
+.dtp-count {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--dtp-quiet);
+}
+.dtp-picked {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.dtp-picked-item {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.25rem 0.25rem 0.25rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.dtp-picked-x {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.4rem;
+	height: 1.4rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	font-size: 1rem;
+	color: var(--basalt-copy-body);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-danger) 14%, transparent);
+	}
+}
+
+/* Twelve month tiles in rows of four, or three on a narrow card. */
+.dtp-months-grid {
+	display: grid;
+	gap: 0.4rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@container (max-width: 300px) {
+	.dtp-months-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+.dtp-month {
+	height: 2.75rem;
+	padding: 0;
+	border: 1px solid var(--dtp-line);
+	border-radius: 10px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 150ms ease,
+		border-color 150ms ease;
+
+	&:hover:not(.is-off):not(.is-selected) {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--dtp-line));
+	}
+	&.is-selected {
+		border-color: var(--dtp-fill);
+		color: var(--basalt-on-hue);
+		background: var(--dtp-fill);
+	}
+	&.is-off {
+		border-style: dashed;
+		font-weight: 400;
+		color: var(--dtp-quiet);
+		cursor: not-allowed;
+	}
+}
+
+/* The service tag: last and next dates, with a bar for the time left between them. */
+.dtp-label {
+	align-self: start;
+	padding: 1.35rem 1.4rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 16px;
+	background: var(--basalt-plane-alt);
+}
+.dtp-label-name {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dtp-label-meta {
+	margin: 0.1rem 0 1rem;
+	font-size: 0.8rem;
+	color: var(--dtp-quiet);
+}
+.dtp-label-dates {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 1.1rem;
+
+	& dt {
+		font-size: 0.67rem;
+		font-weight: 650;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--dtp-quiet);
+	}
+	& dd {
+		margin: 0.2rem 0 0;
+		font-size: 1.05rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.dtp-fresh-track {
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+}
+.dtp-fresh-fill {
+	display: block;
+	width: var(--fill, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-success);
+	transition: width 240ms ease;
+}
+.dtp-fresh-text {
+	margin: 0.5rem 0 0;
+	font-size: 0.77rem;
+	line-height: 1.45;
+	color: var(--dtp-quiet);
+}
+
+/* The split birthday: a wide month select, then narrow day and year boxes. */
+.dtp-dob {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+
+	& > legend.form-label {
+		float: none;
+		width: 100%;
+		margin-bottom: 0.6rem;
+		padding: 0;
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+}
+.dtp-dob-fields {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+.dtp-dob-month {
+	flex: 1 1 10rem;
+}
+.dtp-dob-day {
+	flex: 0 0 5rem;
+}
+.dtp-dob-year {
+	flex: 0 0 7.5rem;
+}
+.dtp-dob-label {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--dtp-quiet);
+}
+
+/* The browser's own date and time inputs share a row once there is room. */
+.dtp-native {
+	display: grid;
+	gap: 1.25rem;
+}
+@container (min-width: 440px) {
+	.dtp-native {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Each card closes on a folded code sample pinned to its bottom edge. */
+.dtp-code {
+	margin-top: auto;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* With reduced motion the controls change state at once. */
+@media (prefers-reduced-motion: reduce) {
+	.dtp-chip,
+	.dtp-day,
+	.dtp-quick-day,
+	.dtp-month,
+	.dtp-range-btn,
+	.dtp-range-btn-caret,
+	.dtp-cal-navbtn,
+	.dtp-fresh-fill,
+	.dtp-code summary .bi {
+		transition: none;
+	}
+	.dtp-pop {
+		animation: none;
+	}
+}
+
+/* On paper every card prints, without the chips, panels or code samples. */
+@media print {
+	.dtp-filter,
+	.dtp-code,
+	.dtp-pop {
+		display: none;
+	}
+	.dtp-card.is-hidden {
+		display: block;
+	}
+}

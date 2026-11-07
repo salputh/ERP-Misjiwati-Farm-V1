@@ -1,0 +1,777 @@
+/* Basalt - Video Call (video-call.html)
+   Namespaced under .vc-*
+   Built from shared parts: the Detail header, avatars, segmented
+   controls, toasts and the confirm dialog. This file lays out the
+   call: the tiles, the controls bar and the chat and people panel. */
+
+.vc-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on every palette, in tiles and on the page. */
+	--vc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--vc-gap: 0.75rem;
+}
+
+/* Header: the title left, its two buttons right */
+.basalt-hero-detail.vc-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.vc-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.vc-head .basalt-hero-actions .btn {
+	white-space: nowrap;
+}
+@media (max-width: 767.98px) {
+	.basalt-hero-detail.vc-head {
+		row-gap: 1rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.vc-head .basalt-hero-actions {
+		justify-self: start;
+	}
+}
+
+/* The call card: the stage, and the panel beside it */
+.vc-call.card {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	overflow: hidden;
+}
+@media (min-width: 1200px) {
+	.vc-call.is-panel-open {
+		grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
+	}
+}
+
+.vc-stage {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.25rem var(--basalt-pad-x) 1.5rem;
+}
+.vc-stage-top {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.vc-stage-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.vc-stage-next {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--vc-quiet);
+}
+
+/* A small dot that breathes while the call is live. */
+.vc-live {
+	flex-shrink: 0;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--basalt-success);
+	box-shadow: 0 0 0 0 color-mix(in srgb, var(--basalt-success) 45%, transparent);
+	animation: vc-live 2s ease-out infinite;
+}
+@keyframes vc-live {
+	to {
+		box-shadow: 0 0 0 0.4rem transparent;
+	}
+}
+
+/* Tiles
+   Three across, four when the panel is closed on a wide screen, two
+   on a phone. A short last row sits in the middle. */
+.vc-tiles {
+	display: flex;
+	gap: var(--vc-gap);
+	flex-wrap: wrap;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.vc-tile {
+	--vc-cols: 3;
+	position: relative;
+	display: grid;
+	flex: 0 0 calc((100% - (var(--vc-cols) - 1) * var(--vc-gap)) / var(--vc-cols));
+	place-items: center;
+	container-type: inline-size;
+	min-width: 0;
+	aspect-ratio: 4 / 3;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+	transition: box-shadow 200ms ease;
+}
+.vc-tiles[data-count="1"] .vc-tile {
+	--vc-cols: 1;
+	max-width: 36rem;
+}
+.vc-tiles[data-count="2"] .vc-tile,
+.vc-tiles[data-count="4"] .vc-tile {
+	--vc-cols: 2;
+}
+@media (min-width: 1200px) {
+	.vc-call:not(.is-panel-open) .vc-tile {
+		--vc-cols: 4;
+	}
+	.vc-call:not(.is-panel-open) .vc-tiles[data-count="2"] .vc-tile,
+	.vc-call:not(.is-panel-open) .vc-tiles[data-count="4"] .vc-tile {
+		--vc-cols: 2;
+		max-width: 30rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.vc-page {
+		--vc-gap: 0.5rem;
+	}
+	.vc-tile {
+		--vc-cols: 2;
+	}
+}
+
+/* A camera that is on shows the person's team color behind them. */
+.vc-tile.has-camera {
+	background: color-mix(in srgb, var(--vc-tone, var(--basalt-hue)) 16%, var(--basalt-plane));
+}
+:root[data-basalt-gradients="off"] .vc-tile.has-camera {
+	background: var(--basalt-plane-alt);
+}
+
+.vc-tile-face {
+	position: relative;
+	display: inline-flex;
+	border-radius: 50%;
+}
+.vc-tile .basalt-avatar {
+	box-shadow: 0 0 0 4px var(--basalt-plane);
+}
+.vc-guest {
+	border: 1px solid var(--basalt-edge-strong);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+
+/* Whoever is speaking: a ring round the tile and a soft pulse round them. */
+.vc-tile.is-speaking {
+	border-color: transparent;
+	box-shadow: 0 0 0 2px var(--basalt-hue);
+}
+.vc-tile.is-speaking .vc-tile-face::after {
+	content: "";
+	position: absolute;
+	inset: -4px;
+	border: 2px solid var(--basalt-hue);
+	border-radius: 50%;
+	animation: vc-ring 1.6s ease-out infinite;
+}
+@keyframes vc-ring {
+	from {
+		transform: scale(1);
+		opacity: 0.9;
+	}
+	to {
+		transform: scale(1.35);
+		opacity: 0;
+	}
+}
+
+.vc-tile-name {
+	position: absolute;
+	bottom: 0.5rem;
+	left: 0.5rem;
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	max-width: calc(100% - 1rem);
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.vc-tile-who {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.vc-tile-first,
+.vc-tile-handmark {
+	display: none;
+}
+.vc-tile-muted {
+	flex-shrink: 0;
+	color: color-mix(in srgb, var(--basalt-danger) 68%, var(--basalt-copy));
+}
+
+/* The last tile of a big call: how many more people are in it. */
+.vc-tile-more {
+	border-style: dashed;
+	border-color: var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+}
+.vc-more {
+	width: 100%;
+	height: 100%;
+	padding: 0.5rem;
+	border: 0;
+	border-radius: inherit;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	background: none;
+}
+.vc-more:hover {
+	background: var(--basalt-wash);
+}
+
+/* Badges in the top corners: a raised hand, and a camera that is off. */
+.vc-tile-hand,
+.vc-tile-cam {
+	position: absolute;
+	top: 0.5rem;
+	display: inline-grid;
+	place-items: center;
+	width: 1.85rem;
+	height: 1.85rem;
+	border-radius: 50%;
+	font-size: 0.9rem;
+	background: var(--basalt-plane);
+}
+.vc-tile-hand {
+	left: 0.5rem;
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+.vc-tile-cam {
+	right: 0.5rem;
+	color: var(--vc-quiet);
+}
+
+/* Three small bars beside the name of whoever is speaking. */
+.vc-wave {
+	display: inline-flex;
+	gap: 2px;
+	flex-shrink: 0;
+	align-items: center;
+	height: 0.8rem;
+}
+.vc-wave span {
+	width: 3px;
+	height: 100%;
+	border-radius: 2px;
+	background: var(--basalt-hue);
+	animation: vc-wave 900ms ease-in-out infinite;
+}
+.vc-wave span:nth-child(2) {
+	animation-delay: -300ms;
+}
+.vc-wave span:nth-child(3) {
+	animation-delay: -600ms;
+}
+@keyframes vc-wave {
+	0%,
+	100% {
+		transform: scaleY(0.35);
+	}
+	50% {
+		transform: scaleY(1);
+	}
+}
+
+/* Narrow tiles: a smaller face and the first name only. */
+@container (max-width: 210px) {
+	.vc-tile .basalt-avatar {
+		width: 52px;
+		height: 52px;
+		font-size: 1.05rem;
+	}
+	.vc-tile-who {
+		display: none;
+	}
+	.vc-tile-first {
+		display: inline;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+
+/* Your shared screen */
+.vc-screen {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+}
+.vc-screen-bar {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.6rem 0.6rem 0.6rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.vc-screen-dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--basalt-success);
+}
+.vc-screen-label {
+	margin-right: auto;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.vc-screen-body {
+	padding: 1.25rem;
+	background: var(--basalt-plane-alt);
+}
+.vc-doc {
+	max-width: 34rem;
+	margin: 0 auto;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+}
+.vc-doc-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.75rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.vc-doc-title .bi {
+	color: var(--basalt-hue);
+}
+.vc-doc-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.vc-doc-list li {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	padding: 0.4rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.vc-doc-list li > span:first-child {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.vc-doc-mins {
+	flex-shrink: 0;
+	color: var(--vc-quiet);
+}
+
+/* While you share, everyone shrinks to one strip under the screen:
+   the face with the first name under it, and a raised hand. */
+.vc-call.is-sharing .vc-tile {
+	--vc-cols: 7;
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: auto;
+	padding: 0.7rem 0.25rem 0.5rem;
+}
+.vc-call.is-sharing .vc-tile .basalt-avatar {
+	width: 40px;
+	height: 40px;
+	font-size: 0.8rem;
+	box-shadow: 0 0 0 3px var(--basalt-plane);
+}
+.vc-call.is-sharing .vc-tile-name {
+	position: static;
+	gap: 0.2rem;
+	max-width: 100%;
+	padding: 0;
+	font-size: 0.75rem;
+	background: none;
+}
+.vc-call.is-sharing .vc-tile-who {
+	display: none;
+}
+.vc-call.is-sharing .vc-tile-first {
+	display: inline;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.vc-call.is-sharing .vc-tile-handmark {
+	display: inline;
+	flex-shrink: 0;
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+.vc-call.is-sharing .vc-tile.is-speaking .vc-tile-face::after {
+	inset: -3px;
+	animation-name: vc-ring-small;
+}
+@keyframes vc-ring-small {
+	from {
+		transform: scale(1);
+		opacity: 0.9;
+	}
+	to {
+		transform: scale(1.12);
+		opacity: 0;
+	}
+}
+.vc-call.is-sharing .vc-tile-hand,
+.vc-call.is-sharing .vc-tile-cam,
+.vc-call.is-sharing .vc-wave,
+.vc-call.is-sharing .vc-tile-muted {
+	display: none;
+}
+@media (max-width: 991.98px) {
+	.vc-call.is-sharing .vc-tile {
+		--vc-cols: 4;
+	}
+}
+
+/* Controls */
+.vc-bar {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: center;
+	margin-top: auto;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.vc-bar-time {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.vc-bar-main {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.vc-ctl {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 50%;
+	font-size: 1.1rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.vc-ctl:hover {
+	background: var(--basalt-wash);
+}
+.vc-ctl:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.vc-ctl[aria-pressed="true"] {
+	border-color: transparent;
+	color: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+/* Muted and camera off read as warnings rather than "on". */
+.vc-ctl[data-vc-ctl="mute"][aria-pressed="true"],
+.vc-ctl[data-vc-ctl="camera"][aria-pressed="true"] {
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+.vc-leave {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	height: 2.75rem;
+	margin-left: 0.5rem;
+	padding: 0 1.1rem;
+	border-radius: 999px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.vc-leave .bi {
+	font-size: 1.05rem;
+}
+
+@media (max-width: 575.98px) {
+	.vc-bar {
+		grid-template-columns: minmax(0, 1fr);
+		justify-items: center;
+	}
+	.vc-bar-main {
+		gap: 0.4rem;
+	}
+	.vc-ctl {
+		width: 2.6rem;
+		height: 2.6rem;
+		font-size: 1rem;
+	}
+	.vc-leave {
+		justify-content: center;
+		width: 2.6rem;
+		height: 2.6rem;
+		margin-left: 0.1rem;
+		padding: 0;
+		border-radius: 50%;
+	}
+	.vc-leave-text {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+
+/* Chat and people */
+.vc-panel {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.25rem var(--basalt-pad-x) 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+@media (min-width: 1200px) {
+	.vc-panel {
+		padding: 1.25rem 1.25rem 1.5rem;
+		border-top: 0;
+		border-left: 1px solid var(--basalt-edge);
+	}
+}
+.vc-panel-switch {
+	width: 100%;
+	max-width: 24rem;
+}
+.vc-panel-switch .basalt-segmented-option {
+	flex: 1 1 0;
+	justify-content: center;
+}
+
+.vc-chat,
+.vc-people {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.vc-chat-earlier {
+	align-self: flex-start;
+	padding: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.vc-msgs {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.vc-msgs-empty {
+	font-size: 0.875rem;
+	color: var(--vc-quiet);
+}
+.vc-msg {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: auto minmax(0, 1fr);
+}
+.vc-msg-meta {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+}
+.vc-msg-who {
+	min-width: 0;
+	overflow: hidden;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.vc-msg-at {
+	flex-shrink: 0;
+	font-size: 0.75rem;
+	color: var(--vc-quiet);
+}
+.vc-msg-text {
+	margin: 0.1rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body);
+}
+
+.vc-compose {
+	display: flex;
+	gap: 0.5rem;
+	margin-top: auto;
+	padding-top: 0.5rem;
+}
+.vc-compose .form-control {
+	min-width: 0;
+}
+.vc-compose .btn-square {
+	flex-shrink: 0;
+}
+
+.vc-roster {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.vc-roster-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.vc-roster-row:first-child {
+	padding-top: 0;
+}
+.vc-roster-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.vc-roster-name {
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+a.vc-roster-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.vc-roster-title {
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--vc-quiet);
+}
+.vc-roster-icons {
+	display: flex;
+	gap: 0.5rem;
+	flex-shrink: 0;
+	font-size: 0.95rem;
+	color: var(--vc-quiet);
+}
+.vc-roster-hand {
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+.vc-roster-talk {
+	color: color-mix(in srgb, var(--basalt-hue) 75%, var(--basalt-copy));
+}
+.vc-people-invite {
+	align-self: flex-start;
+}
+
+/* After you leave */
+.vc-call.has-left .vc-stage,
+.vc-call.has-left .vc-panel {
+	display: none;
+}
+.vc-left {
+	display: flex;
+	flex-direction: column;
+	grid-column: 1 / -1;
+	align-items: center;
+	padding: 4rem 1.5rem;
+	text-align: center;
+}
+.vc-left-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3.5rem;
+	height: 3.5rem;
+	margin-bottom: 1rem;
+	border-radius: 50%;
+	font-size: 1.4rem;
+	color: var(--vc-quiet);
+	background: var(--basalt-plane-alt);
+}
+.vc-left-title {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.vc-left-title:focus {
+	outline: none;
+	box-shadow: none;
+}
+.vc-left-text {
+	max-width: 28rem;
+	margin: 0.4rem 0 1.25rem;
+	font-size: 0.9rem;
+	color: var(--vc-quiet);
+}
+.vc-left-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.vc-live,
+	.vc-wave span,
+	.vc-tile.is-speaking .vc-tile-face::after {
+		animation: none;
+	}
+	.vc-tile.is-speaking .vc-tile-face::after {
+		opacity: 0.9;
+	}
+}

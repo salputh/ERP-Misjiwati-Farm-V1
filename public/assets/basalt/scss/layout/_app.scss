@@ -1,0 +1,40 @@
+/* The frame holds the top bar, the page and its footer, and keeps clear of
+   the fixed menu with a left margin that follows the menu's width. */
+.basalt-frame {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	margin-left: 300px;
+	transition: margin-left 240ms cubic-bezier(0.32, 0.72, 0, 1);
+
+	@media (max-width: 991.98px) {
+		margin-left: 0;
+	}
+
+	@media (min-width: 992px) {
+		body.basalt-menu-narrow & {
+			margin-left: 80px;
+		}
+	}
+}
+
+/* Behind the open menu on small screens the page dims; a tap on the dimmed
+   part closes the menu again. It is a plain tint, not a blur: a blurred
+   backdrop shows a mirrored copy of the page at its edges in some browsers,
+   most of all when the page sits inside a scaled frame. */
+.basalt-dim {
+	position: fixed;
+	inset: 0;
+	z-index: 1036;
+	visibility: hidden;
+	background: color-mix(in srgb, var(--basalt-scrim) 85%, #000 15%);
+	opacity: 0;
+	transition:
+		opacity 240ms cubic-bezier(0.32, 0.72, 0, 1),
+		visibility 240ms cubic-bezier(0.32, 0.72, 0, 1);
+
+	&.is-visible {
+		visibility: visible;
+		opacity: 1;
+	}
+}

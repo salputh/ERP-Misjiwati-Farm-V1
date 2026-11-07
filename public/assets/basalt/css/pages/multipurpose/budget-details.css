@@ -1,0 +1,538 @@
+/* Basalt - Budget Details (budget-details.html)
+   One budget in full. Namespaced under .bd-*; every color is a
+   --basalt-* token, and --bd-tone is the budget's own chart-ramp
+   color, so palettes and dark mode carry through. */
+
+.bd-page {
+	/* Small gray text: the muted token pulled toward the body color, so
+     it clears 4.5:1 on the lighter palettes and on tinted panels. */
+	--bd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--bd-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--bd-track: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+}
+
+/* Header: back link, budget, owner, other budgets */
+.basalt-hero-detail.bd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.bd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.bd-who {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	min-width: 0;
+}
+.bd-who-text {
+	min-width: 0;
+}
+.bd-who-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	border-radius: 14px;
+	font-size: 1.4rem;
+	color: color-mix(in srgb, var(--bd-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--bd-tone) 16%, var(--basalt-plane));
+}
+.bd-pager {
+	display: flex;
+	gap: 0.3rem;
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.bd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.bd-who-icon {
+		width: 2.75rem;
+		height: 2.75rem;
+		font-size: 1.2rem;
+	}
+}
+
+.bd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--bd-link);
+}
+.bd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.bd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Grid
+   Three rows whose two cards end level: the year beside its months,
+   the biggest costs beside the latest payments, the budget beside its
+   notes. Below 1200px everything stacks in reading order. */
+.bd-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.bd-grid {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		align-items: stretch;
+	}
+}
+
+/* Cards */
+.bd-card {
+	min-width: 0;
+}
+.bd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.bd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.bd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.bd-card-head > div {
+	min-width: 0;
+}
+.bd-card-head .bd-link {
+	flex: none;
+	margin-top: 0.2rem;
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.bd-card-head .btn {
+	flex: none;
+	white-space: nowrap;
+}
+.bd-card-head .btn[hidden] {
+	display: none;
+}
+.bd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--bd-quiet);
+}
+
+/* Where the year will end
+   A soft wash of the budget's own color. */
+.bd-year.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.bd-year-title {
+	margin: 1rem 0 0.5rem;
+	font-size: 1.2rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.bd-year-lede {
+	max-width: 44ch;
+	margin: 0 0 1.5rem;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+
+/* Used: a bar with a mark where spending should be by today. */
+.bd-used {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+}
+.bd-meter {
+	position: relative;
+	height: 10px;
+	border-radius: 999px;
+	background: var(--bd-track);
+}
+.bd-meter-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--bd-used, 0%);
+	border-radius: inherit;
+	background: var(--bd-tone);
+	transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.bd-meter-pace {
+	position: absolute;
+	top: -5px;
+	bottom: -5px;
+	left: var(--bd-pace);
+	width: 2px;
+	margin-left: -1px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+	opacity: 0.55;
+}
+.bd-used-pct {
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.bd-figs {
+	display: grid;
+	gap: 1rem 2.25rem;
+	grid-template-columns: repeat(3, minmax(0, max-content));
+	margin: auto 0 0;
+	padding-top: 1.75rem;
+}
+.bd-fig dt {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--bd-quiet);
+}
+.bd-fig dd {
+	margin: 0;
+}
+.bd-fig-value {
+	margin-top: 0.2rem;
+	font-size: 1rem;
+	font-weight: 650;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.bd-fig-note {
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--bd-quiet);
+}
+@media (max-width: 575.98px) {
+	.bd-figs {
+		gap: 1rem 1.75rem;
+		grid-template-columns: repeat(2, minmax(0, max-content));
+	}
+}
+
+/* Month by month */
+.bd-card-months .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.bd-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 240px;
+}
+.bd-chart canvas {
+	display: block;
+	max-width: 100%;
+}
+.bd-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 1rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.bd-legend li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+}
+.bd-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--bd-tone);
+}
+.bd-legend-swatch-forecast {
+	background: color-mix(in srgb, var(--bd-tone) 30%, transparent);
+}
+.bd-legend-line {
+	width: 1rem;
+	height: 0;
+	border-top: 2px dashed color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-plane));
+}
+
+/* Biggest costs: name, value, bar */
+.bd-rank {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.bd-rank-item {
+	display: grid;
+	gap: 0.5rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	padding: 1.1rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.bd-rank-item:first-child {
+	padding-top: 0;
+}
+.bd-rank-item:last-child {
+	border-bottom: 0;
+}
+.bd-rank-name {
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.bd-rank-value {
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.bd-rank-share {
+	margin-left: 0.3rem;
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--bd-quiet);
+}
+.bd-rank-bar {
+	grid-column: 1 / -1;
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--bd-track);
+}
+.bd-rank-bar span {
+	display: block;
+	width: var(--bd-w);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--bd-tone);
+}
+
+/* Recent payments */
+.bd-table {
+	--bs-table-bg: transparent;
+	margin: 0;
+}
+.bd-table > :not(caption) > * > * {
+	padding: 0.85rem 0.75rem;
+	border-bottom-color: var(--basalt-edge);
+}
+.bd-table thead th {
+	padding-top: 0;
+	padding-bottom: 0.8rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--bd-quiet);
+}
+.bd-table > :not(caption) > * > :first-child {
+	padding-left: 0;
+}
+.bd-table > :not(caption) > * > :last-child {
+	padding-right: 0;
+}
+.bd-table > tbody > tr:last-child > * {
+	border-bottom: 0;
+}
+.bd-table-date {
+	width: 1%;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.bd-table-payee {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.bd-table-note {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--bd-quiet);
+}
+.bd-table-amount {
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+/* The budget: facts, or the form while editing */
+.bd-card-setup.is-editing {
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--basalt-hue) 30%, transparent);
+}
+.bd-facts {
+	margin: 0;
+}
+.bd-facts[hidden],
+.bd-form[hidden] {
+	display: none;
+}
+.bd-fact {
+	display: grid;
+	gap: 0.25rem 1rem;
+	grid-template-columns: minmax(7.5rem, 2fr) minmax(0, 3fr);
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.bd-fact:first-child {
+	padding-top: 0;
+}
+.bd-fact:last-child {
+	border-bottom: 0;
+}
+.bd-fact dt {
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: var(--bd-quiet);
+}
+.bd-fact dd {
+	min-width: 0;
+	margin: 0;
+}
+.bd-fact-main {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.bd-fact-note {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--bd-quiet);
+}
+@media (max-width: 575.98px) {
+	.bd-fact {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.bd-form-row + .bd-form-row {
+	margin-top: 1.25rem;
+}
+.bd-amount {
+	max-width: 14rem;
+}
+.bd-form .form-select {
+	width: auto;
+	min-width: 16rem;
+	max-width: 100%;
+}
+.bd-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--bd-quiet);
+}
+.bd-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+}
+
+/* Notes and changes */
+.bd-note-form textarea {
+	min-height: 4.5rem;
+	resize: vertical;
+}
+.bd-note-form-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+}
+.bd-history {
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.bd-history-item {
+	display: flex;
+	gap: 0.85rem;
+	padding: 0.85rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.bd-history-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.bd-history-text {
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.bd-history-body {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.bd-history-by {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.77rem;
+	color: var(--bd-quiet);
+}
+.bd-history-item.is-fresh {
+	animation: bd-fresh 1.6s ease;
+}
+@keyframes bd-fresh {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+	}
+	to {
+		background: transparent;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bd-meter-fill {
+		transition: none;
+	}
+	.bd-history-item.is-fresh {
+		animation: none;
+	}
+}
+@media print {
+	.bd-head .basalt-hero-actions,
+	.bd-card-head .btn,
+	.bd-note-form {
+		display: none;
+	}
+	.bd-meter-fill {
+		transition: none;
+	}
+}

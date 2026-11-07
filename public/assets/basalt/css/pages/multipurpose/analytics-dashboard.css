@@ -1,0 +1,1013 @@
+/* Website analytics (analytics-dashboard.html), every class under .an-*.
+   One traffic card leads: its four figures choose what the trend chart
+   draws. Below it sit where visitors come from, where they are, the
+   pages they land on and their devices, and a side drawer breaks any row
+   down further. Every color is a --basalt-* token. */
+
+.an-page {
+	--an-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* A row's chart color, shared by its tile, its bar and its slice of the ring. */
+.an-tone-1 {
+	--an-tone: var(--basalt-series-1);
+}
+.an-tone-2 {
+	--an-tone: var(--basalt-series-2);
+}
+.an-tone-3 {
+	--an-tone: var(--basalt-series-3);
+}
+.an-tone-4 {
+	--an-tone: var(--basalt-series-4);
+}
+.an-tone-5 {
+	--an-tone: var(--basalt-series-5);
+}
+.an-tone-6 {
+	--an-tone: var(--basalt-series-6);
+}
+.an-tone-7 {
+	--an-tone: var(--basalt-series-7);
+}
+.an-tone-other {
+	--an-tone: var(--basalt-copy-faint);
+}
+
+/* The header keeps the live count, the period switch and the export on
+   one line beside the title, and wraps them under it on narrow screens. */
+.an-head-actions {
+	gap: 0.75rem 1rem;
+	align-items: center;
+
+	& .btn {
+		font-size: 0.875rem;
+	}
+	@media (max-width: 374.98px) {
+		& .basalt-segmented-option {
+			padding-inline: 0.5rem;
+			font-size: 0.8rem;
+		}
+	}
+}
+.an-now {
+	display: inline-flex;
+	align-items: center;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--an-quiet);
+
+	& strong {
+		margin-right: 0.3rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* A green dot beside the live count sends out a slow, soft pulse, unless
+   the visitor has asked for less motion. */
+.an-live {
+	position: relative;
+	display: inline-block;
+	flex-shrink: 0;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.6rem;
+	border-radius: 50%;
+	background: var(--basalt-success);
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
+		background: var(--basalt-success);
+		animation: an-pulse 2.4s ease-out infinite;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+@keyframes an-pulse {
+	from {
+		transform: scale(1);
+		opacity: 0.7;
+	}
+	to {
+		transform: scale(3);
+		opacity: 0;
+	}
+}
+
+/* The cards sit on a twelve-column grid: one to a row, then two from
+   1200px, with the traffic card always full width. */
+.an-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.an-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+@media (min-width: 1200px) {
+	.an-card {
+		grid-column: span 6;
+	}
+	.an-card-wide {
+		grid-column: span 12;
+	}
+}
+/* Where visits start: the busiest landing page on the palette color,
+   the next three as plain rows beside it. Paths are plain text. */
+.an-top-grid {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@container (min-width: 52rem) {
+		grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+	}
+}
+.an-top .card-body {
+	container-type: inline-size;
+}
+.an-top-lead {
+	--an-top-ink: var(--basalt-plane);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 15rem;
+	padding: 1.5rem 1.6rem 1.25rem;
+	border-radius: 14px;
+	overflow: hidden;
+	color: var(--an-top-ink);
+	background: color-mix(in srgb, var(--basalt-hue) 82%, var(--basalt-copy));
+
+	[data-bs-theme="dark"] & {
+		--an-top-ink: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 52%, var(--basalt-plane));
+	}
+}
+.an-top-rank {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	opacity: 0.85;
+}
+.an-top-name {
+	margin: 0.35rem 0 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: inherit;
+}
+.an-top-path {
+	margin: 0.1rem 0 0;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	opacity: 0.75;
+}
+.an-top-value {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: auto 0 0;
+	padding-top: 1.25rem;
+	font-size: clamp(2.4rem, 4.2vw, 3.4rem);
+	font-weight: 800;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+
+	& span {
+		font-size: 0.9rem;
+		font-weight: 600;
+		opacity: 0.85;
+	}
+}
+.an-top-meta {
+	position: relative;
+	z-index: 1;
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	opacity: 0.85;
+}
+.an-top-line {
+	position: absolute;
+	top: 1.5rem;
+	right: 1.5rem;
+	width: 44%;
+	height: 4.5rem;
+	opacity: 0.85;
+
+	& path {
+		fill: none;
+		stroke: var(--an-top-ink);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		vector-effect: non-scaling-stroke;
+	}
+	@media (max-width: 575.98px) {
+		display: none;
+	}
+}
+.an-top-rest {
+	display: grid;
+	gap: 0.75rem;
+	align-content: stretch;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0 1rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.95rem 1.1rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+	}
+}
+.an-top-place {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 75%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.an-top-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+
+	& b {
+		overflow: hidden;
+		font-size: 0.95rem;
+		color: var(--basalt-copy);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	& .an-top-path {
+		margin: 0;
+		overflow: hidden;
+		color: var(--an-quiet);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		opacity: 1;
+	}
+}
+.an-top-num {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	font-variant-numeric: tabular-nums;
+
+	& small {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--an-quiet);
+		white-space: nowrap;
+	}
+}
+/* On a narrow card the time on page gives way to the page's name. */
+@container (max-width: 26rem) {
+	.an-top-num small {
+		display: none;
+	}
+}
+
+/* Once the page has settled the lead card rises and the rows follow. */
+.an-top-grid:not(.is-drawn) > *,
+.an-top-grid:not(.is-drawn) .an-top-rest li {
+	opacity: 0;
+	transform: translateY(8px);
+}
+.an-top-grid.is-drawn > *,
+.an-top-grid.is-drawn .an-top-rest li {
+	transition:
+		opacity 420ms ease,
+		transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.an-top-grid.is-drawn .an-top-rest li:nth-child(2) {
+	transition-delay: 80ms;
+}
+.an-top-grid.is-drawn .an-top-rest li:nth-child(3) {
+	transition-delay: 160ms;
+}
+@media (prefers-reduced-motion: reduce) {
+	.an-top-grid > *,
+	.an-top-grid .an-top-rest li {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+}
+
+.an-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+.an-card-head {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+}
+.an-card-head-row {
+	gap: 0.75rem 1.5rem;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.an-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.an-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--an-quiet);
+}
+.an-card-foot {
+	margin: auto 0 0;
+	padding-top: 1.25rem;
+	font-size: 0.85rem;
+	color: var(--an-quiet);
+
+	& a {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	}
+}
+
+/* Across the top of the traffic card run four plain figures. The chosen
+   one is outlined, and the chart below draws in its color. */
+.an-metrics {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	padding: 0.75rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	border-radius: inherit;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+
+	@media (max-width: 1199.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	@media (max-width: 374.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.an-metric {
+	position: relative;
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	min-width: 0;
+	padding: 1.1rem 1.25rem;
+	border: 1px solid transparent;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge);
+	}
+	&[aria-pressed="true"] {
+		border-color: color-mix(in srgb, var(--an-tone) 55%, var(--basalt-edge));
+		background: var(--basalt-plane);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible:not([aria-pressed="true"]) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.an-metric-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.6rem;
+	height: 2.6rem;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--an-tone) 80%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--an-tone) 16%, var(--basalt-plane));
+}
+.an-metric-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.an-metric-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--an-quiet);
+}
+.an-metric-value {
+	margin-top: 0.3rem;
+	font-size: clamp(1.35rem, 1rem + 1.2vw, 1.65rem);
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+}
+.an-metric-change {
+	display: flex;
+	gap: 0.3rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.5rem;
+}
+.an-metric-against {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--an-quiet);
+}
+
+/* Phones tighten the strip, and the smallest stack each figure's icon
+   above its numbers. */
+@media (max-width: 575.98px) {
+	.an-metrics {
+		gap: 0.5rem;
+		padding: 0.5rem;
+	}
+	.an-metric {
+		gap: 0.75rem;
+		padding: 1rem;
+	}
+	.an-metric-icon {
+		width: 2.2rem;
+		height: 2.2rem;
+		font-size: 1rem;
+	}
+}
+@media (max-width: 479.98px) {
+	.an-metric {
+		flex-direction: column;
+	}
+}
+
+/* The trend chart's key: the current line takes the chosen figure's
+   color, and the period before is a dashed gray. */
+.an-key {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0.2rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	& li {
+		display: inline-flex;
+		gap: 0.5rem;
+		align-items: center;
+		white-space: nowrap;
+	}
+}
+.an-key-line {
+	display: inline-block;
+	width: 1.25rem;
+	height: 0;
+	border-top: 2.5px solid var(--basalt-series-1);
+}
+.an-key-line-before {
+	border-top: 2px dashed var(--basalt-copy-faint);
+}
+.an-page:has([data-an-metric="orders"][aria-pressed="true"]) .an-key-line-now {
+	border-top-color: var(--basalt-series-3);
+}
+.an-page:has([data-an-metric="conversion"][aria-pressed="true"]) .an-key-line-now {
+	border-top-color: var(--basalt-series-5);
+}
+.an-page:has([data-an-metric="revenue"][aria-pressed="true"]) .an-key-line-now {
+	border-top-color: var(--basalt-series-2);
+}
+.an-chart {
+	position: relative;
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+}
+.an-chart-trend {
+	height: 300px;
+
+	@media (max-width: 575.98px) {
+		height: 240px;
+	}
+}
+
+/* Under the chart, a disclosure opens the same numbers as a table. */
+.an-numbers {
+	margin-top: 1.25rem;
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary::before {
+		content: "\F285";
+		font-family: "bootstrap-icons";
+		font-size: 0.75rem;
+		transition: transform 170ms ease;
+	}
+	&[open] summary::before {
+		transform: rotate(90deg);
+	}
+	& summary:focus {
+		outline: none;
+	}
+	& summary:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.an-numbers-wrap {
+	margin-top: 1rem;
+	overflow-y: hidden;
+}
+.an-numbers-table {
+	max-width: 36rem;
+	margin: 0;
+}
+
+/* A ranked list keeps fixed columns: the name, a bar, sessions and the
+   order rate. Each row is a button that opens the drawer. The list
+   measures its own width, so it fits wherever its card lands. */
+.an-rank {
+	container-type: inline-size;
+	margin: 0 -0.75rem;
+}
+.an-rank-cols,
+.an-rank-row {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: minmax(10rem, 14rem) minmax(3rem, 1fr) 5rem 5.25rem 1rem;
+	align-items: center;
+	padding-inline: 0.75rem;
+}
+.an-rank-cols {
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-muted);
+
+	& span:nth-child(3),
+	& span:nth-child(4) {
+		text-align: right;
+	}
+}
+.an-rank-list {
+	margin: 0;
+
+	& li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.an-rank-row {
+	width: 100%;
+	min-height: 3.6rem;
+	padding-block: 0.8rem;
+	border: 0;
+	border-radius: 8px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+
+/* A small tile in the row's color holds an icon, or a country's code in
+   a circle. */
+.an-mark {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 9px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--an-tone) 80%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--an-tone) 15%, var(--basalt-plane));
+}
+.an-mark-code {
+	border-radius: 50%;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	color: color-mix(in srgb, var(--an-tone) 45%, var(--basalt-copy));
+}
+.an-rank-who {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.an-rank-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.an-rank-name {
+	overflow: hidden;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.an-rank-sub {
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--an-quiet);
+}
+.an-rank-bar {
+	display: block;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 6%, transparent);
+}
+.an-rank-fill {
+	display: block;
+	height: 100%;
+	border-radius: 999px;
+	background: var(--an-tone);
+	transition: width 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.an-rank-num {
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-align: right;
+	white-space: nowrap;
+}
+.an-rank-num-quiet {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.an-rank-go {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+}
+
+/* In a narrow list the tile shrinks and the bar drops under the name,
+   starting where the text starts. */
+@container (max-width: 29.99rem) {
+	.an-rank-cols,
+	.an-rank-row {
+		column-gap: 0.6rem;
+		grid-template-columns: minmax(0, 1fr) 4rem 4.6rem 0.75rem;
+	}
+	.an-rank-cols span:nth-child(2) {
+		display: none;
+	}
+	.an-rank-cols span {
+		white-space: nowrap;
+	}
+	.an-rank-name,
+	.an-rank-sub {
+		white-space: normal;
+	}
+	.an-rank-row {
+		row-gap: 0.5rem;
+		grid-template-areas: "who num rate go" "bar bar bar bar";
+	}
+	.an-rank-who {
+		gap: 0.7rem;
+		grid-area: who;
+	}
+	.an-rank .an-mark {
+		width: 1.9rem;
+		height: 1.9rem;
+		font-size: 0.875rem;
+	}
+	.an-rank .an-mark-code {
+		font-size: 0.67rem;
+	}
+	.an-rank-row .an-rank-bar {
+		grid-area: bar;
+		margin-left: 2.6rem;
+	}
+	.an-rank-row .an-rank-num {
+		grid-area: num;
+	}
+	.an-rank-row .an-rank-num-quiet {
+		grid-area: rate;
+	}
+	.an-rank-go {
+		grid-area: go;
+	}
+}
+
+/* Landing pages share the ledger table, pulled out to the card's edges. */
+.an-pages {
+	container-type: inline-size;
+	margin: 0 -0.75rem;
+	overflow-y: hidden;
+
+	& th {
+		white-space: nowrap;
+	}
+	& .basalt-ledger thead th:first-child,
+	& .basalt-ledger tbody td:first-child {
+		padding-left: 0.75rem;
+	}
+	& .basalt-ledger thead th:last-child,
+	& .basalt-ledger tbody td:last-child {
+		padding-right: 0.75rem;
+	}
+	& .basalt-ledger tbody td {
+		padding-top: 0.8rem;
+		padding-bottom: 0.8rem;
+	}
+}
+.an-num {
+	font-weight: 600;
+	white-space: nowrap;
+}
+.an-num-quiet {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+/* In a narrow card the orders and rate columns fold into one muted line
+   under the sessions. */
+.an-pages-sub {
+	display: none;
+}
+@container (max-width: 29.99rem) {
+	.an-pages .an-pages-wide {
+		display: none;
+	}
+	.an-pages-sub {
+		display: block;
+		margin-top: 0.1rem;
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--an-quiet);
+	}
+	.an-pages .basalt-ledger thead th:first-child,
+	.an-pages .basalt-ledger tbody td:first-child {
+		padding-right: 0.5rem;
+	}
+}
+/* The narrowest phones let the rate line wrap. This block comes before
+   the path's own rule on purpose: the path keeps its nowrap and only
+   gains the break-anywhere. */
+@media (max-width: 374.98px) {
+	.an-landing-path {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+	.an-pages-sub {
+		white-space: normal;
+	}
+}
+/* A page is a link-styled button: the path in mono, its title beneath. */
+.an-landing {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover .an-landing-path {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.an-landing-path {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+.an-landing-title {
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--an-quiet);
+}
+
+/* Devices: the ring with the session total at its center, and the key
+   beside it, wrapping under it when space runs out. */
+.an-devices {
+	display: flex;
+	gap: 1.5rem 2rem;
+	flex: 1;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+}
+.an-devices-ring {
+	position: relative;
+	flex-shrink: 0;
+	width: 12rem;
+	height: 12rem;
+
+	& canvas {
+		display: block;
+	}
+}
+/* The ring's tooltip draws over its center words, not under them: the
+   words sit behind the canvas, which is clear except where it draws. */
+.an-devices-ring canvas {
+	position: relative;
+	z-index: 1;
+}
+.an-devices-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	z-index: 0;
+}
+.an-devices-total {
+	font-size: 1.6rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.an-devices-caption {
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--an-quiet);
+}
+.an-devices-list {
+	flex: 1 1 15rem;
+	max-width: 20rem;
+	margin: 0;
+}
+.an-device {
+	display: grid;
+	row-gap: 0.2rem;
+	column-gap: 0.85rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+	grid-template-areas: "mark name share" "mark meta meta";
+	align-items: center;
+	padding: 0.8rem 0;
+
+	& + .an-device {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.an-device-mark {
+	grid-area: mark;
+}
+.an-device-name {
+	grid-area: name;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.an-device-share {
+	grid-area: share;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.an-device-meta {
+	grid-area: meta;
+	font-size: 0.8rem;
+	color: var(--an-quiet);
+}
+
+/* The side drawer: a sentence with the row's numbers, then one breakdown
+   at a time in the same bars the lists use. */
+.an-drill {
+	--bs-offcanvas-width: 440px;
+
+	& .offcanvas-body {
+		padding: 1.5rem;
+	}
+}
+.an-drill-lead {
+	margin: 0 0 1.75rem;
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.an-drill-heading {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.an-drill-cols,
+.an-drill-row {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) minmax(3rem, 7rem) 4.5rem;
+	align-items: center;
+}
+.an-drill-cols {
+	margin-top: 1.25rem;
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-muted);
+
+	& span:last-child {
+		text-align: right;
+	}
+}
+.an-drill-list {
+	margin: 0;
+}
+.an-drill-row {
+	padding: 0.8rem 0;
+
+	& + .an-drill-row {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.an-drill-name {
+	min-width: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}

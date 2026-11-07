@@ -1,0 +1,692 @@
+/* Basalt - Newsletters (newsletters.html)
+   Namespaced under .nl-*
+   Built from shared parts: the plain page head, the segmented control,
+   status pills, empty states, the record drawer and toasts. This file
+   lays them out and styles what belongs to this page only: the band
+   of figures with the next send, the newsletter table and the email
+   preview in the quick view. Every color is a --basalt-* token. */
+
+.nl-page,
+.nl-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so
+     it clears 4.5:1 on the lighter palettes and tinted surfaces. */
+	--nl-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--nl-line: var(--basalt-edge);
+	--nl-track: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+	--nl-up: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+}
+
+/* One color per audience, from the chart ramp. */
+[data-aud="all"] {
+	--nl-tone: var(--basalt-series-1);
+}
+[data-aud="insiders"] {
+	--nl-tone: var(--basalt-series-3);
+}
+[data-aud="lapsed"] {
+	--nl-tone: var(--basalt-series-6);
+}
+
+/* The band: three figures and the next send */
+.nl-pulse.card {
+	container-type: inline-size;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.nl-pulse-grid {
+	display: grid;
+	gap: 0;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.25fr);
+}
+.nl-pulse-fig {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 0.25rem 1.5rem 0.25rem 0;
+}
+.nl-pulse-fig + .nl-pulse-fig {
+	padding-left: 1.5rem;
+	border-left: 1px solid var(--nl-line);
+}
+.nl-pulse-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--nl-quiet);
+}
+.nl-pulse-value {
+	margin: 0.3rem 0 0;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.nl-pulse-note {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	color: var(--nl-quiet);
+}
+.nl-up {
+	font-weight: 700;
+	color: var(--nl-up);
+}
+
+.nl-spark {
+	width: 100%;
+	max-width: 12rem;
+	height: 2.5rem;
+	margin-top: 0.75rem;
+	color: var(--basalt-series-1);
+}
+
+.nl-meter {
+	width: 100%;
+	max-width: 9rem;
+	height: 6px;
+	margin-top: auto;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--nl-track);
+}
+.nl-pulse-fig .nl-meter {
+	margin-top: 1.1rem;
+}
+.nl-meter-fill {
+	display: block;
+	width: var(--nl-fill, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-2);
+	transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* The next send: a soft tile in the primary color that opens its
+   quick view. */
+.nl-next {
+	position: relative;
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	margin: -0.25rem 0 -0.25rem 1.5rem;
+	padding: 0.9rem 1.1rem;
+	border: 1px solid var(--basalt-hue-border);
+	border-radius: 12px;
+	overflow: hidden;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+}
+.nl-next:hover {
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.nl-next:focus {
+	outline: 0;
+}
+.nl-next:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.nl-next[hidden] {
+	display: none;
+}
+.nl-next-label {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+}
+.nl-next-when {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.nl-next-subject {
+	max-width: 100%;
+	overflow: hidden;
+	font-size: 0.9rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.nl-next-to {
+	font-size: 0.8rem;
+	color: var(--nl-quiet);
+}
+
+@container (max-width: 1000px) {
+	.nl-pulse-grid {
+		row-gap: 1.25rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.nl-next {
+		grid-column: 1 / -1;
+		margin: 0;
+	}
+}
+@container (max-width: 560px) {
+	.nl-pulse-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.nl-pulse-fig:nth-child(3) {
+		grid-column: 1 / -1;
+		padding-left: 0;
+		padding-top: 1.25rem;
+		border-left: 0;
+		border-top: 1px solid var(--nl-line);
+	}
+	.nl-pulse-value {
+		font-size: 1.45rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.nl-pulse.card {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The table card */
+.nl-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.nl-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.nl-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.nl-card-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	color: var(--nl-quiet);
+}
+.nl-card-sub:empty {
+	display: none;
+}
+
+.nl-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.1rem var(--basalt-pad-x) 1.25rem;
+}
+.nl-count {
+	margin-left: 0.2rem;
+	font-weight: 600;
+}
+.nl-search {
+	position: relative;
+	flex: 0 1 18rem;
+	min-width: 12rem;
+}
+.nl-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--nl-quiet);
+	pointer-events: none;
+}
+.nl-search .form-control {
+	padding-left: 2.4rem;
+}
+
+.nl-table-wrap {
+	border-top: 1px solid var(--nl-line);
+}
+.nl-table-wrap[hidden] {
+	display: none;
+}
+.nl-table {
+	--bs-table-bg: transparent;
+	table-layout: auto;
+}
+.nl-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.75rem;
+	border-color: var(--nl-line);
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.nl-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.nl-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+}
+.nl-table thead th {
+	padding-top: calc(var(--basalt-pad-row-y) / 2);
+	padding-bottom: calc(var(--basalt-pad-row-y) / 2);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--nl-quiet);
+}
+.nl-table th:nth-child(2) {
+	width: 8.5rem;
+}
+.nl-table th:nth-child(3) {
+	width: 6.5rem;
+}
+.nl-table th:nth-child(4) {
+	width: 8rem;
+}
+.nl-table th:nth-child(5) {
+	width: 7rem;
+}
+.nl-table th:nth-child(6) {
+	width: 6.5rem;
+}
+.nl-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.nl-table tbody tr[data-id] {
+	cursor: pointer;
+}
+.nl-table tbody tr[data-id]:hover > * {
+	background: var(--basalt-wash);
+}
+
+.nl-subject {
+	display: block;
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.nl-subject:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.nl-subject:focus {
+	outline: 0;
+}
+.nl-subject:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.nl-meta {
+	display: flex;
+	gap: 0.1rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--nl-quiet);
+}
+.nl-aud {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.nl-aud::before {
+	content: "";
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--nl-tone);
+}
+
+.nl-date {
+	display: block;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.nl-time {
+	display: block;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--nl-quiet);
+}
+.nl-num {
+	text-align: right;
+	white-space: nowrap;
+}
+.nl-col-rev {
+	font-weight: 650;
+}
+.nl-open {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.nl-open-bar {
+	display: block;
+	width: 4rem;
+	height: 4px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--nl-track);
+}
+.nl-open-bar > span {
+	display: block;
+	width: var(--nl-fill, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-2);
+}
+.nl-table td.nl-pending {
+	padding-left: 1.5rem;
+	font-size: 0.85rem;
+	color: var(--nl-quiet);
+}
+.nl-pending .bi {
+	margin-right: 0.4rem;
+}
+.nl-table td.nl-col-act {
+	text-align: right;
+}
+
+.nl-empty {
+	max-width: 30rem;
+	margin: 1.5rem auto 2rem;
+	text-align: center;
+}
+.nl-empty .basalt-empty-actions {
+	justify-content: center;
+}
+
+/* A slimmer card: the status column steps aside, since each row
+   already says it (figures, "Goes out in 4 days" or "Edited Oct 8"). */
+@container (max-width: 900px) {
+	.nl-table .nl-col-status,
+	.nl-table th:nth-child(2) {
+		display: none;
+	}
+}
+
+/* Too narrow for the table: each newsletter becomes a small record.
+   Subject on top, then the status, date and row icons, then the
+   figures on one line, or what happens next. */
+@container (max-width: 720px) {
+	.nl-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.nl-table,
+	.nl-table tbody {
+		display: block;
+		width: 100%;
+	}
+	.nl-table tbody tr {
+		display: grid;
+		gap: 0.6rem 1rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas: "name name name" "status date act" "figs figs figs";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--nl-line);
+	}
+	.nl-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.nl-table > :not(caption) > * > *,
+	.nl-table > :not(caption) > * > :first-child,
+	.nl-table > :not(caption) > * > :last-child {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+	.nl-table tbody tr[data-id]:hover > * {
+		background: transparent;
+	}
+	.nl-table tbody tr[data-id]:hover {
+		background: var(--basalt-wash);
+	}
+	.nl-table .nl-col-name {
+		grid-area: name;
+	}
+	.nl-table .nl-col-status {
+		display: block;
+		grid-area: status;
+	}
+	.nl-table .nl-col-date {
+		display: flex;
+		gap: 0.5rem;
+		grid-area: date;
+		align-items: baseline;
+	}
+	.nl-table .nl-col-date .nl-date {
+		font-size: 0.85rem;
+	}
+	.nl-table .nl-col-act {
+		grid-area: act;
+	}
+	.nl-table td.nl-pending {
+		grid-area: figs;
+		padding: 0;
+		text-align: left;
+	}
+	.nl-table tr.is-sent {
+		grid-template-areas: "name name name" "status date act" "open open rev";
+	}
+	.nl-table .nl-col-open {
+		grid-area: open;
+		font-size: 0.9rem;
+		text-align: left;
+	}
+	.nl-table .nl-col-open .nl-open {
+		gap: 0.6rem;
+		flex-direction: row;
+		align-items: center;
+	}
+	.nl-table .nl-col-open .nl-open::before {
+		content: "Opened";
+		font-size: 0.8rem;
+		color: var(--nl-quiet);
+	}
+	.nl-table .nl-col-rev {
+		grid-area: rev;
+		font-size: 0.9rem;
+		text-align: right;
+	}
+	.nl-table .nl-col-rev::before {
+		content: "Revenue ";
+		font-weight: 400;
+		font-size: 0.8rem;
+		color: var(--nl-quiet);
+	}
+}
+/* On a phone an unsent issue keeps its subject, audience, status and date;
+   the countdown or last edit under them waits in the issue's panel. */
+@media (max-width: 575.98px) {
+	.nl-table tbody tr:not(.is-sent) {
+		grid-template-areas: "name name name" "status date act";
+	}
+	.nl-table td.nl-pending {
+		display: none;
+	}
+}
+@container (max-width: 560px) {
+	.nl-card-head,
+	.nl-toolbar,
+	.nl-table tbody tr {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.nl-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+}
+
+/* Quick view */
+.nl-drawer .offcanvas-body {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+.nl-r-state {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.nl-r-state-text {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.nl-r-h {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.nl-r-quiet {
+	color: var(--nl-quiet);
+}
+
+/* A small card of the email itself: the hero photo and headline. */
+.nl-mini {
+	border: 1px solid var(--nl-line);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.nl-mini-img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 32 / 15;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.nl-mini-text {
+	padding: 0.9rem 1rem 1rem;
+}
+.nl-mini-head {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.nl-mini-pre {
+	margin: 0.25rem 0 0;
+	font-size: 0.85rem;
+	color: var(--nl-quiet);
+}
+
+.nl-r-figs {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+}
+.nl-r-figs > div {
+	padding: 0.8rem 0.9rem;
+	border-radius: 10px;
+	background: var(--basalt-plane-alt);
+}
+.nl-r-figs dt {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--nl-quiet);
+}
+.nl-r-figs dd {
+	margin: 0;
+}
+.nl-r-figs-value {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 1.25rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.nl-r-figs-note {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--nl-quiet);
+}
+
+.nl-r-links {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.nl-r-links li {
+	display: grid;
+	gap: 0.3rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	font-size: 0.86rem;
+}
+.nl-r-links-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.nl-r-links-n {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.nl-r-links-bar {
+	grid-column: 1 / -1;
+	height: 5px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--nl-track);
+}
+.nl-r-links-bar > span {
+	display: block;
+	width: var(--nl-fill, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-1);
+}
+
+.nl-r-facts {
+	display: grid;
+	gap: 0.65rem 1rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+	margin: 0;
+	font-size: 0.86rem;
+}
+.nl-r-facts dt {
+	font-weight: 400;
+	color: var(--nl-quiet);
+}
+.nl-r-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.nl-meter-fill,
+	.nl-next {
+		transition: none;
+	}
+}

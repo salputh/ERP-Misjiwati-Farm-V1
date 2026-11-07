@@ -1,0 +1,784 @@
+/**
+ * Buttons that do more than Bootstrap's: tinted soft fills, square icon
+ * buttons, numbers and corner dots, shortcut keys, pressed toggles, copy,
+ * self-reporting loaders, a segmented switch, a floating speed dial and a
+ * two-step confirm, plus the small refresh and icon buttons card headers
+ * use. They appear in that order on buttons.html (loaders also on
+ * loaders.html). Their behavior comes from basalt.js: basaltButtonState
+ * and the data-basalt-confirm, -segmented, -speed-dial, -copy and -shortcut
+ * hooks.
+ */
+
+@use "sass:map";
+@use "sass:meta";
+
+/* Bootstrap's button height for a given vertical padding, used to make an
+   icon-only button exactly as wide as it is tall. */
+@function button-side($padding) {
+	@return calc(1.5em + #{$padding} + 2px);
+}
+
+/* Icon and label laid out on one line, optionally centered as a unit. */
+@mixin icon-row($gap: 0.4rem, $center: true) {
+	display: inline-flex;
+	align-items: center;
+	@if $center {
+		justify-content: center;
+	}
+	gap: $gap;
+}
+
+/* A single glyph or number centered in a fixed box. */
+@mixin glyph-box {
+	display: inline-grid;
+	place-items: center;
+}
+
+/* What changes for visitors who asked their system for less motion. */
+@mixin less-motion {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+$danger-ink: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+$danger-solid: color-mix(in srgb, var(--basalt-danger) 76%, var(--basalt-copy));
+$raised: 0 1px 2px color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+$bounce: cubic-bezier(0.3, 0.9, 0.3, 1.2);
+
+/* Soft tones: the token the tint is mixed from, the share it leans toward
+   the copy for the label, and, where the default 14% / 22% wash is too pale
+   or too loud, its own resting and hover strength. */
+$soft-tones: (
+	primary: (
+		base: var(--basalt-hue),
+		ink: 56%,
+	),
+	secondary: (
+		base: var(--basalt-copy),
+		ink: var(--basalt-copy-body),
+		rest: 7%,
+		hover: 12%,
+	),
+	success: (
+		base: var(--basalt-success),
+		ink: 46%,
+		rest: 16%,
+		hover: 24%,
+	),
+	danger: (
+		base: var(--basalt-danger),
+		ink: 56%,
+	),
+	warning: (
+		base: var(--basalt-warning),
+		ink: 42%,
+		rest: 18%,
+		hover: 26%,
+	),
+	info: (
+		base: var(--basalt-flare),
+		ink: 42%,
+		rest: 18%,
+		hover: 26%,
+	),
+);
+
+/* A soft button is a wash of its tone with a darker label. It has no edge
+   until pressed, when a faint one appears. */
+[class*="btn-soft-"] {
+	--bs-btn-color: var(--btn-soft-text);
+	--bs-btn-hover-color: var(--btn-soft-text);
+	--bs-btn-active-color: var(--btn-soft-text);
+	--bs-btn-bg: color-mix(in srgb, var(--btn-soft-tone) var(--btn-soft-rest, 14%), transparent);
+	--bs-btn-hover-bg: color-mix(in srgb, var(--btn-soft-tone) var(--btn-soft-hover, 22%), transparent);
+	--bs-btn-active-bg: color-mix(in srgb, var(--btn-soft-tone) var(--btn-soft-hover, 22%), transparent);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: transparent;
+	--bs-btn-active-border-color: color-mix(in srgb, var(--btn-soft-tone) 40%, transparent);
+	font-weight: 600;
+}
+@each $tone, $spec in $soft-tones {
+	$base: map.get($spec, base);
+	$ink: map.get($spec, ink);
+
+	.btn-soft-#{$tone} {
+		--btn-soft-tone: #{$base};
+		@if meta.type-of($ink) == number {
+			--btn-soft-text: color-mix(in srgb, #{$base} #{$ink}, var(--basalt-copy));
+		} @else {
+			--btn-soft-text: #{$ink};
+		}
+		@if map.has-key($spec, rest) {
+			--btn-soft-rest: #{map.get($spec, rest)};
+			--btn-soft-hover: #{map.get($spec, hover)};
+		}
+	}
+}
+
+/* Square buttons hold one icon and keep equal sides at every size. */
+.btn-square {
+	width: button-side(0.75rem);
+	height: button-side(0.75rem);
+	padding: 0;
+	@include icon-row(null);
+}
+.btn-sm.btn-square {
+	width: button-side(0.5rem);
+	height: button-side(0.5rem);
+}
+.btn-lg.btn-square {
+	width: button-side(1rem);
+	height: button-side(1rem);
+}
+
+/* A count rides in its own segment behind a divider. */
+.btn-count {
+	@include icon-row($center: false);
+
+	.bi + span {
+		margin-right: 0.4rem;
+	}
+}
+.btn-count-num {
+	margin-left: 0.2rem;
+	padding-left: 0.6rem;
+	border-left: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+/* A badge sits on the top corner of an icon button, ringed in the surface
+   color so it lifts off whatever is under it. */
+.btn-badge {
+	position: relative;
+	overflow: visible;
+}
+.btn-badge-num,
+.btn-badge-dot {
+	position: absolute;
+	top: 0;
+	right: 0;
+	translate: 40% -40%;
+	border-radius: 999px;
+	border: 2px solid var(--basalt-plane);
+	color: var(--basalt-plane);
+	background: $danger-solid;
+}
+.btn-badge-num {
+	min-width: 1.25rem;
+	height: 1.25rem;
+	padding: 0 0.3rem;
+	font-size: 0.67rem;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	@include glyph-box;
+}
+.btn-badge-dot {
+	translate: 25% -25%;
+	width: 0.75rem;
+	height: 0.75rem;
+}
+
+/* A shortcut button prints its key in a small outlined cap and gives a
+   quick press when the key is used. */
+.btn-kbd {
+	@include icon-row($center: false);
+
+	&.is-fired {
+		animation: btn-press 260ms ease;
+		@include less-motion {
+			animation: none;
+		}
+	}
+}
+.btn-kbd-key {
+	min-width: 1.35rem;
+	height: 1.35rem;
+	margin-left: 0.2rem;
+	padding: 0 0.3rem;
+	border-radius: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+	font:
+		600 0.71rem/1 "Chivo Mono",
+		monospace;
+	color: inherit;
+	background: transparent;
+	box-shadow: none;
+	@include glyph-box;
+}
+@keyframes btn-press {
+	40% {
+		scale: 0.94;
+	}
+	100% {
+		scale: 1;
+	}
+}
+
+/* Toggles pair with Bootstrap's data-bs-toggle="button" and swap in a
+   second label and icon while pressed. */
+.btn-toggle {
+	@include icon-row;
+}
+.btn-toggle-off,
+.btn-toggle-on {
+	@include icon-row($center: false);
+}
+.btn-toggle-on,
+.btn-toggle.active .btn-toggle-off {
+	display: none;
+}
+.btn-toggle.active {
+	.btn-toggle-on {
+		display: inline-flex;
+
+		.bi {
+			animation: btn-pop 320ms cubic-bezier(0.2, 0.9, 0.3, 1.5);
+			@include less-motion {
+				animation: none;
+			}
+		}
+	}
+}
+/* An icon-only toggle stays understated when pressed; its icon tells the state. */
+.btn-toggle.btn-outline-secondary.active {
+	border-color: color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	color: var(--basalt-copy);
+	background-color: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.btn-toggle.active .bi-star-fill {
+	color: var(--basalt-warning);
+}
+.btn-toggle.active .bi-heart-fill {
+	color: var(--basalt-danger);
+}
+@keyframes btn-pop {
+	0% {
+		transform: scale(0.4);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* Copy buttons stack both faces in one cell, so the check and "Copied"
+   take over without the button changing width. */
+.btn-copy {
+	display: inline-grid;
+}
+.btn-copy-idle,
+.btn-copy-done {
+	grid-area: 1 / 1;
+	white-space: nowrap;
+	@include icon-row;
+	transition:
+		opacity 170ms ease,
+		transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1.3),
+		visibility 170ms;
+	@include less-motion {
+		transition: none;
+	}
+}
+.btn-copy-done,
+.btn-copy.is-copied .btn-copy-idle {
+	transform: scale(0.7);
+	visibility: hidden;
+	opacity: 0;
+}
+.btn-copy.is-copied .btn-copy-done {
+	transform: none;
+	visibility: visible;
+	opacity: 1;
+}
+.btn-copy-icon {
+	width: button-side(0.5rem);
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* Loading buttons report their own progress, set by
+   basaltButtonState(btn, state, label) as is-loading, is-success or
+   is-error. The stacked form keeps one span per state (idle, busy, done,
+   fail) in a single grid cell so the width holds steady; the swap form
+   has one icon slot and one label whose contents the script replaces. */
+.btn-loading {
+	position: relative;
+	display: inline-grid;
+	isolation: isolate;
+	overflow: hidden;
+
+	&.is-loading {
+		cursor: progress;
+	}
+	.spinner-border-sm {
+		--bs-spinner-border-width: 0.15em;
+		width: 0.95rem;
+		height: 0.95rem;
+		color: inherit;
+	}
+}
+.btn-loading-state {
+	grid-area: 1 / 1;
+	white-space: nowrap;
+	@include icon-row(0.5rem);
+	transition:
+		opacity 200ms ease,
+		transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+		visibility 200ms;
+	@include less-motion {
+		transition: none;
+	}
+}
+/* Spans that are not showing wait below; the idle one leaves upward. */
+.btn-loading-state:not(.btn-loading-idle),
+.btn-loading:is(.is-loading, .is-success, .is-error) .btn-loading-idle {
+	transform: translateY(0.7em);
+	visibility: hidden;
+	opacity: 0;
+}
+.btn-loading:is(.is-loading, .is-success, .is-error) .btn-loading-idle {
+	transform: translateY(-0.7em);
+}
+.btn-loading.is-loading .btn-loading-busy,
+.btn-loading.is-success .btn-loading-done,
+.btn-loading.is-error .btn-loading-fail {
+	transform: none;
+	visibility: visible;
+	opacity: 1;
+}
+.btn-loading-num {
+	min-width: 3.6ch;
+	text-align: left;
+	font-variant-numeric: tabular-nums;
+}
+.btn-loading.is-success .btn-loading-done .bi {
+	animation: btn-pop 360ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
+	@include less-motion {
+		animation: none;
+	}
+}
+.btn-loading.is-error {
+	animation: btn-shake 380ms ease;
+	@include less-motion {
+		animation: none;
+	}
+}
+.btn-loading-swap {
+	@include icon-row(0.5rem);
+}
+.btn-loading-icon {
+	width: 1rem;
+	height: 1rem;
+	@include glyph-box;
+	flex-shrink: 0;
+
+	.spinner-border {
+		--bs-spinner-width: 1rem;
+		--bs-spinner-height: 1rem;
+		--bs-spinner-border-width: 0.15em;
+		color: currentColor;
+	}
+}
+.btn-loading-swap.is-success .btn-loading-icon {
+	animation: btn-pop-in 320ms cubic-bezier(0.3, 1.5, 0.5, 1);
+	@include less-motion {
+		animation: none;
+	}
+}
+/* A failed swap button turns the danger tone and stays that way on hover. */
+.btn-loading-swap.is-error {
+	--bs-btn-color: #{$danger-ink};
+	--bs-btn-border-color: var(--basalt-danger);
+	--bs-btn-hover-color: #{$danger-ink};
+	--bs-btn-hover-border-color: var(--basalt-danger);
+	--bs-btn-hover-bg: var(--basalt-danger-soft);
+	background-color: var(--basalt-danger-soft);
+
+	&:focus-visible,
+	&:hover {
+		color: $danger-ink;
+	}
+}
+/* The progress form fills in behind its label as the work advances. */
+.btn-loading-progress {
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		transform: scaleX(var(--btn-progress, calc(var(--value, 0) / 100)));
+		transform-origin: left center;
+		background: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+		transition: transform 180ms linear;
+		@include less-motion {
+			transition: none;
+		}
+	}
+	&:not(.is-loading)::before {
+		transform: scaleX(0);
+	}
+}
+@keyframes btn-pop-in {
+	from {
+		transform: scale(0.4);
+		opacity: 0;
+	}
+}
+@keyframes btn-shake {
+	0%,
+	100% {
+		translate: 0;
+	}
+	20% {
+		translate: -4px;
+	}
+	40% {
+		translate: 4px;
+	}
+	60% {
+		translate: -3px;
+	}
+	80% {
+		translate: 2px;
+	}
+}
+
+/* The segmented switch draws a row of btn-check radios as one control.
+   Once the script marks it is-ready it slides a thumb under the choice;
+   until then the checked option fills by itself. */
+.basalt-segmented {
+	--seg-x: 0px;
+	--seg-w: 0px;
+	position: relative;
+	display: inline-flex;
+	gap: 2px;
+	align-items: stretch;
+	isolation: isolate;
+	max-width: 100%;
+	padding: 3px;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+}
+.basalt-segmented-option {
+	min-height: 2.25rem;
+	/* The sides narrow on a phone so four or five choices still fit. */
+	padding: 0.3rem clamp(0.6rem, 3.4vw, 1rem);
+	border-radius: 9px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	@include icon-row(0.4rem);
+	position: relative;
+	z-index: 1;
+	cursor: pointer;
+	user-select: none;
+	transition:
+		color 180ms ease,
+		background-color 180ms ease;
+	@include less-motion {
+		transition: none;
+	}
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.btn-check {
+	&:checked + .basalt-segmented-option {
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: $raised;
+	}
+	&:focus-visible:not(:checked) + .basalt-segmented-option {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.basalt-segmented-thumb {
+	position: absolute;
+	top: 3px;
+	bottom: 3px;
+	left: 0;
+	z-index: 0;
+	translate: var(--seg-x) 0;
+	width: var(--seg-w);
+	border-radius: 9px;
+	background: var(--basalt-plane);
+	opacity: 0;
+	box-shadow:
+		$raised,
+		0 2px 8px color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+	pointer-events: none;
+}
+.basalt-segmented.is-ready {
+	.basalt-segmented-thumb {
+		opacity: 1;
+	}
+
+	&.is-moving .basalt-segmented-thumb {
+		transition:
+			translate 280ms cubic-bezier(0.3, 0.9, 0.3, 1),
+			width 280ms cubic-bezier(0.3, 0.9, 0.3, 1);
+		@include less-motion {
+			transition: none;
+		}
+	}
+	.btn-check:checked + .basalt-segmented-option {
+		background: transparent;
+		box-shadow: none;
+	}
+}
+.basalt-segmented-sm .basalt-segmented-option {
+	min-height: 1.9rem;
+	padding: 0.25rem clamp(0.5rem, 2.6vw, 0.75rem);
+	font-size: 0.8rem;
+}
+/* The block form fills a narrow space but stops short of stretching its
+   options across a wide one. */
+.basalt-segmented-block {
+	display: flex;
+	max-width: 28rem;
+
+	.basalt-segmented-option {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+}
+
+/* The speed dial is a round toggle with a column of labeled actions that
+   rise above it, one after another, when it opens. */
+.basalt-speed-dial {
+	z-index: 5;
+	display: inline-flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.basalt-speed-dial-fixed {
+	position: fixed;
+	right: 1.5rem;
+	bottom: 1.5rem;
+	z-index: 1030;
+}
+.basalt-speed-dial-toggle {
+	width: 3.25rem;
+	height: 3.25rem;
+	padding: 0;
+	border-radius: 50%;
+	font-size: 1.35rem;
+	box-shadow: 0 6px 18px color-mix(in srgb, var(--basalt-hue) 32%, transparent);
+	@include glyph-box;
+
+	.bi {
+		transition: transform 240ms $bounce;
+		@include less-motion {
+			transition: none;
+		}
+	}
+	&[aria-expanded="true"] .bi {
+		transform: rotate(45deg);
+	}
+}
+.basalt-speed-dial-actions {
+	display: flex;
+	visibility: hidden;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.basalt-speed-dial-action {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	color: var(--basalt-copy);
+	background: none;
+	opacity: 0;
+	@include icon-row(0.6rem, $center: false);
+	translate: 0 0.6rem;
+	cursor: pointer;
+	transition:
+		opacity 180ms ease,
+		translate 210ms $bounce;
+	@include less-motion {
+		transition: none;
+	}
+}
+.basalt-speed-dial.is-open {
+	.basalt-speed-dial-actions {
+		visibility: visible;
+	}
+	.basalt-speed-dial-action {
+		translate: 0 0;
+		opacity: 1;
+	}
+
+	/* The action nearest the toggle moves first and each one above waits 40ms longer. */
+	@for $step from 2 through 4 {
+		.basalt-speed-dial-action:nth-last-child(#{$step}) {
+			transition-delay: ($step - 1) * 40ms;
+		}
+	}
+}
+.basalt-speed-dial-label {
+	padding: 0.3rem 0.7rem;
+	border-radius: 8px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.basalt-speed-dial-icon {
+	width: 2.5rem;
+	height: 2.5rem;
+	margin-right: 0.375rem;
+	border-radius: 50%;
+	border: 1px solid var(--basalt-edge-strong);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	@include glyph-box;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+}
+/* Hover or keyboard focus tints the icon; the keyboard ring goes around
+   the label instead of the whole row. */
+.basalt-speed-dial-action:hover .basalt-speed-dial-icon,
+.basalt-speed-dial-action:focus-visible .basalt-speed-dial-icon {
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.basalt-speed-dial-action:focus-visible {
+	outline: none;
+
+	.basalt-speed-dial-label {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Two-step confirm: the first click asks, and a second one within
+   data-confirm-ms (3000 by default) fires 'basalt:confirm'. A bar along
+   the bottom runs down the time left. */
+.btn-confirm {
+	@include icon-row;
+	position: relative;
+	overflow: hidden;
+
+	&::after {
+		content: "";
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		transform: scaleX(0);
+		transform-origin: left center;
+		height: 3px;
+		background: currentColor;
+		opacity: 0.55;
+	}
+}
+.btn-confirm-idle,
+.btn-confirm-ask {
+	white-space: nowrap;
+	@include icon-row($center: false);
+}
+.btn-confirm-ask,
+.btn-confirm.is-asking .btn-confirm-idle {
+	display: none;
+}
+.btn-confirm.is-asking {
+	.btn-confirm-ask {
+		display: inline-flex;
+		animation: btn-pop 240ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+		@include less-motion {
+			animation: none;
+		}
+	}
+	&.btn {
+		border-color: $danger-solid;
+		color: var(--basalt-plane);
+		background-color: $danger-solid;
+	}
+	&::after {
+		animation: btn-confirm-timer var(--btn-confirm-ms, 3000ms) linear forwards;
+		/* The timeout still counts down; only the bar holds still. */
+		@include less-motion {
+			transform: scaleX(1);
+			animation: none;
+		}
+	}
+}
+@keyframes btn-confirm-timer {
+	from {
+		transform: scaleX(1);
+	}
+	to {
+		transform: scaleX(0);
+	}
+}
+.btn-confirm-icon:not(.is-asking) {
+	width: button-side(0.5rem);
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* A refresh button turns its arrow while the panel beside it reloads; the
+   caller sets is-spinning and aria-busy for as long as that takes. */
+.basalt-refresh {
+	.bi {
+		display: inline-block;
+	}
+
+	&.is-spinning {
+		cursor: progress;
+
+		.bi {
+			animation: basalt-turn 0.8s linear infinite;
+			@include less-motion {
+				animation-duration: 1.6s;
+			}
+		}
+	}
+}
+@keyframes basalt-turn {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* The bordered icon button card headers use for refresh and similar tools. */
+.basalt-icon-btn {
+	width: 2.25rem;
+	height: 2.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	@include glyph-box;
+	flex-shrink: 0;
+	transition:
+		background-color 150ms ease,
+		color 150ms ease,
+		border-color 150ms ease;
+	@include less-motion {
+		transition: none;
+	}
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}

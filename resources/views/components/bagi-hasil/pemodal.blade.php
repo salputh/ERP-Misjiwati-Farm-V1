@@ -1,21 +1,21 @@
 @props(['pemodal', 'sisaAkhir'])
 
 {{-- Rincian bagi hasil keuntungan atau pengembalian modal: sisa akhir dibagi menurut porsi tiap pemodal. --}}
-<div class="col-12 order-4 mb-25">
-    <div class="card card-default card-md h-100">
-        <div class="card-header">
-            <h6>Bagi hasil pemodal</h6>
-            <div class="card-extra fs-13 color-light tanpa-kapital">keuntungan atau pengembalian modal</div>
-        </div>
-        <div class="card-body">
-            <div class="table4 table-responsive">
-                <table class="table tabel-laporan text-nowrap mb-0">
+<div class="col-12 order-4 mb-4">
+    <section class="card basalt-box db-card h-100">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Bagi hasil pemodal</h2></div>
+            <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">keuntungan atau pengembalian modal</div>
+</header>
+            <div class="tabel-data table-responsive">
+                <table class="table tabel-laporan text-nowrap mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">No.</span></th>
-                            <th><span class="userDatatable-title">Pemodal</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Porsi</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Jumlah (Rp)</span></th>
+                        <tr>
+                            <th>No.</th>
+                            <th>Pemodal</th>
+                            <th class="text-end">Porsi</th>
+                            <th class="text-end">Jumlah (Rp)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -24,11 +24,11 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $satu['nama'] }}</td>
                                 <td class="text-end recording-masukan">{{ \App\Support\Format::persen($satu['persen']) }}</td>
-                                <td @class(['text-end', 'color-danger' => $satu['jumlah'] < 0])>@kurung($satu['jumlah'])</td>
+                                <td @class(['text-end', 'text-danger' => $satu['jumlah'] < 0])>@kurung($satu['jumlah'])</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="color-gray">Porsi pemodal kandang ini belum diisi.</td>
+                                <td colspan="4" class="text-body-secondary">Porsi pemodal kandang ini belum diisi.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -36,14 +36,15 @@
                         <tr>
                             <th colspan="2">Jumlah</th>
                             <th class="text-end">{{ \App\Support\Format::persen($pemodal['persen']) }}</th>
-                            <th @class(['text-end', 'color-danger' => $pemodal['total'] < 0])>@kurung($pemodal['total'])</th>
+                            <th @class(['text-end', 'text-danger' => $pemodal['total'] < 0])>@kurung($pemodal['total'])</th>
                         </tr>
                     </tfoot>
                 </table>
             </div>
-            <p class="fs-13 color-light mt-15 mb-0">
+            <p class="small text-body-secondary mt-3 mb-0">
                 Tiap pemodal menerima porsinya dari sisa akhir Rp @kurung($sisaAkhir), dibulatkan ke rupiah; pemodal terakhir menerima sisanya supaya jumlahnya tepat.
             </p>
-        </div>
-    </div>
+        
+</div>
+</section>
 </div>

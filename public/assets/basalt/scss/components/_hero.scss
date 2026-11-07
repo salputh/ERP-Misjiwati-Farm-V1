@@ -1,0 +1,1116 @@
+/**
+ * The page header card, .basalt-hero, and its quieter sibling .basalt-pagehead.
+ *
+ * A hero opens a page with up to four optional pieces: an icon, the page
+ * name with a sentence about it, the page's buttons, and a short run of
+ * headline numbers. One modifier class chooses the look:
+ *
+ *   .basalt-hero-ink     deep primary panel with light text
+ *   .basalt-hero-glow    surface card lit by a palette glow along the top
+ *   .basalt-hero-aurora  text on the left, a drifting palette panel on the right
+ *   .basalt-hero-tint    washed in the palette, numbers on a small white card
+ *   .basalt-hero-spot    plain card with a light that trails the pointer
+ *   .basalt-hero-detail  no card at all: back link, record name, one line
+ *
+ * .basalt-hero-compact can join any card look on list, table and log pages
+ * so the data starts higher. headers.html shows every combination;
+ * basalt.js drives the spotlight through [data-basalt-hero-spot].
+ *
+ *   <header class="basalt-hero basalt-hero-tint">
+ *     <div class="basalt-hero-body">
+ *       <span class="basalt-hero-icon" aria-hidden="true"><i class="bi bi-wallet2"></i></span>
+ *       <h1 class="basalt-hero-title">Payouts</h1>
+ *       <p class="basalt-hero-desc">...</p>
+ *     </div>
+ *     <div class="basalt-hero-actions">...</div>
+ *     <dl class="basalt-hero-figures">
+ *       <div class="basalt-hero-figure">
+ *         <dt class="basalt-hero-label">settled</dt>
+ *         <dd class="basalt-hero-value">$12.6k</dd>
+ *       </div>
+ *     </dl>
+ *   </header>
+ *
+ * The aurora look puts its figures inside <div class="basalt-hero-aside">;
+ * the detail look starts its body with <a class="basalt-hero-back">.
+ * Turning gradients off flattens every look, and reduced motion stills it.
+ */
+
+@use "sass:list";
+
+$hero-wide: 1199.98px;
+$hero-tablet: 991.98px;
+$hero-phone: 767.98px;
+
+/* Applies the nested rules at and below the given width. */
+@mixin hero-below($width) {
+	@media (max-width: $width) {
+		@content;
+	}
+}
+
+/* Applies the nested rules when the appearance panel has gradients off. */
+@mixin hero-flat {
+	:root[data-basalt-gradients="off"] & {
+		@content;
+	}
+}
+
+/* Applies the nested rules for visitors who ask for less motion. */
+@mixin hero-still {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+/* Three blend colors feed the aurora panel, the glow and the tint wash.
+   Every palette starts from its first chart color; the second and third
+   default to series 3 and 5, and the palettes listed in the map pick a
+   pair that sits better beside the first. Mono has no third hue of its
+   own, so its third color is a mix of the first two. */
+:root {
+	--basalt-hero-g1: var(--basalt-series-1);
+	--basalt-hero-g2: var(--basalt-series-3);
+	--basalt-hero-g3: var(--basalt-series-5);
+}
+
+$hero-blends: (
+	':root[data-basalt-palette="tide"]': (
+		7,
+		4,
+	),
+	':root[data-basalt-palette="verdant"]': (
+		2,
+		8,
+	),
+	':root[data-basalt-palette="mono"]': (
+		7,
+		null,
+	),
+	':root[data-basalt-palette="electric"], :root[data-basalt-palette="pastelpop"]': (
+		7,
+		2,
+	),
+	':root[data-basalt-palette="jewel"]': (
+		2,
+		7,
+	),
+);
+
+@each $roots, $pair in $hero-blends {
+	$second: list.nth($pair, 1);
+	$third: list.nth($pair, 2);
+	#{$roots} {
+		--basalt-hero-g1: var(--basalt-series-1);
+		--basalt-hero-g2: var(--basalt-series-#{$second});
+		@if $third {
+			--basalt-hero-g3: var(--basalt-series-#{$third});
+		} @else {
+			--basalt-hero-g3: color-mix(in srgb, var(--basalt-series-1) 45%, var(--basalt-series-#{$second}));
+		}
+	}
+}
+
+/* The shared shell: a two-column grid with the text and buttons on top
+   and the figures across the bottom. */
+.basalt-hero {
+	--basalt-hero-fg: var(--basalt-copy);
+	--basalt-hero-muted: color-mix(in srgb, var(--basalt-copy-muted) 78%, var(--basalt-copy));
+	--basalt-hero-py: 1.75rem;
+	--basalt-hero-px: 2rem;
+	position: relative;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions" "figures figures";
+	isolation: isolate;
+	padding: var(--basalt-hero-py) var(--basalt-hero-px);
+	border: 1px solid var(--basalt-edge);
+	border-radius: 20px;
+	overflow: hidden;
+	color: var(--basalt-hero-fg);
+	background-color: var(--basalt-plane);
+
+	/* An open menu inside the header has to overlap the cards below it. */
+	&:has(.dropdown-menu.show) {
+		z-index: 1000;
+	}
+}
+
+.basalt-hero-body {
+	grid-area: body;
+	min-width: 0;
+}
+
+.basalt-hero-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	grid-area: actions;
+	align-self: start;
+	align-items: center;
+	margin-left: 1.5rem;
+}
+
+.basalt-hero-icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	margin-bottom: 0.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+}
+
+.basalt-hero-title {
+	margin: 0;
+	font-size: clamp(1.45rem, 1.05rem + 1.1vw, 1.85rem);
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.025em;
+	color: inherit;
+}
+
+.basalt-hero-desc {
+	max-width: 58ch;
+	margin: 0.4rem 0 0;
+	font-size: 0.95rem;
+	line-height: 1.5;
+	color: var(--basalt-hero-muted);
+}
+
+.basalt-hero-figures {
+	display: flex;
+	gap: 0.75rem 2.25rem;
+	flex-wrap: wrap;
+	grid-area: figures;
+	margin: 1.25rem 0 0;
+}
+
+/* Screen readers meet the label first; on screen it sits under the number. */
+.basalt-hero-figure {
+	display: flex;
+	flex-direction: column-reverse;
+}
+
+.basalt-hero-value {
+	margin: 0;
+	font-size: 1.3rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.01em;
+	color: inherit;
+}
+
+/* The markup keeps labels lower case; capitalizing them is a display choice. */
+.basalt-hero-label {
+	margin-top: 0.3rem;
+	font-size: 0.75rem;
+	font-weight: 400;
+	text-transform: capitalize;
+	white-space: nowrap;
+	color: var(--basalt-hero-muted);
+}
+
+/* Ink fills the card with a deep primary. Its panel color lives in
+   --basalt-hero-ink so the light button can borrow it for its label, and
+   the figures are split by thin vertical rules. */
+.basalt-hero-ink {
+	--basalt-hero-ink: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	--basalt-hero-fg: var(--basalt-plane);
+	--basalt-hero-muted: color-mix(in srgb, var(--basalt-hero-fg) 86%, transparent);
+	--basalt-hero-line: color-mix(in srgb, var(--basalt-hero-fg) 18%, transparent);
+	border-color: transparent;
+	background-color: var(--basalt-hero-ink);
+
+	[data-bs-theme="dark"] & {
+		--basalt-hero-ink: color-mix(in srgb, var(--basalt-hue) 32%, var(--basalt-plane));
+		--basalt-hero-fg: var(--basalt-copy);
+	}
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: repeating-linear-gradient(
+			135deg,
+			color-mix(in srgb, var(--basalt-hero-fg) 5%, transparent) 0 1px,
+			transparent 1px 14px
+		);
+		-webkit-mask-image: linear-gradient(90deg, transparent 40%, currentColor);
+		mask-image: linear-gradient(90deg, transparent 40%, currentColor);
+	}
+
+	@include hero-flat {
+		&::before {
+			content: none;
+		}
+	}
+
+	.basalt-hero-icon {
+		width: 2.75rem;
+		height: 2.75rem;
+		border: 1px solid color-mix(in srgb, var(--basalt-hero-fg) 22%, transparent);
+		border-radius: 14px;
+		background: color-mix(in srgb, var(--basalt-hero-fg) 12%, transparent);
+	}
+
+	.basalt-hero-figures {
+		gap: 0.75rem 0;
+		padding-top: 0.9rem;
+		border-top: 1px solid var(--basalt-hero-line);
+	}
+
+	.basalt-hero-figure {
+		margin-right: 2rem;
+		padding-right: 2rem;
+		border-right: 1px solid var(--basalt-hero-line);
+
+		&:last-child {
+			margin-right: 0;
+			padding-right: 0;
+			border-right: 0;
+		}
+	}
+
+	.btn-light {
+		--bs-btn-color: var(--basalt-hero-ink);
+		--bs-btn-bg: var(--basalt-hero-fg);
+		--bs-btn-border-color: var(--basalt-hero-fg);
+		--bs-btn-hover-color: var(--basalt-hero-ink);
+		--bs-btn-hover-bg: color-mix(in srgb, var(--basalt-hero-fg) 88%, var(--basalt-hero-ink));
+		--bs-btn-hover-border-color: transparent;
+		--bs-btn-active-color: var(--basalt-hero-ink);
+		--bs-btn-active-bg: color-mix(in srgb, var(--basalt-hero-fg) 80%, var(--basalt-hero-ink));
+		--bs-btn-active-border-color: transparent;
+	}
+
+	.btn-outline-light {
+		--bs-btn-color: var(--basalt-hero-fg);
+		--bs-btn-border-color: color-mix(in srgb, var(--basalt-hero-fg) 40%, transparent);
+		--bs-btn-hover-color: var(--basalt-hero-fg);
+		--bs-btn-hover-bg: color-mix(in srgb, var(--basalt-hero-fg) 10%, transparent);
+		--bs-btn-hover-border-color: color-mix(in srgb, var(--basalt-hero-fg) 60%, transparent);
+		--bs-btn-active-color: var(--basalt-hero-fg);
+		--bs-btn-active-bg: color-mix(in srgb, var(--basalt-hero-fg) 16%, transparent);
+		--bs-btn-active-border-color: color-mix(in srgb, var(--basalt-hero-fg) 60%, transparent);
+	}
+
+	@include hero-below($hero-phone) {
+		.basalt-hero-figure {
+			margin-right: 1.25rem;
+			padding-right: 1.25rem;
+		}
+	}
+}
+
+/* Glow keeps the ordinary card and lets a blurred palette light spill in
+   over the top edge. The icon shares a row with the title, and a dashed
+   rule separates the figures and buttons underneath. */
+.basalt-hero-glow {
+	--basalt-hero-py: 1.6rem;
+	grid-template-areas: "body body" "figures actions";
+	background-color: var(--basalt-plane);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: -120px;
+		right: 10%;
+		left: 10%;
+		z-index: -1;
+		height: 200px;
+		background: radial-gradient(
+			closest-side,
+			color-mix(in srgb, var(--basalt-hero-g1) 22%, transparent),
+			transparent
+		);
+		filter: blur(10px);
+	}
+
+	@include hero-flat {
+		&::before {
+			content: none;
+		}
+
+		.basalt-hero-icon {
+			background: var(--basalt-hue);
+		}
+	}
+
+	@include hero-still {
+		animation: none;
+	}
+
+	.basalt-hero-body {
+		display: grid;
+		column-gap: 1.1rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+	}
+
+	.basalt-hero-title,
+	.basalt-hero-desc {
+		grid-column: 1 / -1;
+	}
+
+	.basalt-hero-icon + .basalt-hero-title {
+		grid-column: 2;
+	}
+
+	.basalt-hero-icon {
+		width: 2.85rem;
+		height: 2.85rem;
+		margin: 0;
+		border-radius: 14px;
+		color: var(--basalt-on-hue);
+		background: linear-gradient(135deg, var(--basalt-hero-g1), var(--basalt-hero-g2));
+	}
+
+	.basalt-hero-desc {
+		margin-top: 0.6rem;
+	}
+
+	.basalt-hero-figures,
+	.basalt-hero-actions {
+		margin-top: 1.2rem;
+		padding-top: 0.9rem;
+		border-top: 1px dashed var(--basalt-edge-strong);
+	}
+
+	.basalt-hero-figures {
+		gap: 1rem 2.25rem;
+	}
+
+	.basalt-hero-actions {
+		align-self: stretch;
+		align-items: center;
+		justify-content: flex-end;
+		margin-left: 0;
+		padding-left: 1rem;
+	}
+
+	/* With no figures beside them, the buttons take the full row from the left. */
+	&:not(:has(> .basalt-hero-figures)) .basalt-hero-actions {
+		grid-column: 1 / -1;
+		justify-content: flex-start;
+		padding-left: 0;
+	}
+
+	@include hero-below($hero-phone) {
+		.basalt-hero-actions,
+		&:not(:has(> .basalt-hero-figures)) .basalt-hero-actions {
+			justify-content: flex-start;
+			margin-top: 1.1rem;
+			padding: 0;
+			border-top: 0;
+		}
+
+		&:not(:has(> .basalt-hero-figures)) .basalt-hero-actions {
+			margin-top: 1.4rem;
+		}
+	}
+}
+
+/* Aurora splits the card: the text on the left, and on the right a
+   colored aside that runs to the card's edges, with two blurred palette
+   blobs drifting behind the figures on their frosted tiles. */
+.basalt-hero-aurora {
+	--basalt-hero-py: 1.6rem;
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-areas: "body" "actions";
+
+	&:has(> .basalt-hero-aside) {
+		grid-template-columns: minmax(0, 1fr) minmax(260px, 38%);
+		grid-template-rows: auto auto 1fr;
+		grid-template-areas: "body aside" "actions aside" ". aside";
+	}
+
+	.basalt-hero-icon {
+		color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+	}
+
+	[data-bs-theme="dark"] & .basalt-hero-icon {
+		color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	}
+
+	.basalt-hero-actions {
+		justify-self: start;
+		margin: 1.1rem 0 0;
+	}
+
+	.basalt-hero-figures {
+		gap: 0.5rem;
+		flex-direction: column;
+		width: 100%;
+		margin: 0;
+	}
+
+	.basalt-hero-figure {
+		gap: 1rem;
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: space-between;
+		padding: 0.5rem 0.8rem;
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--basalt-plane) 88%, transparent);
+		-webkit-backdrop-filter: blur(10px);
+		backdrop-filter: blur(10px);
+	}
+
+	.basalt-hero-value {
+		font-size: 1.1rem;
+		color: var(--basalt-copy);
+	}
+
+	.basalt-hero-label {
+		margin: 0;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 60%, var(--basalt-copy));
+	}
+}
+
+.basalt-hero-aside {
+	position: relative;
+	z-index: 0;
+	display: flex;
+	grid-area: aside;
+	align-items: flex-end;
+	margin: calc(var(--basalt-hero-py) * -1) calc(var(--basalt-hero-px) * -1) calc(var(--basalt-hero-py) * -1) 2rem;
+	padding: 1.25rem;
+	overflow: hidden;
+	background-color: var(--basalt-hero-g1);
+
+	&::before,
+	&::after {
+		content: "";
+		position: absolute;
+		z-index: -1;
+		width: 140%;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		filter: blur(40px);
+	}
+
+	&::before {
+		top: -70%;
+		left: -60%;
+		background: var(--basalt-hero-g2);
+		animation: basalt-hero-drift 14s ease-in-out infinite alternate;
+	}
+
+	&::after {
+		right: -70%;
+		bottom: -80%;
+		background: var(--basalt-hero-g3);
+		opacity: 0.85;
+		animation: basalt-hero-drift 18s ease-in-out infinite alternate-reverse;
+	}
+
+	/* Flat mode shows the panel in the primary color with no blobs; reduced
+     motion keeps the blobs but stops their drift. */
+	@include hero-flat {
+		background-color: var(--basalt-hue);
+
+		&::before,
+		&::after {
+			content: none;
+		}
+	}
+
+	@include hero-still {
+		&::before,
+		&::after {
+			animation: none;
+		}
+	}
+}
+
+@keyframes basalt-hero-drift {
+	to {
+		transform: translate(18%, 14%) scale(1.1);
+	}
+}
+
+/* Below tablet width the aside drops under the text and bleeds to the
+   card's sides and bottom instead. */
+@include hero-below($hero-tablet) {
+	.basalt-hero-aurora:has(> .basalt-hero-aside) {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: none;
+		grid-template-areas: "body" "actions" "aside";
+	}
+
+	.basalt-hero-aside {
+		margin: 1.4rem calc(var(--basalt-hero-px) * -1) calc(var(--basalt-hero-py) * -1);
+	}
+}
+
+/* Tint washes the card in the three blend colors and stands the figures
+   in a white ledger card on the right, which moves under the text once
+   the screen narrows. */
+.basalt-hero-tint {
+	--basalt-hero-py: 1.6rem;
+	grid-template-rows: auto 1fr;
+	grid-template-areas: "body figures" "actions figures";
+	background-color: color-mix(in srgb, var(--basalt-hero-g1) 11%, var(--basalt-plane));
+	background-image: linear-gradient(
+		120deg,
+		color-mix(in srgb, var(--basalt-hero-g1) 13%, var(--basalt-plane)),
+		color-mix(in srgb, var(--basalt-hero-g2) 9%, var(--basalt-plane)) 60%,
+		color-mix(in srgb, var(--basalt-hero-g3) 10%, var(--basalt-plane))
+	);
+
+	@include hero-flat {
+		background-color: var(--basalt-plane);
+		background-image: none;
+	}
+
+	.basalt-hero-icon {
+		border-radius: 50%;
+		background: var(--basalt-plane);
+		box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--basalt-copy) 40%, transparent);
+	}
+
+	.basalt-hero-actions {
+		align-self: start;
+		justify-self: start;
+		margin: 1rem 0 0;
+	}
+
+	.basalt-hero-figures {
+		gap: 0;
+		flex-wrap: nowrap;
+		align-self: end;
+		margin: 0 0 0 2.5rem;
+		border-radius: 14px;
+		background: var(--basalt-plane);
+		box-shadow: 0 10px 28px -18px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+	}
+
+	.basalt-hero-figure {
+		padding: 0.7rem 1.1rem;
+	}
+
+	.basalt-hero-figure + .basalt-hero-figure {
+		border-left: 1px solid var(--basalt-edge);
+	}
+
+	@include hero-below($hero-wide) {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: none;
+		grid-template-areas: "body" "actions" "figures";
+
+		.basalt-hero-figures {
+			justify-self: start;
+			margin: 1.25rem 0 0;
+		}
+	}
+
+	@include hero-below($hero-phone) {
+		.basalt-hero-figures {
+			flex-wrap: wrap;
+		}
+
+		.basalt-hero-figure {
+			padding: 0.75rem 0.9rem;
+		}
+
+		.basalt-hero-value {
+			font-size: 1.1rem;
+		}
+	}
+}
+
+/* Spot keeps a plain card and paints a soft light where basalt.js puts
+   --basalt-hero-x and --basalt-hero-y; with no pointer it rests near the
+   top right corner. */
+.basalt-hero-spot {
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: radial-gradient(
+			420px circle at var(--basalt-hero-x, 80%) var(--basalt-hero-y, 20%),
+			color-mix(in srgb, var(--basalt-hero-g1) 16%, transparent),
+			transparent 65%
+		);
+		pointer-events: none;
+	}
+
+	@include hero-flat {
+		&::before {
+			content: none;
+		}
+	}
+
+	.basalt-hero-icon {
+		border: 1px solid var(--basalt-edge-strong);
+		background: var(--basalt-plane);
+	}
+
+	.basalt-hero-value {
+		font-size: 1.4rem;
+
+		@include hero-below($hero-phone) {
+			font-size: 1.1rem;
+		}
+	}
+}
+
+/* Detail heads a page about a single record such as an order or a
+   customer. It sits straight on the page with no card, its back link
+   stands in for a breadcrumb, and a long record ID wraps instead of
+   pushing past a phone's edge. */
+.basalt-hero-detail {
+	display: block;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	overflow: visible;
+	background: none;
+
+	.basalt-hero-title {
+		font-size: clamp(1.4rem, 1.2rem + 0.5vw, 1.6rem);
+		letter-spacing: -0.02em;
+		overflow-wrap: anywhere;
+	}
+
+	.basalt-hero-desc {
+		margin-top: 0.3rem;
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+}
+
+/* The back link is a small pill in the accent's ink. The arrow shares
+   the text's color, and hovering only deepens the tint and nudges the
+   arrow toward where it goes. On the ink look it turns light. */
+.basalt-hero-back {
+	--basalt-back-ink: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--basalt-back-tint: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+	--basalt-back-tint-hover: color-mix(in srgb, var(--basalt-hue) 17%, transparent);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	justify-self: start;
+	align-self: flex-start;
+	margin-bottom: 1.1rem;
+	padding: 0.3rem 0.8rem 0.3rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	line-height: 1.4;
+	text-decoration: none;
+	color: var(--basalt-back-ink);
+	background: var(--basalt-back-tint);
+	transition: background-color 170ms ease;
+
+	.bi {
+		display: inline-block;
+		transition: transform 170ms ease;
+	}
+
+	&:hover {
+		color: var(--basalt-back-ink);
+		background: var(--basalt-back-tint-hover);
+
+		.bi {
+			transform: translateX(-3px);
+		}
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+
+	@include hero-still {
+		transition: none;
+
+		.bi {
+			transition: none;
+		}
+	}
+}
+
+/* A detail header for a person or account: the avatar beside a block
+   whose name and pills share the first row and whose line sits under
+   them, so the avatar centers on the two. The block's last child holds
+   the pills. On a phone the pills drop under the line again. */
+.basalt-hero-who-text {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	column-gap: 0.85rem;
+	align-items: center;
+
+	> .basalt-hero-title {
+		grid-row: 1;
+		grid-column: 1;
+	}
+
+	> .basalt-hero-desc {
+		grid-row: 2;
+		grid-column: 1 / -1;
+	}
+
+	> :last-child:not(.basalt-hero-desc) {
+		grid-row: 1;
+		grid-column: 2;
+		margin-top: 0;
+	}
+
+	@include hero-below($hero-phone) {
+		display: block;
+
+		> :last-child:not(.basalt-hero-desc) {
+			margin-top: 0.65rem;
+		}
+	}
+}
+
+[data-bs-theme="dark"] .basalt-hero-back {
+	--basalt-back-ink: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	--basalt-back-tint: color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+	--basalt-back-tint-hover: color-mix(in srgb, var(--basalt-hue) 26%, transparent);
+}
+.basalt-hero-ink .basalt-hero-back,
+[data-bs-theme="dark"] .basalt-hero-ink .basalt-hero-back {
+	--basalt-back-ink: var(--basalt-hero-fg);
+	--basalt-back-tint: color-mix(in srgb, var(--basalt-hero-fg) 14%, transparent);
+	--basalt-back-tint-hover: color-mix(in srgb, var(--basalt-hero-fg) 22%, transparent);
+}
+
+/* On a phone the shell stacks into one column. This has to follow every
+   look above so it overrides their grids and padding, and glow then
+   restacks itself so its figures come before the buttons. */
+@include hero-below($hero-phone) {
+	.basalt-hero {
+		--basalt-hero-py: 1.25rem;
+		--basalt-hero-px: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions" "figures";
+	}
+
+	.basalt-hero-actions {
+		margin: 1rem 0 0;
+	}
+
+	.basalt-hero-glow {
+		grid-template-areas: "body" "figures" "actions";
+	}
+}
+
+/* Compact trims the height and nothing else: the side padding and the
+   icon stay full size. Everything shares one row, with the icon beside
+   a one-line description, the figures as a slim strip and the buttons
+   level with them. Under 1200px the figures wrap into chips below the
+   text, and a phone stacks it all. It is written after the phone rules
+   above so it overrides them. */
+.basalt-hero-compact {
+	--basalt-hero-py: 1.4rem;
+	/* How far the title sits from the left edge: icon width plus the gap.
+     Wrapped figures and phone buttons indent by the same amount. */
+	--basalt-hero-indent: calc(2.5rem + 1.1rem);
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	grid-template-rows: none;
+	grid-template-areas: "body figures actions";
+	align-items: center;
+	border-radius: 16px;
+
+	&:not(:has(> .basalt-hero-body > .basalt-hero-icon)) {
+		--basalt-hero-indent: 0rem;
+	}
+
+	@include hero-below($hero-wide) {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "body actions" "figures figures";
+	}
+
+	@include hero-below($hero-phone) {
+		--basalt-hero-py: 1.5rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions" "figures";
+	}
+
+	.basalt-hero-body {
+		display: grid;
+		column-gap: 1.1rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+	}
+
+	.basalt-hero-back,
+	.basalt-hero-title,
+	.basalt-hero-desc {
+		grid-column: 1 / -1;
+	}
+
+	.basalt-hero-icon ~ .basalt-hero-title,
+	.basalt-hero-icon ~ .basalt-hero-desc {
+		grid-column: 2;
+	}
+
+	.basalt-hero-icon {
+		grid-row: span 2;
+		margin: 0;
+
+		/* A wrapping description must not pull the icon away from the title. */
+		@include hero-below($hero-phone) {
+			align-self: start;
+		}
+	}
+
+	.basalt-hero-title {
+		font-size: clamp(1.3rem, 1.05rem + 0.6vw, 1.55rem);
+	}
+
+	.basalt-hero-desc {
+		max-width: 64ch;
+		margin-top: 0.3rem;
+		font-size: 0.9rem;
+		line-height: 1.45;
+	}
+
+	.basalt-hero-actions {
+		align-self: center;
+		justify-self: end;
+		margin: 0 0 0 1.5rem;
+
+		@include hero-below($hero-phone) {
+			justify-self: start;
+			justify-content: flex-start;
+			margin: 1.1rem 0 0 var(--basalt-hero-indent);
+		}
+	}
+
+	.basalt-hero-figures {
+		gap: 0;
+		flex-wrap: nowrap;
+		align-self: center;
+		margin: 0 0 0 1.5rem;
+		padding: 0;
+		border: 0;
+
+		@include hero-below($hero-wide) {
+			gap: 0.4rem;
+			flex-wrap: wrap;
+			justify-self: start;
+			margin: 0.8rem 0 0 var(--basalt-hero-indent);
+			border-radius: 0;
+			background: none;
+			box-shadow: none;
+		}
+
+		@include hero-below($hero-phone) {
+			margin-top: 1rem;
+		}
+	}
+
+	.basalt-hero-figure {
+		margin: 0;
+		padding: 0 1.1rem;
+		border: 0;
+
+		&:first-child {
+			padding-left: 0;
+		}
+
+		&:last-child {
+			padding-right: 0;
+		}
+
+		& + .basalt-hero-figure {
+			border-left: 1px solid var(--basalt-hero-line, var(--basalt-edge));
+		}
+	}
+
+	.basalt-hero-value {
+		font-size: 1.1rem;
+
+		@include hero-below($hero-wide) {
+			font-size: 0.95rem;
+		}
+	}
+
+	.basalt-hero-label {
+		@include hero-below($hero-wide) {
+			margin: 0;
+			font-size: 0.8rem;
+		}
+	}
+
+	/* The aside still bleeds off the top, right and bottom edges; once the
+     row wraps it becomes a full-width band under the text. */
+	.basalt-hero-aside {
+		align-self: stretch;
+		align-items: center;
+		margin: calc(var(--basalt-hero-py) * -1) calc(var(--basalt-hero-px) * -1) calc(var(--basalt-hero-py) * -1)
+			1.5rem;
+		padding: 0.75rem 1.1rem;
+
+		@include hero-below($hero-wide) {
+			margin: 0.8rem calc(var(--basalt-hero-px) * -1) calc(var(--basalt-hero-py) * -1);
+			padding: 0.6rem var(--basalt-hero-px) 0.6rem calc(var(--basalt-hero-px) + var(--basalt-hero-indent));
+		}
+
+		@include hero-below($hero-phone) {
+			margin-top: 1.1rem;
+		}
+	}
+}
+
+/* The ink and glow icons are larger, so their indent is too. */
+.basalt-hero-ink.basalt-hero-compact {
+	--basalt-hero-indent: calc(2.75rem + 1.1rem);
+}
+
+/* Compact glow drops the dashed rule and keeps its buttons on the title
+   row until a phone stacks them. */
+.basalt-hero-glow.basalt-hero-compact {
+	--basalt-hero-indent: calc(2.85rem + 1.1rem);
+
+	.basalt-hero-actions,
+	&:not(:has(> .basalt-hero-figures)) .basalt-hero-actions {
+		grid-column: actions;
+		justify-content: flex-end;
+		margin: 0 0 0 1.5rem;
+		padding: 0;
+		border-top: 0;
+
+		@include hero-below($hero-phone) {
+			justify-self: start;
+			justify-content: flex-start;
+			margin: 1.1rem 0 0 var(--basalt-hero-indent);
+		}
+	}
+}
+
+/* Compact aurora keeps the colored panel bleeding off the right edge, with
+   the figures standing side by side inside it. */
+.basalt-hero-aurora.basalt-hero-compact {
+	&:has(> .basalt-hero-aside) {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-rows: none;
+		grid-template-areas: "body actions aside";
+
+		@include hero-below($hero-wide) {
+			grid-template-columns: minmax(0, 1fr) auto;
+			grid-template-areas: "body actions" "aside aside";
+		}
+
+		@include hero-below($hero-phone) {
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-areas: "body" "actions" "aside";
+		}
+	}
+
+	.basalt-hero-figures {
+		gap: 0.5rem;
+		flex-direction: row;
+		margin: 0;
+	}
+
+	.basalt-hero-figure {
+		gap: 0;
+		flex-direction: column-reverse;
+		align-items: flex-start;
+		justify-content: flex-start;
+		padding: 0.5rem 0.8rem;
+		border: 0;
+		border-radius: 10px;
+	}
+
+	.basalt-hero-label {
+		margin-top: 0.25rem;
+	}
+}
+
+/* Compact tint keeps the figures on their small white card. */
+.basalt-hero-tint.basalt-hero-compact {
+	.basalt-hero-figure {
+		padding: 0.6rem 1.1rem;
+	}
+
+	.basalt-hero-figures {
+		border-radius: 12px;
+	}
+}
+
+/* Once the row wraps, each figure becomes a pill with the number and label
+   on one line. It comes after the per-look rules above so it beats them;
+   on the tinted and colored looks the pills get a solid face. */
+@include hero-below($hero-wide) {
+	.basalt-hero-compact .basalt-hero-figures > .basalt-hero-figure {
+		gap: 0.4rem;
+		flex-direction: row-reverse;
+		align-items: baseline;
+		justify-content: flex-end;
+		padding: 0.3rem 0.75rem;
+		border: 0;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--basalt-hero-fg) 7%, transparent);
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+	}
+
+	.basalt-hero-tint.basalt-hero-compact,
+	.basalt-hero-aurora.basalt-hero-compact {
+		.basalt-hero-figures > .basalt-hero-figure {
+			background: color-mix(in srgb, var(--basalt-plane) 88%, transparent);
+		}
+	}
+}
+
+/* .basalt-pagehead is the plain alternative to the hero for pages that
+   are busy enough already: the page name, one line under it, and the main
+   buttons on the right.
+
+   <header class="basalt-pagehead">
+     <div class="basalt-pagehead-text">
+       <h1 class="basalt-pagehead-title">Reports</h1>
+       <p class="basalt-pagehead-desc">What this page is for.</p>
+     </div>
+     <div class="basalt-pagehead-actions">...</div>
+   </header> */
+.basalt-pagehead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	&-text {
+		min-width: 0;
+	}
+
+	&-title {
+		margin: 0;
+		font-size: 1.6rem;
+		font-weight: 750;
+		letter-spacing: -0.01em;
+		color: var(--basalt-copy);
+	}
+
+	&-desc {
+		margin: 0.25rem 0 0;
+		font-size: 0.9rem;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+
+	/* Centered, so a button beside a taller control (a segmented switch)
+	   keeps its own height instead of stretching with its label at the top. */
+	&-actions {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		align-items: center;
+
+		.btn {
+			white-space: nowrap;
+		}
+	}
+}

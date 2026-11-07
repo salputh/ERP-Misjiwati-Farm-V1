@@ -1,0 +1,1453 @@
+/*
+ * Sales page styles (sales-insights.html). Every class here starts with
+ * so- and every color is a --basalt-* token, so legends, badges and tables
+ * follow the active palette exactly as the canvases do; sales-insights.js
+ * reads the same tokens. Cards, legends and tables are cut to match
+ * mixed-charts.css and data-grids.css, which keeps this page in that family.
+ */
+
+/* Three mixes carry the page: quiet text pulled toward the body color so it
+   holds 4.5:1 on light palettes and hovered rows, a link color that does the
+   same where the primary alone falls short, and softened up and down tones. */
+.so-page {
+	--so-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--so-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--so-up: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	--so-down: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+
+	& .form-control,
+	& .form-select {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+
+	& .form-control::placeholder {
+		color: var(--so-quiet);
+		opacity: 1;
+	}
+}
+
+/* Keyboard focus draws the same ring on every link and button of the page. */
+.so-range-btn:focus-visible,
+.so-data summary:focus-visible,
+.so-link:focus-visible,
+.so-account:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* The control bar is two rows: range and comparison, then the filters. */
+.so-controls {
+	margin-bottom: 1.5rem;
+}
+.so-controls.basalt-box {
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+}
+
+.so-controls-row {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& + .so-controls-row {
+		margin-top: 0.9rem;
+		padding-top: 0.9rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+
+.so-inline-label {
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--so-quiet);
+}
+
+/* The range button shows the preset's name over its dates. */
+.so-range-btn {
+	display: inline-flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-height: 3.4rem;
+	padding: 0.6rem 1.1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover,
+	&.show {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+.so-range-icon {
+	color: var(--so-quiet);
+}
+.so-range-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	line-height: 1.25;
+}
+.so-range-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+}
+.so-range-dates {
+	font-size: 0.77rem;
+	color: var(--so-quiet);
+}
+.so-range-chev {
+	margin-left: 0.25rem;
+	font-size: 0.75rem;
+	color: var(--so-quiet);
+}
+
+/* Inside the menu, the preset on show carries a check; the custom dates
+   form sits under the list. */
+.so-range-menu {
+	width: min(22rem, calc(100vw - 2rem));
+	padding: 0;
+}
+
+.so-range-now {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	margin-left: auto;
+	font-size: 0.76rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.so-custom {
+	padding: 0.85rem 1rem 1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+.so-custom-title {
+	margin: 0 0 0.5rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--so-quiet);
+}
+.so-custom-fields {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: 1fr 1fr;
+	margin-bottom: 0.75rem;
+}
+.so-custom-label {
+	display: block;
+	margin-bottom: 0.2rem;
+	font-size: 0.77rem;
+	color: var(--so-quiet);
+}
+.so-custom-error {
+	margin: -0.25rem 0 0.6rem;
+	font-size: 0.8rem;
+	color: var(--so-down);
+}
+
+.so-compare {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.so-filter {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	& .form-select {
+		min-width: 9.5rem;
+	}
+}
+
+.so-reset.btn-link {
+	--bs-btn-color: var(--so-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.so-status {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--so-quiet);
+}
+
+/* On phones each control takes a full row, filter labels share one width. */
+@media (max-width: 767.98px) {
+	.so-controls.basalt-box {
+		padding: 1rem var(--basalt-pad-x-narrow);
+	}
+	.so-range,
+	.so-range-btn {
+		width: 100%;
+	}
+	.so-range-chev {
+		margin-left: auto;
+	}
+	.so-compare .basalt-segmented {
+		max-width: 100%;
+	}
+	.so-filter {
+		flex: 1 1 100%;
+	}
+	.so-filter .so-inline-label {
+		width: 4.5rem;
+	}
+	.so-filter .form-select {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.so-status {
+		flex: 1 1 100%;
+		margin-left: 0;
+	}
+}
+
+/* While backend.fetchRange() is out, whatever is marked data-so-fill keeps its room
+   but goes invisible, and the skeleton next to it shows instead. */
+.so-skel {
+	display: none;
+}
+
+.so-board.is-loading {
+	& [data-so-fill] {
+		visibility: hidden;
+	}
+	& .so-skel,
+	& .so-skel-rows {
+		display: block;
+	}
+	& .so-chart-empty,
+	& .so-scroll,
+	& .basalt-pager,
+	& [data-so-rows-empty] {
+		display: none;
+	}
+}
+
+/* Headline numbers: two tiles a row, four from 1200px. */
+.so-kpis {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-bottom: 1.5rem;
+}
+
+@media (min-width: 1200px) {
+	.so-kpis {
+		gap: 1.5rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 575.98px) {
+	.so-kpis {
+		gap: 0.75rem;
+	}
+	.so-delta-was {
+		flex-basis: 100%;
+	}
+}
+
+.so-kpi .card-body {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	padding: 1.25rem var(--basalt-foot-x) var(--basalt-foot-y);
+}
+
+.so-kpi-label {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0 0 0.4rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--so-quiet);
+}
+
+.so-help {
+	display: inline-grid;
+	place-items: center;
+	width: 1.4rem;
+	height: 1.4rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	color: var(--so-quiet);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+.so-kpi-value {
+	margin: 0 0 0.3rem;
+	font-size: 1.75rem;
+	font-weight: 700;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+.so-kpi-delta {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	min-height: 1.2rem;
+	margin: 0 0 0.65rem;
+	font-size: 0.8rem;
+}
+
+/* A change reads green going up and red going down; no comparison stays quiet. */
+.so-delta {
+	display: inline-flex;
+	gap: 0.2rem;
+	align-items: center;
+	font-weight: 650;
+	font-variant-numeric: tabular-nums;
+}
+.so-delta-up {
+	color: var(--so-up);
+}
+.so-delta-down {
+	color: var(--so-down);
+}
+.so-delta-flat,
+.so-delta-none {
+	font-weight: 500;
+	color: var(--so-quiet);
+}
+.so-delta-was {
+	color: var(--so-quiet);
+}
+
+.so-kpi-spark {
+	height: calc(44px + var(--basalt-foot-y));
+	margin-top: auto;
+}
+
+.so-skel-kpi {
+	position: absolute;
+	inset: 1.25rem;
+
+	& .basalt-skeleton-title {
+		width: 45%;
+		height: 1.5rem;
+		margin-top: 1.6rem;
+	}
+	& .basalt-skeleton-text {
+		width: 35%;
+	}
+	& .basalt-skeleton-block {
+		height: 2.6rem;
+		margin-top: 0.6rem;
+	}
+}
+
+/* Cards sit on a twelve-column grid: one per row until 1200px, then halves,
+   with full, wide (7) and narrow (5) spans where the layout asks for them. */
+.so-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.so-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+
+@media (min-width: 1200px) {
+	.so-card {
+		grid-column: span 6;
+	}
+	.so-card-full {
+		grid-column: span 12;
+	}
+	.so-card-wide {
+		grid-column: span 7;
+	}
+	.so-card-narrow {
+		grid-column: span 5;
+	}
+}
+
+.so-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--basalt-pad-head);
+}
+
+@media (max-width: 767.98px) {
+	.so-card.basalt-box .card-body {
+		padding: 1.1rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.so-card-head {
+	margin-bottom: 1.1rem;
+}
+
+.so-card-head-row {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+/* The orders title takes focus after a drill-down, so only keyboard focus
+   draws a ring on it. */
+.so-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+.so-card-desc {
+	max-width: 64ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--so-quiet);
+}
+
+/* Legends are HTML lists so a long one wraps instead of overlapping. Each
+   item's .so-c* class sets --so-c, and the swatch draws itself from it. */
+.so-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--so-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& li[hidden] {
+		display: none;
+	}
+}
+
+.so-key-bar {
+	width: 10px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--so-c, var(--basalt-series-1));
+}
+.so-key-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--so-c) 55%, transparent);
+	box-shadow: inset 0 0 0 1.5px var(--so-c);
+}
+.so-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--so-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.so-key-line-dotted {
+	border-top-style: dotted;
+	border-top-width: 3px;
+}
+.so-key-tick {
+	width: 3px;
+	height: 13px;
+	border-radius: 2px;
+	background: var(--so-c);
+}
+
+.so-c1 {
+	--so-c: var(--basalt-series-1);
+}
+.so-c2 {
+	--so-c: var(--basalt-series-2);
+}
+.so-c3 {
+	--so-c: var(--basalt-series-3);
+}
+.so-c4 {
+	--so-c: var(--basalt-series-4);
+}
+.so-c5 {
+	--so-c: var(--basalt-series-5);
+}
+.so-c6 {
+	--so-c: var(--basalt-series-6);
+}
+.so-ct {
+	--so-c: var(--basalt-copy);
+}
+.so-cr {
+	--so-c: color-mix(in srgb, var(--basalt-copy) 34%, transparent);
+}
+
+/* A chart box stretches to fill its card while the canvas stays out of the
+   flow, so the drawing can never hold the box open. */
+.so-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 260px;
+}
+
+.so-chart-hero {
+	min-height: 340px;
+}
+.so-chart-tall {
+	min-height: 300px;
+}
+.so-chart-short {
+	flex: 0 0 auto;
+	min-height: 190px;
+}
+
+@media (max-width: 575.98px) {
+	.so-chart {
+		min-height: 240px;
+	}
+	.so-chart-hero {
+		min-height: 290px;
+	}
+	.so-chart-short {
+		min-height: 180px;
+	}
+}
+
+.so-chart-box {
+	position: absolute;
+	inset: 0;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+	&.is-off {
+		visibility: hidden;
+	}
+}
+
+.so-skel-chart {
+	position: absolute;
+	inset: 0;
+
+	& .basalt-skeleton-block {
+		height: 100%;
+		border-radius: 12px;
+	}
+}
+
+.so-chart-empty {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	border: 1.5px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* What moved order value: a row per kind with its name, a bar sized to the
+   move and the signed amount. */
+.so-moves {
+	position: relative;
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	justify-content: center;
+	min-height: 220px;
+}
+
+.so-moves-body[hidden] {
+	display: none;
+}
+
+.so-moves-ends {
+	display: flex;
+	gap: 0.3rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	font-size: 0.875rem;
+	color: var(--so-quiet);
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& .bi {
+		font-size: 0.75rem;
+	}
+}
+
+.so-moves-net {
+	margin-left: auto;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.so-moves-list {
+	display: grid;
+	gap: 1.25rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.so-moves-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr) 4.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+}
+
+@media (max-width: 575.98px) {
+	.so-moves-row {
+		gap: 0.75rem;
+		grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+	}
+}
+
+.so-moves-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.so-moves-track {
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-edge) 70%, var(--basalt-plane));
+}
+
+.so-moves-bar {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+}
+.so-moves-bar-up {
+	background: var(--basalt-success);
+}
+.so-moves-bar-down {
+	background: var(--basalt-danger);
+}
+.so-moves-amount {
+	font-weight: 700;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+.so-moves-amount-up {
+	color: var(--so-up);
+}
+.so-moves-amount-down {
+	color: var(--so-down);
+}
+
+/* The figures under the plan bullets, each behind a thin rule. */
+.so-plan-facts {
+	display: grid;
+	gap: 0.75rem 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+	margin: 1.1rem 0 0;
+
+	& > div {
+		padding-left: 0.8rem;
+		border-left: 2px solid var(--basalt-edge);
+	}
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--so-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.1rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	& dd span {
+		display: block;
+		font-size: 0.76rem;
+		font-weight: 500;
+		color: var(--so-quiet);
+	}
+}
+
+/* Each chart folds its figures away under "Show the numbers"; the details
+   element is the container the stacked layout below measures. */
+.so-data {
+	container: so-data / inline-size;
+	margin-top: 1.1rem;
+	padding-top: 0.8rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 4px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--so-quiet);
+		list-style: none;
+		cursor: pointer;
+	}
+
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:hover {
+		color: var(--basalt-copy);
+	}
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& .table-responsive {
+		margin-top: 0.75rem;
+		overflow: visible;
+	}
+}
+
+/* Shared by the orders table and the number tables, after data-grids.css. */
+.so-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 1rem;
+	}
+}
+
+/* Number tables run smaller and keep their outer columns on the card's edges. */
+.so-table-numbers {
+	font-size: 0.8rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.4rem 0.6rem;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& > thead > tr > th {
+		text-wrap: balance;
+	}
+}
+
+.so-table {
+	& > thead > tr > th {
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--so-quiet);
+	}
+
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& td {
+		white-space: nowrap;
+	}
+	& tbody tr[data-so-row] {
+		cursor: pointer;
+	}
+	& .so-col-act {
+		width: 1%;
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+	& .badge.basalt-badge-as-dot {
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* When a card is too narrow for the columns, each row stacks: the first
+   cell alone on a line, then every figure labeled with its column name.
+   Plain tables stack below 440px, the wide trend table below 740px. */
+@container so-data (max-width: 440px) {
+	.so-table-numbers:not(.so-table-wide) {
+		display: block;
+
+		& > thead {
+			display: none;
+		}
+		& > tbody {
+			display: block;
+		}
+		& > tbody > tr {
+			display: flex;
+			gap: 0.2rem 1rem;
+			flex-wrap: wrap;
+			padding: 0.5rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& > tbody > tr > td {
+			display: block;
+			padding: 0;
+			border: 0;
+			text-align: start;
+		}
+		& > tbody > tr > td:first-child {
+			flex-basis: 100%;
+			font-weight: 600;
+			color: var(--basalt-copy);
+		}
+		& td[data-label]::before {
+			content: attr(data-label) " ";
+			color: var(--so-quiet);
+		}
+	}
+}
+
+@container so-data (max-width: 740px) {
+	.so-table-wide {
+		display: block;
+
+		& > thead {
+			display: none;
+		}
+		& > tbody {
+			display: block;
+		}
+		& > tbody > tr {
+			display: flex;
+			gap: 0.2rem 1rem;
+			flex-wrap: wrap;
+			padding: 0.5rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& > tbody > tr > td {
+			display: block;
+			padding: 0;
+			border: 0;
+			text-align: start;
+		}
+		& > tbody > tr > td:first-child {
+			flex-basis: 100%;
+			font-weight: 600;
+			color: var(--basalt-copy);
+		}
+		& td[data-label]::before {
+			content: attr(data-label) " ";
+			color: var(--so-quiet);
+		}
+	}
+}
+
+/* Small pieces inside table cells: the bold figure and the gray line under it. */
+.so-strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.so-sub {
+	display: block;
+	font-size: 0.76rem;
+	color: var(--so-quiet);
+}
+
+/* Text links and link-like buttons. An account name opens the account. */
+.so-link {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 3px;
+	font: inherit;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--so-link);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+
+.so-account {
+	border-radius: 3px;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The orders card: type tabs, a search row, the table and its pager. */
+.so-tabs {
+	margin-bottom: 1rem;
+}
+
+.so-toolbar {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: var(--basalt-pad-head);
+}
+
+.so-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--so-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+/* Sortable headings are buttons; the active one goes solid, and number
+   columns put the arrow before the word. */
+.so-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .bi {
+		font-size: 0.7rem;
+		opacity: 0.55;
+	}
+}
+
+th[aria-sort] .so-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort] .so-sort .bi {
+	opacity: 1;
+}
+.text-end > .so-sort {
+	flex-direction: row-reverse;
+}
+
+.so-scroll {
+	position: relative;
+	margin: 0 -0.25rem;
+	padding: 0 0.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.so-skel-rows {
+	padding: 0.5rem 0;
+}
+
+/* The orders table runs to the card's edges; its outer cells carry the card
+   inset, so the first column lines up with the title and the search. */
+.so-orders {
+	container: so-orders / inline-size;
+
+	& .so-scroll {
+		margin: 0 calc(-1 * var(--basalt-pad-x));
+		padding: 0;
+	}
+	& .so-table > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& .so-table > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& .basalt-pager {
+		margin-top: 1rem;
+	}
+	& .basalt-pager[hidden] {
+		display: none;
+	}
+}
+
+@media (max-width: 767.98px) {
+	.so-orders .so-scroll {
+		margin: 0 calc(-1 * var(--basalt-pad-x-narrow));
+	}
+	.so-orders .so-table > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.so-orders .so-table > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The orders list fits its card at every width without scrolling. Account
+   and type wrap; as the card narrows, plan and seats drop out, then
+   channel, since the quick view shows all three. */
+.so-orders .so-table {
+	& > tbody > tr > :nth-child(2) {
+		min-width: 9rem;
+		white-space: normal;
+	}
+	& > tbody > tr > :nth-child(4) {
+		min-width: 12rem;
+		white-space: normal;
+	}
+	& .so-col-act {
+		padding-left: 0.25rem;
+	}
+}
+
+@container so-orders (max-width: 1060px) {
+	.so-orders .so-table > * > tr > :nth-child(3),
+	.so-orders .so-table > * > tr > :nth-child(6) {
+		display: none;
+	}
+	.so-orders .so-table > :not(caption) > * > * {
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
+	}
+}
+
+@container so-orders (max-width: 860px) {
+	.so-orders .so-table > * > tr > :nth-child(5) {
+		display: none;
+	}
+	.so-orders .so-table .basalt-row-actions .btn-icon {
+		width: 30px;
+		height: 30px;
+	}
+	.so-orders .so-table > tbody > tr > :nth-child(4) {
+		min-width: 9rem;
+	}
+}
+
+/* Narrower still, each row turns into a calm card: the account and its
+   status first, then the kind and value, then one muted line of facts
+   joined by middle dots. The repeated class outranks the wider rules. */
+@container so-orders (max-width: 700px) {
+	.so-table thead {
+		display: none;
+	}
+	.so-table,
+	.so-table > tbody {
+		display: block;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.so-table > tbody > tr[data-so-row] {
+		display: flex;
+		gap: 0.5rem 0.75rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--basalt-edge);
+
+		&:last-child {
+			border-bottom: 0;
+		}
+		&::before,
+		&::after {
+			content: "";
+			flex-basis: 100%;
+			height: 0;
+		}
+		&::before {
+			order: 20;
+		}
+		&::after {
+			order: 40;
+		}
+		& > :nth-child(2) {
+			flex: 1 1 0;
+			order: 10;
+		}
+		& > :nth-child(8) {
+			order: 19;
+		}
+		& > :nth-child(4) {
+			order: 21;
+		}
+		& > :nth-child(7) {
+			order: 22;
+		}
+		& > .so-col-act {
+			order: 23;
+			margin-left: auto;
+		}
+		& > :nth-child(3)::before,
+		& > :nth-child(5)::before,
+		& > :nth-child(6)::before {
+			content: "\00b7";
+		}
+		& > :nth-child(6)::after {
+			content: " seats";
+		}
+		& .so-sub {
+			display: inline;
+			margin-left: 0.3rem;
+		}
+		& > :nth-child(4) .so-sub {
+			margin-left: 0;
+		}
+	}
+
+	@media (max-width: 575.98px) {
+		.so-table > tbody > tr[data-so-row] {
+			padding-left: var(--basalt-pad-x-narrow);
+			padding-right: var(--basalt-pad-x-narrow);
+		}
+	}
+
+	.so-table.so-table.so-table.so-table.so-table.so-table > tbody > tr[data-so-row] {
+		& > td {
+			display: block;
+			width: auto;
+			min-width: 0;
+			padding: 0;
+			border: 0;
+			text-align: start;
+			white-space: normal;
+			background: transparent;
+		}
+
+		& > :nth-child(1),
+		& > :nth-child(3),
+		& > :nth-child(5),
+		& > :nth-child(6) {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+			font-size: 0.8rem;
+			font-weight: 500;
+			color: var(--basalt-copy-muted);
+		}
+		& > :nth-child(1) {
+			order: 41;
+		}
+		& > :nth-child(3) {
+			order: 42;
+		}
+		& > :nth-child(5) {
+			order: 43;
+		}
+		& > :nth-child(6) {
+			order: 44;
+		}
+
+		/* The kind badge takes its own line with the sentence beneath it. */
+		& > :nth-child(4) {
+			display: flex;
+			gap: 0.3rem;
+			flex-direction: column;
+			flex-basis: 100%;
+			align-items: flex-start;
+		}
+	}
+}
+
+/* On a phone an order reads in three short lines: the account and whether
+   it is paid, then the kind and the value, then the order number and date.
+   The region, the sentence under the kind, the plan, the channel and the
+   seats wait in the quick view. */
+@media (max-width: 575.98px) {
+	.so-table.so-table.so-table.so-table.so-table.so-table > tbody > tr[data-so-row] {
+		& > :nth-child(3),
+		& > :nth-child(5),
+		& > :nth-child(6),
+		& > :nth-child(2) .so-sub,
+		& > :nth-child(4) .so-sub {
+			display: none;
+		}
+		& > :nth-child(4) {
+			flex-basis: auto;
+		}
+	}
+}
+
+/* The order drawer: value and status on top, the kind, the facts, the
+   lines bought and a dated history. */
+.so-drawer-body {
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+
+.so-d-top {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+
+	& .basalt-status {
+		min-height: 1.75rem;
+		padding: 0.3rem 0.7rem;
+	}
+}
+
+.so-d-value {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+
+	& span {
+		margin-left: 0.3rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		letter-spacing: 0;
+		color: var(--so-quiet);
+	}
+}
+
+/* The badge stands on its own line with the sentence explaining it below. */
+.so-d-what {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin: 0 0 var(--basalt-pad-head);
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& .badge {
+		display: inline-flex;
+		align-items: center;
+		min-height: 1.75rem;
+		padding: 0.3rem 0.7rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+.so-facts {
+	display: grid;
+	gap: 0.85rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 var(--basalt-pad-head);
+
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.76rem;
+		font-weight: 500;
+		color: var(--so-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+@media (max-width: 767.98px) {
+	.so-facts {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.so-d-head {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.so-lines {
+	margin: 0 0 var(--basalt-pad-head);
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+
+	& li > span:last-child {
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+.so-lines-total {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.so-lines li.so-lines-total {
+	border-bottom: 0;
+	border-top: 1px solid var(--basalt-edge-strong);
+}
+
+.so-timeline {
+	margin: 0 0 1.4rem;
+	padding: 0 0 0 1rem;
+	border-left: 2px solid var(--basalt-edge);
+	list-style: none;
+
+	& li {
+		position: relative;
+		padding: 0 0 0.7rem 0.25rem;
+	}
+
+	/* A filled dot rather than a ring, so it never passes for a radio button. */
+	& li::before {
+		content: "";
+		position: absolute;
+		top: 0.4rem;
+		left: -1.4rem;
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-plane);
+		background: var(--basalt-series-1);
+	}
+}
+
+.so-timeline-when {
+	display: block;
+	font-size: 0.76rem;
+	color: var(--so-quiet);
+}
+.so-d-links {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+}
+.so-drawer .basalt-drawer-foot .btn {
+	white-space: nowrap;
+}
+
+/* Error and empty screens stand in for the whole board, centered. */
+.so-state {
+	margin-top: 0.5rem;
+
+	& .basalt-empty-framed {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.so-data summary .bi {
+		transition: none;
+	}
+}
+
+@media print {
+	.so-controls,
+	.so-data,
+	.basalt-pager {
+		display: none;
+	}
+	.so-page * {
+		transition: none;
+		animation: none;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.so-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

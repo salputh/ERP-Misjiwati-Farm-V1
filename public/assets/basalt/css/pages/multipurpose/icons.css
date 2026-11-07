@@ -1,0 +1,638 @@
+/* Styles for the four icon browsers (bootstrap-icons.html,
+   font-awesome.html, lucide-icons.html, phosphor-icons.html), whose
+   behavior sits in assets/js/pages/icons.js. Colors come only from the
+   --basalt-* tokens, so every palette, both themes, the neutral canvas and
+   flat gradients carry through. The details dialog builds on the shared
+   .basalt-dialog-split. */
+
+/* The page sets the glyph size and tint the tiles and dialog read, and keeps
+   room at the bottom for the sticky kit tray. */
+.icx-page {
+	--icx-muted: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--icx-size: 28px;
+	--icx-ink: var(--basalt-copy);
+	padding-bottom: 6rem;
+}
+
+/* The toolbar wraps its controls onto as many rows as the width needs. */
+.icx-tools {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+
+/* Search takes the spare width, with its magnifier laid over the field. */
+.icx-search {
+	position: relative;
+	flex: 1 1 18rem;
+	min-width: 0;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 1rem;
+		transform: translateY(-50%);
+		color: var(--basalt-copy-muted);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		height: 46px;
+		padding-left: 2.6rem;
+		border-radius: 12px;
+	}
+}
+
+/* The size control matches the search field's height and corners. */
+.icx-size {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	height: 46px;
+	padding: 0 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+
+	& > .bi {
+		color: var(--basalt-copy-muted);
+	}
+	& .form-range {
+		width: 8rem;
+	}
+	& output {
+		min-width: 2.6rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+@media (max-width: 767.98px) {
+	.icx-size .form-range {
+		width: 6rem;
+	}
+}
+
+/* Swatches are small squares; the pressed one gets a double ring. */
+.icx-inks {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.icx-ink {
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	background: var(--icx-ink);
+
+	&[aria-pressed="true"] {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-copy);
+	}
+}
+
+/* Style and order switches are segmented pills on a sunken track. */
+.icx-seg {
+	display: inline-flex;
+	gap: 2px;
+	flex-wrap: wrap;
+	max-width: 100%;
+	padding: 3px;
+	border-radius: 10px;
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.icx-seg-btn {
+	padding: 0.3rem 0.7rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--icx-muted);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&[aria-pressed="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+	}
+}
+/* Six Phosphor weights still fit a phone's row once their padding shrinks. */
+@media (max-width: 575.98px) {
+	.icx-page[data-icx-lib="phosphor"] [data-icx-styles] .icx-seg-btn {
+		padding: 0.3rem 0.5rem;
+	}
+}
+
+/* Family chips show their count in a quieter weight. */
+.icx-groups {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.5rem;
+}
+.icx-group {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	& span {
+		font-weight: 500;
+		color: var(--icx-muted);
+	}
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+}
+
+/* The hint is the template's alert-primary held to one line, with the live
+   count pushed to the far end. */
+.icx-hint {
+	display: flex;
+	gap: 0.65rem;
+	align-items: baseline;
+	margin-bottom: 1.25rem;
+	padding: 0.6rem 0.9rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+
+	& b:last-child {
+		margin-left: auto;
+		white-space: nowrap;
+	}
+	[data-bs-theme="dark"] & {
+		--bs-alert-color: var(--basalt-copy);
+	}
+}
+
+/* Columns widen with the glyph size so large icons never crowd their tile. */
+.icx-grid {
+	display: grid;
+	gap: 0.875rem;
+	grid-template-columns: repeat(auto-fill, minmax(max(104px, calc(var(--icx-size) * 2.4)), 1fr));
+}
+.icx-tile {
+	position: relative;
+}
+.icx-tile-open {
+	display: grid;
+	gap: 0.75rem;
+	align-content: start;
+	justify-items: center;
+	width: 100%;
+	/* Full row height keeps glyphs level with their neighbors even when a
+     long name wraps to a second line. */
+	height: 100%;
+	padding: 1.6rem 0.6rem 1.4rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	text-align: center;
+	color: var(--icx-ink);
+	background: var(--basalt-plane);
+	transition:
+		transform 150ms ease,
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	& > i {
+		font-size: var(--icx-size);
+		line-height: 1;
+	}
+	& > span {
+		font-size: 0.75rem;
+		line-height: 1.25;
+		overflow-wrap: anywhere;
+		color: var(--icx-muted);
+	}
+	&:hover {
+		transform: translateY(-2px);
+		border-color: var(--basalt-hue-border);
+		box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.35);
+	}
+}
+
+/* The kit button hides in the corner until the tile is hovered, focused or
+   already collected. */
+.icx-tile-add {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.4rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	font-size: 0.75rem;
+	color: var(--basalt-copy-muted);
+	background: var(--basalt-plane);
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+.icx-tile:hover .icx-tile-add,
+.icx-tile:focus-within .icx-tile-add,
+.icx-tile.is-in-kit .icx-tile-add {
+	opacity: 1;
+}
+.icx-tile.is-in-kit {
+	& .icx-tile-open {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	}
+	& .icx-tile-add {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.icx-tile-open,
+	.icx-tile-add {
+		transition: none;
+	}
+}
+
+/* The empty message spans every column; "show more" sits centered below. */
+.icx-empty {
+	grid-column: 1 / -1;
+	margin: 0;
+	padding: 3rem 1rem;
+	text-align: center;
+	color: var(--icx-muted);
+}
+.icx-more {
+	display: block;
+	margin: 1.5rem auto 0;
+}
+
+/* The kit tray is an inverted bar that sticks to the bottom while scrolling. */
+.icx-tray {
+	position: sticky;
+	bottom: 1rem;
+	z-index: 5;
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	max-width: 980px;
+	margin: 1.5rem auto 0;
+	padding: 0.6rem 0.75rem;
+	border-radius: 18px;
+	color: var(--basalt-canvas);
+	background: var(--basalt-copy);
+	box-shadow: 0 24px 50px -24px rgba(0, 0, 0, 0.55);
+
+	&[hidden] {
+		display: none;
+	}
+	& b {
+		font-size: 0.9rem;
+		white-space: nowrap;
+	}
+
+	/* Its light button is redrawn from canvas tones to read on the dark bar. */
+	& .btn-light {
+		--bs-btn-bg: var(--basalt-canvas);
+		--bs-btn-border-color: var(--basalt-canvas);
+		--bs-btn-color: var(--basalt-copy);
+		--bs-btn-hover-bg: var(--basalt-plane-alt);
+		--bs-btn-hover-border-color: var(--basalt-plane-alt);
+		--bs-btn-hover-color: var(--basalt-copy);
+		--bs-btn-disabled-bg: var(--basalt-canvas);
+		--bs-btn-disabled-color: var(--basalt-copy);
+	}
+}
+.icx-tray-icons {
+	display: flex;
+	gap: 0.25rem;
+	flex: 1;
+	min-width: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.icx-tray-icon {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: 0;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	color: var(--basalt-canvas);
+	background: color-mix(in srgb, var(--basalt-canvas) 14%, transparent);
+
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-canvas) 26%, transparent);
+	}
+}
+/* On phones the tray drops its caption and button labels, keeping the icons. */
+@media (max-width: 767.98px) {
+	.icx-tray b,
+	.icx-tray .btn span {
+		display: none;
+	}
+}
+
+/* The dialog pairs a fixed preview column with a flexible details column. */
+.icx-dialog {
+	position: relative;
+	border-radius: 22px;
+
+	& .basalt-dialog-split-body {
+		grid-template-columns: 260px minmax(0, 1fr);
+		padding-top: 1.5rem;
+	}
+}
+.icx-dialog-close {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+	z-index: 1;
+}
+.icx-dialog-preview {
+	display: grid;
+	gap: 0.9rem;
+	padding: 0;
+	background: none;
+}
+
+/* The stage lays a faint 16px grid over the soft gradient, behind the glyph. */
+.icx-dialog-stage {
+	position: relative;
+	display: grid;
+	place-items: center;
+	aspect-ratio: 1;
+	border-radius: 18px;
+	overflow: hidden;
+	color: var(--icx-ink);
+	background: var(--basalt-grad-soft);
+
+	:root[data-basalt-gradients="off"] & {
+		background: var(--basalt-plane-alt);
+	}
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image:
+			linear-gradient(color-mix(in srgb, var(--basalt-copy) 6%, transparent) 1px, transparent 1px),
+			linear-gradient(90deg, color-mix(in srgb, var(--basalt-copy) 6%, transparent) 1px, transparent 1px);
+		background-size: 16px 16px;
+		pointer-events: none;
+	}
+
+	& > i {
+		position: relative;
+		font-size: 96px;
+		line-height: 1;
+	}
+}
+
+/* Details stack top to bottom and leave room for the close button. */
+.icx-dialog-info {
+	display: grid;
+	gap: 0.9rem;
+	align-content: start;
+	min-width: 0;
+	padding-right: 2rem;
+}
+@media (max-width: 767.98px) {
+	.icx-dialog-info {
+		padding-right: 0;
+	}
+}
+.icx-dialog-name {
+	margin: 0;
+	font-size: 1.4rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	overflow-wrap: anywhere;
+}
+.icx-dialog-tags {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin-top: 0.4rem;
+}
+.icx-tag {
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.icx-dialog-also {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--icx-muted);
+}
+
+/* Sample sizes line up on their baseline, each labeled underneath. */
+.icx-dialog-sizes {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-end;
+	padding: 0.75rem 1rem;
+	border-radius: 14px;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.icx-dialog-size {
+	display: grid;
+	gap: 0.25rem;
+	justify-items: center;
+	font-size: 0.7rem;
+	color: var(--icx-muted);
+
+	& > span {
+		line-height: 1;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Snippet tabs, then the code block itself, then its actions. */
+.icx-dialog-tabs {
+	gap: 0.25rem;
+
+	& .nav-link {
+		padding: 0.4rem 0.6rem;
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+}
+.icx-dialog-code {
+	max-height: 160px;
+	margin: 0;
+	padding: 0.9rem 1rem;
+	border-radius: 12px;
+	overflow: auto;
+	font-family: "Chivo Mono", ui-monospace, monospace;
+	font-size: 0.8rem;
+	line-height: 1.6;
+	white-space: pre-wrap;
+	word-break: break-all;
+	color: var(--basalt-plane);
+	background: color-mix(in srgb, var(--basalt-copy) 92%, var(--basalt-hue));
+
+	[data-bs-theme="dark"] & {
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.icx-dialog-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* A narrow dialog stacks its columns and flattens the stage into a band. */
+@container basalt-dialog (max-width: 640px) {
+	.icx-dialog .basalt-dialog-split-body {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.icx-dialog-stage {
+		height: 180px;
+		aspect-ratio: auto;
+	}
+}
+
+/* The partner-set twin sits in a dashed card with its actions on the right. */
+.icx-match {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.75rem 0.9rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 14px;
+}
+.icx-match-glyph {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	font-size: 1.5rem;
+	color: var(--basalt-copy);
+
+	& svg {
+		width: 100%;
+		height: 100%;
+	}
+}
+.icx-match-text {
+	display: grid;
+	min-width: 0;
+	margin-right: auto;
+
+	& b {
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.8rem;
+		color: var(--icx-muted);
+	}
+}
+
+/* Without a twin, up to three look-alikes share a row of equal cells. */
+.icx-similar-lead {
+	margin: 0 0 0.5rem;
+	font-size: 0.85rem;
+	color: var(--icx-muted);
+}
+.icx-similar {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.icx-similar-item {
+	display: grid;
+	gap: 0.4rem;
+	justify-items: center;
+	padding: 0.75rem 0.4rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	& span:last-child {
+		font-size: 0.71rem;
+		text-align: center;
+		overflow-wrap: anywhere;
+		color: var(--icx-muted);
+	}
+	&:hover {
+		border-color: var(--basalt-hue-border);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* The toast rises a little as it fades in at the bottom center. */
+.icx-toast {
+	position: fixed;
+	bottom: 1.5rem;
+	left: 50%;
+	z-index: 1090;
+	transform: translate(-50%, 12px);
+	padding: 0.65rem 1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-canvas);
+	background: var(--basalt-copy);
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		opacity 200ms ease,
+		transform 200ms ease;
+
+	&.is-on {
+		transform: translate(-50%, 0);
+		opacity: 1;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.icx-toast {
+		transition: none;
+	}
+}
+
+/* Printouts leave out the floating tray and toast. */
+@media print {
+	.icx-tray,
+	.icx-toast {
+		display: none;
+	}
+}

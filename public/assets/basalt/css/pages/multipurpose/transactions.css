@@ -1,0 +1,1142 @@
+/**
+ * Transactions page (transactions.html), everything under .ldg-.
+ *
+ * The header, cards, tabs, status pills, applied chips, choice cards,
+ * empty states, drawer and dialog come from basalt.css. What lives
+ * here is the layout of those parts plus the account tiles, the bank
+ * lines table and the drawer's insides. Colors are --basalt-* tokens
+ * run through color-mix(), so each palette and mode keeps its hues;
+ * the drawer and dialog sit outside the page container and so carry
+ * the same mixes themselves.
+ */
+
+.ldg-page,
+.ldg-drawer,
+.ldg-modal {
+	/* Muted text leans toward the body color, which keeps it above 4.5:1
+     on the paler palettes and on a hovered row. */
+	--ldg-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--ldg-in: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	--ldg-warn: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+	--ldg-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	--ldg-row-on: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+/* Each bank account borrows a hue from the chart ramp. */
+.ldg-tone-1 {
+	--ldg-tone: var(--basalt-series-1);
+}
+.ldg-tone-2 {
+	--ldg-tone: var(--basalt-series-2);
+}
+.ldg-tone-3 {
+	--ldg-tone: var(--basalt-series-3);
+}
+
+/* A status tints the backlog bar, its legend and the empty state. */
+.ldg-st-found {
+	--ldg-st: var(--basalt-info);
+}
+.ldg-st-none {
+	--ldg-st: var(--basalt-warning);
+}
+.ldg-st-matched {
+	--ldg-st: var(--basalt-success);
+}
+
+.ldg-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85rem;
+}
+.ldg-quiet {
+	color: var(--ldg-quiet);
+}
+
+/* Whatever the script hides stays hidden, no matter what display the
+   element was given. */
+.ldg-table-wrap[hidden],
+.ldg-foot[hidden],
+.ldg-empty[hidden],
+.ldg-cat-hint[hidden],
+.ldg-cat-one[hidden],
+.ldg-split[hidden],
+.ldg-cat[hidden],
+.ldg-todo-actions > [hidden],
+.ldg-drawer .basalt-drawer-foot > [hidden] {
+	display: none;
+}
+
+/* Text-styled buttons and the account tiles share one keyboard ring. */
+.ldg-acct:focus,
+.ldg-sort:focus,
+.ldg-who-name:focus,
+.ldg-textbtn:focus {
+	outline: 0;
+}
+.ldg-acct:focus-visible,
+.ldg-sort:focus-visible,
+.ldg-who-name:focus-visible,
+.ldg-textbtn:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Fields and buttons sit on the plane color inside the page, the drawer
+   and the dialog alike. */
+.ldg-page .form-control,
+.ldg-drawer .form-control,
+.ldg-drawer .form-select,
+.ldg-modal .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.ldg-page .form-control::placeholder,
+.ldg-drawer .form-control::placeholder {
+	color: var(--ldg-quiet);
+	opacity: 1;
+}
+.ldg-page .btn,
+.ldg-drawer .btn,
+.ldg-modal .btn {
+	white-space: nowrap;
+}
+.ldg-page .btn-outline-secondary {
+	background-color: var(--basalt-plane);
+}
+.ldg-split legend.form-label,
+.ldg-modal legend.form-label {
+	float: none;
+	margin-bottom: 0.5rem;
+	font-size: inherit;
+	line-height: inherit;
+}
+
+/* The three cards share a head: title and one line of help on the left,
+   room for a control on the right. */
+.ldg-card.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.ldg-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+}
+.ldg-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ldg-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ldg-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* "Still to match": a big count, a bar split by status, its legend, and
+   the two actions pinned to the bottom of the card. */
+.ldg-todo > .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.ldg-todo-big {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0 0 1rem;
+	color: var(--basalt-copy);
+}
+.ldg-todo-num {
+	font-size: 2.75rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.02em;
+}
+.ldg-todo-unit {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--ldg-quiet);
+}
+.ldg-todo-bar {
+	display: flex;
+	gap: 4px;
+	height: 12px;
+	margin-bottom: 1.25rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.ldg-todo-seg {
+	flex: 1 1 0;
+	min-width: 6px;
+	background: var(--ldg-st);
+	transition: flex-grow 0.4s ease;
+}
+.ldg-todo-legend {
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+/* At full width the bar and legend stop before they get too long to read. */
+.ldg-todo-bar,
+.ldg-todo-legend {
+	max-width: 40rem;
+}
+.ldg-todo-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) 2.5rem 8rem;
+	align-items: center;
+	padding: 0.7rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.9rem;
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+.ldg-todo-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--ldg-st) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ldg-st) 16%, var(--basalt-plane));
+}
+.ldg-todo-label {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ldg-todo-count {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.ldg-todo-sum {
+	text-align: right;
+	white-space: nowrap;
+	color: var(--ldg-quiet);
+}
+.ldg-todo-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: auto;
+}
+@media (max-width: 399.98px) {
+	.ldg-todo-item {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+	.ldg-todo-sum {
+		display: none;
+	}
+}
+
+/* Bank accounts: one tile per account, all on one set of grid columns so
+   the names, sparklines and balances line up down the card. The tile's
+   tone draws the bar on its left edge, the icon and the sparkline. */
+.ldg-accts {
+	display: grid;
+	gap: 0.75rem 0;
+	grid-template-columns: auto max-content minmax(4.5rem, 1fr) auto;
+	container: ldg-accts / inline-size;
+}
+.ldg-acct {
+	position: relative;
+	display: grid;
+	gap: 1rem;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+	align-items: center;
+	width: 100%;
+	margin: 0;
+	padding: 1rem 1.25rem 1rem 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--ldg-tone) 5%, var(--basalt-plane));
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.9rem;
+		bottom: 0.9rem;
+		left: 0.6rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--ldg-tone);
+	}
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: color-mix(in srgb, var(--ldg-tone) 10%, var(--basalt-plane));
+	}
+
+	/* The pressed tile is its own marker, so no ring sits on top of it. */
+	&[aria-pressed="true"] {
+		border-color: var(--ldg-tone);
+		background: color-mix(in srgb, var(--ldg-tone) 12%, var(--basalt-plane));
+		box-shadow: inset 0 0 0 1px var(--ldg-tone);
+
+		&:focus-visible {
+			outline: 0;
+		}
+	}
+}
+.ldg-acct-icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--ldg-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ldg-tone) 18%, var(--basalt-plane));
+}
+.ldg-acct-id,
+.ldg-acct-end {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.ldg-acct-end {
+	align-items: flex-end;
+	text-align: right;
+}
+.ldg-acct-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ldg-acct-kind {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--ldg-quiet);
+}
+.ldg-acct-value {
+	font-size: 1.1rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ldg-acct-state {
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--ldg-quiet);
+
+	& .bi {
+		margin-right: 0.25rem;
+	}
+}
+.ldg-acct-state-open {
+	color: var(--ldg-warn);
+}
+.ldg-acct-state-done {
+	color: var(--ldg-in);
+}
+
+/* The sparkline: a stroked path with a fading fill under it and a fat
+   round dot on the last point. Strokes keep their width when the box
+   is stretched. */
+.ldg-spark {
+	display: block;
+	width: 100%;
+	height: 40px;
+	overflow: visible;
+}
+.ldg-spark-stop {
+	stop-color: var(--ldg-tone);
+	stop-opacity: 0.24;
+}
+.ldg-spark-stop-end {
+	stop-opacity: 0;
+}
+/* Flat mode: the area is one light, even tint. */
+:root[data-basalt-gradients="off"] .ldg-spark-stop {
+	stop-opacity: 0.12;
+}
+.ldg-spark-line {
+	fill: none;
+	stroke: var(--ldg-tone);
+	stroke-width: 2;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	vector-effect: non-scaling-stroke;
+}
+.ldg-spark-dot {
+	fill: none;
+	stroke: var(--ldg-tone);
+	stroke-width: 7;
+	stroke-linecap: round;
+	vector-effect: non-scaling-stroke;
+}
+
+.ldg-accts-foot {
+	margin: 1.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--ldg-quiet);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& strong.ldg-amt-in {
+		color: var(--ldg-in);
+	}
+}
+
+/* In a narrower card the sparkline drops under the name and balance. */
+@container ldg-accts (max-width: 529.98px) {
+	.ldg-acct {
+		row-gap: 0.6rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas:
+			"icon id end"
+			"spark spark spark";
+		padding-top: 0.85rem;
+		padding-bottom: 0.85rem;
+	}
+	.ldg-acct-icon {
+		grid-area: icon;
+	}
+	.ldg-acct-id {
+		grid-area: id;
+	}
+	.ldg-acct-end {
+		grid-area: end;
+	}
+	.ldg-spark {
+		grid-area: spark;
+		height: 26px;
+	}
+}
+/* Narrower still, the icon goes and the account kind may wrap. */
+@container ldg-accts (max-width: 379.98px) {
+	.ldg-acct {
+		grid-template-areas: "id id end" "spark spark spark";
+	}
+	.ldg-acct-icon {
+		display: none;
+	}
+	.ldg-acct-kind {
+		white-space: normal;
+	}
+}
+
+/* Bank lines: status tabs, then a search box with the count on the far
+   right, then the table. */
+.ldg-tabs {
+	margin-bottom: 1.25rem;
+}
+.ldg-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.5rem;
+}
+.ldg-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--ldg-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.ldg-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--ldg-quiet);
+}
+@media (max-width: 767.98px) {
+	.ldg-search {
+		flex: 1 1 100%;
+	}
+	.ldg-count {
+		margin-left: 0;
+	}
+}
+
+/* The table hangs out of the card by the cells' side padding, so the
+   first column's text starts on the card edge under the title. */
+.ldg-table-wrap {
+	position: relative;
+	container: ldg-log / inline-size;
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.ldg-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+	}
+
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--ldg-quiet);
+	}
+}
+
+/* A sortable heading is a bare button; the arrow fades until it is the
+   active sort or the pointer is over it. */
+.ldg-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:hover .ldg-sort-idle {
+		opacity: 1;
+	}
+}
+[aria-sort] .ldg-sort {
+	color: var(--basalt-copy);
+}
+.ldg-sort-idle {
+	opacity: 0.55;
+}
+
+.ldg-col-date {
+	width: 6rem;
+}
+.ldg-col-who {
+	min-width: 16rem;
+}
+.ldg-col-acct {
+	width: 10.5rem;
+}
+.ldg-col-status {
+	width: 9.5rem;
+}
+.ldg-col-amt {
+	width: 10rem;
+	text-align: right;
+
+	& .ldg-sort {
+		flex-direction: row-reverse;
+	}
+}
+.ldg-col-bal {
+	width: 10rem;
+	text-align: right;
+}
+.ldg-col-go {
+	width: 5.5rem;
+	text-align: right;
+}
+
+/* A row is clickable; the one open in the drawer stays tinted, and a row
+   that just changed flashes once. */
+.ldg-row {
+	cursor: pointer;
+
+	&:hover {
+		background: var(--ldg-row-hover);
+	}
+	&.is-selected {
+		background: var(--ldg-row-on);
+	}
+	&.is-fresh {
+		animation: ldg-fresh 1.8s ease;
+	}
+}
+@keyframes ldg-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.ldg-date {
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.ldg-who {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	min-width: 0;
+}
+.ldg-who-text {
+	min-width: 0;
+}
+.ldg-who-name {
+	display: inline;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 650;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+.ldg-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--ldg-quiet);
+}
+
+/* The arrow tile says which way the money went: in, out, or between
+   two of our own accounts. */
+.ldg-mark {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1rem;
+	color: var(--ldg-quiet);
+	background: var(--basalt-plane-alt);
+}
+.ldg-mark-in {
+	color: var(--ldg-in);
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.ldg-mark-own {
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.ldg-mark-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+}
+
+.ldg-acct-tag {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+	white-space: nowrap;
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 3px;
+		background: var(--ldg-tone);
+	}
+}
+.ldg-amt {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ldg-amt-in {
+	color: var(--ldg-in);
+}
+
+.ldg-foot {
+	margin: 0;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--ldg-quiet);
+
+	& strong {
+		font-weight: 600;
+		font-size: 0.85rem;
+		color: var(--basalt-copy);
+	}
+}
+.ldg-empty {
+	margin: 1.5rem 0 0.5rem;
+}
+.ldg-empty-done {
+	--basalt-tone: var(--basalt-success);
+}
+
+/* The table answers to its card's width rather than the window's: with
+   the menu open, a 1024px window leaves the card about tablet-wide. */
+.ldg-row-facts {
+	display: none;
+}
+@container ldg-log (max-width: 1000px) {
+	.ldg-table > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	.ldg-table > :not(caption) > * > :first-child {
+		padding-left: 0.6rem;
+	}
+	.ldg-table > :not(caption) > * > :last-child {
+		padding-right: 0.6rem;
+	}
+	.ldg-table .ldg-col-bal {
+		display: none;
+	}
+}
+@container ldg-log (max-width: 820px) {
+	.ldg-who > .ldg-mark {
+		display: none;
+	}
+	.ldg-table .ldg-col-acct,
+	.ldg-table .ldg-col-go {
+		display: none;
+	}
+	.ldg-col-who {
+		min-width: 13rem;
+	}
+	.ldg-col-status {
+		width: 8.5rem;
+	}
+	.ldg-col-amt {
+		width: 8.5rem;
+	}
+}
+/* At the narrowest, each line is a small stacked record: payee and
+   amount first, how it arrived beneath, then date, account and status. */
+@container ldg-log (max-width: 600px) {
+	.ldg-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.ldg-table,
+	.ldg-table tbody {
+		display: block;
+	}
+	.ldg-table tr {
+		display: grid;
+		gap: 0.6rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who amt"
+			"who status";
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.ldg-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.ldg-table > :not(caption) > * > *,
+	.ldg-table > :not(caption) > * > :first-child,
+	.ldg-table > :not(caption) > * > :last-child {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.ldg-table .ldg-col-date {
+		display: none;
+	}
+	.ldg-table .ldg-col-who {
+		grid-area: who;
+	}
+	.ldg-table .ldg-col-amt {
+		grid-area: amt;
+		text-align: right;
+	}
+	.ldg-table .ldg-col-status {
+		grid-area: status;
+		justify-self: end;
+	}
+	.ldg-sub {
+		white-space: normal;
+	}
+	.ldg-row-facts {
+		display: flex;
+		gap: 0.25rem 0.9rem;
+		flex-wrap: wrap;
+		margin-top: 0.6rem;
+		font-size: 0.85rem;
+		color: var(--ldg-quiet);
+
+		& .ldg-acct-tag {
+			font-size: 0.85rem;
+		}
+	}
+}
+
+/* On a phone the line under the payee steps aside; the payee, the account,
+   the amount and the match status are what a row is read for. */
+@media (max-width: 575.98px) {
+	.ldg-table .ldg-col-who .ldg-sub {
+		display: none;
+	}
+}
+
+/* The drawer: one line, its booking (or the form to make one) and the
+   statement facts. */
+.ldg-drawer.offcanvas {
+	--bs-offcanvas-width: 480px;
+
+	@media (max-width: 575.98px) {
+		--bs-offcanvas-width: min(400px, 92vw);
+	}
+}
+@media (max-width: 575.98px) {
+	.ldg-drawer .ldg-mark-lg {
+		display: none;
+	}
+	.ldg-drawer .basalt-drawer-pos {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+.ldg-drawer .offcanvas-header > .ldg-mark-lg {
+	margin-right: 0.85rem;
+}
+.ldg-d-status {
+	margin: 0 0 0.6rem;
+}
+.ldg-d-lead {
+	margin: 0;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.ldg-facts {
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.9rem;
+	}
+
+	& dt {
+		font-weight: 400;
+		color: var(--ldg-quiet);
+	}
+	& dd {
+		margin: 0;
+		text-align: right;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& .ldg-mono {
+		font-size: 0.85rem;
+	}
+}
+
+/* The booking card: solid for a line already in the books, dashed for
+   a suggestion that still wants confirming. */
+.ldg-match {
+	display: flex;
+	gap: 0.9rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+}
+.ldg-match-found {
+	border-style: dashed;
+	border-color: var(--basalt-edge-strong);
+
+	& .ldg-match-icon {
+		color: color-mix(in srgb, var(--basalt-info) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-info) 14%, var(--basalt-plane));
+	}
+}
+.ldg-match-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: var(--ldg-in);
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.ldg-match-text {
+	min-width: 0;
+}
+.ldg-match-title {
+	display: block;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ldg-match-detail {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.ldg-match-meta {
+	display: block;
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--ldg-quiet);
+}
+
+/* The category form: one select, or a list of split lines each with a
+   category, an amount and a remove button. */
+.ldg-cat-select.form-select {
+	width: auto;
+	min-width: 15rem;
+	max-width: 100%;
+}
+.ldg-cat-hint {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--ldg-quiet);
+}
+.ldg-split {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.ldg-split-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ldg-split-line {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: minmax(0, 1fr) 9rem 2.25rem;
+	align-items: center;
+	margin-bottom: 0.6rem;
+
+	& .ldg-cat-select.form-select {
+		width: 100%;
+		min-width: 0;
+	}
+}
+.ldg-split-remove {
+	color: var(--ldg-quiet);
+
+	/* A hidden remove button keeps its slot, so the lines stay aligned. */
+	&[hidden] {
+		display: inline-flex;
+		visibility: hidden;
+	}
+}
+.ldg-split-foot {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.25rem;
+}
+.ldg-split-left {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--ldg-in);
+
+	&.is-off {
+		color: var(--ldg-warn);
+	}
+}
+@media (max-width: 400px) {
+	.ldg-split-line {
+		grid-template-columns: minmax(0, 1fr) 2.25rem;
+	}
+	.ldg-split-line .ldg-amount {
+		grid-column: 1;
+	}
+	.ldg-split-line .ldg-split-remove {
+		grid-column: 2;
+		grid-row: 1;
+	}
+}
+.ldg-textbtn {
+	display: inline-block;
+	margin-top: 1.25rem;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+}
+
+/* An amount field shows one ring around the whole group, never a second
+   one on the input inside. */
+.ldg-amount {
+	flex-wrap: nowrap;
+
+	&:focus-within {
+		border-radius: var(--bs-border-radius);
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 25%, transparent);
+	}
+
+	&:focus-within .input-group-text,
+	&:focus-within .form-control {
+		border-color: var(--basalt-hue);
+	}
+
+	& .form-control:focus {
+		box-shadow: none;
+	}
+	& .input-group-text {
+		border-color: var(--basalt-edge-strong);
+		color: var(--ldg-quiet);
+		background: var(--basalt-plane-alt);
+	}
+}
+
+/* The import dialog: three account tiles, then the file picker. */
+.ldg-form-row {
+	margin-bottom: 1.25rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+.ldg-modal .form-text {
+	color: var(--ldg-quiet);
+}
+.ldg-tiles {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.ldg-tile.basalt-choice-card {
+	align-items: center;
+	text-align: center;
+}
+.ldg-tile .basalt-choice-card-icon {
+	margin-bottom: 0.3rem;
+}
+.ldg-tile .basalt-choice-card-title {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ldg-tile .basalt-choice-card-text {
+	color: var(--ldg-quiet);
+}
+/* On a phone the tiles stack and turn into rows with the icon on the left. */
+@media (max-width: 575.98px) {
+	.ldg-tiles {
+		gap: 0.6rem;
+		grid-template-columns: 1fr;
+	}
+	.ldg-tile.basalt-choice-card {
+		gap: 0.85rem;
+		flex-direction: row;
+		justify-content: flex-start;
+		padding: 0.7rem 1rem;
+		text-align: left;
+	}
+	.ldg-tile .basalt-choice-card-icon {
+		flex: none;
+		width: 2.25rem;
+		height: 2.25rem;
+		margin: 0;
+	}
+}
+
+/* Motion is dropped for anyone who asked for less of it, and on paper
+   along with the controls that do nothing there. */
+@media print, (prefers-reduced-motion: reduce) {
+	.ldg-row,
+	.ldg-acct,
+	.ldg-todo-seg {
+		transition: none;
+	}
+	.ldg-row.is-fresh {
+		animation: none;
+	}
+}
+@media print {
+	.ldg-toolbar,
+	.ldg-col-go,
+	.ldg-todo-actions {
+		display: none;
+	}
+}

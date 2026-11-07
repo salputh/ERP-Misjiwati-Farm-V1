@@ -1,0 +1,999 @@
+/* Basalt - Social Planner (social-planner.html)
+   Namespaced under .sp-*
+   Built from shared parts: the Headers component (Glow, compact),
+   segmented control, status pills, avatars, row actions, tooltips,
+   toasts and the side panel. This file lays out what belongs to this
+   page only: the two short lists on top, the calendar (week tiles,
+   month grid and their narrow versions) and the quick view.
+   Four type sizes: the card title, the section heading, body text
+   (--sp-fs-body) and one small size (--sp-fs-small). */
+
+.sp-page,
+.sp-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on every palette and on hovered rows. */
+	--sp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary as text: on its own it is under 4.5:1 in a few light palettes. */
+	--sp-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	/* A primary fill that carries on-primary text at 4.5:1, as .btn-primary does. */
+	--sp-fill: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	--sp-line: var(--basalt-edge);
+	--sp-fs-body: 0.875rem;
+	--sp-fs-small: 0.77rem;
+}
+
+/* Channel marks take a color from the chart ramp, never a brand color. */
+.sp-tone-1 {
+	--tone: var(--basalt-series-1);
+}
+.sp-tone-2 {
+	--tone: var(--basalt-series-2);
+}
+.sp-tone-3 {
+	--tone: var(--basalt-series-3);
+}
+.sp-tone-4 {
+	--tone: var(--basalt-series-4);
+}
+.sp-tone-5 {
+	--tone: var(--basalt-series-5);
+}
+.sp-tone-6 {
+	--tone: var(--basalt-series-6);
+}
+.sp-tone-7 {
+	--tone: var(--basalt-series-7);
+}
+.sp-tone-8 {
+	--tone: var(--basalt-series-8);
+}
+
+.sp-marks {
+	display: inline-flex;
+	gap: 0.2rem;
+	flex: none;
+	align-items: center;
+}
+.sp-mark {
+	display: inline-grid;
+	place-items: center;
+	width: 1.3rem;
+	height: 1.3rem;
+	border-radius: 50%;
+	font-size: 0.67rem;
+	line-height: 1;
+	color: color-mix(in srgb, var(--tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+}
+
+.sp-page .basalt-status,
+.sp-drawer .basalt-status {
+	font-size: var(--sp-fs-small);
+}
+
+/* Next up, and waiting for an OK
+   Under the calendar. One column below 1200px, a pair of cards that
+   end level above it. */
+.sp-top {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 1.5rem;
+}
+@media (min-width: 1200px) {
+	.sp-top {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.sp-card.card {
+	display: flex;
+	flex-direction: column;
+	container-type: inline-size;
+	overflow: hidden;
+}
+.sp-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 1rem;
+}
+.sp-card-title,
+.sp-cal-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.sp-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--sp-fs-body);
+	color: var(--sp-quiet);
+}
+.sp-card .sp-list {
+	flex: 1 1 auto;
+	border-top: 1px solid var(--sp-line);
+}
+.sp-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 4rem;
+	padding: 0.9rem var(--basalt-pad-x);
+	border-top: 1px solid var(--sp-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.sp-card-note {
+	margin: 0;
+	font-size: var(--sp-fs-small);
+	color: var(--sp-quiet);
+}
+
+/* Rows
+   Picture, title over channel and time, then one value, then the row's
+   actions on the right edge. */
+.sp-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sp-row {
+	display: grid;
+	gap: 0.5rem 1rem;
+	grid-template-columns: 3rem minmax(0, 1fr) auto auto;
+	align-items: center;
+	padding: 1rem var(--basalt-pad-x);
+	border-bottom: 1px solid var(--sp-line);
+	cursor: pointer;
+	transition: background-color 130ms ease;
+}
+.sp-row:last-child {
+	border-bottom: 0;
+}
+.sp-row:hover {
+	background: var(--basalt-wash);
+}
+.sp-row.is-open {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+.sp-thumb {
+	display: block;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 10px;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.sp-row-main {
+	min-width: 0;
+}
+.sp-row-title,
+.sp-row-meta {
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.sp-row-title {
+	font-size: var(--sp-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sp-row-meta {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 0.3rem;
+	font-size: var(--sp-fs-small);
+	color: var(--sp-quiet);
+}
+.sp-row-meta > span:last-child {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.sp-row-link {
+	border-radius: 3px;
+	text-decoration: none;
+	color: inherit;
+}
+.sp-row-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.sp-row-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+.sp-row-soon {
+	font-size: var(--sp-fs-small);
+	white-space: nowrap;
+	color: var(--sp-quiet);
+}
+.sp-row-approve {
+	white-space: nowrap;
+}
+.sp-row-empty {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	font-size: var(--sp-fs-body);
+	color: var(--sp-quiet);
+	cursor: default;
+}
+.sp-row-empty:hover {
+	background: none;
+}
+.sp-done {
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	background: var(--basalt-success-soft);
+}
+.sp-row .btn:focus:not(:focus-visible),
+.sp-tile-btn:focus:not(:focus-visible),
+.sp-mini:focus:not(:focus-visible),
+.sp-pick:focus:not(:focus-visible),
+.sp-chip:focus:not(:focus-visible) {
+	outline: 0;
+	box-shadow: none;
+}
+
+/* Narrow cards: the value moves under the title, the button to its own line. */
+@container (max-width: 520px) {
+	.sp-row {
+		grid-template-columns: 3rem minmax(0, 1fr) auto;
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.sp-row-soon {
+		display: none;
+	}
+	.sp-row-meta {
+		row-gap: 0.2rem;
+		flex-wrap: wrap;
+		white-space: normal;
+	}
+	.sp-row-meta > span:last-child {
+		overflow: visible;
+	}
+	.sp-row-wait .sp-row-approve {
+		grid-row: 2;
+		grid-column: 2 / -1;
+		justify-self: start;
+	}
+	.sp-card-head,
+	.sp-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The calendar card */
+.sp-cal.card {
+	container-type: inline-size;
+	overflow: visible;
+}
+.sp-cal-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 1rem;
+}
+.sp-cal-nav {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	min-width: 0;
+}
+.sp-cal-title {
+	min-width: 12.5rem;
+	text-align: center;
+	white-space: nowrap;
+}
+.sp-cal-today {
+	margin-left: 0.5rem;
+	white-space: nowrap;
+}
+.sp-cal-bar {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 var(--basalt-pad-x) 1.25rem;
+}
+.sp-cal-body {
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-x);
+}
+
+.sp-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.sp-chip {
+	padding: 0.3rem 0.8rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: var(--sp-fs-small);
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease,
+		color 130ms ease;
+}
+.sp-chip:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.sp-chip[aria-pressed="true"] {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.sp-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+.sp-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: var(--sp-fs-small);
+	color: var(--sp-quiet);
+	list-style: none;
+}
+.sp-key li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.sp-key-mark,
+.sp-dot {
+	display: inline-block;
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+}
+.sp-key-mark-published {
+	display: inline-grid;
+	place-items: center;
+	width: 1rem;
+	height: 1rem;
+	font-size: 0.62rem;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 18%, var(--basalt-plane));
+}
+.sp-key-mark-scheduled,
+.sp-dot-scheduled {
+	background: var(--basalt-hue);
+}
+.sp-key-mark-draft,
+.sp-dot-draft {
+	background: var(--basalt-warning);
+}
+.sp-dot-published {
+	background: var(--basalt-success);
+}
+
+@container (max-width: 520px) {
+	.sp-cal-head,
+	.sp-cal-bar,
+	.sp-cal-body {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.sp-cal-head {
+		justify-content: flex-start;
+	}
+	.sp-cal-title {
+		flex: 1 1 auto;
+		min-width: 0;
+		font-size: var(--basalt-fs-section);
+	}
+	.sp-cal-nav {
+		flex: 1 1 100%;
+	}
+	.sp-cal-today {
+		margin-left: auto;
+	}
+}
+
+/* Week: seven columns of picture tiles */
+.sp-week {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	border: 1px solid var(--sp-line);
+	border-radius: 14px;
+	overflow: hidden;
+}
+.sp-day {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.sp-day + .sp-day {
+	border-left: 1px solid var(--sp-line);
+}
+.sp-day-head {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.7rem 0.75rem;
+	border-bottom: 1px solid var(--sp-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 40%, var(--basalt-plane));
+}
+.sp-day-name {
+	font-size: var(--sp-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--sp-quiet);
+}
+.sp-day-num {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	font-size: var(--sp-fs-body);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sp-day.is-today .sp-day-num,
+.sp-mday.is-today .sp-mday-num {
+	color: var(--basalt-on-hue);
+	background: var(--sp-fill);
+}
+.sp-day-posts {
+	display: flex;
+	gap: 0.6rem;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-height: 15rem;
+	padding: 0.6rem;
+	transition: background-color 130ms ease;
+}
+.sp-day.is-today .sp-day-posts {
+	background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+.sp-day-posts.is-drop,
+.sp-mday.is-drop {
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 2px var(--basalt-hue-border);
+}
+
+.sp-tile {
+	position: relative;
+	border: 1px solid var(--sp-line);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease,
+		border-color 130ms ease,
+		opacity 130ms ease;
+}
+.sp-tile:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--basalt-card-shadow);
+}
+.sp-tile[draggable="true"] {
+	cursor: grab;
+}
+.sp-tile.is-draft {
+	border-style: dashed;
+	border-color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-edge));
+}
+.sp-tile.is-open {
+	border-color: var(--basalt-hue-border);
+	box-shadow: 0 0 0 2px var(--basalt-hue-soft);
+}
+.sp-tile.is-dragging {
+	transform: none;
+	opacity: 0.45;
+}
+.sp-tile:has(.sp-tile-btn:focus-visible) {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.sp-tile-pic {
+	position: relative;
+	display: block;
+	aspect-ratio: 4 / 3;
+	background: var(--basalt-plane-alt);
+}
+.sp-tile-pic img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.sp-tile-flag {
+	position: absolute;
+	top: 0.4rem;
+	left: 0.4rem;
+	display: inline-grid;
+	place-items: center;
+	background: var(--basalt-plane);
+	box-shadow: 0 1px 3px color-mix(in srgb, var(--basalt-copy) 18%, transparent);
+}
+.sp-tile-flag-out {
+	width: 1.4rem;
+	height: 1.4rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+}
+.sp-tile-flag-draft {
+	padding: 0.1rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+}
+.sp-tile-btn {
+	display: block;
+	width: 100%;
+	padding: 0.5rem 0.6rem 0.6rem;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	color: inherit;
+	background: none;
+}
+/* The whole tile is the button. */
+.sp-tile-btn::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+.sp-tile[draggable="true"] .sp-tile-btn {
+	cursor: grab;
+}
+.sp-tile-top {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	justify-content: space-between;
+}
+.sp-tile-time {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: var(--sp-fs-small);
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sp-tile.is-scheduled .sp-tile-time::before,
+.sp-tile.is-draft .sp-tile-time::before {
+	content: "";
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--basalt-hue);
+}
+.sp-tile.is-draft .sp-tile-time::before {
+	background: var(--basalt-warning);
+}
+.sp-tile-title {
+	display: -webkit-box;
+	margin-top: 0.3rem;
+	overflow: hidden;
+	font-size: var(--sp-fs-small);
+	font-weight: 600;
+	line-height: 1.35;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	color: var(--basalt-copy-body);
+}
+.sp-tile .sp-mark {
+	width: 1.1rem;
+	height: 1.1rem;
+	font-size: 0.6rem;
+}
+
+/* The line between what has gone out today and what is still to come */
+.sp-now {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.7rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--sp-link);
+}
+.sp-now::after {
+	content: "";
+	flex: 1 1 auto;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--basalt-hue);
+}
+
+/* Month: the grid */
+.sp-month-head {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	padding-bottom: 0.5rem;
+	font-size: var(--sp-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--sp-quiet);
+}
+.sp-month-head span {
+	padding: 0 0.6rem;
+}
+.sp-month-grid {
+	display: grid;
+	gap: 1px;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	border: 1px solid var(--sp-line);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--sp-line);
+}
+.sp-mday {
+	min-width: 0;
+	min-height: 6.5rem;
+	padding: 0.4rem 0.4rem 0.5rem;
+	background: var(--basalt-plane);
+	transition: background-color 130ms ease;
+}
+.sp-mday.is-out {
+	background: color-mix(in srgb, var(--basalt-plane-alt) 35%, var(--basalt-plane));
+}
+.sp-mday.is-today {
+	background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+.sp-mday-num {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.6rem;
+	height: 1.6rem;
+	margin-bottom: 0.25rem;
+	border-radius: 50%;
+	font-size: var(--sp-fs-small);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sp-mday.is-out .sp-mday-num {
+	font-weight: 600;
+	color: var(--sp-quiet);
+}
+.sp-mday-posts {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sp-mini {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.2rem 0.3rem 0.2rem 0.2rem;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	font-size: var(--sp-fs-small);
+	text-align: left;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 55%, var(--basalt-plane));
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+}
+.sp-mini:hover {
+	border-color: var(--sp-line);
+	background: var(--basalt-wash);
+}
+.sp-mini[draggable="true"] {
+	cursor: grab;
+}
+.sp-mini.is-draft {
+	border-style: dashed;
+	border-color: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-edge));
+}
+.sp-mini.is-open {
+	border-color: var(--basalt-hue-border);
+	background: var(--basalt-hue-soft);
+}
+.sp-mini.is-dragging {
+	opacity: 0.45;
+}
+.sp-mini:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.sp-mini-pic {
+	flex: none;
+	width: 1.4rem;
+	height: 1.4rem;
+	border-radius: 6px;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.sp-mini-time {
+	font-weight: 700;
+	white-space: nowrap;
+}
+.sp-mini .sp-marks {
+	margin-left: auto;
+}
+.sp-mini .sp-mark {
+	width: 1.1rem;
+	height: 1.1rem;
+	font-size: 0.58rem;
+}
+.sp-mini.is-published .sp-mini-time::after {
+	content: "\F26E";
+	margin-left: 0.2rem;
+	font-family: "bootstrap-icons";
+	font-weight: 400;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+}
+
+/* Narrow: the week as a list of days */
+.sp-agenda-day + .sp-agenda-day {
+	margin-top: 1.25rem;
+}
+.sp-agenda-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--sp-line);
+	font-size: var(--sp-fs-body);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sp-agenda-today {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.sp-agenda-none {
+	margin: 0.6rem 0 0;
+	font-size: var(--sp-fs-small);
+	color: var(--sp-quiet);
+}
+.sp-agenda .sp-row,
+.sp-agenda-day .sp-row {
+	padding: 0.8rem 0;
+}
+.sp-agenda .sp-row:hover,
+.sp-agenda-day .sp-row:hover {
+	background: none;
+}
+.sp-agenda .sp-row:hover .sp-row-title,
+.sp-agenda-day .sp-row:hover .sp-row-title {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+@container (max-width: 520px) {
+	.sp-row-agenda .basalt-status {
+		grid-row: 2;
+		grid-column: 2 / -1;
+		justify-self: start;
+	}
+}
+
+/* Narrow: the month as day buttons */
+.sp-mini-month {
+	margin-bottom: 1.25rem;
+}
+.sp-mini-month .sp-month-head span {
+	padding: 0;
+	text-align: center;
+}
+.sp-mini-month-grid {
+	display: grid;
+	gap: 0.25rem;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.sp-pick {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 3rem;
+	padding: 0.3rem 0;
+	border: 1px solid transparent;
+	border-radius: 10px;
+	color: var(--basalt-copy);
+	background: none;
+	transition: background-color 130ms ease;
+}
+.sp-pick:hover {
+	background: var(--basalt-wash);
+}
+.sp-pick.is-picked {
+	border-color: var(--basalt-hue-border);
+	background: var(--basalt-hue-soft);
+}
+.sp-pick:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.sp-pick.is-picked:focus-visible {
+	outline: 0;
+}
+.sp-pick-num {
+	font-size: var(--sp-fs-small);
+	font-weight: 600;
+	line-height: 1;
+}
+.sp-pick.is-today .sp-pick-num {
+	font-weight: 800;
+	color: var(--sp-link);
+}
+.sp-pick-dots {
+	display: flex;
+	gap: 0.1rem;
+	min-height: 0.4rem;
+}
+.sp-pick-dots .sp-dot {
+	width: 0.4rem;
+	height: 0.4rem;
+}
+
+/* While a post is being dragged, tooltips and hover lifts stay out of the way. */
+.sp-page.is-dragging .sp-tile:not(.is-dragging):hover {
+	transform: none;
+	box-shadow: none;
+}
+
+/* Quick view */
+.sp-dpic {
+	aspect-ratio: 16 / 11;
+	margin: 0 0 1.25rem;
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.sp-dpic img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.sp-dline {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.sp-dline-when {
+	font-size: var(--sp-fs-body);
+	color: var(--sp-quiet);
+}
+.sp-dsec {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--sp-line);
+}
+.sp-dsec-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sp-dcap {
+	margin: 0;
+	font-size: var(--sp-fs-body);
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.sp-dtags {
+	margin: 0.5rem 0 0;
+	font-size: var(--sp-fs-body);
+	font-weight: 600;
+	word-spacing: 0.25rem;
+	color: var(--sp-link);
+}
+.sp-figs {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0;
+}
+.sp-fig {
+	padding: 0.75rem 0.8rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.sp-fig dt {
+	font-size: var(--sp-fs-small);
+	font-weight: 600;
+	color: var(--sp-quiet);
+}
+.sp-fig dd {
+	margin: 0.2rem 0 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sp-dnote {
+	margin: 0.75rem 0 0;
+	font-size: var(--sp-fs-small);
+	color: var(--sp-quiet);
+}
+.sp-who {
+	display: flex;
+	gap: 0.9rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sp-who li {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.sp-who-name {
+	display: block;
+	font-size: var(--sp-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sp-who-meta {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: var(--sp-fs-small);
+	color: var(--sp-quiet);
+}
+.sp-who-wait {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: var(--basalt-warning-soft);
+}
+@container basalt-drawer (max-width: 360px) {
+	.sp-figs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sp-tile,
+	.sp-tile:hover {
+		transform: none;
+		transition: none;
+	}
+}
+
+/* The drawer title takes focus when it opens so screen readers start
+   there; it is not a control, so it shows no ring. */
+.sp-drawer .offcanvas-title:focus {
+	outline: 0;
+	box-shadow: none;
+}

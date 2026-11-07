@@ -1,0 +1,758 @@
+/* Basalt - Returns (returns.html)
+   Namespaced under .rt-*
+   The header, cards, drawer, status pills, avatars and empty states
+   are the shared components from basalt.css; this file lays out the
+   four stage figures, the list of returns, the two ranked lists and
+   the quick view. Every color is a --basalt-* token.
+   One body size (--rt-fs-body) and one small size (--rt-fs-small)
+   below the card titles and the figures. */
+
+.rt-page,
+.rt-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--rt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary as text: on its own it is under 4.5:1 in a few light palettes. */
+	--rt-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--rt-line: var(--basalt-edge);
+	--rt-fs-body: 0.875rem;
+	--rt-fs-small: 0.77rem;
+}
+.rt-page .basalt-status,
+.rt-drawer .basalt-status {
+	font-size: var(--rt-fs-small);
+}
+
+/* One color per reason or product, from the chart ramp. */
+.rt-tone-1 {
+	--rt-tone: var(--basalt-series-1);
+}
+.rt-tone-2 {
+	--rt-tone: var(--basalt-series-2);
+}
+.rt-tone-3 {
+	--rt-tone: var(--basalt-series-3);
+}
+.rt-tone-4 {
+	--rt-tone: var(--basalt-series-4);
+}
+.rt-tone-5 {
+	--rt-tone: var(--basalt-series-5);
+}
+.rt-tone-6 {
+	--rt-tone: var(--basalt-series-6);
+}
+.rt-tone-7 {
+	--rt-tone: var(--basalt-series-7);
+}
+.rt-tone-8 {
+	--rt-tone: var(--basalt-series-8);
+}
+/* Reason pills take a chart color; the text leans toward the text color,
+   as some ramp colors are pale in the lighter palettes. */
+.basalt-status[class*="rt-tone-"] {
+	--stp-tone: var(--rt-tone);
+	color: color-mix(in srgb, var(--rt-tone) 40%, var(--basalt-copy));
+}
+
+/* Cards */
+.rt-card.card {
+	container-type: inline-size;
+	margin-bottom: 1.5rem;
+	overflow: hidden;
+}
+.rt-card-side.card {
+	margin-bottom: 0;
+}
+.rt-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--rt-line);
+}
+.rt-card-head-plain {
+	padding-bottom: 1.25rem;
+	border-bottom: 0;
+}
+.rt-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.rt-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--rt-fs-body);
+	color: var(--rt-quiet);
+}
+
+.rt-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-head);
+}
+.rt-search {
+	position: relative;
+	flex: 0 1 22rem;
+	min-width: 12rem;
+}
+.rt-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--rt-quiet);
+	pointer-events: none;
+}
+.rt-search .form-control {
+	padding-left: 2.4rem;
+	font-size: var(--rt-fs-body);
+}
+
+/* Text-only chips that wrap rather than scroll. */
+.rt-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.rt-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border: 1px solid var(--rt-line);
+	border-radius: 999px;
+	font-size: var(--rt-fs-small);
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+}
+.rt-chip:hover {
+	background: var(--basalt-wash);
+}
+.rt-chip:focus {
+	outline: none;
+}
+.rt-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.rt-chip[aria-pressed="true"] {
+	border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--rt-line));
+	background: var(--basalt-hue-soft);
+}
+.rt-chip-n {
+	font-weight: 500;
+	color: var(--rt-quiet);
+}
+.rt-chip[aria-pressed="true"] .rt-chip-n {
+	color: var(--basalt-copy);
+}
+
+/* The table
+   One line per cell. As the card narrows, the columns the quick view
+   repeats step out first: avatars, condition, label, reason, then order. */
+.rt-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.rt-table-wrap[hidden] {
+	display: none;
+}
+.rt-table {
+	--bs-table-bg: transparent;
+	font-size: var(--rt-fs-body);
+}
+.rt-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.375rem;
+	border-color: var(--rt-line);
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.rt-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.rt-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+}
+.rt-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--rt-quiet);
+}
+.rt-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.rt-table tbody tr {
+	cursor: pointer;
+}
+.rt-table tbody tr:hover > * {
+	background: var(--basalt-wash);
+}
+.rt-table .rt-col-amount {
+	text-align: right;
+}
+.rt-table td.rt-col-act {
+	width: 1%;
+}
+.rt-who .rt-ellipsis {
+	max-width: 7.5rem;
+}
+.rt-item .rt-ellipsis {
+	max-width: 9.5rem;
+}
+
+.rt-link,
+.rt-order {
+	border-radius: 3px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--rt-link);
+}
+.rt-link:hover,
+.rt-order:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--basalt-copy);
+}
+.rt-link:focus-visible,
+.rt-order:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.rt-order {
+	font-weight: 500;
+}
+.rt-who,
+.rt-item,
+.rt-reason {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	min-width: 0;
+}
+.rt-who .basalt-avatar {
+	flex: none;
+}
+.rt-ellipsis {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.rt-who .rt-ellipsis {
+	font-weight: 600;
+}
+.rt-dot {
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--rt-tone);
+}
+.rt-quiet {
+	display: block;
+	font-size: var(--rt-fs-small);
+	line-height: 1.45;
+	color: var(--rt-quiet);
+}
+td .rt-quiet {
+	display: inline;
+	font-size: var(--rt-fs-body);
+}
+.rt-label {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+.rt-label .bi {
+	color: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+}
+.rt-label-todo {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+}
+.rt-money {
+	font-weight: 600;
+}
+.rt-money-muted {
+	text-decoration: line-through;
+	color: var(--rt-quiet);
+}
+.rt-strong {
+	display: block;
+	font-size: var(--rt-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* A product's tile: its icon on a pale wash of its own ramp color. */
+.rt-tile {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--rt-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rt-tone) 16%, var(--basalt-plane));
+}
+.rt-empty {
+	padding: 2.5rem var(--basalt-pad-x);
+}
+
+@container (max-width: 1123px) {
+	.rt-table .rt-col-who .basalt-avatar {
+		display: none;
+	}
+}
+@container (max-width: 1087px) {
+	.rt-table .rt-col-cond {
+		display: none;
+	}
+}
+@container (max-width: 1001px) {
+	.rt-table .rt-col-label {
+		display: none;
+	}
+}
+@container (max-width: 924px) {
+	.rt-table .rt-col-reason {
+		display: none;
+	}
+}
+@container (max-width: 778px) {
+	.rt-table .rt-col-order {
+		display: none;
+	}
+}
+/* Narrower cards: each return becomes a short stacked record. */
+@container (max-width: 600px) {
+	.rt-card-head {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rt-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+}
+@container (max-width: 715px) {
+	.rt-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.rt-table,
+	.rt-table tbody,
+	.rt-table tr,
+	.rt-table td {
+		display: block;
+		width: 100%;
+	}
+	.rt-table tbody tr {
+		display: grid;
+		gap: 0.6rem 1rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+		grid-template-areas:
+			"id     who   amount"
+			"status items act";
+		align-items: center;
+		padding: 1rem var(--basalt-pad-x);
+		border-bottom: 1px solid var(--rt-line);
+	}
+	.rt-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.rt-table > :not(caption) > * > *,
+	.rt-table > :not(caption) > * > :first-child,
+	.rt-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.rt-table tbody tr:hover > * {
+		background: none;
+	}
+	.rt-table tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.rt-table td.rt-col-id {
+		grid-area: id;
+	}
+	.rt-table td.rt-col-who {
+		grid-area: who;
+	}
+	.rt-table td.rt-col-items {
+		grid-area: items;
+	}
+	.rt-table .rt-col-who .basalt-avatar {
+		display: inline-grid;
+	}
+	.rt-who .rt-ellipsis,
+	.rt-item .rt-ellipsis {
+		max-width: none;
+	}
+	.rt-table td.rt-col-status {
+		grid-area: status;
+		align-self: center;
+	}
+	.rt-table td.rt-col-amount {
+		grid-area: amount;
+		width: auto;
+	}
+	.rt-table td.rt-col-act {
+		grid-area: act;
+		justify-self: end;
+		width: auto;
+	}
+	.rt-table td.rt-col-amount {
+		text-align: right;
+	}
+}
+@container (max-width: 520px) {
+	.rt-table tbody tr {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"id     amount"
+			"who    status"
+			"items  act";
+		padding: 1rem var(--basalt-pad-x-narrow);
+	}
+	.rt-empty {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Ranked lists */
+.rt-bars {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	list-style: none;
+}
+.rt-bars-row {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"name  count"
+		"track track"
+		"note  note";
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--rt-line);
+}
+.rt-bars-row:first-child {
+	padding-top: 0;
+}
+.rt-bars-row:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.rt-bars-name {
+	grid-area: name;
+	overflow: hidden;
+	font-size: var(--rt-fs-body);
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rt-bars-count {
+	grid-area: count;
+	font-size: var(--rt-fs-body);
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rt-bars-track {
+	display: block;
+	grid-area: track;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.rt-bars-bar {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--rt-tone);
+}
+.rt-bars-note {
+	grid-area: note;
+	font-size: var(--rt-fs-small);
+	color: var(--rt-quiet);
+}
+@container (max-width: 600px) {
+	.rt-bars {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Quick view */
+.rt-drawer {
+	--bs-offcanvas-width: 480px;
+}
+.rt-drawer .offcanvas-title {
+	white-space: nowrap;
+}
+.rt-drawer .basalt-drawer-sub a {
+	font-weight: 600;
+	color: var(--rt-link);
+}
+.rt-drawer .basalt-drawer-sub a:hover {
+	color: var(--basalt-copy);
+}
+.rt-r-state {
+	margin-bottom: 1.5rem;
+}
+.rt-r-pills {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.rt-alert {
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	margin: 1rem 0 0;
+	padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+	border-radius: 10px;
+	font-size: var(--rt-fs-body);
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+/* A straight inset bar, not a border that bends round the corners. */
+.rt-alert::before {
+	content: "";
+	position: absolute;
+	top: 0.5rem;
+	bottom: 0.5rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--basalt-danger);
+}
+.rt-alert .bi {
+	flex: none;
+	margin-top: 0.1rem;
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+
+.rt-quote {
+	position: relative;
+	margin: 0;
+	padding: 0.9rem 1rem 0.9rem 1.25rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.rt-quote::before {
+	content: "";
+	position: absolute;
+	top: 0.7rem;
+	bottom: 0.7rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--basalt-hue);
+}
+.rt-quote p {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+.rt-quote footer {
+	margin-top: 0.5rem;
+}
+
+.rt-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rt-step {
+	position: relative;
+	display: grid;
+	column-gap: 0.8rem;
+	grid-template-columns: 1.75rem minmax(0, 1fr);
+	padding-bottom: 1rem;
+}
+.rt-step:last-child {
+	padding-bottom: 0;
+}
+.rt-step:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2rem;
+	bottom: 0.2rem;
+	left: calc(0.875rem - 1px);
+	width: 2px;
+	border-radius: 1px;
+	background: var(--basalt-edge);
+}
+.rt-step.is-done:not(:last-child)::before {
+	background: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-plane));
+}
+/* A filled line grows down from its marker the first time a return is on
+   screen, each one a beat behind the one above. */
+.rt-steps.is-waiting .rt-step.is-done:not(:last-child)::before {
+	transform: scaleY(0);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.rt-steps.is-drawing .rt-step.is-done:not(:last-child)::before {
+		transform-origin: top;
+		animation: rt-trail-grow 600ms ease-out both;
+	}
+	.rt-steps.is-drawing .rt-step.is-done:nth-child(2)::before {
+		animation-delay: 300ms;
+	}
+	.rt-steps.is-drawing .rt-step.is-done:nth-child(3)::before {
+		animation-delay: 600ms;
+	}
+	.rt-steps.is-drawing .rt-step.is-done:nth-child(4)::before {
+		animation-delay: 900ms;
+	}
+	@keyframes rt-trail-grow {
+		from {
+			transform: scaleY(0);
+		}
+	}
+}
+.rt-step-marker {
+	display: grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--rt-quiet);
+	background: var(--basalt-plane-alt);
+}
+.rt-step.is-done .rt-step-marker {
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 18%, var(--basalt-plane));
+}
+.rt-step.is-declined .rt-step-marker {
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.rt-step.is-next .rt-step-marker {
+	color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+.rt-step-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.2rem;
+}
+.rt-step-label {
+	font-size: var(--rt-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rt-step.is-todo .rt-step-label {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+
+.rt-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rt-items-row {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--rt-line);
+}
+.rt-items-row:first-child {
+	padding-top: 0;
+}
+.rt-items-text {
+	min-width: 0;
+}
+.rt-sums {
+	margin: 0.8rem 0 0;
+}
+.rt-sums > div {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	padding: 0.3rem 0;
+}
+.rt-sums dt {
+	font-size: var(--rt-fs-body);
+	font-weight: 400;
+	color: var(--basalt-copy-body);
+}
+.rt-sums dd {
+	margin: 0;
+	font-size: var(--rt-fs-body);
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rt-sums .rt-sums-total {
+	margin-top: 0.4rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--rt-line);
+}
+.rt-sums .rt-sums-total dt,
+.rt-sums .rt-sums-total dd {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rt-r-note {
+	margin: 1rem 0 0;
+}
+
+/* Drawer header on a phone
+   The subtitle stays on one line, and the tile and the "1 of N" count
+   step out so the title keeps its room beside the arrows. */
+.rt-drawer .basalt-drawer-sub {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+@media (max-width: 479.98px) {
+	.rt-drawer .offcanvas-header > [aria-hidden="true"]:first-child,
+	.rt-drawer .basalt-drawer-pos {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rt-table tbody tr,
+	.rt-chip {
+		transition: none;
+	}
+}
+@media print {
+	.rt-toolbar,
+	.rt-col-act {
+		display: none;
+	}
+}

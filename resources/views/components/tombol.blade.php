@@ -7,18 +7,22 @@
     'ikon' => null,
 ])
 
-{{-- Tombol bergaya katalog template (HexaDash: Button). Bentuk selalu squared seperti contoh template;
-     outline memakai btn-outline-{warna} bersama color-{warna}, light color memakai btn-transparent-{warna}. --}}
+{{-- Tombol Basalt (Bootstrap btn). "light" dipetakan ke secondary karena Basalt memakai nada netral itu untuk aksi pendukung.
+     outlined memakai btn-outline-{warna}; transparent memakai btn-link. --}}
+@php
+    $nada = $warna === 'light' ? 'secondary' : $warna;
+    $ukuranBootstrap = match ($ukuran) { 'xs', 'sm' => 'btn-sm', 'lg' => 'btn-lg', default => '' };
+@endphp
 <button type="{{ $tipe }}" {{ $attributes->class([
-    'btn btn-squared',
-    'btn-'.$warna => $variasi === null,
-    'btn-outline-'.$warna.' color-'.$warna => $variasi === 'outlined',
-    'btn-transparent-'.$warna => $variasi === 'transparent',
-    'btn-'.$ukuran,
-    'btn-block' => $blok,
+    'btn',
+    'btn-'.$nada => $variasi === null,
+    'btn-outline-'.$nada => $variasi === 'outlined',
+    'btn-link text-'.$nada => $variasi === 'transparent',
+    $ukuranBootstrap,
+    'w-100' => $blok,
 ]) }}>
     @if ($ikon)
-        <i class="uil {{ $ikon }}" aria-hidden="true"></i>
+        <i class="bi {{ $ikon }} me-1" aria-hidden="true"></i>
     @endif
     {{ $slot }}
 </button>

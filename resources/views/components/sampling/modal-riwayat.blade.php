@@ -2,14 +2,12 @@
 
 {{-- Modal hasil satu sesi riwayat: sampel tersimpan dan ringkasannya, hanya untuk dibaca. Dibuka ikon Lihat di riwayat atau ringkasan.
      Tombol di kaki menggambar ulang hasil dari data-lembar menjadi PNG (Alpine eksporSampling). --}}
-<div class="modal-basic modal fade" id="modal-riwayat-sampling" tabindex="-1" aria-labelledby="judul-riwayat-sampling" aria-hidden="true" wire:ignore.self>
+<div class="modal fade" id="modal-riwayat-sampling" tabindex="-1" aria-labelledby="judul-riwayat-sampling" aria-hidden="true" wire:ignore.self>
     <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered" role="document">
-        <div class="modal-content modal-bg-white">
+        <div class="modal-content">
             <div class="modal-header">
                 <h6 class="modal-title" id="judul-riwayat-sampling">Hasil sampling {{ $kandang }}</h6>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Tutup">
-                    <img src="{{ asset('assets/img/svg/x.svg') }}" alt="x" class="svg">
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
 
             <div class="modal-body">
@@ -20,7 +18,7 @@
 
                 <div wire:loading.remove wire:target="buka, lihatTerakhir">
                     @if ($sesi)
-                        <x-info class="mb-25">
+                        <x-info class="mb-4">
                             <x-info.butir label="Tanggal">{{ $sesi->tanggal->translatedFormat('j F Y') }}</x-info.butir>
                             <x-info.butir label="Usia">{{ $sesi->umur }} hari</x-info.butir>
                             <x-info.butir label="Jenis sampling">{{ $sesi->dengan_sexing ? 'Dengan sexing' : 'Tanpa sexing' }}</x-info.butir>
@@ -29,12 +27,14 @@
                             @endforeach
                         </x-info>
 
-                        <div class="row g-4 mb-25">
+                        <div class="row g-4 mb-4">
                             @foreach (config('sampling.lantai') as $lantai => $info)
                                 <div class="col-12" wire:key="riwayat-lantai-{{ $sesi->id }}-{{ $lantai }}">
-                                    <div class="card card-default card-sm bg-transparent card-bordered">
-                                    <div class="card-header"><h6>{{ $info['label'] }}</h6></div>
-                                    <div class="card-body">
+                                    <section class="card basalt-box db-card bg-transparent">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">{{ $info['label'] }}</h2></div>
+</header>
                                     <div class="row g-4">
                                         @foreach ($hasil['kelamin'] as $kelamin)
                                             <div class="col-12">
@@ -47,18 +47,22 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                    </div>
-                                    </div>
+                                    
+</div>
+</section>
                                 </div>
                             @endforeach
                         </div>
 
-                        <div class="card card-default card-sm bg-transparent card-bordered">
-                            <div class="card-header"><h6>Ringkasan hasil</h6></div>
-                            <div class="card-body">
+                        <section class="card basalt-box db-card bg-transparent">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Ringkasan hasil</h2></div>
+</header>
                                 <x-sampling.ringkasan :hasil="$hasil" :pakan="$pakan" :dengan-sexing="$sesi->dengan_sexing" :umur="$sesi->umur" />
-                            </div>
-                        </div>
+                            
+</div>
+</section>
                     @endif
                 </div>
             </div>
@@ -66,8 +70,8 @@
             <div class="modal-footer" x-data="eksporSampling" data-lembar="{{ json_encode($lembar) }}">
                 <x-tombol.batal>Tutup</x-tombol.batal>
                 @if ($sesi)
-                    <x-tombol warna="light" variasi="outlined" ikon="uil-image-download" x-on:click="simpan" wire:loading.attr="disabled" wire:target="buka">Simpan PNG</x-tombol>
-                    <x-tombol ikon="uil-copy" x-on:click="salin" wire:loading.attr="disabled" wire:target="buka"><b class="fw-600" x-text="labelSalin" aria-live="polite">Salin PNG</b></x-tombol>
+                    <x-tombol warna="light" variasi="outlined" ikon="bi-image" x-on:click="simpan" wire:loading.attr="disabled" wire:target="buka">Simpan PNG</x-tombol>
+                    <x-tombol ikon="bi-copy" x-on:click="salin" wire:loading.attr="disabled" wire:target="buka"><b class="fw-semibold" x-text="labelSalin" aria-live="polite">Salin PNG</b></x-tombol>
                 @endif
             </div>
         </div>

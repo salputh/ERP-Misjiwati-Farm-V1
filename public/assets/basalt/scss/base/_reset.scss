@@ -1,0 +1,65 @@
+/* The ground every page stands on. The document carries the page's type and
+   colors, the heading scale is softened, and only after that come the media,
+   link, button and focus defaults that keep the parts from fighting it. */
+html {
+	-webkit-text-size-adjust: 100%;
+}
+body.basalt-doc {
+	min-height: 100vh;
+	margin: 0;
+	font-family: "Schibsted Grotesk", sans-serif;
+	font-size: 0.92rem;
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	color: var(--basalt-copy);
+	background-color: var(--basalt-canvas);
+}
+*,
+::before,
+::after {
+	box-sizing: border-box;
+}
+
+/* Bold and tighter for the three biggest levels, the larger the tighter;
+   semibold with barely any tracking below them. */
+@each $level, $tracking in (1: -0.02em, 2: -0.015em, 3: -0.01em) {
+	h#{$level},
+	.h#{$level} {
+		font-weight: 700;
+		letter-spacing: $tracking;
+	}
+}
+h4,
+h5,
+h6,
+.h4,
+.h5,
+.h6 {
+	font-weight: 600;
+	letter-spacing: -0.005em;
+}
+small,
+.small {
+	font-size: 0.81rem;
+}
+
+/* Images and icons stay inside their box, links take the color around them,
+   and buttons speak in the page font. */
+svg,
+img {
+	display: block;
+	max-width: 100%;
+}
+a {
+	color: inherit;
+}
+button {
+	font-family: inherit;
+}
+
+/* A keyboard user sees a tinted ring where the browser outline would be. */
+:focus-visible {
+	outline: 0;
+	box-shadow: 0 0 0 3px var(--basalt-hue-border);
+}

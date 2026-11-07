@@ -2,21 +2,21 @@
 
 {{-- Pengeluaran per kategori dari yang terbesar. Biaya operasional dan pinjaman karyawan dipisah
      supaya terlihat asal angka "Total biaya operasional". Porsi dihitung terhadap seluruh pengeluaran. --}}
-<div class="col-xxl-7 mb-25">
-    <div class="card card-default card-md h-100">
-        <div class="card-header">
-            <h6>Pengeluaran per kategori</h6>
-            <div class="card-extra fs-13 color-light tanpa-kapital">@angka($ringkasan['jumlah_keluar']) transaksi, @angka($ringkasan['jumlah_kategori']) kategori</div>
-        </div>
-        <div class="card-body">
-            <div class="table4 table-responsive">
-                <table class="table tabel-laporan tabel-kas tabel-kas--kategori mb-0">
+<div class="col-xxl-7 mb-4">
+    <section class="card basalt-box db-card h-100">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Pengeluaran per kategori</h2></div>
+            <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">@angka($ringkasan['jumlah_keluar']) transaksi, @angka($ringkasan['jumlah_kategori']) kategori</div>
+</header>
+            <div class="tabel-data table-responsive">
+                <table class="table tabel-laporan tabel-kas tabel-kas--kategori mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">Kategori</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Transaksi</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Jumlah (Rp)</span></th>
-                            <th><span class="userDatatable-title">Porsi dari pengeluaran</span></th>
+                        <tr>
+                            <th>Kategori</th>
+                            <th class="text-end">Transaksi</th>
+                            <th class="text-end">Jumlah (Rp)</th>
+                            <th>Porsi dari pengeluaran</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -24,7 +24,7 @@
                         @foreach ($biaya as $baris)
                             <x-kas.baris-kategori :baris="$baris" />
                         @endforeach
-                        <tr class="fw-500 color-dark">
+                        <tr class="fw-medium text-body">
                             <td>Total biaya operasional</td>
                             <td class="text-end">@angka($ringkasan['jumlah_biaya'])</td>
                             <td class="text-end">@angka($ringkasan['biaya'])</td>
@@ -37,7 +37,7 @@
                             @foreach ($pinjaman as $baris)
                                 <x-kas.baris-kategori :baris="$baris" warna="warning" />
                             @endforeach
-                            <tr class="fw-500 color-dark">
+                            <tr class="fw-medium text-body">
                                 <td>Total pinjaman karyawan</td>
                                 <td class="text-end">@angka($ringkasan['jumlah_pinjaman'])</td>
                                 <td class="text-end">@angka($ringkasan['pinjaman'])</td>
@@ -55,6 +55,7 @@
                     </tfoot>
                 </table>
             </div>
-        </div>
-    </div>
+        
+</div>
+</section>
 </div>

@@ -1,33 +1,33 @@
-<div class="col-12 mb-25" id="premi-abk">
+<div class="col-12 mb-4" id="premi-abk">
     <x-kartu judul="Premi ABK" subjudul="Estimasi hasil kandang koloni per ekor (4 ABK). Premi pemeliharaan ABK di RHPP dan bagi hasil diambil dari baris tertinggi yang dicapai total budidaya per ekor populasi; di bawah baris terendah, premi Rp 0." badan="p-0">
         <x-slot:ekstra>
             <x-tombol wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-premi-abk">Tambah baris</x-tombol>
         </x-slot:ekstra>
 
-        {{-- Tabel template (HexaDash: Basic Table, Basic Usage) --}}
-        <div class="table4 p-25">
+        {{-- Tabel template  --}}
+        <div class="tabel-data">
             @if ($pesan)
                 <x-peringatan warna="success" bisaDitutup="true">{{ $pesan }}</x-peringatan>
             @endif
 
             <div class="table-responsive">
-                <table class="table mb-0">
+                <table class="table mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">No.</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Hasil per ekor</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Intensif</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Premi ABK</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Aksi</span></th>
+                        <tr>
+                            <th>No.</th>
+                            <th class="text-end">Hasil per ekor</th>
+                            <th class="text-end">Intensif</th>
+                            <th class="text-end">Premi ABK</th>
+                            <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->daftar as $baris)
                             <tr wire:key="premi-abk-{{ $baris->id }}">
-                                <td><div class="userDatatable-content">{{ $loop->iteration }}</div></td>
-                                <td class="text-end"><div class="userDatatable-content fw-500">≥ Rp @angka($baris->hasil_per_ekor)</div></td>
-                                <td class="text-end"><div class="userDatatable-content">@angka($baris->intensif)</div></td>
-                                <td class="text-end"><div class="userDatatable-content">Rp @angka($baris->premi)</div></td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td class="text-end"><div class="fw-medium">≥ Rp @angka($baris->hasil_per_ekor)</div></td>
+                                <td class="text-end">@angka($baris->intensif)</td>
+                                <td class="text-end">Rp @angka($baris->premi)</td>
                                 <td>
                                     <x-aksi.ikon :aksi="[
                                         ['kelas' => 'edit', 'label' => 'Ubah premi ABK Rp '.\App\Support\Format::angka($baris->hasil_per_ekor).' per ekor', 'click' => 'ubah('.$baris->id.')', 'modal' => '#modal-premi-abk'],
@@ -37,7 +37,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center color-light">Belum ada baris premi ABK. Tanpa tabel ini, premi pemeliharaan ABK dihitung Rp 0.</td>
+                                <td colspan="5" class="text-center text-body-secondary">Belum ada baris premi ABK. Tanpa tabel ini, premi pemeliharaan ABK dihitung Rp 0.</td>
                             </tr>
                         @endforelse
                     </tbody>

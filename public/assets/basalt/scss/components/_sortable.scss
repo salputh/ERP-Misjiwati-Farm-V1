@@ -1,0 +1,428 @@
+/**
+ * Drag-to-reorder lists and the kanban board built from them. Any list, list
+ * group or tile grid marked [data-basalt-sortable] can be rearranged with a
+ * pointer or from the keyboard (assets/basalt/js/components/trees.js, Basalt.sortable); lists that
+ * share a data-basalt-sortable-group pass items between each other, and
+ * .basalt-board is simply a row of such lists. tree-and-sortable.html shows
+ * every variant.
+ */
+
+/* Rows that line their pieces up across the middle with a set gap. */
+@mixin middle-row($gap, $display: flex) {
+	display: $display;
+	gap: $gap;
+	align-items: center;
+}
+
+/* Handles, rank chips and dots are squares, sized with one number. */
+@mixin square-cell($size) {
+	width: $size;
+	height: $size;
+}
+
+/* The list keeps no bullets or indent; free-standing cards get a gap
+   between them, while a list group stays flush. */
+.basalt-sortable {
+	--basalt-sortable-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&[data-basalt-sortable-whole] > .basalt-sortable-item {
+		cursor: grab;
+	}
+}
+.list-group.basalt-sortable {
+	gap: 0;
+}
+
+/* Items outside a list group draw their own card; inside one, they only
+   pull their text closer to the handle. */
+.basalt-sortable-item {
+	min-width: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	@include middle-row(0.75rem);
+	position: relative;
+
+	&:not(.list-group-item) {
+		padding: 0.7rem 0.9rem 0.7rem 0.4rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		background: var(--basalt-plane);
+		transition:
+			border-color 170ms ease,
+			box-shadow 170ms ease;
+
+		&:hover {
+			border-color: var(--basalt-edge-strong);
+		}
+	}
+}
+.list-group-item.basalt-sortable-item {
+	--bs-list-group-color: var(--basalt-copy-body);
+	padding-left: 0.4rem;
+}
+
+.basalt-sortable {
+	/* The grip is the drag source, and it turns solid while the keyboard
+     holds the item. */
+	&-handle {
+		color: var(--basalt-sortable-quiet);
+		background: transparent;
+		@include square-cell(1.9rem);
+		display: inline-grid;
+		flex-shrink: 0;
+		place-items: center;
+		padding: 0;
+		border: 0;
+		border-radius: 8px;
+		cursor: grab;
+		transition:
+			background-color 130ms ease,
+			color 130ms ease;
+		touch-action: none;
+
+		&:hover {
+			color: var(--basalt-copy);
+			background: var(--basalt-wash);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 1px;
+			box-shadow: none;
+		}
+
+		&[aria-pressed="true"] {
+			color: var(--basalt-on-hue);
+			background: var(--basalt-hue);
+		}
+	}
+
+	&-main {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&-title {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	&-sub {
+		font-size: 0.8rem;
+		color: var(--basalt-sortable-quiet);
+	}
+
+	&-end {
+		flex-shrink: 0;
+		font-size: 0.75rem;
+		white-space: nowrap;
+		color: var(--basalt-sortable-quiet);
+	}
+
+	/* The position number in a mono face, on a soft round chip. */
+	&-rank {
+		font-size: 0.76rem;
+		font-weight: 600;
+		font-family: "Chivo Mono", monospace;
+		color: color-mix(in srgb, var(--basalt-hue) 58%, var(--basalt-copy));
+		background: var(--basalt-hue-soft);
+		@include square-cell(1.75rem);
+		display: inline-grid;
+		flex-shrink: 0;
+		place-items: center;
+		border-radius: 50%;
+	}
+}
+
+/* A keyboard pick-up rings the item and lifts it over its neighbors. */
+.basalt-sortable-item.is-grabbed {
+	z-index: 2;
+	border-color: var(--basalt-hue);
+	box-shadow:
+		0 0 0 3px var(--basalt-hue-border),
+		var(--basalt-card-shadow);
+}
+.list-group-item.basalt-sortable-item.is-grabbed {
+	z-index: 3;
+}
+
+/* A pointer drag pins the item to the cursor while a dashed slot holds its
+   place in the list. */
+.basalt-sortable-item.is-dragging {
+	position: fixed;
+	z-index: 1085;
+	margin: 0;
+	border-color: var(--basalt-hue);
+	box-shadow: var(--basalt-card-shadow);
+	cursor: grabbing;
+	pointer-events: none;
+}
+.list-group-item.basalt-sortable-item.is-dragging {
+	border: 1px solid var(--basalt-hue);
+	border-radius: 10px;
+}
+
+.basalt-sortable-placeholder {
+	flex-shrink: 0;
+	border: 1.5px dashed var(--basalt-hue);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-hue-soft) 60%, transparent);
+	list-style: none;
+
+	.list-group > & {
+		border-radius: 0;
+	}
+}
+
+/* A dropped item glows once so the eye can find where it landed. */
+.basalt-sortable-item.is-moved {
+	animation: basalt-sortable-flash 1s ease;
+}
+
+@keyframes basalt-sortable-flash {
+	0%,
+	25% {
+		box-shadow: 0 0 0 3px var(--basalt-hue-border);
+	}
+	100% {
+		box-shadow: 0 0 0 0 transparent;
+	}
+}
+
+/* For the length of a drag the whole page shows the closed hand and
+   nothing gets text-selected. */
+body.basalt-is-sorting,
+body.basalt-is-sorting * {
+	cursor: grabbing;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+/* Tiles: two across on phones, three from the small breakpoint up, each
+   with its grip tucked into the top corner. */
+.basalt-sortable-grid {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (min-width: 576px) {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+.basalt-sortable-tile {
+	&.basalt-sortable-item {
+		gap: 0.3rem;
+		flex-direction: column;
+		align-items: flex-start;
+		min-height: 7rem;
+		padding: 1rem;
+	}
+
+	.basalt-sortable-handle {
+		@include square-cell(1.7rem);
+		position: absolute;
+		top: 0.4rem;
+		right: 0.4rem;
+	}
+
+	.basalt-sortable-sub {
+		padding-right: 1.6rem;
+	}
+}
+
+.basalt-sortable-value {
+	font-size: 1.35rem;
+	font-weight: 750;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+
+/* The board lays sortable lists side by side as columns that all share one
+   group. Each column header carries a count, and the column warns once the
+   count runs past its limit. */
+.basalt-board {
+	--basalt-board-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.basalt-board-col {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--basalt-canvas) 60%, var(--basalt-plane));
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	&.is-over {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue-soft) 55%, var(--basalt-canvas));
+	}
+
+	&.is-over-limit {
+		border-color: color-mix(in srgb, var(--basalt-danger) 55%, transparent);
+	}
+}
+
+.basalt-board {
+	&-head {
+		margin-bottom: 0.8rem;
+		@include middle-row(0.5rem);
+		justify-content: space-between;
+	}
+
+	&-title {
+		margin: 0;
+		font-size: 0.875rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+		@include middle-row(0.5rem);
+	}
+
+	/* Column dots cycle through three series colors. */
+	&-dot {
+		background: var(--basalt-series-5);
+		@include square-cell(0.5rem);
+		border-radius: 50%;
+	}
+
+	&-col:nth-child(3n + 2) &-dot {
+		background: var(--basalt-series-1);
+	}
+	&-col:nth-child(3n + 3) &-dot {
+		background: var(--basalt-series-3);
+	}
+
+	&-count {
+		padding: 0.12rem 0.5rem;
+		border-radius: 999px;
+		border: 1px solid var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 600;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy-body);
+		background: var(--basalt-plane);
+		@include middle-row(0.3rem, inline-flex);
+	}
+
+	&-col.is-over-limit &-count {
+		border-color: color-mix(in srgb, var(--basalt-danger) 40%, transparent);
+		color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* Inside a column the list stretches to the floor, and an empty one shows
+   a dashed drop zone with a hint. */
+.basalt-board-col .basalt-sortable {
+	flex: 1;
+	min-height: 5.5rem;
+
+	&.is-empty {
+		align-items: center;
+		justify-content: center;
+		border: 1.5px dashed var(--basalt-edge-strong);
+		border-radius: 12px;
+
+		&::after {
+			content: "Drop cards here";
+			font-size: 0.8rem;
+			color: var(--basalt-board-quiet);
+		}
+	}
+}
+
+/* Cards top-align their content, since the title can run to two lines. */
+.basalt-board-card.basalt-sortable-item {
+	align-items: flex-start;
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+}
+
+.basalt-board {
+	&-body {
+		display: flex;
+		gap: 0.1rem;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		padding-top: 0.1rem;
+	}
+
+	&-ref {
+		font-size: 0.71rem;
+		font-family: "Chivo Mono", monospace;
+		color: var(--basalt-board-quiet);
+	}
+
+	&-name {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	&-meta {
+		font-size: 0.77rem;
+		color: var(--basalt-board-quiet);
+	}
+
+	&-tag {
+		flex-shrink: 0;
+		align-self: flex-start;
+		padding: 0.1rem 0.5rem;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--basalt-copy-body);
+		background: var(--basalt-plane-alt);
+	}
+}
+
+/* Tag tones: a soft fill with ink mixed from the tone toward the text color. */
+@each $tone, $ink in (warning: 38%, success: 42%) {
+	.basalt-board-tag-#{$tone} {
+		color: color-mix(in srgb, var(--basalt-#{$tone}) #{$ink}, var(--basalt-copy));
+		background: var(--basalt-#{$tone}-soft);
+	}
+}
+
+/* Reduced motion: hovers, drags and drops happen without easing or glow. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-sortable-item,
+	.basalt-sortable-handle,
+	.basalt-board-col {
+		transition: none;
+	}
+
+	.basalt-sortable-item.is-moved {
+		animation: none;
+	}
+}
+
+/* On paper the grips mean nothing and nothing should be mid-animation. */
+@media print {
+	.basalt-sortable-handle {
+		display: none;
+	}
+
+	.basalt-sortable-item,
+	.basalt-board-col {
+		transition: none;
+		animation: none;
+	}
+}

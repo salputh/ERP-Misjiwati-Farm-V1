@@ -5,7 +5,7 @@
 
         @if ($pesan)
             <div class="col-12">
-                <x-peringatan warna="success" class="mb-25">{{ $pesan }}</x-peringatan>
+                <x-peringatan warna="success" class="mb-4">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
@@ -15,9 +15,9 @@
 
         @if ($this->rekap)
         {{-- Identitas rekap --}}
-        <div class="col-12 mb-25">
-            <div class="card card-default card-md">
-                <div class="card-body">
+        <div class="col-12 mb-4">
+            <section class="card basalt-box db-card">
+<div class="db-card-body">
                     <x-info>
                         <x-info.butir label="Inti">PT. Indojaya Agrinusa</x-info.butir>
                         <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
@@ -26,24 +26,25 @@
                         <x-info.butir label="Masa panen">{{ $this->rekap['mulai']->translatedFormat('j F') }} s/d {{ $this->rekap['selesai']->translatedFormat('j F Y') }}</x-info.butir>
                         <x-info.butir label="Nota timbang">@angka($this->rekap['total']['jumlah_nota']) nota, {{ count($this->rekap['hari']) }} hari panen</x-info.butir>
                     </x-info>
-                </div>
-            </div>
+                
+</div>
+</section>
         </div>
 
         {{-- Angka utama --}}
-        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->rekap['total']['ekor'])" label="Ekor terpanen" ikon="uil-truck" warna="primary">
+        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->rekap['total']['ekor'])" label="Ekor terpanen" ikon="bi-truck" warna="primary">
             <small>dari @angka($this->rekap['performa']['doc']) ekor DOC (@angka($this->rekap['performa']['hidup_terpanen'], 2)%)</small>
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->rekap['total']['berat'], 1).' kg'" label="Total berat panen" ikon="uil-weight" warna="secondary">
+        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->rekap['total']['berat'], 1).' kg'" label="Total berat panen" ikon="bi-speedometer2" warna="secondary">
             <small>@angka($this->rekap['total']['krat']) krat, rata-rata @angka($this->rekap['total']['per_krat'], 2) kg per krat</small>
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->rekap['total']['bw'], 3).' kg'" label="Rata-rata BW" ikon="uil-balance-scale" warna="info">
+        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->rekap['total']['bw'], 3).' kg'" label="Rata-rata BW" ikon="bi-calculator" warna="info">
             <small>umur panen rata-rata @angka($this->rekap['performa']['umur_rata'], 1) hari</small>
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->rekap['performa']['fcr'], 3)" label="FCR" ikon="uil-chart-line" warna="warning">
+        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::angka($this->rekap['performa']['fcr'], 3)" label="FCR" ikon="bi-graph-up" warna="warning">
             <small>IP @angka($this->rekap['performa']['ip_terpanen']) (basis ekor terpanen)</small>
         </x-dashboard.kartu>
 
@@ -53,8 +54,8 @@
 
         <x-panen.umur :umur="$this->rekap['umur']" :total="$this->rekap['total']" :umur-rata="$this->rekap['performa']['umur_rata']" />
 
-        <div class="col-12 mb-25">
-            <p class="fs-13 color-light mb-0">
+        <div class="col-12 mb-4">
+            <p class="small text-body-secondary mb-0">
                 Setiap baris adalah satu nota timbang utuh; nota yang muatannya berasal dari dua kandang dicatat sebagai satu baris. Satu hari panen berjalan dari malam sampai pagi berikutnya.
             </p>
         </div>
@@ -74,15 +75,15 @@
         aksi-tutup="batalUbah"
         x-on:nota-panen-disimpan.window="bootstrap.Modal.getInstance($el).hide()">
         {{-- Identitas nota --}}
-        <div class="card card-default card-sm bg-transparent card-bordered mb-25">
-            <div class="card-header">
-                <h6>Identitas nota</h6>
-            </div>
-            <div class="card-body pb-0">
+        <section class="card basalt-box db-card bg-transparent mb-4">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Identitas nota</h2></div>
+</header>
                 <div class="row">
                     <div class="col-md-4">
-                        <div class="form-group mb-25">
-                            <label for="panen-tanggal" class="il-gray fs-14 fw-500 align-center mb-10">Tanggal panen</label>
+                        <div class="mb-3 mb-4">
+                            <label for="panen-tanggal" class="form-label fw-medium mb-2">Tanggal panen</label>
                             <x-pilih-tanggal id="panen-tanggal" ukuran="medium" :nilai="$tanggalPanen" :kesalahan="$errors->has('tanggalPanen')" x-on:tanggal-dipilih="$wire.set('tanggalPanen', $event.detail)" />
                             @error('tanggalPanen')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
@@ -100,45 +101,47 @@
                         <x-masukan id="panen-polisi" label="No. polisi" maxlength="255" placeholder="Contoh: BM 8653 PI" wire:model="noPolisi" :kesalahan="$errors->first('noPolisi')" autocomplete="off" />
                     </div>
                 </div>
-            </div>
-        </div>
+            
+</div>
+</section>
 
         {{-- Waktu timbang --}}
-        <div class="card card-default card-sm bg-transparent card-bordered mb-25">
-            <div class="card-header">
-                <h6>Waktu timbang</h6>
-                <div class="card-extra fs-13 color-light tanpa-kapital">
+        <section class="card basalt-box db-card bg-transparent mb-4">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Waktu timbang</h2></div>
+                <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">
                     @isset($this->ringkasanForm['durasi_menit'])
                         lama timbang @angka($this->ringkasanForm['durasi_menit']) menit
                     @endisset
                 </div>
-            </div>
-            <div class="card-body pb-0">
+</header>
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-group mb-25">
-                            <label for="panen-mulai" class="il-gray fs-14 fw-500 align-center mb-10">Mulai timbang</label>
+                        <div class="mb-3 mb-4">
+                            <label for="panen-mulai" class="form-label fw-medium mb-2">Mulai timbang</label>
                             <x-pilih-waktu id="panen-mulai" :nilai="$mulai" :kesalahan="$errors->has('mulai')" x-on:waktu-dipilih="$wire.set('mulai', $event.detail)" />
                             @error('mulai')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group mb-25">
-                            <label for="panen-selesai" class="il-gray fs-14 fw-500 align-center mb-10">Selesai timbang</label>
+                        <div class="mb-3 mb-4">
+                            <label for="panen-selesai" class="form-label fw-medium mb-2">Selesai timbang</label>
                             <x-pilih-waktu id="panen-selesai" :nilai="$selesai" :kesalahan="$errors->has('selesai')" x-on:waktu-dipilih="$wire.set('selesai', $event.detail)" />
                             @error('selesai')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            
+</div>
+</section>
 
         {{-- Hasil timbang, dengan angka turunan untuk memeriksa salah ketik --}}
-        <div class="card card-default card-sm bg-transparent card-bordered mb-25">
-            <div class="card-header">
-                <h6>Hasil timbang</h6>
-            </div>
-            <div class="card-body pb-0">
+        <section class="card basalt-box db-card bg-transparent mb-4">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Hasil timbang</h2></div>
+</header>
                 <div class="row">
                     <div class="col-md-3 col-6">
                         <x-masukan id="panen-krat" label="Jumlah krat" tipe="number" min="1" step="1" placeholder="0" wire:model.live.debounce.500ms="jumlahKrat" :kesalahan="$errors->first('jumlahKrat')" />
@@ -153,7 +156,7 @@
                         <x-masukan.ribuan properti="nettoNotaKg" :desimal="2" teks langsung id="panen-netto" label="Netto nota (kg)" placeholder="0,00" :kesalahan="$errors->first('nettoNotaKg')" />
                     </div>
                 </div>
-                <div class="row g-3 mb-25">
+                <div class="row g-3 mb-4">
                     <div class="col-md-3 col-6">
                         <x-info.butir label="BW rata-rata">
                             @isset($this->ringkasanForm['bw'])
@@ -184,22 +187,23 @@
                     <div class="col-md-3 col-6">
                         <x-info.butir label="Selisih timbang − netto">
                             @isset($this->ringkasanForm['selisih'])
-                                <span @class(['color-danger' => $this->ringkasanForm['selisih'] != 0])>@kurung($this->ringkasanForm['selisih'], 2) kg</span>
+                                <span @class(['text-danger' => $this->ringkasanForm['selisih'] != 0])>@kurung($this->ringkasanForm['selisih'], 2) kg</span>
                             @else
                                 -
                             @endisset
                         </x-info.butir>
                     </div>
                 </div>
-            </div>
-        </div>
+            
+</div>
+</section>
 
         {{-- Tim tangkap --}}
-        <div class="card card-default card-sm bg-transparent card-bordered">
-            <div class="card-header">
-                <h6>Tim tangkap <span class="fs-13 color-light fw-400">(opsional)</span></h6>
-            </div>
-            <div class="card-body">
+        <section class="card basalt-box db-card bg-transparent">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Tim tangkap <span class="small text-body-secondary fw-normal">(opsional)</span></h2></div>
+</header>
                 <x-masukan
                     id="panen-tukang-tangkap"
                     label="Nama tukang tangkap"
@@ -210,20 +214,20 @@
                     placeholder="Contoh: Rizal, David, Budi" />
 
                 @if ($this->rincianPemanen !== [])
-                    <p class="fs-13 color-light mb-15">Isi krat mulai atau berat timbang hanya bila ada pemanen yang mulai di krat berikutnya, atau beratnya ditimbang terpisah. Sisa berat nota dibagi menurut jumlah krat di antara pemanen yang beratnya kosong.</p>
-                    <div class="table4 table-responsive">
-                        <table class="table tabel-laporan mb-0">
+                    <p class="small text-body-secondary mb-3">Isi krat mulai atau berat timbang hanya bila ada pemanen yang mulai di krat berikutnya, atau beratnya ditimbang terpisah. Sisa berat nota dibagi menurut jumlah krat di antara pemanen yang beratnya kosong.</p>
+                    <div class="tabel-data table-responsive">
+                        <table class="table tabel-laporan mb-0 db-table">
                             <thead>
-                                <tr class="userDatatable-header">
-                                    <th><span class="userDatatable-title">Pemanen</span></th>
-                                    <th><span class="userDatatable-title">Krat mulai</span></th>
-                                    <th><span class="userDatatable-title">Berat timbang (kg)</span></th>
+                                <tr>
+                                    <th>Pemanen</th>
+                                    <th>Krat mulai</th>
+                                    <th>Berat timbang (kg)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($this->rincianPemanen as $pemanen)
                                     <tr wire:key="detail-pemanen-{{ $pemanen['kunci'] }}">
-                                        <td class="fw-500 color-dark align-middle">{{ $pemanen['nama'] }}</td>
+                                        <td class="fw-medium text-body align-middle">{{ $pemanen['nama'] }}</td>
                                         <td>
                                             <label class="visually-hidden" for="panen-krat-mulai-{{ $pemanen['kunci'] }}">Krat mulai {{ $pemanen['nama'] }}</label>
                                             <input
@@ -233,7 +237,7 @@
                                                 max="{{ $jumlahKrat ?: 4294967295 }}"
                                                 step="1"
                                                 wire:model="detailPemanen.{{ $pemanen['kunci'] }}.kratMulai"
-                                                @class(['form-control form-control-sm ip-gray radius-xs b-light px-15', 'is-invalid' => $errors->has("detailPemanen.{$pemanen['kunci']}.kratMulai")])
+                                                @class(['form-control form-control-sm    px-3', 'is-invalid' => $errors->has("detailPemanen.{$pemanen['kunci']}.kratMulai")])
                                                 placeholder="1"
                                             >
                                             @error("detailPemanen.{$pemanen['kunci']}.kratMulai")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
@@ -248,7 +252,7 @@
                                                 x-data="isianRibuan('detailPemanen.{{ $pemanen['kunci'] }}.beratTimbang', '.', false, { desimal: 2, teks: true })"
                                                 x-on:input="format"
                                                 x-on:blur="kirim(true)"
-                                                @class(['form-control form-control-sm ip-gray radius-xs b-light px-15', 'is-invalid' => $errors->has("detailPemanen.{$pemanen['kunci']}.beratTimbang")])
+                                                @class(['form-control form-control-sm    px-3', 'is-invalid' => $errors->has("detailPemanen.{$pemanen['kunci']}.beratTimbang")])
                                                 placeholder="dibagi menurut krat"
                                             >
                                             @error("detailPemanen.{$pemanen['kunci']}.beratTimbang")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
@@ -260,11 +264,12 @@
                     </div>
                     @error('detailPemanen')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 @endif
-            </div>
-        </div>
+            
+</div>
+</section>
 
         @if ($errors->any())
-            <x-peringatan warna="danger" class="mt-15 mb-0">Periksa kembali isian yang ditandai.</x-peringatan>
+            <x-peringatan warna="danger" class="mt-3 mb-0">Periksa kembali isian yang ditandai.</x-peringatan>
         @endif
 
         <x-slot:footer>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1365" viewBox="0 0 1100 1365">
+<!-- Placeholder for assets/basalt/images/multipurpose/social-new-season.jpg (Social post photo). Any size works: the page crops the picture to fill its slot. Put your own image here and point the page at it. -->
+<style>.l{font:600 50.6px Schibsted Grotesk, system-ui, -apple-system, Segoe UI, Arial, sans-serif}.s{font:400 41.8px Schibsted Grotesk, system-ui, -apple-system, Segoe UI, Arial, sans-serif}@media (max-width:139px),(max-height:99px){.words{display:none}.mark{transform-box:fill-box;transform-origin:center;transform:translateY(118.8px) scale(5)}}</style>
+<defs><pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2" height="10" fill="#6d3fe0" fill-opacity="0.07"/></pattern></defs>
+<rect width="100%" height="100%" fill="#6d3fe0" fill-opacity="0.07"/>
+<rect width="100%" height="100%" fill="url(#hatch)"/>
+<g><g class="mark" fill="#6d3fe0" fill-opacity="0.45"><rect x="488.4" y="563.7" width="22" height="44" rx="5.28"/><rect x="521.4" y="537.3" width="22" height="70.4" rx="5.28"/><rect x="554.4" y="550.5" width="22" height="57.2" rx="5.28"/><rect x="587.4" y="519.7" width="22" height="88" rx="5.28"/></g><g class="words" fill="#8178ad" text-anchor="middle"><text class="l" x="550" y="704.5">Social post photo</text><text class="s" x="550" y="766.1">Any size</text></g></g>
+</svg>

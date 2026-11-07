@@ -1,0 +1,891 @@
+/* Basalt - Role Details (role-details.html)
+   One open role and its job posting. Namespaced under .rd-*; every
+   color is a --basalt-* token, so palettes and dark mode carry
+   through. */
+
+.rd-page {
+	/* Muted text, pulled toward the body color so small labels keep
+     their contrast in every palette. */
+	--rd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--rd-line: var(--basalt-edge);
+	--rd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+
+/* The stage colors match the columns on the Hiring board. */
+.rd-page [data-stage="applied"] {
+	--rd-stage: var(--basalt-series-5);
+}
+.rd-page [data-stage="screen"] {
+	--rd-stage: var(--basalt-series-2);
+}
+.rd-page [data-stage="interview"] {
+	--rd-stage: var(--basalt-series-1);
+}
+.rd-page [data-stage="offer"] {
+	--rd-stage: var(--basalt-series-4);
+}
+.rd-page [data-stage="hired"] {
+	--rd-stage: var(--basalt-success);
+}
+
+.rd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--rd-link);
+}
+.rd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.rd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Header: back link, the role, status, actions */
+.basalt-hero-detail.rd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.rd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.rd-head .basalt-hero-actions .btn {
+	white-space: nowrap;
+}
+.rd-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.8rem;
+}
+.rd-tags .basalt-status {
+	padding: 0.25rem 0.7rem;
+	font-size: 0.77rem;
+}
+.rd-tags .basalt-status-menu .basalt-status {
+	padding-right: 0.5rem;
+}
+.rd-pub .basalt-status {
+	color: color-mix(in srgb, var(--stp-tone) 40%, var(--basalt-copy));
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.rd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+
+/* Paused or closed: one slim line */
+.rd-notice {
+	--rd-n: var(--basalt-warning);
+	display: flex;
+	gap: 0.6rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 1.5rem;
+	padding: 0.65rem 0.75rem 0.65rem 1rem;
+	border: 1px solid color-mix(in srgb, var(--rd-n) 34%, var(--basalt-edge));
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--rd-n) 8%, var(--basalt-plane));
+}
+.rd-notice-closed {
+	--rd-n: var(--basalt-danger);
+}
+.rd-notice[hidden] {
+	display: none;
+}
+.rd-notice > .bi {
+	flex: none;
+	color: color-mix(in srgb, var(--rd-n) 58%, var(--basalt-copy));
+}
+.rd-notice > span {
+	flex: 1 1 18rem;
+	min-width: 0;
+}
+.rd-notice .btn {
+	flex: none;
+	white-space: nowrap;
+}
+
+/* Grid
+   Everything runs across the page; from 1200px the interview plan sits
+   beside the activity, the pair ending level. */
+.rd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.rd-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.rd-card-glance,
+	.rd-card-stages,
+	.rd-card-posting {
+		grid-column: span 12;
+	}
+	.rd-card-plan {
+		grid-column: span 5;
+	}
+	.rd-card-log {
+		grid-column: span 7;
+	}
+}
+
+/* Cards */
+.rd-card {
+	container-type: inline-size;
+	min-width: 0;
+}
+.rd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.rd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.rd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.rd-card-head > div {
+	min-width: 0;
+}
+.rd-card-head .btn {
+	flex: none;
+	white-space: nowrap;
+}
+.rd-card-head .btn[hidden] {
+	display: none;
+}
+.rd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rd-quiet);
+}
+.rd-sub {
+	margin: 0 0 0.9rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--rd-quiet);
+}
+
+/* At a glance
+   Five figures in a row on a wide card, two or three across on a
+   medium one, stacked on a phone. */
+.rd-glance {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0.25rem var(--basalt-pad-x);
+}
+.rd-glance-item {
+	--rd-g: var(--basalt-series-1);
+	min-width: 0;
+	padding: 1.25rem 0;
+}
+.rd-glance-item + .rd-glance-item {
+	border-top: 1px solid var(--rd-line);
+}
+.rd-glance-item[data-tone="pay"] {
+	--rd-g: var(--basalt-success);
+}
+.rd-glance-item[data-tone="manager"] {
+	--rd-g: var(--basalt-series-2);
+}
+.rd-glance-item[data-tone="age"] {
+	--rd-g: var(--basalt-series-5);
+}
+.rd-glance-item[data-tone="filled"] {
+	--rd-g: var(--basalt-series-4);
+}
+.rd-glance-item[data-tone="start"] {
+	--rd-g: var(--basalt-series-1);
+}
+.rd-glance dt {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--rd-quiet);
+}
+.rd-glance-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--rd-g) 58%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-g) 16%, var(--basalt-plane));
+}
+.rd-glance dd {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+	margin: 0.65rem 0 0;
+}
+.rd-glance-value {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 1.1rem;
+	font-weight: 700;
+	line-height: 1.35;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.rd-glance-value .rd-link {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-glance-value .rd-link:hover {
+	color: var(--rd-link);
+}
+.rd-glance-value .basalt-avatar {
+	flex: none;
+}
+.rd-glance-note {
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--rd-quiet);
+}
+@container (min-width: 540px) {
+	.rd-glance {
+		column-gap: 1.5rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.rd-glance-item + .rd-glance-item {
+		border-top: 0;
+	}
+	.rd-glance-item:nth-child(n + 3) {
+		border-top: 1px solid var(--rd-line);
+	}
+	.rd-glance-item:last-child {
+		grid-column: 1 / -1;
+	}
+}
+@container (min-width: 1000px) {
+	.rd-glance {
+		column-gap: 0;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+	.rd-glance-item,
+	.rd-glance-item:nth-child(n + 3) {
+		padding: 1.4rem 1.25rem;
+		border-top: 0;
+	}
+	.rd-glance-item:first-child {
+		padding-left: 0;
+	}
+	.rd-glance-item:last-child {
+		grid-column: auto;
+		padding-right: 0;
+	}
+	.rd-glance-item + .rd-glance-item {
+		border-left: 1px solid var(--rd-line);
+	}
+}
+
+/* Candidates by stage
+   A thin bar of how the candidates split, then a column per stage. */
+.rd-bar {
+	display: flex;
+	gap: 3px;
+	height: 8px;
+	margin: -0.25rem 0 1.5rem;
+}
+.rd-bar[hidden] {
+	display: none;
+}
+.rd-bar-part {
+	flex: 1 1 0;
+	min-width: 8px;
+	border-radius: 4px;
+	background: var(--rd-stage);
+}
+.rd-stages {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+.rd-stage {
+	position: relative;
+	min-width: 0;
+	padding: 1.05rem 1rem 1rem;
+	border: 1px solid color-mix(in srgb, var(--rd-stage) 22%, var(--rd-line));
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--rd-stage) 6%, var(--basalt-plane));
+}
+.rd-stage::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0.9rem;
+	left: 0.9rem;
+	height: 3px;
+	border-radius: 0 0 3px 3px;
+	background: var(--rd-stage);
+}
+.rd-stage-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-stage-dot {
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--rd-stage);
+}
+.rd-stage-count {
+	margin-left: auto;
+	padding: 0.05rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	color: color-mix(in srgb, var(--rd-stage) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-stage) 16%, var(--basalt-plane));
+}
+.rd-stage-list {
+	display: grid;
+	gap: 0.8rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-stage-empty {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+.rd-person {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	min-width: 0;
+}
+.rd-person .basalt-avatar {
+	flex: none;
+}
+.rd-person-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-person-name {
+	border-radius: 4px;
+	font-size: 0.86rem;
+	font-weight: 650;
+	line-height: 1.35;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.rd-person-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.rd-person-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+.rd-person-next {
+	margin-top: 0.1rem;
+	font-size: 0.76rem;
+	line-height: 1.4;
+	color: var(--rd-quiet);
+}
+@container (min-width: 560px) and (max-width: 919.98px) {
+	.rd-stages {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@container (min-width: 920px) {
+	.rd-stages {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+}
+.rd-empty {
+	max-width: 30rem;
+	margin: 0.5rem auto;
+	text-align: center;
+}
+.rd-empty .basalt-empty-actions {
+	justify-content: center;
+}
+
+/* Job posting */
+/* Published or not, and the link to share, in one quiet band. */
+.rd-share {
+	display: grid;
+	gap: 0.3rem 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0 0 2rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.rd-share-switch {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rd-share-switch .form-check-input:focus:not(:focus-visible) {
+	box-shadow: none;
+}
+.rd-share-switch .form-check-input:disabled ~ .form-check-label {
+	color: var(--rd-quiet);
+	opacity: 1;
+}
+.rd-share-note {
+	margin: 0;
+	padding-left: 2.5em;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--rd-quiet);
+}
+.rd-share-link {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.6rem;
+}
+.rd-share-url {
+	min-width: 0;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.rd-share-link .btn {
+	white-space: nowrap;
+}
+@container (min-width: 760px) {
+	.rd-share {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "switch link" "note link";
+		align-items: center;
+	}
+	.rd-share-switch {
+		grid-area: switch;
+	}
+	.rd-share-note {
+		grid-area: note;
+	}
+	.rd-share-link {
+		grid-area: link;
+		justify-content: flex-end;
+		margin: 0;
+	}
+}
+
+/* The copy reads like the careers page; the facts sit beside it. */
+.rd-posting {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+.rd-post {
+	max-width: 46rem;
+}
+.rd-post[hidden],
+.rd-edit[hidden] {
+	display: none;
+}
+.rd-post-lede {
+	margin: 0;
+	font-size: 1rem;
+	line-height: 1.7;
+	color: var(--basalt-copy);
+}
+.rd-post-h {
+	margin: 2rem 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1rem);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.rd-post-empty {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--rd-quiet);
+}
+.rd-list {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-list li {
+	position: relative;
+	padding-left: 1.4rem;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.rd-list li::before {
+	content: "";
+	position: absolute;
+	top: 0.62em;
+	left: 0.2rem;
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-plane));
+}
+.rd-skills {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 1.1rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-skill {
+	padding: 0.25rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.rd-skill-must {
+	border-color: color-mix(in srgb, var(--basalt-hue) 40%, var(--basalt-edge));
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+}
+.rd-legend {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.65rem 0 0;
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-legend-key {
+	width: 0.75rem;
+	height: 0.75rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-hue) 40%, var(--basalt-edge));
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+}
+.rd-perks {
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-perk {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	min-width: 0;
+}
+.rd-perk-icon {
+	--rd-p: var(--basalt-series-1);
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--rd-p) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-p) 15%, var(--basalt-plane));
+}
+.rd-perk:nth-child(2) .rd-perk-icon {
+	--rd-p: var(--basalt-series-4);
+}
+.rd-perk:nth-child(3) .rd-perk-icon {
+	--rd-p: var(--basalt-series-6);
+}
+.rd-perk:nth-child(4) .rd-perk-icon {
+	--rd-p: var(--basalt-series-2);
+}
+.rd-perk:nth-child(5) .rd-perk-icon {
+	--rd-p: var(--basalt-series-5);
+}
+.rd-perk:nth-child(6) .rd-perk-icon {
+	--rd-p: var(--basalt-series-3);
+}
+.rd-perk-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--rd-quiet);
+}
+.rd-perk-text strong {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+@container (min-width: 520px) {
+	.rd-perks {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.rd-post-side {
+	min-width: 0;
+}
+.rd-facts {
+	display: grid;
+	gap: 0.7rem 1rem;
+	grid-template-columns: 7rem minmax(0, 1fr);
+	margin: 0;
+	font-size: 0.86rem;
+}
+.rd-facts dt {
+	font-weight: 400;
+	color: var(--rd-quiet);
+}
+.rd-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+@container (min-width: 900px) {
+	.rd-posting {
+		gap: 3rem;
+		grid-template-columns: minmax(0, 1fr) 17rem;
+	}
+	.rd-post-side {
+		align-self: start;
+		padding-left: 2rem;
+		border-left: 1px solid var(--rd-line);
+	}
+}
+
+/* Editing: the copy turns into three boxes. */
+.rd-edit {
+	max-width: 46rem;
+}
+.rd-field {
+	margin-bottom: 1.5rem;
+}
+.rd-edit .form-label {
+	margin-bottom: 0.4rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rd-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+.rd-edit-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.rd-edit-foot .btn {
+	white-space: nowrap;
+}
+
+/* Interview plan */
+.rd-plan {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-round {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr);
+	padding: 1rem 0;
+	border-top: 1px solid var(--rd-line);
+}
+.rd-round:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+.rd-round:last-child {
+	padding-bottom: 0;
+}
+.rd-round-n {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--rd-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-tone) 16%, var(--basalt-plane));
+}
+.rd-round-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-round-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rd-round-meta {
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+}
+.rd-round-meta .rd-link {
+	font-weight: 500;
+}
+.rd-round-rates {
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+
+/* Activity */
+.rd-log {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-log-item {
+	position: relative;
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+}
+.rd-log-item:last-child {
+	padding-bottom: 0;
+}
+.rd-log-item:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.25rem;
+	bottom: 0.3rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	border-radius: 1px;
+	background: var(--rd-line);
+}
+.rd-log-icon {
+	--rd-k: var(--basalt-copy-muted);
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--rd-k) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rd-k) 14%, var(--basalt-plane));
+}
+.rd-log-item[data-kind="open"] .rd-log-icon,
+.rd-log-item[data-kind="publish"] .rd-log-icon {
+	--rd-k: var(--basalt-hue);
+}
+.rd-log-item[data-kind="apply"] .rd-log-icon {
+	--rd-k: var(--basalt-series-5);
+}
+.rd-log-item[data-kind="move"] .rd-log-icon {
+	--rd-k: var(--basalt-series-1);
+}
+.rd-log-item[data-kind="offer"] .rd-log-icon {
+	--rd-k: var(--basalt-series-4);
+}
+.rd-log-item[data-kind="hire"] .rd-log-icon {
+	--rd-k: var(--basalt-success);
+}
+.rd-log-item[data-kind="pause"] .rd-log-icon {
+	--rd-k: var(--basalt-warning);
+}
+.rd-log-item[data-kind="close"] .rd-log-icon {
+	--rd-k: var(--basalt-danger);
+}
+.rd-log-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.rd-log-line {
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.rd-log-line .rd-link {
+	font-weight: 650;
+}
+.rd-log-when {
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-log-more {
+	margin-top: 1rem;
+	padding-left: 2.9rem;
+}
+.rd-log-more[hidden] {
+	display: none;
+}
+.rd-log-more .btn {
+	padding: 0;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--rd-link);
+}
+.rd-log-more .btn:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.rd-log-more .btn:focus:not(:focus-visible) {
+	box-shadow: none;
+}
+
+@media print {
+	.rd-head .basalt-hero-actions,
+	.rd-share-link .btn,
+	.rd-card-head .btn {
+		display: none;
+	}
+}

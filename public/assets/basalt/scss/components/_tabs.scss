@@ -1,0 +1,677 @@
+/* Tabbed navigation in two layers. Bootstrap's nav, tabs, pills and underline
+   are tuned to the palette first; then .basalt-tabs builds on the same markup
+   with an indicator that glides to the picked tab, in pill, segmented,
+   vertical, scrolling, overflow and closable forms. tabs.html shows each
+   of them, and assets/basalt/js/components/tabs.js (Basalt.tabs, [data-basalt-tabs]) runs them. */
+
+/* Every move of the indicator shares this one easing curve. */
+$glide: 280ms cubic-bezier(0.3, 0.7, 0.2, 1);
+
+/* A row that scrolls on its own keeps its scrollbar out of sight. */
+@mixin no-scrollbar {
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+/* The tab colors are derived once and read by every style below. A primary
+   label or fill is pulled toward the body color so it holds 4.5:1 even in the
+   palest palettes, and a label set on a fill always uses the on-primary token. */
+.nav,
+.basalt-tabs {
+	--basalt-tab-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--basalt-tab-accent: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--basalt-tab-fill: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	--basalt-tab-ring: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+	--bs-nav-link-color: var(--basalt-copy-body);
+	--bs-nav-link-hover-color: var(--basalt-copy);
+	--bs-nav-link-disabled-color: var(--basalt-tab-quiet);
+	--bs-nav-link-font-weight: 600;
+	--bs-nav-link-focus-box-shadow: var(--basalt-tab-ring);
+}
+
+.nav-link {
+	transition:
+		color 170ms ease,
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	/* Bootstrap hard-codes its blue into the focus ring instead of reading the
+     variable, so the ring is set again by hand. */
+	&:focus-visible {
+		box-shadow: var(--basalt-tab-ring);
+	}
+	&.disabled,
+	&:disabled {
+		cursor: not-allowed;
+	}
+
+	/* A count inside any tab stays legible whatever state the tab is in. */
+	.badge {
+		padding: 0.25em 0.5em;
+		border: 1px solid var(--basalt-edge);
+		font-family: "Chivo Mono", monospace;
+		font-weight: 600;
+		font-size: 0.7rem;
+		color: var(--basalt-copy);
+		background-color: var(--basalt-canvas);
+	}
+}
+
+/* A stacked nav reads from the left, and its leading icons line up in one
+   column no matter how wide each glyph is. */
+.nav.flex-column .nav-link {
+	text-align: left;
+}
+.nav.flex-column .nav-link > .bi:first-child,
+.basalt-tabs-vertical .nav-link > .bi:first-child {
+	display: inline-block;
+	flex-shrink: 0;
+	width: 1.25em;
+	text-align: center;
+}
+
+/* The open tab merges into the panel underneath it. */
+.nav-tabs {
+	--bs-nav-tabs-border-color: var(--basalt-edge);
+	--bs-nav-tabs-link-hover-border-color: var(--basalt-edge) var(--basalt-edge) var(--basalt-edge);
+	--bs-nav-tabs-link-active-color: var(--basalt-tab-accent);
+	--bs-nav-tabs-link-active-bg: var(--basalt-plane);
+	--bs-nav-tabs-link-active-border-color: var(--basalt-edge) var(--basalt-edge) var(--basalt-plane);
+	--bs-nav-tabs-border-radius: 10px;
+	/* Tabs stay on one row so the open tab always sits on the line; a row
+	   wider than its box slides sideways and fades at the hidden edge. The
+	   line is drawn inside the row, since a scrolling box clips anything that
+	   hangs over its border, and the open tab covers it with its own edge. */
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	overflow-y: hidden;
+	border-bottom: 0;
+	box-shadow: inset 0 calc(-1 * var(--bs-nav-tabs-border-width)) 0 var(--bs-nav-tabs-border-color);
+	overscroll-behavior-x: contain;
+	@include no-scrollbar;
+
+	.nav-link {
+		margin-bottom: 0;
+		white-space: nowrap;
+	}
+	.nav-link:hover:not(.active) {
+		background-color: var(--basalt-wash);
+	}
+	.nav-link.active,
+	.nav-item.show .nav-link {
+		color: var(--basalt-tab-accent);
+	}
+}
+
+/* In a card header the header's own border is the line, so the row reaches
+   one hairline further down and the open tab covers that border instead. */
+.card-header-tabs {
+	margin-bottom: calc(-1 * var(--bs-card-cap-padding-y) - var(--bs-border-width));
+	box-shadow: none;
+}
+
+/* A picked pill carries the brand fill with the on-primary label on top. */
+.nav-pills {
+	--bs-nav-pills-border-radius: 999px;
+	--bs-nav-pills-link-active-color: var(--basalt-on-hue);
+	--bs-nav-pills-link-active-bg: var(--basalt-tab-fill);
+	gap: 0.25rem;
+
+	.nav-link:hover:not(.active) {
+		background-color: var(--basalt-wash);
+	}
+	.nav-link.active,
+	.show > .nav-link {
+		border-color: var(--basalt-tab-fill);
+		color: var(--basalt-on-hue);
+		background-color: var(--basalt-tab-fill);
+	}
+	.nav-link.active .badge {
+		border-color: transparent;
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+}
+
+/* The underlined link keeps its text color and gains a brand bar beneath. */
+.nav-underline {
+	--bs-nav-underline-gap: 1.5rem;
+	--bs-nav-underline-link-active-color: var(--basalt-copy);
+	row-gap: 0.25rem;
+
+	.nav-link.active,
+	.show > .nav-link {
+		border-bottom-color: var(--basalt-hue);
+	}
+	.nav-link:hover:not(.active) {
+		border-bottom-color: var(--basalt-edge-strong);
+	}
+}
+
+/* A panel can be reached by keyboard and shows a ring when it is; under
+   reduced motion its fade is dropped as well. */
+.tab-pane:focus-visible {
+	border-radius: 8px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+	.nav-link,
+	.tab-content > .fade {
+		transition: none;
+	}
+}
+
+/* .basalt-tabs reuses Bootstrap's tab markup and script, and the script drops
+   an indicator (.basalt-tabs-ink) into the list that slides to the picked tab.
+   The variants are -pill, -segmented, -vertical, -scroll and -closable, and
+   [data-basalt-tabs-overflow] folds tabs that do not fit into a More menu. */
+.basalt-tabs {
+	position: relative;
+	min-width: 0;
+	font-size: 0.9rem;
+
+	.nav-link {
+		&:hover,
+		&.active {
+			color: var(--basalt-copy);
+		}
+		&:not(.active):focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: -2px;
+			box-shadow: none;
+		}
+	}
+
+	/* In the segmented radios the label is what shows; the input holds focus. */
+	.btn-check:focus-visible:not(:checked) + .nav-link {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	label.nav-link {
+		margin: 0;
+		cursor: pointer;
+	}
+	.btn-check:checked + .nav-link {
+		color: var(--basalt-copy);
+	}
+
+	.nav-link > .bi {
+		font-size: 1rem;
+		color: var(--basalt-tab-quiet);
+		transition: color 170ms ease;
+	}
+	.nav-link.active > .bi {
+		color: var(--basalt-tab-accent);
+	}
+}
+
+.basalt-tabs-list {
+	position: relative;
+	display: flex;
+	gap: 0.25rem;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	margin: 0;
+	padding: 0;
+	/* When the row outgrows its box it scrolls sideways instead of widening
+     the page, and the script scrolls the picked tab into view. */
+	overflow-x: auto;
+	overflow-y: hidden;
+	list-style: none;
+	overscroll-behavior-x: contain;
+	@include no-scrollbar;
+}
+.basalt-tabs-vertical .basalt-tabs-list,
+.basalt-tabs-viewport .basalt-tabs-list,
+.basalt-tabs[data-basalt-tabs-overflow] .basalt-tabs-list {
+	overflow: visible;
+}
+
+.basalt-tabs-list > .nav-link,
+.basalt-tabs-item > .nav-link {
+	position: relative;
+	z-index: 1;
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.7rem 0.95rem;
+	border: 0;
+	border-radius: 8px;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: transparent;
+}
+
+/* A count next to the label turns to the plane surface once its tab is
+   picked; a small warning dot flags a tab with something new in it. */
+.basalt-tabs-count {
+	padding: 0.28rem 0.4rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font:
+		600 0.7rem/1 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	.basalt-tabs .nav-link.active & {
+		border-color: var(--basalt-hue-border);
+		background: var(--basalt-plane);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.basalt-tabs-dot {
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--basalt-warning);
+	box-shadow: 0 0 0 2px var(--basalt-plane);
+}
+
+/* By default the indicator is an underline; the script writes its left,
+   width, top and height from whichever tab is picked. */
+.basalt-tabs-ink {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	z-index: 0;
+	width: 0;
+	height: 3px;
+	border-radius: 3px 3px 0 0;
+	background: var(--basalt-hue);
+	pointer-events: none;
+	transition:
+		left $glide,
+		width $glide,
+		top $glide,
+		height $glide;
+
+	.basalt-tabs.is-static & {
+		transition: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* The underline rests on a hairline. When the row shares its line with a
+   More button or scroll arrows, the hairline moves to the wrapper so it
+   runs under those too. */
+.basalt-tabs:not(.basalt-tabs-pill):not(.basalt-tabs-segmented):not(.basalt-tabs-vertical):not(.basalt-tabs-scroll):not(
+		[data-basalt-tabs-overflow]
+	)
+	> .basalt-tabs-list,
+.basalt-tabs-scroll:not(.basalt-tabs-pill),
+.basalt-tabs[data-basalt-tabs-overflow]:not(.basalt-tabs-pill) {
+	box-shadow: inset 0 -1px 0 var(--basalt-edge);
+}
+
+/* In the pill variant the indicator fills the tab rather than lining it. */
+.basalt-tabs-pill {
+	.basalt-tabs-ink {
+		top: 0;
+		bottom: auto;
+		border-radius: 999px;
+		background: var(--basalt-hue-soft);
+		box-shadow: inset 0 0 0 1px var(--basalt-hue-border);
+	}
+	.nav-link {
+		border-radius: 999px;
+	}
+	.nav-link.active {
+		color: var(--basalt-tab-accent);
+	}
+}
+
+/* The segmented control is a sunken track with a raised thumb gliding on it. */
+.basalt-tabs-segmented {
+	display: inline-flex;
+	max-width: 100%;
+
+	.basalt-tabs-list {
+		gap: 0;
+		padding: 0.25rem;
+		border-radius: 12px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		background: var(--basalt-canvas);
+		@include no-scrollbar;
+	}
+	.nav-link {
+		justify-content: center;
+		padding: 0.4rem 0.95rem;
+		border-radius: 9px;
+		font-size: 0.84rem;
+	}
+	.basalt-tabs-ink {
+		top: 0;
+		bottom: auto;
+		border-radius: 9px;
+		background: var(--basalt-plane);
+		box-shadow:
+			0 1px 2px color-mix(in srgb, var(--basalt-copy) 14%, transparent),
+			0 0 0 1px var(--basalt-edge);
+	}
+}
+
+/* Icon-only tabs are square; their names live in aria-label and a tooltip. */
+.basalt-tabs-icons .nav-link {
+	padding: 0.4rem 0.65rem;
+
+	> .bi {
+		font-size: 1.05rem;
+	}
+}
+
+/* The vertical variant is a column whose bar slides along the left edge.
+   Each tab may carry a muted hint line under its label. */
+.basalt-tabs-vertical {
+	.basalt-tabs-list {
+		gap: 0.1rem;
+		flex-direction: column;
+		padding-left: 3px;
+		box-shadow: inset 3px 0 0 var(--basalt-edge);
+	}
+	.nav-link {
+		justify-content: flex-start;
+		width: 100%;
+		padding: 0.75rem 0.9rem;
+		border-radius: 0 10px 10px 0;
+		text-align: left;
+		white-space: normal;
+
+		&:hover:not(.active) {
+			background: var(--basalt-wash);
+		}
+		&.active {
+			background: var(--basalt-hue-soft);
+		}
+	}
+	.basalt-tabs-ink {
+		left: 0;
+		width: 3px;
+		border-radius: 3px;
+	}
+}
+.basalt-tabs-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.basalt-tabs-hint {
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--basalt-tab-quiet);
+
+	.basalt-tabs .nav-link.active & {
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* The scrolling variant keeps tabs on one sliding row. An arrow sits over
+   each end and the edge fades, both only while more lies in that direction. */
+.basalt-tabs-scroll {
+	display: flex;
+	align-items: stretch;
+}
+.basalt-tabs-viewport {
+	flex: 1 1 auto;
+	scroll-behavior: smooth;
+	min-width: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-mask-image: linear-gradient(
+		90deg,
+		transparent 0,
+		#000 var(--basalt-tabs-fade-l, 0px),
+		#000 calc(100% - var(--basalt-tabs-fade-r, 0px)),
+		transparent 100%
+	);
+	mask-image: linear-gradient(
+		90deg,
+		transparent 0,
+		#000 var(--basalt-tabs-fade-l, 0px),
+		#000 calc(100% - var(--basalt-tabs-fade-r, 0px)),
+		transparent 100%
+	);
+	overscroll-behavior-x: contain;
+	@include no-scrollbar;
+
+	.basalt-tabs-list {
+		width: max-content;
+		min-width: 100%;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		scroll-behavior: auto;
+	}
+}
+.basalt-tabs.has-more-left {
+	--basalt-tabs-fade-l: 3.5rem;
+}
+.basalt-tabs.has-more-right {
+	--basalt-tabs-fade-r: 3.5rem;
+}
+.basalt-tabs-scroll .basalt-tabs-arrow {
+	position: absolute;
+	top: 50%;
+	z-index: 2;
+	transform: translateY(-50%);
+	box-shadow: var(--basalt-card-shadow);
+}
+.basalt-tabs-arrow-prev {
+	left: 0;
+}
+.basalt-tabs-arrow-next {
+	right: 0;
+}
+
+/* The scroll arrows, the add button and the More button share one square
+   bordered look; a spent arrow vanishes and stops taking clicks. */
+.basalt-tabs-arrow,
+.basalt-tabs-add,
+.basalt-tabs-more-btn {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		opacity 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: none;
+		box-shadow: var(--basalt-tab-ring);
+	}
+}
+.basalt-tabs-arrow:disabled {
+	opacity: 0;
+	pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tabs-arrow {
+		transition: none;
+	}
+}
+
+/* With overflow on, tabs that will not fit are hidden from the row and
+   offered in the More menu instead. */
+.basalt-tabs[data-basalt-tabs-overflow] {
+	display: flex;
+	align-items: stretch;
+
+	.basalt-tabs-list {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+.basalt-tabs .nav-link.is-overflow {
+	display: none;
+}
+.basalt-tabs-more {
+	position: static;
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+
+	&[hidden] {
+		display: none;
+	}
+	.dropdown-menu {
+		min-width: 12rem;
+	}
+	.dropdown-item {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		font-size: 0.88rem;
+
+		.bi {
+			color: var(--basalt-tab-quiet);
+		}
+	}
+}
+
+/* The More button drops the square frame for a text label with a caret. */
+.basalt-tabs-more-btn {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	align-self: stretch;
+	width: auto;
+	height: auto;
+	padding: 0 0.75rem;
+	border-color: transparent;
+	font-size: 0.86rem;
+	font-weight: 600;
+	white-space: nowrap;
+	background: transparent;
+
+	.bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+	&[aria-expanded="true"] .bi {
+		transform: rotate(180deg);
+	}
+	.basalt-tabs-more.has-active & {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Closable tabs set a close button beside each tab, never inside it, since
+   a button cannot hold a button. Delete or Backspace closes the focused tab
+   as well, and tabs fade in and out as they come and go. */
+.basalt-tabs-closable {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	.basalt-tabs-list {
+		flex: 0 1 auto;
+		align-items: flex-end;
+		min-width: 0;
+		padding-top: 0.25rem;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: thin;
+	}
+	.basalt-tabs-item > .nav-link {
+		padding-right: 2.2rem;
+	}
+	.basalt-tabs-item-pinned > .nav-link {
+		padding-right: 0.95rem;
+	}
+}
+.basalt-tabs-item {
+	position: relative;
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+
+	&.is-leaving {
+		animation: basalt-tab-out 180ms ease forwards;
+	}
+	&.is-entering {
+		animation: basalt-tab-in 210ms ease;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		&.is-leaving,
+		&.is-entering {
+			animation: none;
+		}
+	}
+}
+.basalt-tabs-close {
+	position: absolute;
+	top: 50%;
+	right: 0.4rem;
+	z-index: 2;
+	transform: translateY(-50%);
+	display: inline-grid;
+	place-items: center;
+	width: 1.4rem;
+	height: 1.4rem;
+	padding: 0;
+	border: 0;
+	border-radius: 6px;
+	color: var(--basalt-tab-quiet);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+@keyframes basalt-tab-in {
+	from {
+		transform: translateY(4px);
+		opacity: 0;
+	}
+}
+@keyframes basalt-tab-out {
+	to {
+		transform: translateY(4px);
+		opacity: 0;
+	}
+}
+
+/* A printed page has nothing to animate toward. */
+@media print {
+	.basalt-tabs-ink {
+		transition: none;
+	}
+}

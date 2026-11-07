@@ -1,0 +1,1087 @@
+/**
+ * Styles for the staff directory (employees.html), all under .em-*.
+ * The page head, drawer, dialog, date picker, segmented control, applied
+ * filters, status pills, avatars and empty state come from basalt.css;
+ * this sheet lays out the "Right now" snapshots, the team chips, the
+ * toolbar, the directory as cards and as a table, the facts in the quick
+ * view and the Add employee form. Every color is a --basalt-* token, so
+ * each palette and mode keeps it.
+ */
+
+/* Two mixed tones the whole page shares: small gray text pulled toward the
+   body color so it clears 4.5:1 on the lighter palettes, and a link color
+   with the same nudge because the primary alone falls short in a few. */
+.em-page,
+.em-record,
+.em-add {
+	--em-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--em-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+
+/* Each team owns one chart color, the same one its avatars use. */
+.em-tone-1 {
+	--em-tone: var(--basalt-series-1);
+}
+.em-tone-2 {
+	--em-tone: var(--basalt-series-2);
+}
+.em-tone-3 {
+	--em-tone: var(--basalt-series-3);
+}
+.em-tone-4 {
+	--em-tone: var(--basalt-series-4);
+}
+.em-tone-5 {
+	--em-tone: var(--basalt-series-5);
+}
+.em-tone-6 {
+	--em-tone: var(--basalt-series-6);
+}
+.em-tone-7 {
+	--em-tone: var(--basalt-series-7);
+}
+.em-tone-8 {
+	--em-tone: var(--basalt-series-8);
+}
+
+.em-quiet {
+	color: var(--em-quiet);
+}
+.em-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85rem;
+}
+
+.em-link,
+.em-link.btn-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--em-link);
+}
+.em-link:hover,
+.em-link:focus-visible,
+.em-link.btn-link:hover {
+	text-decoration: underline;
+	color: var(--basalt-copy);
+}
+
+/* Text fields on the page and in the dialog sit on the plane color. */
+.em-page .form-control,
+.em-add .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.em-page .form-control::placeholder,
+.em-add .form-control::placeholder {
+	color: var(--em-quiet);
+	opacity: 1;
+}
+
+/* The four "Right now" snapshots end level with each other: a tinted wash,
+   an icon, a title that filters the directory, a count, a few faces and
+   one line of text. */
+.em-now {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin-bottom: 1.5rem;
+
+	@media (max-width: 1199.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	@media (max-width: 575.98px) {
+		gap: 0.75rem;
+	}
+}
+.em-now-card-success {
+	--em-now: var(--basalt-success);
+}
+.em-now-card-warning {
+	--em-now: var(--basalt-warning);
+}
+.em-now-card-info {
+	--em-now: var(--basalt-info);
+}
+.em-now-card-danger {
+	--em-now: var(--basalt-danger);
+}
+.em-now-card {
+	&.basalt-box {
+		background: linear-gradient(
+			160deg,
+			color-mix(in srgb, var(--em-now) 11%, var(--basalt-plane)),
+			var(--basalt-plane) 65%
+		);
+	}
+	.card-body {
+		display: grid;
+		gap: 0.9rem 0.85rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-rows: auto auto auto 1fr;
+		align-items: center;
+		padding: 1.35rem var(--basalt-pad-x) 1.5rem;
+
+		@media (max-width: 575.98px) {
+			gap: 0.7rem 0.6rem;
+			padding: 1.1rem var(--basalt-pad-x-narrow) 1.2rem;
+		}
+	}
+}
+:root[data-basalt-gradients="off"] .em-now-card.basalt-box {
+	background: var(--basalt-plane);
+}
+.em-now-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--em-now) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--em-now) 18%, var(--basalt-plane));
+
+	@media (max-width: 575.98px) {
+		width: 2.1rem;
+		height: 2.1rem;
+		border-radius: 10px;
+		font-size: 1rem;
+	}
+}
+.em-now-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+
+	@media (max-width: 575.98px) {
+		font-size: 0.9rem;
+	}
+}
+/* The title is a button; its chevron nudges right on hover. */
+.em-now-filter {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: none;
+
+	.bi {
+		font-size: 0.75rem;
+		color: var(--em-quiet);
+		transition: transform 170ms ease;
+	}
+	&:hover {
+		text-decoration: underline;
+	}
+	&:hover .bi {
+		transform: translateX(2px);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.em-now-count {
+	display: flex;
+	grid-column: 1 / -1;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0;
+	font-size: 2rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+
+	& span {
+		margin-left: 0.4rem;
+		margin-right: auto;
+		font-size: 0.9rem;
+		font-weight: 600;
+		letter-spacing: 0;
+		color: var(--em-quiet);
+	}
+
+	@media (max-width: 575.98px) {
+		font-size: 1.6rem;
+	}
+}
+.em-now-faces {
+	grid-column: 1 / -1;
+	min-height: 36px;
+
+	.basalt-avatar {
+		border-color: var(--basalt-plane);
+	}
+	& button.basalt-avatar {
+		padding: 0;
+		cursor: pointer;
+	}
+	& button.basalt-avatar:focus {
+		outline: 0;
+	}
+	& button.basalt-avatar:focus-visible {
+		position: relative;
+		z-index: 1;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.em-now-line {
+	grid-column: 1 / -1;
+	align-self: end;
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.45;
+	color: var(--em-quiet);
+
+	@media (max-width: 575.98px) {
+		font-size: 0.8rem;
+	}
+}
+
+/* The directory card holds everything below the snapshots. */
+.em-dir {
+	scroll-margin-top: 5.5rem;
+
+	&.basalt-box .card-body {
+		padding: var(--basalt-pad-head) var(--basalt-pad-x) 2rem;
+	}
+
+	@media (max-width: 575.98px) {
+		&.basalt-box .card-body {
+			padding: 1.25rem var(--basalt-pad-x-narrow) 1.5rem;
+		}
+	}
+}
+
+/* Team chips are plain text and wrap instead of scrolling. */
+.em-teams {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.em-team {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.4rem 0.9rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.em-team-count {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--em-quiet);
+}
+.btn-check:checked + .em-team {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:checked + .em-team .em-team-count {
+	color: inherit;
+}
+.btn-check:focus-visible:not(:checked) + .em-team {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* The toolbar: search, the Filters menu, the view switch, applied filters
+   and the count, which hugs the right edge. */
+.em-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+	padding: 1.5rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.em-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	> .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--em-quiet);
+		pointer-events: none;
+	}
+	.form-control {
+		padding-left: 2.4rem;
+	}
+
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+	}
+}
+.em-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--em-quiet);
+}
+.em-view {
+	flex: none;
+}
+
+/* The Filters menu: a dropdown panel of chip groups with a footer. */
+.em-filter-btn.btn {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	background-color: var(--basalt-plane);
+}
+.em-filter-btn.is-on {
+	border-color: var(--basalt-hue-border);
+	color: var(--basalt-copy);
+}
+.em-filter-panel.dropdown-menu {
+	width: min(24rem, calc(100vw - 2rem));
+	padding: 1.1rem 1.25rem 0.9rem;
+	border-radius: 14px;
+}
+.em-filter-group {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+.em-filter-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--em-quiet);
+}
+.em-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.em-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .em-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:focus-visible:not(:checked) + .em-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.em-filter-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	.btn {
+		white-space: nowrap;
+	}
+	.em-link {
+		padding-left: 0;
+	}
+}
+
+/* Card view: one section per team, lead first. */
+.em-groups {
+	display: flex;
+	gap: 2.25rem;
+	flex-direction: column;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.em-group-head {
+	display: flex;
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin-bottom: 1rem;
+}
+.em-group-title {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&::before {
+		content: "";
+		width: 0.7rem;
+		height: 0.7rem;
+		border-radius: 3px;
+		background: var(--em-tone);
+	}
+}
+.em-group-meta {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--em-quiet);
+}
+
+.em-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+/* A person card: avatar, name (linking to the full record), job, status
+   when it is not Active, then where they are and their local time. Quick
+   view and Open full page sit in the top corner; a click anywhere else on
+   the card follows the name. */
+.em-person {
+	position: relative;
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+	padding: 1.25rem 1.25rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	color: var(--basalt-copy);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--em-tone) 9%, var(--basalt-plane)),
+		var(--basalt-plane) 70%
+	);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease,
+		transform 170ms ease;
+
+	&:hover {
+		transform: translateY(-2px);
+		border-color: color-mix(in srgb, var(--em-tone) 45%, var(--basalt-edge));
+		box-shadow: 0 10px 24px -18px var(--basalt-scrim);
+	}
+	.basalt-avatar {
+		width: 48px;
+		height: 48px;
+		font-size: 1rem;
+	}
+	&.is-fresh {
+		animation: em-fresh 2.4s ease-out;
+	}
+}
+:root[data-basalt-gradients="off"] .em-person {
+	background: var(--basalt-plane);
+}
+@keyframes em-fresh {
+	0%,
+	30% {
+		border-color: var(--basalt-hue);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+	}
+}
+.em-person-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	flex: 1;
+	align-items: flex-start;
+	min-width: 0;
+}
+.em-person-name {
+	font-weight: 650;
+	font-size: 0.95rem;
+	line-height: 1.3;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.em-person-role {
+	font-size: 0.85rem;
+	line-height: 1.35;
+	color: var(--em-quiet);
+}
+.em-person-status {
+	margin-top: 0.4rem;
+}
+.em-person-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.8rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--em-quiet);
+}
+.em-person-city {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.em-person-actions {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+}
+
+/* The local clock shows a sun in working hours and a moon after. */
+.em-clock {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	white-space: nowrap;
+	color: var(--em-quiet);
+
+	.bi {
+		color: var(--em-quiet);
+	}
+	&.is-day {
+		color: var(--basalt-copy-body);
+	}
+	&.is-day .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 75%, var(--basalt-copy));
+	}
+}
+
+/* On phones the cards collapse into one list per team, so the page stays
+   short. */
+@media (max-width: 575.98px) {
+	.em-grid {
+		gap: 0;
+	}
+	.em-grid > li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	.em-person {
+		display: grid;
+		gap: 0.5rem 0.85rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		padding: 1rem 0;
+		border: 0;
+		border-radius: 0;
+		background: none;
+
+		&:hover {
+			transform: none;
+			box-shadow: none;
+		}
+		.basalt-avatar {
+			width: 44px;
+			height: 44px;
+		}
+	}
+	.em-person-text {
+		padding-right: 4.5rem;
+	}
+	.em-person-foot {
+		gap: 1rem;
+		grid-column: 2;
+		justify-content: flex-start;
+		padding-top: 0;
+		border-top: 0;
+	}
+	.em-person-actions {
+		top: 0.75rem;
+		right: 0;
+	}
+}
+
+/* Table view: the same people in the same order, one line per cell. It
+   responds to the directory card's own width rather than the viewport:
+   under 1000px Team and Started leave their columns (the team joins the
+   job title under the name), under 800px the clock steps out of Location
+   (the quick view still has it), and under 560px each row stacks into a
+   short two-line entry. */
+.em-groups.is-table {
+	container: em-table / inline-size;
+}
+/* Pulled out by the cells' side padding so names line up with the search
+   box above. */
+.em-table-wrap {
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.em-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+
+	> :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom-color: var(--basalt-edge);
+		white-space: nowrap;
+		color: inherit;
+		background: transparent;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--em-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+}
+.em-row {
+	cursor: pointer;
+
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	}
+	&.is-fresh {
+		animation: em-fresh-row 2.4s ease-out;
+	}
+}
+@keyframes em-fresh-row {
+	0%,
+	30% {
+		background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+	}
+}
+
+/* Name takes whatever room the other columns leave; max-width: 0 lets a
+   long job title end in an ellipsis there instead of widening the table. */
+.em-col-person {
+	width: 100%;
+}
+.em-table td.em-col-person {
+	max-width: 0;
+}
+.em-col-actions {
+	width: 1%;
+	text-align: right;
+}
+.em-cell-person {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+
+	.em-person-name {
+		font-size: 0.9rem;
+	}
+}
+.em-cell-person-text {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+}
+.em-cell-person .em-person-name,
+.em-cell-person-sub {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.em-cell-person-sub {
+	font-size: 0.8rem;
+	color: var(--em-quiet);
+}
+.em-fold {
+	display: none;
+}
+.em-col-team,
+.em-col-start,
+.em-cell-where {
+	font-size: 0.875rem;
+}
+.em-team-dot {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	&::before {
+		content: "";
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 3px;
+		background: var(--em-tone);
+	}
+}
+.em-cell-where {
+	display: inline-flex;
+	gap: 0.75rem;
+	align-items: center;
+
+	.em-clock {
+		font-size: 0.8rem;
+	}
+}
+
+@container em-table (max-width: 999.98px) {
+	.em-table .em-col-team,
+	.em-table .em-col-start {
+		display: none;
+	}
+	.em-fold {
+		display: inline;
+	}
+}
+@container em-table (max-width: 799.98px) {
+	.em-cell-where .em-clock {
+		display: none;
+	}
+}
+@container em-table (max-width: 559.98px) {
+	.em-table-wrap {
+		margin: 0;
+		overflow: visible;
+	}
+	.em-table {
+		display: block;
+
+		& thead {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+		}
+		& tbody {
+			display: block;
+		}
+		& tr {
+			display: grid;
+			gap: 0.5rem 0.75rem;
+			/* The first track is the avatar's width, so the second line starts
+         under the name. */
+			grid-template-columns: 2rem auto minmax(0, 1fr) auto;
+			grid-template-areas:
+				"person person person actions"
+				".      status where  where";
+			align-items: center;
+			padding: 1rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& tbody tr:last-child {
+			border-bottom: 0;
+		}
+		> :not(caption) > * > * {
+			padding: 0;
+			border: 0;
+			white-space: normal;
+		}
+		.em-col-person {
+			grid-area: person;
+			width: auto;
+			min-width: 0;
+		}
+		& td.em-col-person {
+			max-width: none;
+		}
+		.em-col-actions {
+			grid-area: actions;
+			width: auto;
+		}
+		.em-col-status {
+			grid-area: status;
+		}
+		.em-col-where {
+			grid-area: where;
+			min-width: 0;
+		}
+	}
+	.em-cell-where {
+		gap: 0.25rem 0.75rem;
+		flex-wrap: wrap;
+	}
+	.em-cell-where .em-clock {
+		display: inline-flex;
+	}
+}
+
+.em-empty {
+	margin-top: 0.5rem;
+}
+
+/* The quick view: a record drawer with a status note, two fact lists and
+   the person's direct reports. */
+.em-record {
+	--bs-offcanvas-width: 500px;
+
+	.offcanvas-header {
+		gap: 1rem;
+	}
+}
+/* At phone width the name keeps the room; the big avatar and the position
+   count step aside (the arrows still step through people). */
+@container basalt-drawer (max-width: 420px) {
+	.em-record .offcanvas-header > .basalt-avatar,
+	.em-record .basalt-drawer-pos {
+		display: none;
+	}
+}
+.em-state {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+}
+.em-state-note {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+}
+
+.em-facts {
+	margin: 0;
+
+	& dt {
+		font-size: 0.85rem;
+		font-weight: 400;
+		color: var(--em-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.9rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+.em-facts-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 8rem minmax(0, 1fr);
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+
+	@container basalt-drawer (max-width: 360px) {
+		gap: 0.2rem;
+		grid-template-columns: 1fr;
+	}
+}
+
+/* A person named inside the drawer (the manager) is a button that swaps
+   them in. */
+.em-who {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	text-align: left;
+	color: var(--em-link);
+	background: none;
+
+	&:hover span {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.em-reports {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	> li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.em-report {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.8rem 0;
+	border: 0;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	> .bi {
+		font-size: 0.8rem;
+		color: var(--em-quiet);
+		transition: transform 170ms ease;
+	}
+	&:hover .em-report-name {
+		text-decoration: underline;
+	}
+	&:hover > .bi {
+		transform: translateX(2px);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.em-report-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+.em-report-name {
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+.em-report-role {
+	font-size: 0.8rem;
+	color: var(--em-quiet);
+}
+.em-reports-more {
+	margin: 0.25rem 0 0;
+	font-size: 0.85rem;
+}
+
+/* The Add employee dialog: two fieldsets, Person and Job, with fields in
+   pairs. An error replaces the hint under a field, so one line of help
+   shows at a time. */
+.em-add-set {
+	min-width: 0;
+	margin: 0 0 1.75rem;
+	padding: 0;
+	border: 0;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+	> .row {
+		--bs-gutter-y: 1.25rem;
+	}
+}
+.em-add-type {
+	flex-wrap: wrap;
+
+	.basalt-segmented-option {
+		white-space: nowrap;
+	}
+}
+.em-add .is-invalid ~ .form-text {
+	display: none;
+}
+
+/* Nothing moves for people who asked for less motion, and the controls
+   drop out of print. */
+@media (prefers-reduced-motion: reduce) {
+	.em-team,
+	.em-chip,
+	.em-person,
+	.em-now-filter .bi,
+	.em-row,
+	.em-report > .bi {
+		transition: none;
+	}
+	.em-person:hover {
+		transform: none;
+	}
+	.em-person.is-fresh,
+	.em-row.is-fresh {
+		animation: none;
+	}
+}
+@media print {
+	.em-teams,
+	.em-toolbar,
+	.em-person-actions,
+	.em-col-actions {
+		display: none;
+	}
+	.em-person {
+		break-inside: avoid;
+	}
+}

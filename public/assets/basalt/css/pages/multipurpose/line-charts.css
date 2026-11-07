@@ -1,0 +1,398 @@
+/**
+ * Line charts page (line-charts.html): everything under .lines-*, which
+ * is the chip row, the twelve-column card grid, each card's head, the
+ * chart boxes, the HTML legends, the sparkline tiles, the small
+ * multiples, the country picker and the config snippet. Colors are the
+ * --basalt-* tokens, so legends and swatches follow the palette the same
+ * way the canvases do (line-charts.js reads the same tokens).
+ */
+
+/* The page root holds the one derived color: small gray text, the muted
+   token pulled a little toward the body color so it clears 4.5:1 on the
+   lighter palettes too. */
+.lines-page {
+	--lines-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The chip row sits above the grid with its count at the far end; the
+   pressed chip inverts to the text color. */
+.lines-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+}
+.lines-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.lines-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.lines-chips .lines-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.lines-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--lines-quiet);
+}
+
+/* Twelve columns. Below 1200px every chart takes the whole row; from
+   desktop width cards take half, two thirds, a third or all of it, and a
+   filtered view drops the 8/4 rhythm for plain halves with an odd last
+   card spanning the row. */
+.lines-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.lines-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	/* A chart that has not drawn yet keeps the browser's 300px canvas
+     width; it must never push a narrow card, or the page, past the screen. */
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+	&.is-hidden {
+		display: none;
+	}
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.5rem;
+	}
+}
+@media (min-width: 1200px) {
+	.lines-card {
+		grid-column: span 6;
+	}
+	.lines-card-full {
+		grid-column: span 12;
+	}
+	.lines-card-wide {
+		grid-column: span 8;
+	}
+	.lines-card-narrow {
+		grid-column: span 4;
+	}
+	.lines-grid.is-filtered .lines-card-wide,
+	.lines-grid.is-filtered .lines-card-narrow,
+	.lines-grid.is-filtered .lines-card-full-in-all {
+		grid-column: span 6;
+	}
+	.lines-grid.is-filtered .lines-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* The chart kind is drawn above the title although it follows it in the
+   markup, so the title is read first, and it never competes for width. */
+.lines-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.lines-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.lines-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--lines-quiet);
+}
+.lines-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--lines-quiet);
+}
+
+/* The legend is HTML rather than Chart.js's, so it wraps instead of
+   colliding. Each swatch takes its color from the --lines-c of its item. */
+.lines-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--lines-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.lines-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--lines-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.lines-key-line-dashed {
+	border-top-style: dashed;
+}
+.lines-key-line-dotted {
+	border-top-style: dotted;
+	border-top-width: 3px;
+}
+.lines-key-line-faint {
+	border-top-color: color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	border-top-width: 1.5px;
+}
+.lines-key-band {
+	width: 18px;
+	height: 10px;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--lines-c, var(--basalt-series-1)) 22%, transparent);
+}
+.lines-key-dot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--lines-c, var(--basalt-series-1));
+}
+.lines-c1 {
+	--lines-c: var(--basalt-series-1);
+}
+.lines-c2 {
+	--lines-c: var(--basalt-series-2);
+}
+.lines-c3 {
+	--lines-c: var(--basalt-series-3);
+}
+.lines-c4 {
+	--lines-c: var(--basalt-series-4);
+}
+.lines-c5 {
+	--lines-c: var(--basalt-series-5);
+}
+.lines-c8 {
+	--lines-c: var(--basalt-series-8);
+}
+.lines-cq {
+	--lines-c: var(--lines-quiet);
+}
+.lines-cok {
+	--lines-c: var(--basalt-success);
+}
+.lines-cbad {
+	--lines-c: var(--basalt-danger);
+}
+
+/* The country picker sits between the head and its chart. */
+.lines-picker {
+	margin-bottom: 1rem;
+
+	& .lines-chip {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.77rem;
+	}
+}
+
+/* Chart boxes sit at the foot of the card body and give the canvas a
+   fixed height to fill. */
+.lines-chart {
+	position: relative;
+	height: 260px;
+	margin-top: auto;
+}
+.lines-chart-tall {
+	height: 300px;
+}
+@media (max-width: 575.98px) {
+	.lines-chart,
+	.lines-chart-tall {
+		height: 230px;
+	}
+}
+
+/* Sparkline tiles: two across, four from the large breakpoint with a
+   rule between neighbors. */
+.lines-sparks {
+	display: grid;
+	gap: 1.5rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (min-width: 992px) {
+		gap: 1.25rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+
+		& .lines-spark + .lines-spark {
+			padding-left: 1.25rem;
+			border-left: 1px solid var(--basalt-edge);
+		}
+	}
+}
+.lines-spark-label {
+	margin: 0 0 0.2rem;
+	font-size: 0.8rem;
+	color: var(--lines-quiet);
+}
+.lines-spark-value {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.lines-spark-note {
+	margin: 0.1rem 0 0.6rem;
+	font-size: 0.75rem;
+	color: var(--lines-quiet);
+}
+.lines-spark-chart {
+	position: relative;
+	height: 44px;
+}
+
+/* Small multiples: two, three, then six across as the page widens. */
+.lines-multiples {
+	display: grid;
+	gap: 1.5rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (min-width: 768px) {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	@media (min-width: 1400px) {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+}
+.lines-multiple-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.4rem;
+}
+.lines-multiple-name {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.lines-multiple-value {
+	font-size: 0.77rem;
+	color: var(--lines-quiet);
+}
+.lines-multiple-chart {
+	position: relative;
+	height: 84px;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+
+/* The config snippet closes every card behind a disclosure whose
+   chevron turns when open. */
+.lines-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* With motion reduced nothing fades or turns; in print the chips and
+   snippets go and every card shows. */
+@media (prefers-reduced-motion: reduce) {
+	.lines-chip,
+	.lines-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.lines-filter,
+	.lines-code {
+		display: none;
+	}
+	.lines-card.is-hidden {
+		display: block;
+	}
+}

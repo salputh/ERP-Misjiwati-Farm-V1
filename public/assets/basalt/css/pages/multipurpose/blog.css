@@ -1,0 +1,1131 @@
+/* Basalt - Blog (blog.html)
+   Namespaced under .cb-*
+   Built from shared parts: the page header, tabs, styled selects,
+   avatars, status pills, the pager, the drawer, empty states and
+   toasts. This file lays them out and styles what belongs to this
+   page only: the Up next tiles, the post table, the Most read and
+   Latest comments cards, the quick view and the New post dialog. */
+
+.cb-page,
+.cb-drawer,
+.cb-new {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--cb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	/* Link text: the primary alone is under 4.5:1 in a few light palettes. */
+	--cb-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--cb-line: var(--basalt-edge);
+	--cb-tone: var(--basalt-series-1);
+}
+
+/* Each category takes one chart color from the theme. */
+.cb-tone-1 {
+	--cb-tone: var(--basalt-series-1);
+}
+.cb-tone-2 {
+	--cb-tone: var(--basalt-series-2);
+}
+.cb-tone-3 {
+	--cb-tone: var(--basalt-series-3);
+}
+.cb-tone-4 {
+	--cb-tone: var(--basalt-series-4);
+}
+.cb-tone-5 {
+	--cb-tone: var(--basalt-series-5);
+}
+
+/* Cards */
+.cb-up-card,
+.cb-list {
+	margin-bottom: 1.5rem;
+}
+.cb-pair {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.cb-pair {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+/* Figures across the top: five side by side, each with a trend line
+   or a meter under the number. */
+.cb-figs {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	overflow: hidden;
+}
+.cb-fig {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.5rem 1.6rem 1.35rem;
+	border-left: 1px solid var(--cb-line);
+
+	&:first-child {
+		border-left: 0;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--cb-quiet);
+	}
+	& dd {
+		margin: 0;
+	}
+}
+.cb-fig-value {
+	margin-top: 0.4rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 1.6rem;
+	font-weight: 800;
+	line-height: 1.15;
+	color: var(--basalt-copy);
+}
+.cb-fig-art {
+	display: flex;
+	align-items: center;
+	height: 3.25rem;
+	margin: 1rem 0 2rem;
+}
+/* The trend line draws into its own box, since a dd cannot carry the chart's role. */
+.cb-fig-line {
+	flex: 1;
+	min-width: 0;
+}
+.cb-fig-note {
+	margin-top: auto;
+	overflow: hidden;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cb-quiet);
+}
+/* While a line is read, the figure and note show that point, in the
+   line's color, the note still on one line. */
+.cb-fig-value,
+.cb-fig-note {
+	transition: color 130ms ease;
+}
+.cb-fig.is-reading .cb-fig-value {
+	color: var(--basalt-hue);
+}
+.cb-fig.is-reading .cb-fig-note {
+	color: var(--basalt-copy);
+}
+.cb-meter {
+	width: 100%;
+	height: 6px;
+	border-radius: 6px;
+	background: var(--basalt-plane-alt);
+
+	& > span {
+		display: block;
+		width: var(--cb-w);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-hue);
+		animation: cb-grow 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+}
+@keyframes cb-grow {
+	from {
+		width: 0;
+	}
+}
+@media (max-width: 1199.98px) {
+	.cb-figs {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.cb-fig:nth-child(3n + 1) {
+		border-left: 0;
+	}
+	.cb-fig:nth-child(n + 4) {
+		border-top: 1px solid var(--cb-line);
+	}
+}
+@media (max-width: 575.98px) {
+	.cb-figs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.cb-fig:nth-child(n) {
+		border-top: 0;
+		border-left: 1px solid var(--cb-line);
+	}
+	.cb-fig:nth-child(2n + 1) {
+		border-left: 0;
+	}
+	.cb-fig:nth-child(n + 3) {
+		border-top: 1px solid var(--cb-line);
+	}
+}
+
+.cb-ideas-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+/* What people read beside who reads it, two even cards ending level. */
+.cb-insights {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.cb-insights {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Reads per post by topic: a bar each, in the topic's own color. */
+.cb-topics {
+	display: flex;
+	gap: 1rem;
+	flex: 1;
+	flex-direction: column;
+	justify-content: space-around;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cb-topic {
+	display: grid;
+	gap: 0.4rem 0.9rem;
+	grid-template-columns: 9.5rem minmax(0, 1fr) 3.5rem 4rem;
+	align-items: center;
+	font-size: 0.875rem;
+}
+.cb-topic-name {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cb-topic-bar,
+.cb-who-bar {
+	height: 0.6rem;
+	border-radius: 6px;
+	background: var(--basalt-plane-alt);
+
+	& > span {
+		display: block;
+		width: var(--cb-w);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--cb-tone, var(--basalt-hue));
+		animation: cb-grow 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+}
+.cb-topic-value {
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.cb-topic-posts {
+	font-size: 0.8rem;
+	color: var(--cb-quiet);
+}
+@container cb-card (max-width: 420px) {
+	.cb-topic {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.cb-topic-bar {
+		grid-column: 1 / -1;
+		order: 1;
+	}
+	.cb-topic-posts {
+		display: none;
+	}
+}
+
+/* Who reads it: one bar split by where reads came from, then roles. */
+.cb-from-bar {
+	display: flex;
+	gap: 3px;
+	height: 0.9rem;
+	overflow: hidden;
+	border-radius: 6px;
+}
+.cb-from-part {
+	width: var(--cb-w);
+	background: var(--cb-tone);
+	animation: cb-grow 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.cb-from-key {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1.25rem;
+	margin: 0.85rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	list-style: none;
+	color: var(--basalt-copy-body);
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.cb-from-dot {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 3px;
+	background: var(--cb-tone);
+}
+.cb-sub {
+	margin: 1.5rem 0 0.75rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--cb-quiet);
+}
+.cb-who {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.9rem;
+		grid-template-columns: 9.5rem minmax(0, 1fr) 2.5rem;
+		align-items: center;
+	}
+	& strong {
+		text-align: right;
+		color: var(--basalt-copy);
+	}
+}
+.cb-who-role {
+	color: var(--basalt-copy);
+}
+
+.cb-card.card {
+	container: cb-card / inline-size;
+	min-width: 0;
+}
+.cb-card > .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--basalt-pad-x);
+}
+.cb-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.cb-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cb-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--cb-quiet);
+}
+.cb-card-foot {
+	display: flex;
+	gap: 0.25rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: auto 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--cb-line);
+	font-size: 0.8rem;
+	color: var(--cb-quiet);
+}
+.cb-card-foot:empty {
+	display: none;
+}
+
+/* A quiet line under a title: category, time, author. */
+.cb-meta {
+	display: block;
+	margin: 0.2rem 0 0;
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--cb-quiet);
+}
+.cb-dot {
+	display: inline-block;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.4rem;
+	border-radius: 50%;
+	vertical-align: 0.05em;
+	background: var(--cb-tone);
+}
+
+/* Titles that open a post: plain text until hovered. */
+.cb-link {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	text-align: start;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+}
+.cb-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.18em;
+	color: var(--cb-link);
+}
+.cb-link:focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.cb-link-quiet {
+	font-weight: 600;
+	color: var(--cb-link);
+}
+
+/* Up next */
+/* Cover tiles in a level row of four on wide cards. Narrower cards keep
+   the list high on the screen: each tile becomes a short row with the
+   cover beside the text, two across, then one on phones. */
+.cb-up {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+@container cb-card (min-width: 34rem) {
+	.cb-up {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@container cb-card (min-width: 60rem) {
+	.cb-up {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.cb-up-none {
+	grid-column: 1 / -1;
+}
+.cb-tile {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	border: 1px solid var(--cb-line);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+}
+.cb-tile:hover {
+	border-color: color-mix(in srgb, var(--cb-tone) 45%, var(--cb-line));
+	box-shadow: 0 6px 18px -10px color-mix(in srgb, var(--cb-tone) 60%, transparent);
+}
+.cb-tile-cover {
+	position: relative;
+}
+.cb-tile-cover > .cb-thumb {
+	display: flex;
+	border-radius: 0;
+}
+.cb-tile-cover img {
+	transition: transform 300ms ease;
+}
+.cb-tile:hover .cb-tile-cover img {
+	transform: scale(1.04);
+}
+.cb-tile-date {
+	position: absolute;
+	top: 0.75rem;
+	left: 0.75rem;
+	padding: 0.3rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+}
+.cb-tile-body {
+	display: flex;
+	gap: 0.5rem;
+	flex: 1 1 auto;
+	flex-direction: column;
+	padding: 1rem 1.1rem 1.1rem;
+}
+.cb-tile-body > .cb-meta {
+	margin: 0;
+}
+.cb-nowrap {
+	white-space: nowrap;
+}
+.cb-tile-title {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 650;
+	line-height: 1.4;
+}
+/* Author over status in every tile, so the tiles line up whatever the
+   name's length. */
+.cb-tile-foot {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-top: auto;
+	padding-top: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+/* The status, with Quick view and Open full page at the right edge. */
+.cb-tile-row {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	align-self: stretch;
+	justify-content: space-between;
+}
+@container cb-card (max-width: 59.99rem) {
+	.cb-tile {
+		display: grid;
+		grid-template-columns: 6.5rem minmax(0, 1fr);
+		border: 0;
+		border-radius: 0;
+		overflow: visible;
+	}
+	.cb-tile:hover {
+		box-shadow: none;
+	}
+	.cb-tile-cover > .cb-thumb {
+		aspect-ratio: 4 / 3;
+		border-radius: 10px;
+	}
+	.cb-tile-date {
+		top: 0.4rem;
+		left: 0.4rem;
+		padding: 0.1rem 0.4rem;
+		font-size: 0.71rem;
+	}
+	.cb-tile-body {
+		gap: 0.3rem;
+		padding: 0 0 0 1rem;
+	}
+	.cb-tile-foot {
+		padding-top: 0.25rem;
+	}
+}
+
+/* Most read */
+.cb-read {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cb-read-item {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 1.5rem minmax(0, 1fr);
+	padding: 0.7rem 0;
+}
+.cb-read-item:first-child {
+	padding-top: 0;
+}
+.cb-read-rank {
+	font-size: 0.85rem;
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--cb-quiet);
+}
+.cb-read-line {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.cb-read-title {
+	min-width: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.35;
+}
+.cb-read-value {
+	flex: none;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cb-read-bar {
+	display: block;
+	height: 6px;
+	margin: 0.4rem 0 0.1rem;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.cb-read-bar > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--cb-tone);
+}
+
+/* Latest comments */
+.cb-talk {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cb-talk-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--cb-line);
+}
+.cb-talk-item:first-child {
+	padding-top: 0;
+}
+.cb-talk-item:last-child {
+	border-bottom: 0;
+}
+.cb-talk-who {
+	display: flex;
+	gap: 0.1rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cb-talk-who > .cb-meta {
+	margin: 0;
+	font-weight: 400;
+}
+.cb-talk-text {
+	margin: 0.2rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.cb-talk-post {
+	font-weight: 600;
+}
+
+/* All posts */
+.cb-tabs {
+	margin-bottom: 1.25rem;
+}
+.cb-list .tab-content {
+	container: cb-list / inline-size;
+}
+.cb-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+.cb-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 12rem;
+	max-width: 28rem;
+}
+.cb-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--cb-quiet);
+	pointer-events: none;
+}
+.cb-search .form-control {
+	padding-left: 2.4rem;
+}
+.cb-select {
+	flex: 0 0 auto;
+}
+/* Narrow cards: the search takes its own row (still capped), and the two
+   selects keep their natural width on the next one. */
+@container cb-list (max-width: 36rem) {
+	.cb-search {
+		flex-basis: 100%;
+	}
+}
+.cb-page .form-control::placeholder,
+.cb-new .form-control::placeholder {
+	color: var(--cb-quiet);
+	opacity: 1;
+}
+
+.cb-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy);
+	margin: 0;
+}
+.cb-table[hidden] {
+	display: none;
+}
+.cb-table thead th {
+	padding: 0.65rem 0.75rem;
+	border-bottom: 1px solid var(--cb-line);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--cb-quiet);
+	background: transparent;
+}
+.cb-table td {
+	padding: var(--basalt-pad-row-y) 0.75rem;
+	border-bottom: 1px solid var(--cb-line);
+	font-size: 0.875rem;
+	vertical-align: middle;
+	color: var(--basalt-copy);
+	background: transparent;
+}
+/* One left edge with the card head; the action keeps the right edge. */
+.cb-table th:first-child,
+.cb-table td:first-child {
+	padding-left: 0;
+}
+.cb-table th:last-child,
+.cb-table td:last-child {
+	padding-right: 0;
+}
+.cb-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+.cb-row {
+	cursor: pointer;
+}
+.cb-row:hover > td {
+	background: var(--basalt-wash);
+}
+
+.cb-col-post {
+	width: 100%;
+	min-width: 18rem;
+}
+.cb-col-author,
+.cb-col-status,
+.cb-col-date,
+.cb-col-views {
+	white-space: nowrap;
+}
+.cb-col-act {
+	width: 1%;
+}
+
+.cb-post {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	min-width: 0;
+}
+.cb-post-text {
+	min-width: 0;
+}
+.cb-post-title {
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.35;
+}
+.cb-author {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.cb-date-main {
+	display: block;
+}
+.cb-views {
+	font-weight: 600;
+}
+
+/* A cover on a tile in the category's color. The icon is what shows
+   when there is no photo or it fails to load. */
+.cb-thumb {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 4.5rem;
+	height: 3rem;
+	border-radius: 10px;
+	overflow: hidden;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--cb-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cb-tone) 18%, var(--basalt-plane));
+}
+.cb-thumb > img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.cb-thumb-md,
+.cb-thumb-lg {
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	font-size: 2.25rem;
+}
+.cb-thumb-lg {
+	border-radius: 12px;
+}
+
+.cb-pager {
+	margin-top: 0.5rem;
+}
+.cb-pager[hidden] {
+	display: none;
+}
+
+/* Narrow cards: each post becomes a stacked record. The cover and
+   title on top, then the status, and under it one quiet line with the
+   author, the date and the views. */
+@container cb-list (max-width: 46rem) {
+	.cb-table thead {
+		display: none;
+	}
+	.cb-table,
+	.cb-table tbody {
+		display: block;
+	}
+	.cb-row {
+		display: grid;
+		gap: 0.75rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"post act"
+			"meta meta";
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--cb-line);
+	}
+	.cb-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.cb-row > td {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+	.cb-row:hover > td {
+		background: transparent;
+	}
+	.cb-col-post {
+		grid-area: post;
+		min-width: 0;
+	}
+	.cb-col-act {
+		grid-area: act;
+		align-self: start;
+		width: auto;
+	}
+	.cb-row > .cb-col-author,
+	.cb-row > .cb-col-date,
+	.cb-row > .cb-col-views {
+		display: none;
+	}
+	.cb-row > .cb-col-status {
+		display: flex;
+		gap: 0.4rem;
+		flex-direction: column;
+		grid-area: meta;
+		align-items: flex-start;
+		padding-left: 5.5rem;
+	}
+	.cb-row > .cb-col-status::after {
+		content: attr(data-cb-facts);
+		font-size: 0.77rem;
+		color: var(--cb-quiet);
+	}
+}
+@container cb-list (max-width: 26rem) {
+	.cb-thumb:not(.cb-thumb-md):not(.cb-thumb-lg) {
+		width: 3.5rem;
+		height: 2.5rem;
+	}
+	.cb-row > .cb-col-status {
+		padding-left: 0;
+	}
+}
+
+/* Post drawer */
+.cb-drawer .offcanvas-body {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+/* Delete is a square icon button, so the two actions keep one row. */
+.cb-drawer .basalt-drawer-foot > .cb-delete {
+	flex: 0 0 auto;
+	width: 2.6rem;
+	padding-left: 0;
+	padding-right: 0;
+}
+.cb-drawer-cover {
+	margin: 0;
+}
+.cb-drawer-summary {
+	margin: 0;
+	font-size: 0.92rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.cb-sec {
+	margin: 0;
+}
+.cb-sec-status {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.cb-sec-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cb-sec-lead {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.cb-sec-title + .cb-sec-lead {
+	margin-bottom: 1rem;
+}
+.cb-sec > .cb-link-quiet {
+	display: inline-flex;
+	align-items: center;
+	margin-top: 1rem;
+	font-size: 0.875rem;
+}
+
+.cb-facts {
+	margin: 0;
+	border-top: 1px solid var(--cb-line);
+}
+.cb-facts-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 6rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--cb-line);
+	font-size: 0.875rem;
+}
+.cb-facts dt {
+	font-weight: 600;
+	color: var(--cb-quiet);
+}
+.cb-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.cb-facts dd .cb-meta {
+	margin-top: 0.1rem;
+}
+.cb-facts .cb-link {
+	font-weight: 600;
+	color: var(--cb-link);
+}
+.cb-slug {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+}
+.cb-tags {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.cb-tag {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--cb-line);
+	font-size: 0.77rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+.cb-bars {
+	display: flex;
+	gap: 0.8rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cb-bars-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 6rem minmax(0, 1fr) 3.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+}
+.cb-bars-name {
+	color: var(--basalt-copy);
+}
+.cb-bars-track {
+	display: block;
+	height: 8px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.cb-bars-track > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--cb-src);
+}
+.cb-src-1 {
+	--cb-src: var(--basalt-series-1);
+}
+.cb-src-2 {
+	--cb-src: var(--basalt-series-2);
+}
+.cb-src-3 {
+	--cb-src: var(--basalt-series-3);
+}
+.cb-src-4 {
+	--cb-src: var(--basalt-series-4);
+}
+.cb-bars-value {
+	font-weight: 600;
+	text-align: end;
+	color: var(--basalt-copy);
+}
+
+.cb-quote {
+	display: flex;
+	gap: 0.75rem;
+	margin: 0;
+	padding: 1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.cb-quote-who {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cb-quote-who .cb-meta {
+	display: inline;
+	margin: 0 0 0 0.3rem;
+	font-weight: 400;
+}
+.cb-quote-text {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+
+/* New post dialog */
+.cb-new .modal-header {
+	align-items: flex-start;
+	padding: 1.5rem 1.5rem 1.25rem;
+}
+.cb-new-heading {
+	min-width: 0;
+}
+.cb-new-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+}
+.cb-new-sub {
+	margin: 0.25rem 0 0;
+	font-size: 0.85rem;
+	color: var(--cb-quiet);
+}
+.cb-new .modal-body {
+	padding: 1.5rem;
+}
+.cb-new .modal-footer {
+	gap: 0.5rem;
+	padding: 1.1rem 1.5rem 1.35rem;
+}
+.cb-new .modal-footer > .btn {
+	margin: 0;
+	white-space: nowrap;
+}
+
+.cb-field {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+}
+.cb-field:last-child {
+	margin-bottom: 0;
+}
+.cb-field .form-label {
+	display: block;
+	margin-bottom: 0.4rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cb-field-row {
+	display: flex;
+	gap: 1.25rem 1rem;
+	flex-wrap: wrap;
+}
+.cb-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--cb-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cb-meter > span,
+	.cb-topic-bar > span,
+	.cb-who-bar > span,
+	.cb-from-part {
+		animation: none;
+	}
+	.cb-tile,
+	.cb-tile-cover img {
+		transition: none;
+	}
+	.cb-tile:hover .cb-tile-cover img {
+		transform: none;
+	}
+}

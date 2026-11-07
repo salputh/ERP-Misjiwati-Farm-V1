@@ -48,16 +48,103 @@ class ManajemenPeriodeTest extends TestCase
             ->assertSee('26.000 ekor')
             ->assertSee('Kandang farm')
             ->assertSee('Total DOC chick-in periode ini')
-            ->assertSee('Jumlah DOC chick-in (ekor)')
+            ->assertDontSee('Jumlah DOC chick-in (ekor)')
             ->assertSee('sedang dikerjakan');
+    }
+
+    public function test_creating_a_period_attaches_every_house_with_its_own_population(): void
+    {
+        $farm = Farm::query()->firstOrFail();
+        $kandangSatu = Kandang::query()->create(['farm_id' => $farm->id, 'nama' => 'Kandang 1', 'kapasitas' => 20000]);
+        $kandangDua = Kandang::query()->create(['farm_id' => $farm->id, 'nama' => 'Kandang 2', 'kapasitas' => 26000]);
+
+        Livewire::test(ManajemenPeriode::class)
+            ->call('tambahPeriode')
+            ->assertSet('populasiKandang', [$kandangSatu->id => '20000', $kandangDua->id => '26000'])
+            ->assertSet('siklusKandang', [$kandangSatu->id => '1', $kandangDua->id => '1'])
+            ->set('siklusKandang', [$kandangSatu->id => '30', $kandangDua->id => '31'])
+            ->set('nama', 'Periode Dua Kandang')
+            ->set('inti', 'PT. Indojaya Agrinusa')
+            ->set('ppl', 'PPL Baru')
+            ->set('strain', 'Standar farm')
+            ->set('tanggalChickIn', '2026-11-07')
+            ->set('beratDocGram', '37')
+            ->call('simpanPeriode')
+            ->assertHasNoErrors();
+
+        $periode = Periode::query()->where('nama', 'Periode Dua Kandang')->firstOrFail();
+
+        $this->assertSame(
+            [$kandangSatu->id => 20000, $kandangDua->id => 26000],
+            $periode->kandangPeriode()->pluck('populasi_awal', 'kandang_id')->all(),
+        );
+        $this->assertSame(
+            [$kandangSatu->id => 30, $kandangDua->id => 31],
+            $periode->kandangPeriode()->pluck('nomor_siklus', 'kandang_id')->all(),
+        );
+        $this->assertSame(46000, $periode->totalDocChickIn());
+    }
+
+    public function test_new_period_form_suggests_the_next_cycle_number_for_each_house(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $kandangSatu = Kandang::query()->where('nama', 'Kandang 1')->firstOrFail();
+        $kandangDua = Kandang::query()->where('nama', 'Kandang 2')->firstOrFail();
+
+        Livewire::test(ManajemenPeriode::class)
+            ->call('tambahPeriode')
+            ->assertHasNoErrors()
+            ->assertSet('siklusKandang', [$kandangSatu->id => '19', $kandangDua->id => '20']);
+    }
+
+    public function test_cycle_number_cannot_repeat_for_the_same_house(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $periode = Periode::query()->where('nama', 'Periode September 2026')->firstOrFail();
+        $kandangSatu = Kandang::query()->where('nama', 'Kandang 1')->firstOrFail();
+
+        Livewire::withQueryParams(['periode' => $periode->id])
+            ->test(ManajemenPeriode::class)
+            ->call('tambahKandang')
+            ->set('kandangId', (string) $kandangSatu->id)
+            ->set('nomorSiklusKandang', '18')
+            ->set('populasiAwal', '1000')
+            ->set('tanggalChickInKandang', '2026-09-11')
+            ->set('beratDocGramKandang', '37')
+            ->call('simpanKandang')
+            ->assertHasErrors(['nomorSiklusKandang' => 'unique']);
+    }
+
+    public function test_population_above_house_capacity_is_rejected_when_creating_a_period(): void
+    {
+        $farm = Farm::query()->firstOrFail();
+        $kandang = Kandang::query()->create(['farm_id' => $farm->id, 'nama' => 'Kandang 1', 'kapasitas' => 20000]);
+
+        Livewire::test(ManajemenPeriode::class)
+            ->call('tambahPeriode')
+            ->set('nama', 'Periode Kelebihan')
+            ->set('siklusKandang', [$kandang->id => '31'])
+            ->set('inti', 'PT. Indojaya Agrinusa')
+            ->set('ppl', 'PPL Baru')
+            ->set('strain', 'Standar farm')
+            ->set('tanggalChickIn', '2026-11-07')
+            ->set('beratDocGram', '37')
+            ->set('populasiKandang', [$kandang->id => '20001'])
+            ->call('simpanPeriode')
+            ->assertHasErrors(['populasiKandang.'.$kandang->id]);
+
+        $this->assertDatabaseMissing('periodes', ['nama' => 'Periode Kelebihan']);
     }
 
     public function test_periods_can_be_created_and_updated(): void
     {
+        $farm = Farm::query()->firstOrFail();
+        $kandang = Kandang::query()->create(['farm_id' => $farm->id, 'nama' => 'Kandang 1', 'kapasitas' => 20000]);
+
         Livewire::test(ManajemenPeriode::class)
             ->call('tambahPeriode')
             ->set('nama', 'Periode Baru')
-            ->set('nomorSiklus', '20')
+            ->set('siklusKandang', [$kandang->id => '20'])
             ->set('inti', 'PT. Indojaya Agrinusa')
             ->set('ppl', 'PPL Baru')
             ->set('strain', 'Standar farm')
@@ -82,11 +169,11 @@ class ManajemenPeriodeTest extends TestCase
         $this->assertDatabaseHas('periodes', [
             'id' => $periode->id,
             'nama' => 'Periode Baru Selesai',
-            'nomor_siklus' => 20,
             'inti' => 'PT. Indojaya Agrinusa',
             'ppl' => 'PPL Baru',
             'status' => 'berjalan',
         ]);
+        $this->assertDatabaseHas('periode_kandangs', ['periode_id' => $periode->id, 'kandang_id' => $kandang->id, 'nomor_siklus' => 20]);
     }
 
     public function test_farms_can_be_created_and_periods_and_houses_are_scoped_to_the_selected_farm(): void
@@ -107,7 +194,6 @@ class ManajemenPeriodeTest extends TestCase
         $periodeKedua = Periode::query()->create([
             'farm_id' => $farmKedua->id,
             'nama' => 'Periode Juli 2026',
-            'nomor_siklus' => 18,
             'inti' => 'Inti Farm Kedua',
             'ppl' => 'PPL Farm Kedua',
             'strain' => 'Standar farm',
@@ -123,6 +209,7 @@ class ManajemenPeriodeTest extends TestCase
             ->assertDontSee('Periode September 2026')
             ->call('tambahKandang')
             ->set('kandangId', (string) $kandangFarmUtama->id)
+            ->set('nomorSiklusKandang', '90')
             ->set('populasiAwal', '100')
             ->set('tanggalChickInKandang', '2026-07-15')
             ->set('beratDocGramKandang', '37')
@@ -145,7 +232,6 @@ class ManajemenPeriodeTest extends TestCase
         $periode = Periode::query()->create([
             'farm_id' => $farm->id,
             'nama' => 'Periode Tanpa Identitas',
-            'nomor_siklus' => null,
             'inti' => null,
             'ppl' => null,
             'strain' => 'Standar farm',
@@ -170,7 +256,6 @@ class ManajemenPeriodeTest extends TestCase
         Livewire::withQueryParams(['farm' => $farm->id, 'periode' => $periode->id])
             ->test(ManajemenPeriode::class)
             ->call('ubahPeriode', $periode->id)
-            ->set('nomorSiklus', '23')
             ->set('inti', 'PT. Indojaya Agrinusa')
             ->set('ppl', 'PPL Baru')
             ->call('simpanPeriode')
@@ -178,7 +263,6 @@ class ManajemenPeriodeTest extends TestCase
 
         $this->assertDatabaseHas('periodes', [
             'id' => $periode->id,
-            'nomor_siklus' => 23,
             'inti' => 'PT. Indojaya Agrinusa',
             'ppl' => 'PPL Baru',
         ]);
@@ -216,6 +300,7 @@ class ManajemenPeriodeTest extends TestCase
             ->assertSet('periodeId', $periode->id)
             ->call('tambahKandang')
             ->set('kandangId', (string) $kandang->id)
+            ->set('nomorSiklusKandang', '90')
             ->set('populasiAwal', (string) ($kandang->kapasitas + 1))
             ->call('simpanKandang')
             ->assertHasErrors('populasiAwal');
@@ -236,6 +321,7 @@ class ManajemenPeriodeTest extends TestCase
             ->test(ManajemenPeriode::class)
             ->call('tambahKandang')
             ->set('kandangId', (string) $kandang->id)
+            ->set('nomorSiklusKandang', '90')
             ->set('populasiAwal', (string) $kandang->kapasitas)
             ->call('simpanKandang')
             ->assertHasNoErrors()
@@ -352,6 +438,7 @@ class ManajemenPeriodeTest extends TestCase
             ->test(ManajemenPeriode::class)
             ->call('tambahKandang')
             ->set('kandangId', (string) $kandang->id)
+            ->set('nomorSiklusKandang', '90')
             ->set('populasiAwal', '24000')
             ->set('tanggalChickInKandang', '2026-10-10')
             ->set('beratDocGramKandang', '42')
@@ -375,10 +462,12 @@ class ManajemenPeriodeTest extends TestCase
 
     public function test_period_cannot_be_closed_before_real_rhpp_is_available(): void
     {
+        Kandang::query()->create(['farm_id' => Farm::query()->firstOrFail()->id, 'nama' => 'Kandang 1', 'kapasitas' => 20000]);
+
         Livewire::test(ManajemenPeriode::class)
             ->call('tambahPeriode')
             ->set('nama', 'Periode Belum RHPP')
-            ->set('nomorSiklus', '21')
+            ->set('siklusKandang', [Kandang::query()->firstOrFail()->id => '21'])
             ->set('inti', 'PT. Indojaya Agrinusa')
             ->set('ppl', 'PPL Baru')
             ->set('strain', 'Standar farm')
@@ -574,7 +663,6 @@ class ManajemenPeriodeTest extends TestCase
         $periode = Periode::query()->create([
             'farm_id' => $farm->id,
             'nama' => 'Periode Uji',
-            'nomor_siklus' => 22,
             'inti' => 'PT. Indojaya Agrinusa',
             'ppl' => 'PPL Uji',
             'strain' => 'Standar farm',

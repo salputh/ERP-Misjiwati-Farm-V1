@@ -1,0 +1,1654 @@
+/*
+ * Product Details (product-details.html). Every rule lives under a .pd-*
+ * name and every color comes from a --basalt-* token, so the page follows
+ * the chosen palette and dark mode without overrides of its own.
+ */
+
+/* Small labels lean toward the body color so they stay readable in every
+   palette; links and stars get the same treatment. */
+.pd-page {
+	--pd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--pd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--pd-star: color-mix(in srgb, var(--basalt-warning) 82%, var(--basalt-copy));
+}
+
+/* A tone class hands one chart series color to bars, tiles and icons. */
+.pd-tone-1 {
+	--pd-tone: var(--basalt-series-1);
+}
+.pd-tone-2 {
+	--pd-tone: var(--basalt-series-2);
+}
+.pd-tone-3 {
+	--pd-tone: var(--basalt-series-3);
+}
+.pd-tone-4 {
+	--pd-tone: var(--basalt-series-4);
+}
+.pd-tone-5 {
+	--pd-tone: var(--basalt-series-5);
+}
+.pd-tone-7 {
+	--pd-tone: var(--basalt-series-7);
+}
+.pd-tone-8 {
+	--pd-tone: var(--basalt-series-8);
+}
+
+/* Lists on this page carry no bullets or indents of their own. */
+.pd-sites,
+.pd-places,
+.pd-orders,
+.pd-history {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* The page reads like a store's product page: plain white paper in light
+   mode and a deep near-black in dark mode, mixed from the palette's own
+   tokens. Products (products.css) uses the same paper. */
+body:has(.pd-store) {
+	--pd-paper: var(--basalt-plane);
+	--basalt-canvas: var(--pd-paper);
+}
+[data-bs-theme="dark"] body:has(.pd-store) {
+	--pd-paper: color-mix(in srgb, var(--basalt-copy) 2%, #050506);
+	--basalt-plane: color-mix(in srgb, var(--basalt-copy) 6%, #050506);
+}
+.pd-store {
+	/* The pale ground behind the product photos. */
+	--pd-photo: color-mix(in srgb, var(--basalt-copy) 4%, var(--pd-paper));
+}
+
+/* The bar: a small breadcrumb on the left, the quiet admin actions on the
+   right. */
+.pd-store-bar {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0.25rem 0 1.75rem;
+}
+.pd-crumbs {
+	min-width: 0;
+
+	& .breadcrumb {
+		--bs-breadcrumb-divider-color: var(--pd-quiet);
+		--bs-breadcrumb-item-active-color: var(--pd-quiet);
+		flex-wrap: nowrap;
+		font-size: 0.75rem;
+	}
+	& .breadcrumb-item {
+		white-space: nowrap;
+	}
+	& .breadcrumb-item.active {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	& a {
+		text-decoration: none;
+		color: var(--pd-quiet);
+	}
+	& a:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+.pd-store-actions {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-left: auto;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.pd-quiet-btn.btn {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.4rem;
+	border: 0;
+	font-size: 0.82rem;
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+@media (max-width: 575.98px) {
+	.pd-quiet-btn.btn {
+		display: none;
+	}
+}
+
+.pd-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .basalt-status {
+		padding: 0.2rem 0.6rem;
+		font-size: 0.75rem;
+	}
+}
+
+/* The page menu spaces its icons out and tints Archive as a warning. */
+.pd-page .dropdown-item {
+	& .bi {
+		margin-right: 0.6rem;
+	}
+
+	&.pd-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+
+	&.pd-danger-item:hover,
+	&.pd-danger-item:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* A picture is a tinted tile with the product icon; the photo, when it
+   loads, covers the tile completely. */
+.pd-pic {
+	position: relative;
+	display: grid;
+	place-items: center;
+	overflow: hidden;
+	color: color-mix(in srgb, var(--basalt-series-1) 70%, var(--basalt-copy));
+	background: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--basalt-series-1) 22%, var(--basalt-plane)),
+		color-mix(in srgb, var(--basalt-series-2) 18%, var(--basalt-plane))
+	);
+
+	& img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
+
+:root[data-basalt-gradients="off"] .pd-pic {
+	background: color-mix(in srgb, var(--basalt-series-1) 22%, var(--basalt-plane));
+}
+
+/* Cards sit one per row until 1200px, then two to a row with even ends. */
+.pd-row {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1200px) {
+	.pd-row {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.pd-row-wide {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	}
+}
+
+/* Each card scrolls clear of the sticky top bar when its form opens. */
+.pd-card {
+	scroll-margin-top: 5.5rem;
+	min-width: 0;
+}
+
+.pd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+
+@media (max-width: 575.98px) {
+	.pd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* A card's title block on the left, its one action on the right. */
+.pd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div {
+		min-width: 0;
+	}
+
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+
+.pd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.pd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pd-quiet);
+}
+
+.pd-quiet {
+	color: var(--pd-quiet);
+}
+
+/* Text links inside cards share one weight and color and underline on
+   hover; the header link keeps to one line. */
+.pd-link,
+.pd-page .pd-card a:not(.btn):not(.dropdown-item) {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--pd-link);
+}
+
+.pd-link {
+	flex: none;
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+
+.pd-page .pd-card a:not(.btn):not(.dropdown-item):hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+
+.pd-page a:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* The arrow after a "see all" link nudges forward on hover. */
+.pd-more {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-top: 1.25rem;
+	font-size: 0.875rem;
+
+	& .bi {
+		transition: transform 170ms ease;
+	}
+
+	&:hover .bi {
+		transform: translateX(3px);
+	}
+}
+
+/* Chips take their tint from --pd-chip; the modifiers only swap it. */
+.pd-chip {
+	--pd-chip: var(--basalt-hue);
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--pd-chip) 48%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pd-chip) 14%, var(--basalt-plane));
+}
+
+.pd-chip-primary {
+	--pd-chip: var(--basalt-hue);
+}
+.pd-chip-danger {
+	--pd-chip: var(--basalt-danger);
+}
+.pd-chip-warning {
+	--pd-chip: var(--basalt-warning);
+}
+.pd-chip-info {
+	--pd-chip: var(--basalt-info);
+}
+
+/* The listing sits straight on the page: a tall photo with its thumbnails
+   on the left, and the maker, name, price, words and sizes on the right. */
+.pd-card-listing {
+	container-type: inline-size;
+}
+
+/* Gallery and shop text stack until the page is 40rem wide, then sit side
+   by side with the gallery a little wider. */
+.pd-listing {
+	display: grid;
+	gap: 2rem;
+}
+
+@container (min-width: 40rem) {
+	.pd-listing {
+		gap: 3.5rem;
+		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+		align-items: start;
+	}
+}
+
+.pd-gallery {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 4rem minmax(0, 1fr);
+	align-items: start;
+	max-width: 38rem;
+}
+
+.pd-gallery-main {
+	grid-column: 2;
+	grid-row: 1;
+}
+
+.pd-pic-main {
+	width: 100%;
+	aspect-ratio: 3 / 4;
+	border-radius: 0;
+	font-size: 3rem;
+}
+.pd-store .pd-pic-main,
+.pd-store .pd-rail-thumb .pd-pic {
+	color: var(--basalt-copy-faint);
+	background: var(--pd-photo);
+}
+
+/* A new photo fades in. */
+.pd-pic-main img {
+	animation: pd-photo-in 320ms ease both;
+}
+@keyframes pd-photo-in {
+	from {
+		opacity: 0.35;
+	}
+}
+
+.pd-rail {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	grid-column: 1;
+	grid-row: 1;
+}
+.pd-rail[hidden] {
+	display: none;
+}
+/* Until the page is 58rem wide the thumbnails run in a row under the
+   photo, which keeps the photo as wide as the column. */
+@container (max-width: 57.98rem) {
+	.pd-gallery {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.pd-gallery-main {
+		grid-column: 1;
+	}
+	.pd-rail {
+		flex-direction: row;
+		flex-wrap: wrap;
+		grid-row: 2;
+	}
+	.pd-rail-thumb {
+		width: 3.5rem;
+	}
+}
+/* With one photo there is no rail, so the photo takes the whole width. */
+.pd-gallery:has(.pd-rail[hidden]) {
+	grid-template-columns: minmax(0, 1fr);
+
+	& .pd-gallery-main {
+		grid-column: 1;
+	}
+}
+.pd-rail-thumb {
+	position: relative;
+	width: 4rem;
+	aspect-ratio: 3 / 4;
+	padding: 0;
+	overflow: hidden;
+	border: 0;
+	border-radius: 0;
+	background: var(--pd-photo, var(--basalt-wash));
+	opacity: 0.55;
+	transition: opacity 0.18s ease;
+
+	& .pd-pic {
+		width: 100%;
+		height: 100%;
+		border-radius: 0;
+		font-size: 1.1rem;
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border: 1px solid transparent;
+	}
+	&:hover {
+		opacity: 1;
+	}
+	&[aria-pressed="true"] {
+		opacity: 1;
+
+		&::after {
+			border-color: var(--basalt-copy);
+		}
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.pd-shop {
+	min-width: 0;
+	max-width: 32rem;
+}
+
+/* The maker in small capitals, with the listing's badge beside it. */
+.pd-eyebrow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem 0.6rem;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+}
+
+.pd-eyebrow .pd-chip {
+	letter-spacing: 0;
+	text-transform: none;
+}
+
+.pd-store-name {
+	margin: 0;
+	font-size: clamp(1.3rem, 1.1rem + 0.6vw, 1.65rem);
+	font-weight: 400;
+	line-height: 1.25;
+	letter-spacing: 0.01em;
+	color: var(--basalt-copy);
+}
+
+.pd-stars-line {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0.7rem 0 0;
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.pd-stars {
+	display: inline-flex;
+	gap: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--pd-star);
+}
+
+/* The price, with the old one struck through when a sale runs; the sale
+   price itself turns red. */
+.pd-price {
+	display: flex;
+	gap: 0.3rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 1.1rem 0 0;
+}
+
+.pd-price-now {
+	font-size: 1.2rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pd-price:has(.pd-price-was) .pd-price-now {
+	color: color-mix(in srgb, var(--basalt-danger) 85%, var(--basalt-copy));
+}
+
+.pd-price-was {
+	font-size: 0.95rem;
+	color: var(--pd-quiet);
+}
+
+.pd-price-note {
+	font-size: 0.78rem;
+	color: var(--pd-quiet);
+}
+
+/* The description sits under a thin rule, and its last block has no
+   trailing space. */
+.pd-copy {
+	margin-top: 1.4rem;
+	padding-top: 1.4rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	line-height: 1.7;
+	color: var(--basalt-copy-body);
+
+	& p {
+		margin: 0 0 0.75rem;
+	}
+
+	& ul {
+		margin: 0;
+		padding-left: 1.2rem;
+	}
+
+	& li + li {
+		margin-top: 0.25rem;
+	}
+
+	& > :last-child {
+		margin-bottom: 0;
+	}
+}
+
+/* Sizes are plain boxes; one with none on hand is struck through. */
+.pd-sizes {
+	margin-top: 1.5rem;
+}
+.pd-sizes[hidden] {
+	display: none;
+}
+.pd-sizes-label {
+	margin: 0 0 0.6rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+}
+.pd-size-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pd-size {
+	display: inline-grid;
+	place-items: center;
+	min-width: 3rem;
+	height: 2.6rem;
+	padding: 0 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 2px;
+	font-size: 0.82rem;
+	font-weight: 500;
+	color: var(--basalt-copy);
+
+	&.is-out {
+		color: var(--basalt-copy-faint);
+		text-decoration: line-through;
+	}
+}
+
+/* Shipping and care notes read as a quiet list, not as boxes. */
+.pd-perks {
+	display: grid;
+	gap: 0.5rem;
+	margin: 1.6rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.55rem;
+		align-items: center;
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+	}
+
+	& .bi {
+		color: var(--pd-quiet);
+	}
+}
+
+/* For the team, under a rule: the SKU line and where the product stands. */
+.pd-admin-line {
+	display: grid;
+	gap: 0.6rem;
+	margin-top: 1.75rem;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.pd-sub {
+	margin: 0;
+	font-size: 0.78rem;
+	color: var(--pd-quiet);
+}
+
+/* A card in edit mode hides its view; the form and footer only show
+   while they are needed. */
+.pd-edit[hidden],
+[data-pd-view][hidden],
+[data-pd-sale-ends][hidden],
+.pd-edit-foot[hidden] {
+	display: none;
+}
+
+.pd-field {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+
+	& legend.form-label {
+		float: none;
+		width: auto;
+		padding: 0;
+		font-size: inherit;
+		line-height: inherit;
+	}
+}
+
+/* Name and badge stack until the card has room to set them side by side. */
+.pd-field-pair {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.pd-field-prices {
+	display: flex;
+	gap: 1.25rem 1.5rem;
+	flex-wrap: wrap;
+}
+
+.pd-money {
+	width: 11rem;
+}
+
+.pd-select {
+	width: auto;
+	min-width: 11rem;
+	max-width: 100%;
+}
+
+@container (min-width: 40rem) {
+	.pd-field-pair {
+		grid-template-columns: minmax(0, 24rem) auto;
+		justify-content: start;
+	}
+}
+
+.pd-edit-lead {
+	margin: 0 0 1.25rem;
+	font-size: 0.875rem;
+	color: var(--pd-quiet);
+}
+
+/* Form buttons gather at the bottom right, under a divider. */
+.pd-edit-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* Photos being edited fill a grid of tiles, each with its own buttons
+   floating on top, and the add tile closes the grid. */
+.pd-photo-edit {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+	margin: 0 0 0.6rem;
+	padding: 0;
+	list-style: none;
+}
+
+.pd-photo-edit-item {
+	position: relative;
+
+	& .pd-pic {
+		aspect-ratio: 4 / 3;
+		border-radius: 10px;
+		font-size: 1.3rem;
+	}
+}
+
+.pd-photo-edit-item .pd-chip,
+.pd-photo-edit-main {
+	position: absolute;
+	bottom: 0.4rem;
+	left: 0.4rem;
+}
+
+.pd-page :is(.pd-photo-edit-main, .pd-photo-edit-remove) {
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-plane) 92%, transparent);
+}
+
+.pd-page .pd-photo-edit-main {
+	padding: 0.1rem 0.5rem;
+	border: 0;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+}
+
+.pd-page .pd-photo-edit-remove {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.4rem;
+	width: 1.75rem;
+	height: 1.75rem;
+	padding: 0;
+	border-radius: 50%;
+	font-size: 0.75rem;
+}
+
+.pd-photo-edit-add {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	border: 1.5px dashed var(--basalt-edge-strong);
+	border-radius: 10px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&:hover {
+		border-color: var(--basalt-hue);
+	}
+
+	&:focus {
+		outline: none;
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The description editor lights up its whole frame on focus, never the
+   text area inside, and turns red with its message when left empty. */
+.pd-rte {
+	border: 1px solid var(--bs-border-color);
+	border-radius: var(--bs-border-radius);
+	background: var(--bs-body-bg);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue);
+		box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 22%, transparent);
+	}
+
+	&:has(.is-invalid) {
+		border-color: var(--basalt-danger);
+	}
+
+	&:has(.is-invalid) + .invalid-feedback {
+		display: block;
+	}
+}
+
+.pd-rte-bar {
+	display: flex;
+	gap: 0.25rem;
+	padding: 0.3rem 0.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& .btn {
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		border-radius: 8px;
+		color: var(--basalt-copy);
+	}
+
+	& .btn[aria-pressed="true"] {
+		color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+}
+
+.pd-rte-body {
+	min-height: 8.5rem;
+	padding: 0.75rem 0.9rem;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+	cursor: text;
+
+	&:focus,
+	&:focus-visible {
+		outline: none;
+		box-shadow: none;
+	}
+
+	& p {
+		margin: 0 0 0.6rem;
+	}
+
+	& ul {
+		margin: 0 0 0.6rem;
+		padding-left: 1.2rem;
+	}
+
+	& > :last-child {
+		margin-bottom: 0;
+	}
+
+	&:empty::before {
+		content: attr(data-placeholder);
+		color: var(--pd-quiet);
+	}
+}
+
+/* Sales figures run in one line, and the trend sentence takes a line of
+   its own below them. */
+.pd-figs {
+	display: flex;
+	gap: 1rem 2.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin: 0 0 1.75rem;
+
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--pd-quiet);
+	}
+
+	& dd {
+		margin: 0;
+		font-size: 1.6rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		color: var(--basalt-copy);
+	}
+
+	& .pd-figs-trend dd {
+		font-size: 0.875rem;
+		font-weight: 400;
+		letter-spacing: 0;
+		color: var(--pd-quiet);
+	}
+}
+
+.pd-figs-trend {
+	flex-basis: 100%;
+}
+
+.pd-trend {
+	display: inline-flex;
+	gap: 0.2rem;
+	align-items: center;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-weight: 700;
+}
+
+.pd-trend-up {
+	color: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 14%, transparent);
+}
+
+.pd-trend-down {
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 12%, transparent);
+}
+
+/* The chart's title and key share a line above a fixed-height canvas. */
+.pd-chart {
+	margin: 0;
+}
+
+.pd-chart-head {
+	display: flex;
+	gap: 0.3rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+.pd-chart-title {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--pd-quiet);
+}
+
+.pd-chart-key {
+	display: flex;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	font-size: 0.77rem;
+	color: var(--pd-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		white-space: nowrap;
+	}
+}
+
+.pd-chart-swatch {
+	width: 1rem;
+	height: 0;
+	border-top: 2.5px solid var(--basalt-series-1);
+}
+
+.pd-chart-swatch-before {
+	border-top: 1.5px dashed var(--basalt-copy-body);
+}
+
+.pd-line {
+	position: relative;
+	height: 13rem;
+}
+
+/* Each location is a row with its count, a bar against the fullest
+   location, and a line on holds and the reorder point. */
+.pd-site {
+	padding: 0.9rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+
+.pd-site-top {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+
+.pd-reorder-label {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.pd-site-name {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.pd-site-sub {
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--pd-quiet);
+}
+
+.pd-site-qty {
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--pd-quiet);
+
+	& strong {
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+.pd-site-track {
+	display: block;
+	height: 0.5rem;
+	margin: 0.5rem 0 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+
+.pd-site-fill {
+	display: block;
+	width: var(--pd-w);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--pd-tone);
+}
+
+.pd-site .pd-site-sub {
+	display: block;
+	margin: 0;
+}
+
+.pd-low {
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+}
+
+/* The incoming-stock note disappears when there is nothing on order. */
+.pd-incoming {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 1.25rem 0 0;
+	padding: 0.7rem 1rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&:empty {
+		display: none;
+	}
+
+	& .bi {
+		color: var(--pd-quiet);
+	}
+}
+
+.pd-reorder {
+	display: grid;
+	gap: 1rem;
+}
+
+.pd-reorder-row {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.pd-reorder-input {
+	width: 7rem;
+}
+
+/* The variants table sizes itself to its card, not to the window. */
+.pd-card-variants {
+	container-type: inline-size;
+}
+
+.pd-table-wrap {
+	position: relative;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+/* Cells line up flush with the card edges, and the last row drops its
+   divider. */
+.pd-table {
+	--bs-table-bg: transparent;
+	margin: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+		border-bottom-color: var(--basalt-edge);
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+
+	& thead th {
+		padding-top: 0;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--pd-quiet);
+	}
+}
+
+.pd-col-num {
+	text-align: right;
+	white-space: nowrap;
+}
+
+.pd-col-sku {
+	white-space: nowrap;
+}
+
+.pd-col-on {
+	width: 6rem;
+}
+
+.pd-var {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 12rem;
+}
+
+.pd-var-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--pd-tone) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pd-tone) 16%, var(--basalt-plane));
+}
+
+.pd-var-name {
+	display: block;
+	font-weight: 600;
+}
+
+.pd-var-note {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--pd-quiet);
+}
+
+.pd-sku {
+	font-size: 0.8rem;
+	letter-spacing: 0.02em;
+	color: var(--basalt-copy-body);
+}
+
+.pd-var-input {
+	min-width: 10rem;
+}
+
+.pd-sku-input {
+	width: 8.75rem;
+}
+
+.pd-price-input {
+	width: 6.5rem;
+	margin-left: auto;
+	text-align: right;
+}
+
+.pd-page .pd-remove {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	color: var(--basalt-copy);
+}
+
+/* As the card narrows, sales go first; then SKU and stock move into the
+   variant's second line. In edit mode the SKU column stays, and the table
+   scrolls sideways if it must. */
+.pd-var-stock {
+	display: none;
+}
+
+@container (max-width: 47.99rem) {
+	.pd-col-sold {
+		display: none;
+	}
+}
+
+@container (max-width: 59.99rem) {
+	.pd-table.is-editing .pd-col-sold {
+		display: none;
+	}
+}
+
+@container (max-width: 37.99rem) {
+	.pd-table:not(.is-editing) .pd-col-sku,
+	.pd-table:not(.is-editing) .pd-col-stock {
+		display: none;
+	}
+
+	.pd-var-stock {
+		display: inline;
+	}
+
+	.pd-var {
+		gap: 0.7rem;
+		min-width: 0;
+	}
+
+	.pd-var-icon {
+		display: none;
+	}
+
+	.pd-col-on {
+		width: 3.5rem;
+	}
+}
+
+/* Row input labels are read aloud only on wide cards; on a phone the row
+   stacks and each label shows above its input. */
+.pd-vlabel {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	white-space: nowrap;
+	clip-path: inset(50%);
+}
+
+@container (max-width: 37.99rem) {
+	.pd-table.is-editing {
+		& thead {
+			display: none;
+		}
+
+		& tr {
+			display: grid;
+			gap: 0.75rem;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+			align-items: end;
+			padding: 1rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+
+		& tr:first-child {
+			padding-top: 0;
+		}
+
+		& tr:last-child {
+			border-bottom: 0;
+		}
+
+		& > tbody > tr > td {
+			display: block;
+			padding: 0;
+			border: 0;
+			text-align: left;
+		}
+
+		& .pd-col-name {
+			grid-column: 1 / -1;
+		}
+
+		& .pd-col-stock,
+		& .pd-col-sold {
+			display: none;
+		}
+
+		& .pd-col-on {
+			width: auto;
+			padding-bottom: 0.3rem;
+		}
+
+		& .pd-col-on:not(:has(button)) {
+			display: none;
+		}
+
+		& .pd-vlabel {
+			position: static;
+			display: block;
+			width: auto;
+			height: auto;
+			margin-bottom: 0.3rem;
+			overflow: visible;
+			font-size: 0.77rem;
+			font-weight: 600;
+			color: var(--pd-quiet);
+			clip-path: none;
+		}
+
+		& .pd-var-input,
+		& .pd-sku-input,
+		& .pd-price-input {
+			width: 100%;
+			min-width: 0;
+			margin: 0;
+			text-align: left;
+		}
+	}
+}
+
+/* The average score stands beside a bar per star count; on the narrowest
+   phones the bars drop below it. */
+.pd-score {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+}
+
+.pd-score-big {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.pd-score-num {
+	font-size: 2.6rem;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+
+.pd-score-sub {
+	font-size: 0.8rem;
+	color: var(--pd-quiet);
+}
+
+.pd-dist {
+	display: grid;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pd-dist-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 3.4rem minmax(0, 1fr) 2.2rem;
+	align-items: center;
+	font-size: 0.8rem;
+}
+
+.pd-dist-label {
+	white-space: nowrap;
+	color: var(--pd-quiet);
+}
+
+.pd-dist-n {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+.pd-dist-track {
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+
+.pd-dist-fill {
+	display: block;
+	width: var(--pd-w);
+	height: 100%;
+	border-radius: inherit;
+}
+
+.pd-dist-fill-up {
+	background: var(--basalt-success);
+}
+.pd-dist-fill-mid {
+	background: var(--basalt-warning);
+}
+.pd-dist-fill-down {
+	background: var(--basalt-danger);
+}
+
+@media (max-width: 389.98px) {
+	.pd-score {
+		gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The featured review is set off by a thin star-colored bar on its left. */
+.pd-review {
+	position: relative;
+	margin: 1.5rem 0 0;
+	padding: 1.1rem 1.25rem 1.1rem 1.6rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1rem;
+		bottom: 1rem;
+		left: 0.7rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--pd-star);
+	}
+}
+
+.pd-review-quote {
+	margin: 0;
+}
+
+.pd-review-title {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& .pd-stars {
+		font-size: 0.75rem;
+	}
+}
+
+.pd-review-body {
+	margin: 0.4rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+
+.pd-review-who {
+	margin-top: 0.6rem;
+	font-size: 0.8rem;
+	color: var(--pd-quiet);
+}
+
+/* Each sales channel is an icon, its name and status, and a switch at
+   the far end. */
+.pd-place {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 0.9rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	& .form-switch .form-check-input {
+		width: 2.4em;
+		height: 1.3em;
+		margin: 0;
+	}
+}
+
+.pd-place-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--pd-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pd-tone) 16%, var(--basalt-plane));
+}
+
+.pd-place-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+
+.pd-place-name {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.pd-place-line {
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--pd-quiet);
+}
+
+/* Orders line up in four columns; under 460px the buyer takes a full
+   row above quantity and date. */
+.pd-order {
+	display: grid;
+	gap: 0.5rem 1rem;
+	grid-template-columns: minmax(0, 1fr) 4.5rem 3.5rem 7.5rem;
+	align-items: center;
+	padding: 0.85rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+
+.pd-order-who {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.pd-page .pd-card a.pd-order-cust {
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--pd-quiet);
+}
+
+.pd-order-qty {
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+.pd-order-date {
+	color: var(--pd-quiet);
+}
+
+@media (max-width: 459.98px) {
+	.pd-order {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.pd-order-qty {
+		text-align: left;
+	}
+	.pd-order-date {
+		text-align: right;
+	}
+	.pd-order-who {
+		grid-column: 1 / -1;
+	}
+}
+
+/* History is a timeline: round icons joined by a hairline that stops at
+   the last event. */
+.pd-event {
+	position: relative;
+	display: flex;
+	gap: 0.9rem;
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.25rem;
+		bottom: 0.25rem;
+		left: 1rem;
+		width: 1px;
+		background: var(--basalt-edge);
+	}
+}
+
+.pd-event-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--pd-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+.pd-event-text {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+}
+
+.pd-event-when {
+	margin: 0.1rem 0 0;
+	font-size: 0.77rem;
+	color: var(--pd-quiet);
+}
+
+/* Motion stops for readers who ask for less of it. */
+@media (prefers-reduced-motion: reduce) {
+	.pd-more .bi,
+	.pd-rail-thumb {
+		transition: none;
+	}
+	.pd-pic-main img {
+		animation: none;
+	}
+}
+
+/* On paper the buttons have nothing to do, so they are left off. */
+@media print {
+	.pd-card-head .btn,
+	.pd-store-actions {
+		display: none;
+	}
+}

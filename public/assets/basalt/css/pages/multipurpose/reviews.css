@@ -1,0 +1,745 @@
+/* Basalt - Ratings page (E-Commerce)
+   Namespaced under .rvw-*
+   The header, cards, tabs, drawer, dialog, segmented control, status
+   pills and empty states are the shared components from basalt.css;
+   this file lays out the review list, the rating summary and the
+   drawer's contents. Every color is a --basalt-* token. */
+
+.rvw-page,
+.rvw-drawer,
+.rvw-modal {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--rvw-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--rvw-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--rvw-line: var(--basalt-edge);
+	/* Stars: the warning color, deepened enough to read on white. */
+	--rvw-star: color-mix(in srgb, var(--basalt-warning) 82%, var(--basalt-copy));
+	--rvw-star-off: color-mix(in srgb, var(--basalt-copy-muted) 35%, transparent);
+}
+
+.rvw-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+
+.rvw-cardhead {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 1.25rem;
+}
+.rvw-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rvw-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--rvw-quiet);
+}
+
+/* Product tile */
+/* Each product takes a color from the chart ramp; the tile is a soft
+   wash of it with the icon in a deeper shade. */
+.rvw-tile-1 {
+	--rvw-tone: var(--basalt-series-1);
+}
+.rvw-tile-2 {
+	--rvw-tone: var(--basalt-series-2);
+}
+.rvw-tile-3 {
+	--rvw-tone: var(--basalt-series-3);
+}
+.rvw-tile-4 {
+	--rvw-tone: var(--basalt-series-4);
+}
+.rvw-tile-5 {
+	--rvw-tone: var(--basalt-series-5);
+}
+.rvw-tile-6 {
+	--rvw-tone: var(--basalt-series-6);
+}
+.rvw-tile,
+.rvw-shots > span {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	color: color-mix(in srgb, var(--rvw-tone) 58%, var(--basalt-copy));
+	background: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--rvw-tone) 44%, var(--basalt-plane)),
+		color-mix(in srgb, var(--rvw-tone) 18%, var(--basalt-plane))
+	);
+}
+:root[data-basalt-gradients="off"] :is(.rvw-tile, .rvw-shots > span) {
+	background: color-mix(in srgb, var(--rvw-tone) 44%, var(--basalt-plane));
+}
+.rvw-tile {
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+}
+
+/* The buyer's photos: small colored tiles under the review. */
+.rvw-shots {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.75rem;
+}
+.rvw-shots > span {
+	width: 3rem;
+	height: 3rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+}
+.rvw-shots-lg {
+	gap: 0.6rem;
+	margin-top: 1rem;
+}
+.rvw-shots-lg > span {
+	width: 4.5rem;
+	height: 4.5rem;
+	border-radius: 12px;
+	font-size: 1.4rem;
+}
+
+/* Stars */
+.rvw-stars {
+	display: inline-flex;
+	gap: 0.1rem;
+	font-size: 0.8rem;
+	line-height: 1;
+	color: var(--rvw-star);
+}
+.rvw-stars .rvw-stars-off {
+	color: var(--rvw-star-off);
+}
+.rvw-stars-lg {
+	gap: 0.2rem;
+	font-size: 1.1rem;
+}
+
+/* Tabs and toolbar */
+.rvw-tabs {
+	padding: 0 var(--basalt-pad-x);
+}
+
+.rvw-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: 1.5rem var(--basalt-pad-x) 1.25rem;
+}
+/* The search stops growing at a comfortable width so the filter stays
+   beside it; on a narrow card each takes a row of its own. */
+.rvw-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 12rem;
+}
+.rvw-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--rvw-quiet);
+	pointer-events: none;
+}
+.rvw-search .form-control {
+	padding-left: 2.4rem;
+}
+.rvw-toolbar-select {
+	flex: 0 0 auto;
+	width: 11.5rem;
+}
+
+.rvw-status {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) 1rem;
+	font-size: 0.8rem;
+	color: var(--rvw-quiet);
+}
+.rvw-status[hidden] {
+	display: none;
+}
+
+/* Review list */
+.rvw-list {
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid var(--rvw-line);
+	list-style: none;
+}
+.rvw-list[hidden] {
+	display: none;
+}
+.rvw-row {
+	display: grid;
+	gap: 0 1.1rem;
+	grid-template-columns: auto minmax(0, 1fr) 8.5rem;
+	align-items: start;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--rvw-line);
+	transition: background-color 110ms ease;
+}
+.rvw-row:last-child {
+	border-bottom: 0;
+}
+.rvw-row:hover {
+	background: var(--basalt-wash);
+}
+.rvw-row-main {
+	min-width: 0;
+}
+.rvw-row-top {
+	display: flex;
+	gap: 0.3rem 0.65rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.4rem;
+}
+.rvw-row-product {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--rvw-quiet);
+}
+.rvw-row-product:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--rvw-link);
+}
+.rvw-row-title {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 700;
+	line-height: 1.4;
+}
+.rvw-row-open {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+}
+.rvw-row-open:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--rvw-link);
+}
+.rvw-row-open:focus {
+	outline: none;
+}
+.rvw-row-open:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.rvw-row-body {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.rvw-row-meta {
+	display: flex;
+	gap: 0.2rem 0;
+	flex-wrap: wrap;
+	margin: 0.6rem 0 0;
+	font-size: 0.77rem;
+	color: var(--rvw-quiet);
+}
+.rvw-row-meta > span + span::before {
+	content: "·";
+	margin: 0 0.4rem;
+}
+.rvw-row-note {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--rvw-quiet);
+}
+.rvw-row-note-danger {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.rvw-row-act {
+	display: flex;
+	justify-content: flex-end;
+	padding-top: 0.1rem;
+}
+.rvw-row-act .btn {
+	white-space: nowrap;
+}
+.rvw-answered {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding-top: 0.3rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--rvw-quiet);
+}
+
+.rvw-empty {
+	padding: 2.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--rvw-line);
+}
+.rvw-empty[hidden] {
+	display: none;
+}
+
+/* A narrow card puts the row's action under the text, on the text's
+   left edge, so the review keeps the full width. */
+@container (max-width: 560px) {
+	.rvw-cardhead,
+	.rvw-status,
+	.rvw-tabs,
+	.rvw-empty {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rvw-toolbar {
+		flex-wrap: wrap;
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rvw-search {
+		flex: 1 1 100%;
+		min-width: 0;
+		max-width: 28rem;
+	}
+	.rvw-row {
+		grid-template-columns: auto minmax(0, 1fr);
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	/* Who wrote it on one line, how they bought and when on the next. */
+	.rvw-row-meta {
+		gap: 0.2rem;
+		flex-direction: column;
+	}
+	.rvw-row-meta > span + span::before {
+		content: none;
+	}
+	.rvw-row-act {
+		grid-column: 2;
+		justify-content: flex-start;
+		padding-top: 1rem;
+	}
+	.rvw-answered {
+		padding-top: 0;
+	}
+}
+
+/* Side column */
+.rvw-side {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+
+/* The score sits on a soft palette wash, with two small tinted figures
+   beside it, so the card is the page's bright spot. */
+.rvw-score {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	margin: 0 var(--basalt-pad-x) 1.5rem;
+	padding: 1.25rem;
+	border-radius: 14px;
+	background: var(--basalt-grad-soft);
+}
+:root[data-basalt-gradients="off"] .rvw-score {
+	background: var(--basalt-plane-alt);
+}
+.rvw-score-main {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.rvw-score-value {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	font-size: 2.75rem;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--basalt-copy);
+}
+.rvw-score-of {
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: var(--rvw-quiet);
+}
+.rvw-score-note {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.rvw-kpis {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+}
+.rvw-kpi {
+	padding: 0.7rem 0.9rem;
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--rvw-tone) 12%, var(--basalt-plane));
+}
+.rvw-kpi-1 {
+	--rvw-tone: var(--basalt-success);
+}
+.rvw-kpi-2 {
+	--rvw-tone: var(--basalt-series-2);
+}
+.rvw-kpi dt {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.rvw-kpi dd {
+	margin: 0.1rem 0 0;
+	font-size: 1.05rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: color-mix(in srgb, var(--rvw-tone) 45%, var(--basalt-copy));
+}
+
+.rvw-dist {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) 1.5rem;
+	list-style: none;
+}
+.rvw-dist-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr) 2.75rem 2.25rem;
+	align-items: center;
+	padding: 0.4rem 0;
+}
+.rvw-dist-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rvw-dist-label .bi {
+	font-size: 0.7rem;
+	color: var(--rvw-star);
+}
+.rvw-dist-track {
+	display: block;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.rvw-dist-bar {
+	transform-origin: left center;
+	display: block;
+	width: var(--rvw-w);
+	height: 100%;
+	border-radius: inherit;
+	animation: rvw-grow 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.rvw-dist-bar-good {
+	background: var(--basalt-success);
+}
+.rvw-dist-bar-mid {
+	background: var(--basalt-warning);
+}
+.rvw-dist-bar-low {
+	background: var(--basalt-danger);
+}
+.rvw-dist-count {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.rvw-dist-pct {
+	font-size: 0.77rem;
+	text-align: right;
+	color: var(--rvw-quiet);
+}
+@keyframes rvw-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+.rvw-ranked {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x);
+	list-style: none;
+}
+.rvw-ranked-row {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rvw-line);
+}
+.rvw-ranked-row:first-child {
+	padding-top: 0;
+}
+.rvw-ranked-row:last-child {
+	border-bottom: 0;
+}
+.rvw-ranked .rvw-tile {
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+}
+.rvw-ranked-name {
+	min-width: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rvw-ranked-name a {
+	text-decoration: none;
+	color: inherit;
+}
+.rvw-ranked-name a:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--rvw-link);
+}
+.rvw-ranked-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--rvw-quiet);
+}
+.rvw-ranked-score {
+	font-size: 0.9rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rvw-ranked-score .bi {
+	font-size: 0.75rem;
+	color: var(--rvw-star);
+}
+.rvw-note {
+	margin: 1.25rem 0 0;
+	padding: 1rem var(--basalt-pad-x) 1.25rem;
+	border-top: 1px solid var(--rvw-line);
+	font-size: 0.8rem;
+	color: var(--rvw-quiet);
+}
+
+/* Drawer */
+.rvw-drawer {
+	--bs-offcanvas-width: 500px;
+}
+.rvw-drawer .basalt-drawer-sub {
+	white-space: nowrap;
+}
+/* A phone-width drawer drops the tile so the product name has room. */
+@container basalt-drawer (max-width: 420px) {
+	.rvw-drawer .offcanvas-header > .rvw-tile {
+		display: none;
+	}
+}
+.rvw-drawer .rvw-tile {
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+}
+.rvw-r-state {
+	margin-bottom: 1.5rem;
+}
+.rvw-r-pills {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+/* The shared green and amber pills are just under 4.5:1 in a few light
+   palettes, so their text leans further toward the text color here. */
+.rvw-r-pills .basalt-status {
+	color: color-mix(in srgb, var(--stp-tone) 36%, var(--basalt-copy));
+}
+.rvw-alert {
+	--rvw-alert-tone: var(--basalt-copy-muted);
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	margin: 1rem 0 0;
+	padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+	border-radius: 10px;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+/* A straight inset bar, not a border that bends round the corners. */
+.rvw-alert::before {
+	content: "";
+	position: absolute;
+	top: 0.5rem;
+	bottom: 0.5rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--rvw-alert-tone);
+}
+.rvw-alert .bi {
+	flex-shrink: 0;
+	margin-top: 0.1rem;
+	color: var(--rvw-quiet);
+}
+.rvw-alert-danger {
+	--rvw-alert-tone: var(--basalt-danger);
+}
+.rvw-alert-danger .bi {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+
+/* The buyer's words (and the shop's reply), with the same straight bar. */
+.rvw-quote {
+	position: relative;
+	margin: 0;
+	padding: 1rem 1rem 1rem 1.3rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.rvw-quote::before {
+	content: "";
+	position: absolute;
+	top: 0.75rem;
+	bottom: 0.75rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--rvw-star);
+}
+.rvw-quote-reply::before {
+	background: var(--basalt-hue);
+}
+.rvw-quote p {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+.rvw-quote .rvw-quote-top {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-bottom: 0.6rem;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.rvw-quote .rvw-quote-title {
+	margin-bottom: 0.3rem;
+	font-weight: 700;
+}
+.rvw-quote-by {
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+.rvw-facts {
+	margin: 0;
+}
+.rvw-facts > div {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rvw-line);
+}
+.rvw-facts > div:first-child {
+	padding-top: 0;
+}
+.rvw-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.rvw-facts dt {
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: var(--rvw-quiet);
+}
+.rvw-facts dd {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.rvw-facts a {
+	font-weight: 600;
+	color: var(--rvw-link);
+}
+.rvw-facts a:hover {
+	color: var(--basalt-copy);
+}
+.rvw-muted {
+	font-size: 0.8rem;
+	color: var(--rvw-quiet);
+}
+.rvw-drawer textarea.form-control {
+	resize: vertical;
+}
+
+/* Ask for reviews dialog */
+.rvw-form-row {
+	margin: 0 0 1.25rem;
+}
+.rvw-product-field .form-select {
+	max-width: 15rem;
+}
+.rvw-modal textarea.form-control {
+	resize: vertical;
+}
+.rvw-ask-sum {
+	margin: 1.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.rvw-ask-sum strong {
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rvw-row {
+		transition: none;
+	}
+	.rvw-dist-bar {
+		animation: none;
+	}
+}
+
+@media print {
+	.rvw-toolbar,
+	.rvw-row-act,
+	.rvw-tabs {
+		display: none;
+	}
+	.rvw-row {
+		transition: none;
+	}
+	.rvw-dist-bar {
+		animation: none;
+	}
+}

@@ -1,0 +1,258 @@
+/*
+ * Bootstrap 5.3.8, built from its own Sass with the Basalt palette fed in.
+ * Compiles to assets/basalt/css/bootstrap.css, which every page loads before
+ * basalt.css. Bootstrap's files in assets/vendor/bootstrap/scss stay as
+ * shipped; everything Basalt changes is set here, before or between them.
+ *
+ * Bootstrap's color utilities are built from rgb triples
+ * (rgba(var(--bs-primary-rgb), ...)) that cannot be read from a palette
+ * token, so the color maps below hand the utility API the tokens
+ * themselves. Every palette, surface and dark-mode switch then reaches
+ * .text-*, .bg-* and .border-* without any rule written over them.
+ */
+
+@use "sass:map";
+@use "sass:math";
+
+// Bootstrap is customized the way its docs describe: our variables between
+// its @imports, so those imports cannot all sit at the top.
+// stylelint-disable no-invalid-position-at-import-rule
+
+/* Bootstrap's license banner, kept at the top of the built file. */
+@import "../../vendor/bootstrap/scss/mixins/banner";
+@include bsBanner("");
+
+@import "../../vendor/bootstrap/scss/functions";
+@import "../../vendor/bootstrap/scss/variables";
+@import "../../vendor/bootstrap/scss/variables-dark";
+
+/* A palette token pulled toward the text color: colored text keeps 4.5:1
+   against the page this way. */
+@function toward-copy($token, $share) {
+	@return color-mix(in srgb, var(--basalt-#{$token}) $share, var(--basalt-copy));
+}
+
+/* Bootstrap color name and the palette token behind it. */
+$basalt-tones: (
+	primary: hue,
+	success: success,
+	danger: danger,
+	warning: warning,
+	info: flare,
+);
+
+/* Stock values for the names Basalt leaves alone. */
+$basalt-stock-text: (
+	"secondary": rgba(var(--bs-secondary-rgb), var(--bs-text-opacity)),
+	"black": rgba(var(--bs-black-rgb), var(--bs-text-opacity)),
+	/* White text reads --basalt-white-ink, which a primary fill sets below. */
+	"white": var(--basalt-white-ink, rgba(var(--bs-white-rgb), var(--bs-text-opacity))),
+);
+$basalt-stock-fill: (
+	"black": rgba(var(--bs-black-rgb), var(--bs-bg-opacity)),
+	"white": rgba(var(--bs-white-rgb), var(--bs-bg-opacity)),
+	"body": rgba(var(--bs-body-bg-rgb), var(--bs-bg-opacity)),
+);
+$basalt-stock-border: (
+	"secondary": rgba(var(--bs-secondary-rgb), var(--bs-border-opacity)),
+	"light": rgba(var(--bs-light-rgb), var(--bs-border-opacity)),
+	"dark": rgba(var(--bs-dark-rgb), var(--bs-border-opacity)),
+	"black": rgba(var(--bs-black-rgb), var(--bs-border-opacity)),
+	"white": rgba(var(--bs-white-rgb), var(--bs-border-opacity)),
+);
+
+$utilities-text-colors: ();
+$utilities-bg-colors: ();
+$utilities-border-colors: ();
+@each $name, $token in $basalt-tones {
+	/* Text and link colors sit closer to the copy than the raw token. */
+	$utilities-text-colors: map.merge(
+		$utilities-text-colors,
+		(
+			$name: toward-copy($token, 72%),
+		)
+	);
+	$utilities-bg-colors: map.merge(
+		$utilities-bg-colors,
+		(
+			$name: var(--basalt-#{$token}),
+		)
+	);
+	$utilities-border-colors: map.merge(
+		$utilities-border-colors,
+		(
+			$name: var(--basalt-#{$token}),
+		)
+	);
+}
+$utilities-text-colors: map.merge(
+	$utilities-text-colors,
+	map.merge(
+		$basalt-stock-text,
+		(
+			"dark": var(--basalt-copy),
+			"light": var(--basalt-copy-faint),
+			"body": var(--basalt-copy-body),
+		)
+	)
+);
+$utilities-bg-colors: map.merge(
+	$utilities-bg-colors,
+	map.merge(
+		$basalt-stock-fill,
+		(
+			"secondary": var(--basalt-copy-muted),
+			"dark": var(--basalt-copy),
+			"light": var(--basalt-plane-alt),
+		)
+	)
+);
+$utilities-border-colors: map.merge($utilities-border-colors, $basalt-stock-border);
+
+@import "../../vendor/bootstrap/scss/maps";
+@import "../../vendor/bootstrap/scss/mixins";
+@import "../../vendor/bootstrap/scss/utilities";
+
+/* Muted text: Bootstrap's own sits a shade deeper than --basalt-copy-muted,
+   which falls just short of 4.5:1 in the light Verdant, Mono and Pastel Pop
+   palettes, so both names read the mix instead. */
+$basalt-muted: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+/* Widths in whole percents (w-0 to w-100) next to Bootstrap's w-25 to
+   w-100, so a bar drawn in markup is sized by class. */
+$basalt-percents: ();
+@for $n from 0 through 100 {
+	$basalt-percents: map.merge(
+		$basalt-percents,
+		(
+			$n: math.percentage(math.div($n, 100)),
+		)
+	);
+}
+$utilities: map.merge(
+	$utilities,
+	(
+		"width": map.merge(
+				map.get($utilities, "width"),
+				(
+					values: map.merge(map.get(map.get($utilities, "width"), "values"), $basalt-percents),
+				)
+			),
+		"color": map.merge(
+				map.get($utilities, "color"),
+				(
+					values: map.merge(
+							map.get(map.get($utilities, "color"), "values"),
+							(
+								"muted": var(--basalt-copy-muted),
+								"body-secondary": $basalt-muted,
+							)
+						),
+				)
+			),
+	)
+);
+
+@import "../../vendor/bootstrap/scss/root";
+@import "../../vendor/bootstrap/scss/reboot";
+@import "../../vendor/bootstrap/scss/type";
+@import "../../vendor/bootstrap/scss/images";
+@import "../../vendor/bootstrap/scss/containers";
+@import "../../vendor/bootstrap/scss/grid";
+@import "../../vendor/bootstrap/scss/tables";
+@import "../../vendor/bootstrap/scss/forms";
+@import "../../vendor/bootstrap/scss/buttons";
+@import "../../vendor/bootstrap/scss/transitions";
+@import "../../vendor/bootstrap/scss/dropdown";
+@import "../../vendor/bootstrap/scss/button-group";
+@import "../../vendor/bootstrap/scss/nav";
+@import "../../vendor/bootstrap/scss/navbar";
+@import "../../vendor/bootstrap/scss/card";
+@import "../../vendor/bootstrap/scss/accordion";
+@import "../../vendor/bootstrap/scss/breadcrumb";
+@import "../../vendor/bootstrap/scss/pagination";
+@import "../../vendor/bootstrap/scss/badge";
+@import "../../vendor/bootstrap/scss/alert";
+@import "../../vendor/bootstrap/scss/progress";
+@import "../../vendor/bootstrap/scss/list-group";
+@import "../../vendor/bootstrap/scss/close";
+@import "../../vendor/bootstrap/scss/toasts";
+@import "../../vendor/bootstrap/scss/modal";
+@import "../../vendor/bootstrap/scss/tooltip";
+@import "../../vendor/bootstrap/scss/popover";
+@import "../../vendor/bootstrap/scss/carousel";
+@import "../../vendor/bootstrap/scss/spinners";
+@import "../../vendor/bootstrap/scss/offcanvas";
+@import "../../vendor/bootstrap/scss/placeholders";
+
+/* Bootstrap's helpers, except the two color ones, which Basalt writes
+   below with palette tokens. */
+@import "../../vendor/bootstrap/scss/helpers/clearfix";
+@import "../../vendor/bootstrap/scss/helpers/focus-ring";
+@import "../../vendor/bootstrap/scss/helpers/icon-link";
+@import "../../vendor/bootstrap/scss/helpers/ratio";
+@import "../../vendor/bootstrap/scss/helpers/position";
+@import "../../vendor/bootstrap/scss/helpers/stacks";
+@import "../../vendor/bootstrap/scss/helpers/visually-hidden";
+@import "../../vendor/bootstrap/scss/helpers/stretched-link";
+@import "../../vendor/bootstrap/scss/helpers/text-truncation";
+@import "../../vendor/bootstrap/scss/helpers/vr";
+
+/* A fill with readable text on it. The primary pairs with --basalt-on-hue,
+   the ink each palette sets for it; the rest keep Bootstrap's contrast. */
+@each $name, $token in $basalt-tones {
+	.text-bg-#{$name} {
+		color: if($name == primary, var(--basalt-on-hue), color-contrast(map.get($theme-colors, $name)));
+		background-color: var(--basalt-#{$token});
+	}
+}
+
+/* The neutral badges, filled from the palette's own grays so each stays
+   readable in light and dark mode: secondary a mid gray, light a pale
+   wash with dark text, dark the copy color with light text. */
+.text-bg-secondary {
+	color: var(--basalt-plane);
+	background-color: var(--basalt-copy-muted);
+}
+.text-bg-light {
+	color: var(--basalt-copy);
+	background-color: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+}
+.text-bg-dark {
+	color: var(--basalt-plane);
+	background-color: var(--basalt-copy);
+}
+
+/* White text on the primary fill would vanish once the fill turns pale in
+   dark mode, so inside it .text-white takes --basalt-on-hue, the ink the
+   palette pairs with the fill. */
+.bg-primary,
+.text-bg-primary {
+	--basalt-white-ink: var(--basalt-on-hue);
+}
+
+/* Colored links lean toward the copy like colored text, and darken toward
+   it on hover. */
+@each $name, $token in $basalt-tones {
+	.link-#{$name} {
+		color: toward-copy($token, 72%);
+		text-decoration-color: toward-copy($token, 72%);
+
+		&:hover,
+		&:focus {
+			color: toward-copy($token, 56%);
+			text-decoration-color: toward-copy($token, 56%);
+		}
+	}
+}
+.link-body-emphasis {
+	color: var(--bs-emphasis-color);
+	text-decoration-color: var(--bs-emphasis-color);
+
+	&:hover,
+	&:focus {
+		color: color-mix(in srgb, var(--bs-emphasis-color) 75%, transparent);
+		text-decoration-color: color-mix(in srgb, var(--bs-emphasis-color) 75%, transparent);
+	}
+}
+
+@import "../../vendor/bootstrap/scss/utilities/api";

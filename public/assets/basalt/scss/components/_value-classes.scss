@@ -1,0 +1,40 @@
+/*
+ * Classes that hand one number or one color to a component, so markup
+ * never needs a style attribute. A ring or gauge reads --value, a bar reads
+ * --share, a goal marker reads --target, staggered items read --i, and
+ * toned parts read --tone:
+ *
+ *   <div class="basalt-ring value-72">…</div>
+ *   <span class="hc-legend-key tone-series-2"></span>
+ *
+ * Scripts that draw from live data set the same custom properties directly.
+ */
+
+@for $n from 0 through 100 {
+	.value-#{$n} {
+		--value: #{$n};
+	}
+	.share-#{$n} {
+		--share: #{$n}%;
+	}
+	.target-#{$n} {
+		--target: #{$n};
+	}
+}
+
+@for $n from 0 through 15 {
+	.stagger-#{$n} {
+		--i: #{$n};
+	}
+}
+
+@for $slot from 1 through 8 {
+	.tone-series-#{$slot} {
+		--tone: var(--basalt-series-#{$slot});
+	}
+}
+@each $token in (hue, success, warning, danger, flare, plane) {
+	.tone-#{$token} {
+		--tone: var(--basalt-#{$token});
+	}
+}

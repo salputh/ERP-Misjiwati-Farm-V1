@@ -1,4 +1,4 @@
-<div class="col-12 mb-25">
+<div class="col-12 mb-4">
     <x-kartu judul="Tarif periode" subjudul="Tarif bagi hasil yang sama untuk setiap periode. Menjadi asumsi simulasi bagi hasil di RHPP selama kandang belum punya lembar bagi hasil sendiri.">
         <x-slot:ekstra>
             <x-tombol wire:click="ubah" data-bs-toggle="modal" data-bs-target="#modal-tarif-periode">Ubah tarif periode</x-tombol>
@@ -8,31 +8,31 @@
             <x-peringatan warna="success" bisaDitutup="true">{{ $pesan }}</x-peringatan>
         @endif
 
-        {{-- Statistik template (HexaDash: Statistics, Basic) --}}
-        <div class="dm-statistics-wrap d-flex flex-wrap">
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Gaji ABK per kg</span>
-                <p class="statistics-item__number">Rp @angka($this->tarifGlobal->tarif_gaji_abk_per_kg)</p>
+        {{-- Statistik template  --}}
+        <div class="d-flex flex-wrap">
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Gaji ABK per kg</span>
+                <p class="h5 mb-0">Rp @angka($this->tarifGlobal->tarif_gaji_abk_per_kg)</p>
             </div>
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Premi controller</span>
-                <p class="statistics-item__number">Rp @angka($this->tarifGlobal->premi_controller)</p>
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Premi controller</span>
+                <p class="h5 mb-0">Rp @angka($this->tarifGlobal->premi_controller)</p>
             </div>
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Upah controller</span>
-                <p class="statistics-item__number">{{ \App\Support\Format::persen($this->tarifGlobal->persen_upah_controller) }}</p>
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Upah controller</span>
+                <p class="h5 mb-0">{{ \App\Support\Format::persen($this->tarifGlobal->persen_upah_controller) }}</p>
             </div>
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Bonus pasar ABK</span>
-                <p class="statistics-item__number">{{ \App\Support\Format::persen($this->tarifGlobal->persen_bonus_pasar_abk) }}</p>
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Bonus pasar ABK</span>
+                <p class="h5 mb-0">{{ \App\Support\Format::persen($this->tarifGlobal->persen_bonus_pasar_abk) }}</p>
             </div>
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Bonus pasar controller</span>
-                <p class="statistics-item__number">{{ \App\Support\Format::persen($this->tarifGlobal->persen_bonus_pasar_controller) }}</p>
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Bonus pasar controller</span>
+                <p class="h5 mb-0">{{ \App\Support\Format::persen($this->tarifGlobal->persen_bonus_pasar_controller) }}</p>
             </div>
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Zakat</span>
-                <p class="statistics-item__number">{{ \App\Support\Format::persen($this->tarifGlobal->persen_zakat) }}</p>
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Zakat</span>
+                <p class="h5 mb-0">{{ \App\Support\Format::persen($this->tarifGlobal->persen_zakat) }}</p>
             </div>
         </div>
     </x-kartu>
@@ -43,7 +43,7 @@
         judul="Ubah tarif periode"
         x-on:tutup-modal-tarif-periode.window="bootstrap.Modal.getInstance($el).hide()"
         submit="simpan">
-        <h6 class="fs-14 fw-500 mb-15">Anak kandang dan controller</h6>
+        <h6 class="fw-medium mb-3">Anak kandang dan controller</h6>
         <div class="row">
             <div class="col-md-6">
                 <x-masukan id="tarif-gaji" label="Gaji ABK per kg (Rp)" tipe="number" min="0" step="1" wire:model="tarif.tarif_gaji_abk_per_kg" :kesalahan="$errors->first('tarif.tarif_gaji_abk_per_kg')" />
@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <h6 class="fs-14 fw-500 mb-15">Persentase</h6>
+        <h6 class="fw-medium mb-3">Persentase</h6>
         <div class="row">
             <div class="col-md-6">
                 <x-masukan id="tarif-upah-controller" label="Upah controller (% jumlah pendapatan)" tipe="number" min="0" max="100" step="0.01" wire:model="tarif.persen_upah_controller" :kesalahan="$errors->first('tarif.persen_upah_controller')" />

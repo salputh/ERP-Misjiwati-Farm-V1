@@ -1,0 +1,736 @@
+/* The Cards page (cards.html), namespaced .cd-*: the filter chips, the
+   showcase grid, the code snippets and the gray stage each demo sits on.
+   The card types on show (.basalt-*) are styled in basalt.css. Every color
+   is a --basalt-* token, mixed so that small text keeps 4.5:1 in every
+   palette, light and dark. */
+
+.cd-page {
+	/* Small gray text leans toward the body color. Primary as text does too,
+     because the raw token is made for fills and some palettes put it under
+     4.5:1. Bootstrap's own secondary text color is a fixed gray, so it is
+     pointed at the same mix. */
+	--cd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--cd-accent-text: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--cd-focus: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+	--bs-secondary-color: var(--cd-quiet);
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The filter row: a run of chips and the count of types they leave. */
+.cd-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.cd-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .cd-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.cd-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.cd-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cd-quiet);
+}
+
+/* The grid: every card takes the row below 1200px; pairs start at desktop
+   width, and a full-width card or an odd one out spans both columns. */
+.cd-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.cd-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.cd-card {
+		grid-column: span 6;
+	}
+	.cd-card-full,
+	.cd-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A showcase card. Child selectors only, since the demos inside are cards
+   too. The kind sits above the title but follows it in the markup, so the
+   title is read first. */
+.cd-card.basalt-box > .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.cd-card.basalt-box > .card-body {
+		padding: 1.25rem;
+	}
+}
+.cd-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.cd-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cd-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cd-quiet);
+}
+.cd-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--cd-quiet);
+}
+
+/* The code snippet folds under the demo. Whatever the demo ends with gets
+   room above the snippet line. */
+.cd-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.cd-card > .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.cd-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.cd-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* The stage is the page color behind each demo, so a card sits on what it
+   would sit on in a real page. In a pair, the shorter stage grows to match
+   its neighbor and keeps its demo in the middle. */
+.cd-stage {
+	min-width: 0;
+	padding: 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-canvas);
+}
+.cd-card > .card-body > .cd-stage {
+	display: flex;
+	flex: 1 0 auto;
+	flex-direction: column;
+	justify-content: center;
+}
+.cd-stage-center {
+	align-items: center;
+}
+@media (max-width: 575.98px) {
+	.cd-stage {
+		padding: 1rem;
+	}
+}
+.cd-stage .card {
+	color: var(--basalt-copy-body);
+}
+
+/* Small pieces the demos share. */
+.cd-h {
+	margin-bottom: 0.4rem;
+	font-size: 1rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cd-muted {
+	color: var(--cd-quiet);
+}
+.cd-sub {
+	margin: -0.15rem 0 0.6rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--cd-quiet);
+}
+.cd-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cd-help {
+	margin: 0 0 1rem;
+	font-size: 0.8rem;
+	color: var(--cd-quiet);
+}
+.cd-link,
+.cd-page .card-link {
+	font-weight: 600;
+	text-decoration-color: color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+	text-underline-offset: 0.2em;
+	color: var(--cd-accent-text);
+}
+.cd-link:hover,
+.cd-page .card-link:hover {
+	color: var(--basalt-copy);
+}
+.cd-toolbar {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.cd-toolbar .btn .bi,
+.cd-page .dropdown-item .bi {
+	margin-right: 0.4rem;
+}
+.cd-page .form-check-label {
+	color: var(--basalt-copy-body);
+}
+
+/* A demo's tone is one of the chart colors. */
+.cd-tone-a {
+	--basalt-tone: var(--basalt-series-1);
+}
+.cd-tone-b {
+	--basalt-tone: var(--basalt-series-2);
+}
+.cd-tone-c {
+	--basalt-tone: var(--basalt-series-3);
+}
+
+/* The period switch over the stat cards is a row of pills. */
+.cd-seg {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.25rem;
+
+	& .btn {
+		border-radius: 999px;
+		font-weight: 600;
+		font-size: 0.77rem;
+	}
+	& .btn-check:checked + .btn {
+		--cd-seg-on: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+		border-color: var(--cd-seg-on);
+		color: var(--basalt-on-hue);
+		background-color: var(--cd-seg-on);
+	}
+	& .btn-check:focus-visible:not(:checked) + .btn {
+		box-shadow: var(--cd-focus);
+	}
+}
+
+/* The pill in the header demo. */
+.cd-pill {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.3rem 0.6rem;
+	border-radius: 999px;
+	border: 1px solid transparent;
+	font-size: 0.71rem;
+	font-weight: 600;
+	line-height: 1;
+}
+.cd-pill-success {
+	border-color: color-mix(in srgb, var(--basalt-success) 40%, transparent);
+	color: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	background: var(--basalt-success-soft);
+}
+
+/* Demo art stands in for a picture, drawn in the palette's colors. The
+   fill variant takes the card's full height beside the text and rounds the
+   side it sits on, or the top once the card stacks. */
+.cd-art {
+	display: grid;
+	place-items: center;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-tone, var(--basalt-hue)) 14%, var(--basalt-plane));
+
+	& .basalt-illo {
+		width: 62%;
+		max-height: 88%;
+	}
+}
+.cd-art-wide {
+	aspect-ratio: 16 / 7;
+
+	& .basalt-illo {
+		width: 100%;
+		height: 100%;
+		max-height: none;
+	}
+}
+.cd-art-fill {
+	height: 100%;
+	min-height: 10rem;
+	aspect-ratio: auto;
+	border-radius: var(--bs-card-inner-border-radius) 0 0 var(--bs-card-inner-border-radius);
+}
+@media (max-width: 575.98px) {
+	.cd-art-fill {
+		border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0;
+	}
+}
+.card-img-top.cd-art {
+	border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0;
+}
+.card-img-bottom.cd-art {
+	border-radius: 0 0 var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius);
+}
+
+/* The selectable demo and its running total. */
+.cd-select {
+	display: grid;
+	gap: 1.5rem;
+}
+.cd-select-sum {
+	margin: 0;
+	padding-top: 1rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The demo grids all wrap at their own column width. */
+.cd-media-grid,
+.cd-link-grid,
+.cd-accent-grid,
+.cd-pair,
+.cd-stats {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+.cd-link-grid {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+.cd-pair {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+	align-items: start;
+}
+.cd-accent-grid {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+.cd-stats {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+/* The widget demo's top sellers list: name, bar and count on one line, and
+   in a narrow widget the bar drops under the other two. */
+.basalt-widget-body {
+	container-type: inline-size;
+}
+.cd-sellers {
+	display: grid;
+	gap: 0.85rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cd-sellers-row {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: minmax(7rem, 9.5rem) minmax(0, 1fr) 2.5rem;
+	align-items: center;
+	font-size: 0.86rem;
+}
+.cd-sellers-name {
+	min-width: 0;
+	overflow: hidden;
+	font-weight: 550;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cd-sellers-bar {
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+
+	& span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--cd-bar, var(--basalt-series-1));
+		transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+.cd-sellers-row-2 {
+	--cd-bar: var(--basalt-series-2);
+}
+.cd-sellers-row-3 {
+	--cd-bar: var(--basalt-series-3);
+}
+.cd-sellers-row-4 {
+	--cd-bar: var(--basalt-series-4);
+}
+.cd-sellers-row-5 {
+	--cd-bar: var(--basalt-series-5);
+}
+.cd-sellers-units {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+@container (max-width: 24rem) {
+	.cd-sellers-row {
+		row-gap: 0.4rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.cd-sellers-bar {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+}
+
+/* The loading demo's customer card, with a skeleton of the same shape. */
+.cd-person .card-body {
+	padding: 1.35rem;
+}
+.cd-person-head {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.cd-person-avatar {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	font-weight: 700;
+	font-size: 0.9rem;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.cd-person-name {
+	margin: 0 0 0.1rem;
+	font-size: 1rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cd-person-sub {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cd-quiet);
+}
+.cd-person-lines {
+	display: grid;
+	gap: 0.5rem;
+	flex: 1;
+	min-width: 0;
+}
+.cd-person-sk-name {
+	width: 9rem;
+}
+.cd-person-sk-role {
+	width: 14rem;
+}
+.cd-person-facts {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 0.2rem;
+		flex-direction: column-reverse;
+		min-width: 0;
+		padding: 0.7rem 0.8rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		background: var(--basalt-canvas);
+	}
+	& dt {
+		font-size: 0.74rem;
+		font-weight: 600;
+		color: var(--cd-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-weight: 650;
+		font-size: 0.92rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+.cd-person .basalt-skeleton-circle {
+	width: 3rem;
+	height: 3rem;
+}
+.cd-person-facts .basalt-skeleton-block {
+	height: 3.6rem;
+	border-radius: 10px;
+}
+@media (max-width: 479.98px) {
+	.cd-person-facts {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* The overlay demo keeps its text on a solid panel at the foot of the
+   picture; on a phone the panel moves under the picture instead. */
+.cd-overlay {
+	border-color: var(--basalt-edge);
+	overflow: hidden;
+
+	& .card-img-overlay {
+		display: flex;
+		align-items: flex-end;
+		padding: 1rem;
+	}
+}
+.cd-overlay-panel {
+	max-width: 22rem;
+	padding: 0.9rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.cd-overlay-meta {
+	margin: 0 0 0.2rem;
+	font-size: 0.71rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	color: var(--cd-quiet);
+}
+.cd-overlay-title {
+	margin: 0 0 0.25rem;
+	font-size: 1rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cd-overlay-text {
+	margin: 0;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+}
+@media (max-width: 575.98px) {
+	.cd-overlay .card-img-overlay {
+		position: static;
+		padding: 0.75rem;
+	}
+	.cd-overlay-panel {
+		max-width: none;
+		box-shadow: none;
+	}
+}
+
+/* The horizontal card clips its picture to its corners. */
+.cd-horiz {
+	overflow: hidden;
+}
+
+/* Bootstrap's card header and footer take the page's surfaces. */
+.cd-page .card-footer {
+	border-top-color: var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+.cd-page .card-header {
+	border-bottom-color: var(--basalt-edge);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+/* The header-and-footer demo spreads its two sides apart. */
+.cd-hf-head {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	font-weight: 650;
+}
+.cd-hf-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+
+	& .cd-link {
+		font-size: 0.84rem;
+	}
+}
+
+/* The card-navigation demo recolors Bootstrap's tabs through their tokens.
+   The header keeps its padding: Bootstrap pulls the tabs down by exactly that
+   much so the open tab sits on the header line and joins the body. */
+.cd-navcard {
+	& .card-header {
+		background: var(--basalt-canvas);
+	}
+	& .nav-tabs {
+		--bs-nav-link-color: var(--cd-quiet);
+		--bs-nav-link-hover-color: var(--basalt-copy);
+		--bs-nav-tabs-link-hover-border-color: transparent;
+		--bs-nav-tabs-link-active-color: var(--basalt-copy);
+		--bs-nav-tabs-link-active-bg: var(--basalt-plane);
+		--bs-nav-tabs-link-active-border-color: var(--basalt-edge) var(--basalt-edge) var(--basalt-plane);
+		font-size: 0.86rem;
+		font-weight: 600;
+	}
+	& .nav-tabs .nav-link.active {
+		color: var(--basalt-copy);
+		box-shadow: inset 0 2px 0 var(--basalt-hue);
+	}
+	& .nav-link:focus-visible {
+		outline: 0;
+		box-shadow: var(--cd-focus);
+	}
+	& .tab-pane:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+}
+
+/* The list-group demo: each row spreads its label and value apart. */
+.cd-listcard-head {
+	margin: 0;
+	font-size: 0.92rem;
+}
+.cd-listcard .list-group-item {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	border-color: var(--basalt-edge);
+	font-size: 0.88rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+
+/* Reduced motion stills the chips, the chevron and the bars; print drops
+   the controls and shows every card, filtered or not. */
+@media (prefers-reduced-motion: reduce) {
+	.cd-chip,
+	.cd-code summary .bi,
+	.cd-sellers-bar span {
+		transition: none;
+	}
+}
+@media print {
+	.cd-filter,
+	.cd-code,
+	.cd-seg,
+	.cd-toolbar {
+		display: none;
+	}
+	.cd-card.is-hidden {
+		display: block;
+	}
+}

@@ -1,0 +1,17 @@
+/* Canvas charts never overflow their frame, whatever width the library asks for. */
+.basalt-graph canvas {
+	max-width: 100%;
+}
+
+/* The frame fills its column and anchors the canvas; the size classes fix its height to a strip or a full panel. */
+.basalt-graph {
+	position: relative;
+	width: 100%;
+
+	&-short {
+		height: 120px;
+	}
+	&-tall {
+		height: 280px;
+	}
+}

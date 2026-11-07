@@ -1,0 +1,789 @@
+/* Basalt - Taxes page (taxes.html)
+   Namespaced under .tx-*
+   The rate list grouped by area, September's collection
+   bars, the checkout rules and the rate drawer. Everything
+   else (header, status pills, selects, choice tiles, drawer
+   layout, empty state, toasts) is the shared component. */
+
+.tx-page,
+.tx-layer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--tx-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--tx-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--tx-track: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+}
+
+/* One color per area, from the palette's chart ramp. The region code
+   tile, the rate's meter, the group heading's dot and September's bars
+   all use it. */
+.tx-area-na {
+	--tx-tone: var(--basalt-series-1);
+}
+.tx-area-eu {
+	--tx-tone: var(--basalt-series-2);
+}
+.tx-area-ap {
+	--tx-tone: var(--basalt-series-3);
+}
+.tx-area-la {
+	--tx-tone: var(--basalt-series-4);
+}
+
+.tx-page .form-control,
+.tx-page .form-select,
+.tx-layer .form-control,
+.tx-layer .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.tx-page .form-control::placeholder,
+.tx-layer .form-control::placeholder {
+	color: var(--tx-quiet);
+	opacity: 1;
+}
+.tx-layer .input-group-text {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+/* Gray buttons keep a readable label on the card and in the drawer. */
+.tx-page .btn-outline-secondary,
+.tx-layer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+}
+.tx-page .btn,
+.tx-layer .btn {
+	white-space: nowrap;
+}
+
+/* Cards */
+.tx-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: 1.75rem;
+}
+.tx-card-head {
+	margin-bottom: 1.5rem;
+}
+.tx-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tx-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tx-quiet);
+}
+.tx-card-desc a,
+.tx-rule-desc a {
+	color: var(--tx-link);
+}
+
+/* The two cards under the list: full rows below 1200px, a level pair above. */
+.tx-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 1.5rem;
+}
+@media (min-width: 1200px) {
+	.tx-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.tx-grid > .tx-card {
+	height: 100%;
+}
+
+/* Toolbar */
+.tx-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.tx-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: min(100%, 15.5rem);
+	max-width: 28rem;
+}
+.tx-search .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--tx-quiet);
+	pointer-events: none;
+}
+.tx-search .form-control {
+	padding-left: 2.4rem;
+}
+.tx-select {
+	width: auto;
+	min-width: 9rem;
+}
+.tx-toolbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--tx-quiet);
+}
+.tx-toolbar-count:empty {
+	display: none;
+}
+/* On a phone the selects fill their rows instead of leaving half of one empty. */
+@media (max-width: 575.98px) {
+	.tx-select {
+		flex: 1 1 9rem;
+	}
+}
+
+/* Rate list */
+/* The table is pulled out by the cells' side padding, so the region column
+   starts on the card's left edge, under the title. */
+.tx-list {
+	container: tx-list / inline-size;
+}
+.tx-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	width: calc(100% + 1.5rem);
+	margin: 0 -0.75rem;
+	font-size: 0.875rem;
+}
+.tx-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.75rem;
+	vertical-align: middle;
+}
+.tx-table > thead > tr > th {
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--tx-quiet);
+}
+.tx-table th:nth-child(1) {
+	width: 30%;
+}
+.tx-table th:nth-child(2) {
+	width: 10%;
+}
+.tx-table th:nth-child(4) {
+	width: 15%;
+}
+.tx-table th:nth-child(5) {
+	width: 13%;
+}
+.tx-table th:last-child {
+	width: 2.75rem;
+}
+.tx-table .tx-num {
+	text-align: end;
+}
+.tx-table > tbody > tr[data-tx-id] {
+	cursor: pointer;
+}
+.tx-table > tbody > tr[data-tx-id]:hover > * {
+	--bs-table-bg-state: var(--basalt-wash);
+}
+.tx-table > tbody > tr:last-child > * {
+	border-bottom-width: 0;
+}
+
+/* The area heading above each group of rates. */
+.tx-table > tbody > tr.tx-group > th {
+	padding-top: 1.5rem;
+	padding-bottom: 0.6rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-weight: 400;
+}
+.tx-table > tbody > tr.tx-group:first-child > th {
+	padding-top: 0.9rem;
+}
+.tx-group-row {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.tx-group-name {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.tx-group-name::before {
+	content: "";
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--tx-tone);
+}
+.tx-group-meta {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--tx-quiet);
+}
+
+/* Region: a code tile in the area's color, the name and the tax's name. */
+.tx-region {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.tx-code {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: 0.035em;
+	color: color-mix(in srgb, var(--tx-tone) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tx-tone) 22%, var(--basalt-plane));
+}
+.tx-region-text {
+	min-width: 0;
+}
+.tx-line {
+	margin: 0;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tx-sub {
+	margin: 0.25rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.4;
+	color: var(--tx-quiet);
+}
+.tx-rate {
+	display: block;
+	font-size: 0.95rem;
+	font-weight: 700;
+	line-height: 1.3;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+/* A short track under the rate, filled in the area's color, so the
+   higher rates stand out down the column. */
+.tx-meter {
+	display: block;
+	width: 3.5rem;
+	height: 0.3rem;
+	margin: 0.4rem 0 0 auto;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--tx-track);
+}
+.tx-meter > span {
+	display: block;
+	width: var(--tx-share, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--tx-tone);
+}
+
+/* What the rate is charged on: quiet pills, text only. */
+.tx-ons {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.tx-on {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.76rem;
+	font-weight: 600;
+	line-height: 1.3;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.tx-none {
+	font-size: 0.8rem;
+	color: var(--tx-quiet);
+}
+
+.tx-status {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.tx-status .tx-sub {
+	margin: 0;
+	white-space: nowrap;
+}
+.tx-money {
+	margin: 0;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.tx-money-none {
+	font-weight: 400;
+	color: var(--tx-quiet);
+}
+.tx-chev {
+	font-size: 0.85rem;
+	color: var(--tx-quiet);
+}
+.tx-table .basalt-empty-row > td {
+	padding: 0;
+	border-bottom-width: 0;
+}
+
+/* The rate rides in the region's second line once its column is gone. */
+.tx-region-rate {
+	display: none;
+}
+
+/* Narrower than the full table: each rate becomes a two-line record, the
+   region and status on top, the rate, what it is charged on and the
+   month's total under them. */
+@container tx-list (max-width: 760px) {
+	.tx-table {
+		width: 100%;
+		margin: 0;
+	}
+	.tx-table,
+	.tx-table > tbody {
+		display: block;
+	}
+	.tx-table > thead {
+		display: none;
+	}
+	.tx-table > tbody > tr.tx-group {
+		display: block;
+		border-bottom: 1px solid var(--basalt-edge-strong);
+	}
+	.tx-table > tbody > tr.tx-group > th {
+		display: block;
+		padding-left: 0;
+		padding-right: 0;
+		border: 0;
+	}
+	.tx-table > tbody > tr[data-tx-id] {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"region status"
+			"ons    money";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.tx-table > tbody > tr[data-tx-id] > * {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+	.tx-table > tbody > tr[data-tx-id]:hover {
+		background: var(--basalt-wash);
+	}
+	.tx-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.tx-table > tbody > tr > .tx-row-region {
+		grid-area: region;
+	}
+	.tx-table > tbody > tr > .tx-row-rate {
+		display: none;
+	}
+	.tx-table > tbody > tr > .tx-row-ons {
+		grid-area: ons;
+	}
+	.tx-table > tbody > tr > .tx-row-status {
+		grid-area: status;
+	}
+	.tx-table > tbody > tr > .tx-row-status .tx-status {
+		align-items: flex-end;
+	}
+	.tx-table > tbody > tr > .tx-row-money {
+		grid-area: money;
+		text-align: end;
+	}
+	.tx-table > tbody > tr > .tx-row-go {
+		display: none;
+	}
+	.tx-region-rate {
+		display: inline;
+	}
+}
+/* Collected in September: ranked bars */
+.tx-bars {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tx-bars-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 9.5rem minmax(0, 1fr) 5.5rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.tx-bars-row:last-child {
+	border-bottom: 0;
+}
+.tx-bars-name {
+	min-width: 0;
+	line-height: 1.3;
+}
+.tx-bars-country {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tx-bars-area {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.75rem;
+	color: var(--tx-quiet);
+}
+.tx-bars-bar {
+	height: 0.65rem;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--tx-track);
+}
+.tx-bars-bar > span {
+	display: block;
+	width: var(--tx-share, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--tx-tone);
+}
+.tx-bars-value {
+	line-height: 1.25;
+	text-align: end;
+}
+.tx-bars-money {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tx-bars-orders {
+	display: block;
+	font-size: 0.75rem;
+	color: var(--tx-quiet);
+}
+.tx-bars-more {
+	margin: auto 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--tx-quiet);
+}
+.tx-bars + .tx-bars-more {
+	margin-top: 1rem;
+}
+@media (max-width: 419.98px) {
+	.tx-bars-row {
+		gap: 0.5rem 1rem;
+		grid-template-columns: minmax(0, 1fr) 5.5rem;
+		grid-template-areas: "name value" "bar bar";
+	}
+	.tx-bars-name {
+		grid-area: name;
+	}
+	.tx-bars-bar {
+		grid-area: bar;
+	}
+	.tx-bars-value {
+		grid-area: value;
+	}
+}
+
+/* At checkout: switch rows */
+.tx-rules {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tx-rule {
+	display: flex;
+	gap: 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: 1.1rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.tx-rule:first-child {
+	padding-top: 0.25rem;
+}
+.tx-rule:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.tx-rule-text {
+	min-width: 0;
+}
+.tx-rule-name {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+.tx-rule-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--tx-quiet);
+}
+.tx-rule .form-check {
+	min-height: 0;
+	margin: 0.1rem 0 0;
+	padding-left: 2.5em;
+}
+.tx-rule .form-check-input {
+	width: 2.25em;
+	height: 1.25em;
+	margin-top: 0;
+	cursor: pointer;
+}
+
+/* Drawer */
+.tx-drawer {
+	--bs-offcanvas-width: 480px;
+}
+.tx-drawer .offcanvas-title {
+	margin: 0;
+}
+.tx-drawer .offcanvas-body {
+	padding-top: 1.5rem;
+	padding-bottom: 1.75rem;
+}
+.tx-drawer .basalt-drawer-nav[hidden] {
+	display: none;
+}
+
+.tx-d-status {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.tx-d-status[hidden] {
+	display: none;
+}
+.tx-d-status-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.tx-d-status-note {
+	margin: 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--tx-quiet);
+}
+.tx-d-status-note:empty {
+	display: none;
+}
+
+.tx-d-section {
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.tx-d-section + .tx-d-section {
+	margin-top: 1.5rem;
+}
+.tx-d-status[hidden] + .tx-d-section {
+	padding-top: 0;
+	border-top: 0;
+}
+.tx-d-section[hidden] {
+	display: none;
+}
+.tx-d-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tx-layer .form-label {
+	margin-bottom: 0.4rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.tx-drawer .offcanvas-body {
+	container: tx-form / inline-size;
+}
+.tx-pair,
+.tx-trio {
+	display: grid;
+	gap: 1.25rem;
+}
+@container tx-form (min-width: 400px) {
+	.tx-pair {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.tx-trio {
+		grid-template-columns: minmax(0, 1fr) 10rem;
+	}
+	.tx-trio > :last-child {
+		grid-column: 1 / -1;
+	}
+}
+.tx-short {
+	max-width: 10rem;
+}
+.tx-fit {
+	width: auto;
+	max-width: 100%;
+}
+.tx-date {
+	width: auto;
+}
+/* The feedback under a grouped field shows once the group is invalid. */
+.input-group.is-invalid ~ .invalid-feedback {
+	display: block;
+}
+
+.tx-kinds.basalt-choices {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@container tx-form (min-width: 400px) {
+	.tx-kinds.basalt-choices {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+/* The sample order: four lines, the taxed ones marked, then the sum. */
+.tx-sample {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tx-sample-item {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto 5.5rem;
+	align-items: baseline;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.tx-sample-item:first-child {
+	padding-top: 0;
+}
+.tx-sample-name {
+	min-width: 0;
+	color: var(--basalt-copy);
+}
+.tx-sample-kind {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.75rem;
+	color: var(--tx-quiet);
+}
+.tx-sample-flag {
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--tx-quiet);
+}
+.tx-sample-flag.is-taxed {
+	color: var(--basalt-copy);
+}
+.tx-sample-flag.is-taxed::before {
+	content: "\2713\00a0";
+}
+.tx-sample-price {
+	text-align: end;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.tx-sample-sum {
+	margin: 0;
+	padding-top: 0.8rem;
+	font-size: 0.875rem;
+}
+.tx-sample-sum > div {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	padding: 0.25rem 0;
+}
+.tx-sample-sum dt {
+	font-weight: 400;
+	color: var(--basalt-copy-body);
+}
+.tx-sample-sum dd {
+	margin: 0;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.tx-sample-sum > div:last-child {
+	margin-top: 0.3rem;
+	padding-top: 0.6rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.tx-sample-sum > div:last-child dt,
+.tx-sample-sum > div:last-child dd {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.tx-collect .form-check {
+	margin: 0;
+}
+.tx-collect .form-check-label {
+	color: var(--basalt-copy);
+}
+.tx-collect-hint {
+	margin: 0.5rem 0 0;
+	padding-left: 2.5em;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--tx-quiet);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.tx-bars-bar > span {
+		transition: width 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}

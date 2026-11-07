@@ -7,4 +7,4 @@
 <{{ $sel }} class="text-end">@angka($jumlah['bw'], 2)</{{ $sel }}>
 <{{ $sel }} class="text-end">@angka($jumlah['per_krat'], 2)</{{ $sel }}>
 <{{ $sel }} class="text-end">@angka($jumlah['netto'], 2)</{{ $sel }}>
-<{{ $sel }} @class(['text-end', 'color-danger' => $jumlah['selisih'] != 0])>@angka($jumlah['selisih'], 2)</{{ $sel }}>
+<{{ $sel }} @class(['text-end', 'text-danger' => $jumlah['selisih'] != 0])>@angka($jumlah['selisih'], 2)</{{ $sel }}>

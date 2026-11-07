@@ -1,0 +1,38 @@
+@use "sass:map";
+@use "tokens";
+@use "light" as day;
+
+/* The dark side of every core palette. An accent that holds up on white tends
+   to buzz against a near-black surface, so each one comes back lighter and a
+   little less saturated than its light twin. The four status washes are their
+   own tone at 16% alpha and the accent outline is the accent at 45%; white
+   hairlines at low alpha suit any of the dark canvases. Dusk, the base,
+   answers to the theme attribute alone; every palette also answers to its
+   data-basalt-palette value. Dusk's dark set has a few tokens the others
+   leave to their light set (its deeper card shadow and scrim), so each other
+   palette repeats its own light value for those, or it would wear Dusk's. */
+$base-dark: map.get(tokens.$core, tokens.$base, dark);
+
+[data-bs-theme="dark"] {
+	@include day.tokens($base-dark);
+}
+
+@each $palette, $sets in tokens.$core {
+	$dark: map.get($sets, dark);
+	@if $palette != tokens.$base {
+		@each $token, $value in $base-dark {
+			@if not map.has-key($dark, $token) {
+				$dark: map.merge(
+					(
+						$token: map.get($sets, light, $token),
+					),
+					$dark
+				);
+			}
+		}
+	}
+
+	[data-basalt-palette="#{$palette}"][data-bs-theme="dark"] {
+		@include day.tokens($dark);
+	}
+}

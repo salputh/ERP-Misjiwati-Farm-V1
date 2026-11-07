@@ -1,0 +1,1774 @@
+/* Styles for the pricing page (price-tiers.html). Every class starts with
+   tarf- and every script hook is a data-tarf-* attribute. Layout
+   follows the width of the page's own column through a container query,
+   so it reads the same with the menu open or folded to a rail. */
+
+/* Small gray text is the muted token pulled toward the body color, which
+   keeps it at 4.5:1 or better on tinted rows and panels in every palette. */
+:root {
+	--tarf-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+.pricing {
+	container-type: inline-size;
+	container-name: pricing;
+}
+
+/* An element with the hidden attribute stays hidden, whatever display its class gives it. */
+.tarf-year[hidden],
+.tarf-bill-quoted[hidden],
+.tarf-bill-priced[hidden],
+.tarf-dialog-body[hidden],
+.tarf-dialog-done[hidden],
+.tarf-dialog-foot[hidden] {
+	display: none;
+}
+
+/* Pill controls keep their native input for keyboard and form state, out of sight. */
+.tarf-period-option input,
+.tarf-need input,
+.tarf-planpick-option input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* One focus ring for every control that draws its own. */
+.tarf-period-option:has(input:focus-visible:not(:checked)) > span,
+.tarf-stepper-btn:focus-visible,
+.tarf-need:has(input:focus-visible:not(:checked)),
+.tarf-person:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Lists on this page are layout, not bullets. */
+.tarf-fit,
+.tarf-plan-also ul,
+.tarf-addons,
+.tarf-bill-lines,
+.tarf-steps,
+.tarf-quote-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Icons on a soft tint of the accent share one centered box; each sets its own size. */
+.tarf-bill-quoted-icon,
+.tarf-person-icon,
+.tarf-dialog-icon,
+.tarf-tile-icon,
+.tarf-quote-avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--basalt-hue);
+	background: var(--basalt-hue-soft);
+}
+
+/* Add-on tints are taken from the palette's chart series. */
+[data-tarf-hue="1"] {
+	--tarf-c: var(--basalt-series-1);
+}
+[data-tarf-hue="3"] {
+	--tarf-c: var(--basalt-series-3);
+}
+[data-tarf-hue="6"] {
+	--tarf-c: var(--basalt-series-6);
+}
+[data-tarf-hue="8"] {
+	--tarf-c: var(--basalt-series-8);
+}
+
+.tarf-label {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 1rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--tarf-quiet);
+}
+
+/* Blocks rise into place one after another; the script numbers them. */
+@keyframes tarf-rise {
+	from {
+		transform: translateY(14px);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+.tarf-rise {
+	animation: tarf-rise 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	animation-delay: calc(var(--tarf-i, 0) * 70ms);
+}
+
+/* A badge or a done mark arrives with a small overshoot. */
+@keyframes tarf-pop {
+	from {
+		transform: scale(0.7);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+
+/* Both kinds of heading row put the words left and the controls right, wrapping when tight. */
+.tarf-head,
+.tarf-section-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+
+/* The title row also holds the monthly or yearly switch. */
+.tarf-head {
+	gap: 1rem 2rem;
+}
+.tarf-head-text {
+	flex: 1 1 26rem;
+	min-width: 0;
+}
+.tarf-head-title {
+	margin: 0 0 0.25rem;
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.tarf-head-lead {
+	max-width: 44rem;
+	margin: 0;
+	font-size: 0.875rem;
+	text-wrap: pretty;
+	color: var(--tarf-quiet);
+}
+
+.tarf-period {
+	display: inline-flex;
+	gap: 4px;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 4px;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	background: var(--basalt-plane);
+}
+.tarf-period-option {
+	position: relative;
+	cursor: pointer;
+
+	& > span {
+		display: inline-flex;
+		gap: 0.5rem;
+		align-items: center;
+		padding: 0.5rem 1.05rem;
+		border-radius: 999px;
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: var(--tarf-quiet);
+		transition:
+			background-color 200ms ease,
+			color 200ms ease;
+	}
+	&:hover > span {
+		color: var(--basalt-copy);
+	}
+	&:has(input:checked) > span {
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+}
+.tarf-period-save {
+	padding: 0.1rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 800;
+	color: var(--bs-success-text-emphasis);
+	background: var(--basalt-success-soft);
+
+	.tarf-period-option:has(input:checked) & {
+		color: var(--basalt-on-hue);
+		background: color-mix(in srgb, var(--basalt-on-hue) 22%, transparent);
+	}
+}
+
+/* The brief is a sentence with its blanks as live controls. */
+.tarf-brief {
+	position: relative;
+	scroll-margin-top: 5.5rem;
+	padding: 1.25rem 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 18px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+
+	/* A soft glow sits in the top corner, and goes when gradients are off. */
+	&::before {
+		content: "";
+		position: absolute;
+		inset: -40% -20% auto auto;
+		width: 60%;
+		aspect-ratio: 1;
+		background: radial-gradient(closest-side, color-mix(in srgb, var(--basalt-hue) 10%, transparent), transparent);
+		pointer-events: none;
+	}
+	:root[data-basalt-gradients="off"] &::before {
+		display: none;
+	}
+	& > * {
+		position: relative;
+	}
+}
+.tarf-brief-sentence {
+	max-width: 62rem;
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+	line-height: 2.1;
+	letter-spacing: -0.01em;
+	text-wrap: pretty;
+	color: var(--basalt-copy);
+}
+
+/* A number blank: minus, the typed value, plus, all in one pill. */
+.tarf-stepper {
+	display: inline-flex;
+	gap: 0.1em;
+	align-items: center;
+	margin: 0 0.12em;
+	padding: 0.12em;
+	border: 1px solid var(--basalt-hue-border);
+	border-radius: 999px;
+	line-height: 1;
+	white-space: nowrap;
+	vertical-align: 0.08em;
+	background: var(--basalt-hue-soft);
+
+	&:has(.tarf-stepper-input:focus-visible) {
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-hue) 25%, transparent);
+	}
+}
+.tarf-stepper-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.6em;
+	height: 1.6em;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	font-size: 0.62em;
+	color: var(--basalt-hue);
+	background: var(--basalt-plane);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+	transition:
+		transform 150ms ease,
+		background-color 150ms ease;
+
+	&:hover:not(:disabled) {
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+	&:active:not(:disabled) {
+		transform: scale(0.92);
+	}
+	&:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+}
+.tarf-stepper-input {
+	width: 2.4ch;
+	min-width: 1.2ch;
+	padding: 0 0.1em;
+	border: 0;
+	font: inherit;
+	font-weight: 800;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-hue);
+	background: transparent;
+	appearance: textfield;
+	field-sizing: content;
+
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		margin: 0;
+		-webkit-appearance: none;
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		box-shadow: none;
+	}
+}
+
+/* A choice blank: a bare select with a dashed underline and its own chevron. */
+.tarf-pick {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	vertical-align: baseline;
+
+	& .bi {
+		position: absolute;
+		right: 0.1em;
+		font-size: 0.55em;
+		color: var(--basalt-hue);
+		pointer-events: none;
+	}
+}
+.tarf-pick-select {
+	padding: 0 1.05em 0 0.1em;
+	border: 0;
+	border-bottom: 2px dashed var(--basalt-hue-border);
+	border-radius: 0;
+	font: inherit;
+	font-weight: 800;
+	line-height: 1.3;
+	color: var(--basalt-hue);
+	background: transparent;
+	cursor: pointer;
+	appearance: none;
+	field-sizing: content;
+
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& option {
+		font-size: 1rem;
+		font-weight: 500;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+	}
+}
+
+/* Needs are pills under the sentence that fill with the accent when ticked. */
+.tarf-needs {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.9rem;
+}
+.tarf-need {
+	position: relative;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.8rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-copy-muted) 30%, transparent);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 180ms ease,
+		border-color 180ms ease,
+		color 180ms ease;
+
+	& .bi {
+		font-size: 0.95rem;
+		color: var(--tarf-quiet);
+		transition: color 180ms ease;
+	}
+	&:hover {
+		border-color: var(--basalt-hue-border);
+		color: var(--basalt-copy);
+	}
+	&:has(input:checked) {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+	&:has(input:checked) .bi {
+		color: var(--basalt-on-hue);
+	}
+}
+
+/* Four tier cards in one, two or four columns, by the column's width. */
+.tarf-plans {
+	position: relative;
+	display: grid;
+	gap: 1.25rem 1rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 1.75rem;
+}
+@container pricing (min-width: 640px) {
+	.tarf-plans {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@container pricing (min-width: 1100px) {
+	.tarf-plans {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+/* The ring sits under the cards, so only its outline shows, around the
+   card it has settled on. It fades in once, then glides between cards. */
+.tarf-plans-frame {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 0;
+	border-radius: 20px;
+	opacity: 0;
+	box-shadow:
+		0 0 0 2px var(--basalt-hue),
+		0 0 0 8px color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	pointer-events: none;
+
+	&.is-placed {
+		opacity: 1;
+		transition: opacity 300ms ease 450ms;
+	}
+	&.is-gliding {
+		transition:
+			transform 560ms cubic-bezier(0.3, 1.25, 0.45, 1),
+			width 560ms cubic-bezier(0.2, 0.8, 0.2, 1),
+			height 560ms cubic-bezier(0.2, 0.8, 0.2, 1),
+			opacity 300ms ease;
+	}
+}
+
+/* A card spans seven rows of the grid through subgrid, so prices and
+   buttons sit on one line across all four. A card is also a button:
+   picking it rewrites the sentence to match. */
+.tarf-plan {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	row-gap: 0.6rem;
+	grid-row: span 7;
+	grid-template-rows: subgrid;
+	min-width: 0;
+	padding: 1.35rem 1.35rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 20px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 250ms ease,
+		box-shadow 250ms ease;
+
+	&.is-best {
+		border-color: transparent;
+		box-shadow: var(--basalt-card-shadow);
+	}
+	&[data-tarf-choosable] {
+		cursor: pointer;
+	}
+	&[data-tarf-choosable]:hover:not(.is-best) {
+		border-color: var(--basalt-hue-border);
+	}
+	&[data-tarf-choosable]:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.tarf-plan-head {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-width: 0;
+}
+.tarf-plan-name {
+	margin: 0 auto 0 0;
+	font-size: 1.2rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.tarf-plan-popular {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: var(--tarf-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* The badge straddles the card's top edge inside the row gap, so it never
+   pushes the name down or touches the card above. */
+.tarf-plan-badge {
+	position: absolute;
+	top: -0.8rem;
+	left: 1.2rem;
+	display: none;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+	box-shadow: 0 0 0 3px var(--basalt-canvas);
+
+	.tarf-plan.is-best & {
+		display: inline-flex;
+		animation: tarf-pop 380ms cubic-bezier(0.3, 1.4, 0.5, 1);
+	}
+}
+.tarf-plan-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	text-wrap: pretty;
+	color: var(--tarf-quiet);
+}
+.tarf-plan-price {
+	display: flex;
+	gap: 0.1rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin-top: 0.3rem;
+}
+.tarf-plan-amount {
+	font-size: 2.15rem;
+	font-weight: 800;
+	line-height: 1.05;
+	letter-spacing: -0.035em;
+	color: var(--basalt-copy);
+	transition: color 250ms ease;
+}
+.tarf-plan-per {
+	font-size: 0.85rem;
+	color: var(--tarf-quiet);
+}
+
+/* A tier too small for the team grays its price and reddens its verdict. */
+.tarf-plan.is-short {
+	& .tarf-plan-amount {
+		color: var(--tarf-quiet);
+	}
+	& [data-tarf-fit-title] {
+		color: color-mix(in srgb, var(--basalt-danger) 75%, var(--basalt-copy));
+	}
+}
+.tarf-plan-rate {
+	margin: 0;
+	font-size: 0.8rem;
+	text-wrap: pretty;
+	color: var(--tarf-quiet);
+}
+.tarf-plan-cta {
+	align-self: start;
+	width: 100%;
+	font-weight: 700;
+}
+.tarf-plan-label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--tarf-quiet);
+}
+
+/* Fit rows: a colored mark, the feature, and a note under it when there is one. */
+.tarf-plan-fit {
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.tarf-fit {
+	display: grid;
+	gap: 0.4rem;
+}
+.tarf-fit-row {
+	display: grid;
+	column-gap: 0.5rem;
+	grid-template-columns: 1.1rem minmax(0, 1fr);
+	font-size: 0.86rem;
+	line-height: 1.35;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		grid-row: span 2;
+		font-size: 0.95rem;
+		line-height: 1.3;
+	}
+	&.is-yes .bi {
+		color: var(--basalt-success);
+	}
+	&.is-addon .bi {
+		color: var(--basalt-info);
+	}
+	&.is-no .bi {
+		color: var(--basalt-danger);
+	}
+	&.is-no .tarf-fit-text {
+		color: var(--tarf-quiet);
+	}
+}
+.tarf-fit-note {
+	grid-column: 2;
+	font-size: 0.76rem;
+	color: var(--tarf-quiet);
+
+	.tarf-fit-row.is-no & {
+		color: color-mix(in srgb, var(--basalt-danger) 75%, var(--basalt-copy));
+	}
+}
+
+.tarf-plan-also {
+	padding-top: 0.9rem;
+	border-top: 1px dashed var(--basalt-edge);
+
+	& ul {
+		display: grid;
+		gap: 0.3rem;
+	}
+	& li {
+		position: relative;
+		padding-left: 1rem;
+		font-size: 0.84rem;
+		color: var(--basalt-copy-body);
+	}
+	& li::before {
+		content: "";
+		position: absolute;
+		top: 0.55em;
+		left: 0.1rem;
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--basalt-copy-faint);
+	}
+}
+
+/* Promises every tier keeps, centered in a loose row under the cards. */
+.tarf-promises {
+	display: flex;
+	gap: 0.6rem 1.75rem;
+	flex-wrap: wrap;
+	justify-content: center;
+	margin: 1.75rem 0 3rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+	}
+	& .bi {
+		color: var(--basalt-success);
+	}
+}
+
+/* Section headings below the cards, and the segmented tier picker they carry. */
+.tarf-section-head {
+	gap: 1rem 1.5rem;
+}
+.tarf-section-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.5rem;
+	font-weight: 800;
+	letter-spacing: -0.025em;
+	color: var(--basalt-copy);
+}
+.tarf-section-sub {
+	margin: 0;
+	color: var(--tarf-quiet);
+}
+
+.tarf-planpick {
+	display: flex;
+	gap: 3px;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	padding: 3px;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.tarf-planpick-legend {
+	float: left;
+	width: auto;
+	margin: 0;
+	padding: 0 0.5rem 0 0.6rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--tarf-quiet);
+}
+.tarf-planpick-option {
+	position: relative;
+	cursor: pointer;
+
+	& > span {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+		padding: 0.4rem 0.75rem;
+		border-radius: 9px;
+		font-size: 0.84rem;
+		font-weight: 700;
+		color: var(--tarf-quiet);
+		transition:
+			background-color 180ms ease,
+			color 180ms ease,
+			box-shadow 180ms ease;
+	}
+	&:hover > span {
+		color: var(--basalt-copy);
+	}
+	&:has(input:checked) > span {
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: 0 1px 3px color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+	}
+	&:has(input:focus-visible:not(:checked)) > span {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&:has(input:disabled) {
+		cursor: not-allowed;
+	}
+
+	/* A tier too small for the seat count stays legible, struck through. */
+	&:has(input:disabled) > span {
+		text-decoration: line-through;
+		color: var(--tarf-quiet);
+	}
+
+	/* A dot marks the tier that leads. */
+	&.is-best > span::after {
+		content: "";
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--basalt-hue);
+	}
+}
+
+/* On a narrow column the picker takes the full row and splits it evenly. */
+@container pricing (max-width: 560px) {
+	.tarf-planpick {
+		width: 100%;
+	}
+	.tarf-planpick-legend {
+		flex-basis: 100%;
+		padding: 0.3rem 0.6rem 0.1rem;
+	}
+	.tarf-planpick-option {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	.tarf-planpick-option > span {
+		justify-content: center;
+		width: 100%;
+	}
+}
+
+/* The estimate: add-on switches beside an itemized bill. */
+.tarf-estimate {
+	margin-bottom: 3rem;
+}
+.tarf-estimate-grid {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+}
+@container pricing (min-width: 900px) {
+	.tarf-estimate-grid {
+		grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+	}
+}
+
+.tarf-addons {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 20px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.tarf-addon {
+	display: grid;
+	gap: 0.3rem 1rem;
+	grid-template-columns: 42px minmax(0, 1fr) auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	transition: opacity 200ms ease;
+
+	& + & {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& .form-switch {
+		min-height: 0;
+		margin: 0;
+		padding-left: 2.5em;
+	}
+	& .form-switch .form-check-input {
+		width: 2.5em;
+		height: 1.35em;
+		margin: 0 0 0 -2.5em;
+		cursor: pointer;
+	}
+
+	/* Not sold on the tier: dimmed. Part of the tier: its price turns green. */
+	&.is-off {
+		opacity: 0.55;
+	}
+	&.is-included .tarf-addon-price {
+		color: var(--bs-success-text-emphasis);
+	}
+}
+.tarf-addon-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--tarf-c, var(--basalt-hue)) 75%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tarf-c, var(--basalt-hue)) 14%, transparent);
+}
+.tarf-addon-text {
+	min-width: 0;
+}
+.tarf-addon-title {
+	display: block;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+.tarf-addon-desc {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	text-wrap: pretty;
+	color: var(--tarf-quiet);
+}
+.tarf-addon-side {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: flex-end;
+}
+.tarf-addon-price {
+	font-size: 0.8rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+
+/* On a narrow column the price and switch drop under the description. */
+@container pricing (max-width: 520px) {
+	.tarf-addon {
+		grid-template-columns: 42px minmax(0, 1fr);
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.tarf-addon-side {
+		grid-column: 2;
+		justify-content: space-between;
+	}
+}
+
+.tarf-bill {
+	padding: 1.35rem 1.5rem 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 20px;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.tarf-bill-lines li {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.5rem 0;
+	border-bottom: 1px dashed var(--basalt-edge);
+	font-size: 0.9rem;
+
+	& span {
+		min-width: 0;
+		color: var(--basalt-copy-body);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.tarf-bill-total {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.85rem 0 0;
+	font-weight: 700;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-size: 1.9rem;
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		color: var(--basalt-copy);
+	}
+}
+
+/* A year paid each way, as two bars on one scale; the yearly bar is green. */
+.tarf-year {
+	margin-top: 1.1rem;
+	padding: 1rem 1.1rem;
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+}
+.tarf-year-row {
+	& + & {
+		margin-top: 0.75rem;
+	}
+	&.is-current .tarf-year-label span {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	&.is-current .tarf-year-label strong {
+		color: var(--basalt-copy);
+	}
+}
+.tarf-year-label {
+	display: flex;
+	gap: 0 1rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin-bottom: 0.3rem;
+	font-size: 0.84rem;
+	color: var(--tarf-quiet);
+
+	& strong {
+		color: var(--basalt-copy-body);
+	}
+}
+.tarf-year-track {
+	height: 10px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy-muted) 14%, transparent);
+}
+.tarf-year-bar {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	background: color-mix(in srgb, var(--basalt-copy-muted) 55%, transparent);
+	transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	[data-tarf-year="yearly"] & {
+		background: var(--basalt-success);
+	}
+}
+.tarf-year-note {
+	margin: 0.8rem 0 0;
+	font-size: 0.84rem;
+	font-weight: 600;
+	color: var(--bs-success-text-emphasis);
+}
+
+/* A tier sold by quote replaces the bill with a short note. */
+.tarf-bill-quoted {
+	padding: 0.5rem 0;
+	text-align: center;
+}
+.tarf-bill-quoted-icon {
+	width: 52px;
+	height: 52px;
+	margin-bottom: 0.75rem;
+	border-radius: 16px;
+	font-size: 1.3rem;
+}
+.tarf-bill-quoted-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.1rem;
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+.tarf-bill-quoted-text {
+	max-width: 22rem;
+	margin: 0 auto;
+	font-size: 0.875rem;
+	color: var(--tarf-quiet);
+}
+
+.tarf-bill-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.25rem;
+
+	& .btn {
+		flex: 1 1 auto;
+		font-weight: 700;
+	}
+}
+
+/* The comparison: every feature, every tier, side by side. */
+.tarf-compare {
+	margin-bottom: 3rem;
+}
+.tarf-compare-tools {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.tarf-compare-diff {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& .form-check-input {
+		cursor: pointer;
+	}
+}
+
+/* The two-tier picker only appears when the column is too narrow for four. */
+.tarf-compare-pick {
+	display: none;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+.tarf-compare[data-narrow] .tarf-compare-pick {
+	display: flex;
+}
+.tarf-compare[data-narrow] .tarf-table [data-plan]:not(.is-picked) {
+	display: none;
+}
+
+.tarf-table-wrap {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 20px;
+	overflow: clip;
+	background: var(--basalt-plane);
+}
+.tarf-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 0.9rem;
+}
+.tarf-table th,
+.tarf-table td {
+	padding: var(--basalt-pad-row-y) 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	vertical-align: middle;
+}
+.tarf-table {
+	& tr > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& tr > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& thead th {
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: var(--basalt-pad-row-y);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		text-align: center;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+		background: var(--basalt-plane);
+	}
+	& thead th:first-child {
+		text-align: left;
+	}
+	& tbody th[scope="row"] {
+		font-weight: 600;
+		text-align: left;
+		color: var(--basalt-copy);
+	}
+	& td {
+		text-align: center;
+		color: var(--basalt-copy-body);
+	}
+
+	/* The leading tier's column is tinted, with an accent line over its heading. */
+	& .is-best {
+		background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	}
+	& thead th.is-best {
+		color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+		box-shadow: inset 0 3px 0 var(--basalt-hue);
+	}
+}
+.tarf-table-group th {
+	padding-top: 1.1rem;
+	padding-bottom: 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	text-align: left;
+	color: var(--tarf-quiet);
+	background: var(--basalt-plane-alt);
+}
+.tarf-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+
+/* Yes, no and add-on cells keep their words, for screen readers and the
+   CSV file, and gain an icon in front. */
+.tarf-table td[data-value] {
+	font-weight: 600;
+
+	&::before {
+		display: inline-block;
+		margin-right: 0.3rem;
+		font-family: "bootstrap-icons";
+		font-weight: 400;
+		vertical-align: -0.12em;
+	}
+}
+.tarf-table td[data-value="yes"] {
+	color: var(--bs-success-text-emphasis);
+
+	&::before {
+		content: "\f633";
+	}
+}
+.tarf-table td[data-value="no"] {
+	font-weight: 500;
+	color: var(--tarf-quiet);
+
+	&::before {
+		content: "\f659";
+		font-size: 0.8em;
+	}
+}
+.tarf-table td[data-value="addon"] {
+	color: var(--bs-info-text-emphasis);
+
+	&::before {
+		content: "\f64d";
+	}
+}
+
+/* Narrow: a fixed layout of two tier columns. Hidden columns still take
+   part in a fixed layout, so the two that show split what is left. */
+.tarf-compare[data-narrow] .tarf-table {
+	table-layout: fixed;
+	font-size: 0.84rem;
+}
+.tarf-compare[data-narrow] .tarf-table th,
+.tarf-compare[data-narrow] .tarf-table td {
+	padding: 0.65rem 0.6rem;
+	overflow-wrap: anywhere;
+}
+.tarf-compare[data-narrow] .tarf-table thead {
+	& th:first-child {
+		width: 38%;
+	}
+	& th.is-picked {
+		width: 31%;
+	}
+}
+
+/* Before deciding: billing questions on the left, two ways to reach a person on the right. */
+.tarf-decide {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+}
+@container pricing (min-width: 900px) {
+	.tarf-decide {
+		grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+	}
+}
+.tarf-decide-questions .tarf-section-sub {
+	margin-bottom: 1.1rem;
+}
+
+.tarf-faq {
+	--bs-accordion-bg: var(--basalt-plane);
+	--bs-accordion-color: var(--basalt-copy-body);
+	--bs-accordion-border-color: var(--basalt-edge);
+	--bs-accordion-btn-color: var(--basalt-copy);
+	--bs-accordion-active-bg: var(--basalt-plane);
+	--bs-accordion-active-color: var(--basalt-hue);
+	--bs-accordion-btn-focus-box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-hue) 25%, transparent);
+
+	& .accordion-item {
+		margin-bottom: 0.5rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 14px;
+		overflow: hidden;
+	}
+	& .accordion-item:not(:first-of-type) {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& .accordion-item .accordion-header .accordion-button {
+		padding: 1rem 1.1rem;
+		border-radius: 14px;
+		font-weight: 700;
+	}
+	& .accordion-item .accordion-header .accordion-button:not(.collapsed) {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+		box-shadow: none;
+	}
+	& .accordion-body {
+		padding: 0 1.1rem 1.1rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+.tarf-people {
+	padding: 1.5rem;
+	border-radius: 20px;
+	background: var(--basalt-plane-alt);
+}
+.tarf-people-title {
+	margin: 0 0 0.4rem;
+	font-size: 1.2rem;
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+.tarf-people-text {
+	margin: 0 0 1.1rem;
+	font-size: 0.9rem;
+	text-wrap: pretty;
+	color: var(--basalt-copy-body);
+}
+.tarf-person {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 180ms ease,
+		box-shadow 180ms ease;
+
+	& + & {
+		margin-top: 0.6rem;
+	}
+	&:hover {
+		border-color: var(--basalt-hue-border);
+		box-shadow: var(--basalt-card-shadow);
+	}
+}
+.tarf-person-icon {
+	flex-shrink: 0;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	font-size: 1.05rem;
+}
+.tarf-person-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+
+	& strong {
+		font-size: 0.95rem;
+	}
+	& span {
+		font-size: 0.8rem;
+		color: var(--tarf-quiet);
+	}
+}
+.tarf-person-go {
+	margin-left: auto;
+	color: var(--tarf-quiet);
+	transition:
+		transform 180ms ease,
+		color 180ms ease;
+
+	.tarf-person:hover & {
+		transform: translateX(3px);
+		color: var(--basalt-hue);
+	}
+}
+
+/* The dock slides up at the bottom once the sentence scrolls away, so
+   the answer and its button stay in reach. */
+.tarf-dock {
+	position: sticky;
+	bottom: 1rem;
+	z-index: 20;
+	transform: translateY(14px);
+	display: flex;
+	visibility: hidden;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	max-width: 760px;
+	margin: 2rem auto 0;
+	padding: 0.65rem 0.7rem 0.65rem 1.1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 16px;
+	background: color-mix(in srgb, var(--basalt-plane) 90%, transparent);
+	opacity: 0;
+	box-shadow: 0 12px 32px color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	transition:
+		opacity 250ms ease,
+		transform 250ms ease,
+		visibility 0s linear 250ms;
+
+	&.is-shown {
+		transform: none;
+		visibility: visible;
+		opacity: 1;
+		transition:
+			opacity 250ms ease,
+			transform 250ms ease;
+	}
+}
+.tarf-dock-text {
+	display: flex;
+	gap: 0 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	min-width: 0;
+
+	& strong {
+		font-size: 1rem;
+		font-weight: 800;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.85rem;
+		color: var(--tarf-quiet);
+	}
+}
+.tarf-dock-actions {
+	display: flex;
+	gap: 0.4rem;
+	margin-left: auto;
+
+	& .btn {
+		font-weight: 700;
+		white-space: nowrap;
+	}
+}
+
+/* The smallest columns drop the edit button and keep only the main one. */
+@container pricing (max-width: 460px) {
+	.tarf-dock [data-tarf-edit] {
+		display: none;
+	}
+}
+
+/* The trial, sales and demo dialogs share a shell: a head, a form beside
+   a live preview, and a foot; each swaps to a done step on submit. */
+.tarf-dialog {
+	& .modal-content {
+		border: 1px solid var(--basalt-edge);
+		border-radius: 22px;
+		overflow: hidden;
+		background: var(--basalt-plane);
+	}
+	& .form-control {
+		border-radius: 10px;
+	}
+
+	/* A ticked box is a choice, not an answer to validate, so it keeps the accent and body color. */
+	& .was-validated .form-check-input:valid ~ .form-check-label {
+		color: var(--basalt-copy-body);
+	}
+	& .was-validated .form-check-input:valid {
+		border-color: var(--basalt-hue);
+	}
+	& .was-validated .form-check-input:valid:checked {
+		background-color: var(--basalt-hue);
+	}
+}
+.tarf-dialog-form {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	max-height: 100%;
+}
+.tarf-dialog-head {
+	display: flex;
+	gap: 0.875rem;
+	align-items: flex-start;
+	padding: 1.35rem 1.5rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& .btn-close {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+}
+.tarf-dialog-heading {
+	min-width: 0;
+}
+.tarf-dialog-icon {
+	flex-shrink: 0;
+	width: 44px;
+	height: 44px;
+	border-radius: 14px;
+	font-size: 1.2rem;
+}
+.tarf-dialog-title {
+	margin: 0 0 0.1rem;
+	font-size: 1.1rem;
+	font-weight: 800;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.tarf-dialog-sub {
+	margin: 0;
+	font-size: 0.85rem;
+	text-wrap: pretty;
+	color: var(--tarf-quiet);
+}
+
+.tarf-dialog-body {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+	padding: 1.25rem 1.5rem;
+}
+@media (min-width: 768px) {
+	.tarf-dialog-body {
+		gap: 1.5rem;
+		grid-template-columns: minmax(0, 1fr) 236px;
+	}
+}
+.tarf-dialog-set {
+	min-width: 0;
+	margin: 0 0 1.1rem;
+	padding: 0;
+	border: 0;
+}
+.tarf-dialog-label {
+	display: block;
+	float: none;
+	width: auto;
+	margin-bottom: 0.4rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--tarf-quiet);
+}
+.tarf-dialog-optional {
+	margin-left: 0.3rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	text-transform: none;
+}
+.tarf-dialog-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-danger);
+}
+.tarf-dialog-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 1rem 1.5rem 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		font-weight: 700;
+	}
+}
+
+.tarf-dialog-preview {
+	align-self: start;
+	padding: 1rem 1.05rem;
+	border-radius: 16px;
+	background: var(--basalt-plane-alt);
+}
+.tarf-dialog-fine {
+	margin: 0.75rem 0 0;
+	font-size: 0.77rem;
+	color: var(--tarf-quiet);
+}
+
+/* Choice tiles are the shared .basalt-choice set in fixed columns. The
+   icon sits in a fixed box so rows line up, and a ticked checkbox tile
+   gains a check in its corner. */
+.tarf-tiles-2 {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.tarf-tiles-3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.tarf-tiles-4 {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.tarf-tiles-5 {
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+@media (max-width: 575.98px) {
+	.tarf-tiles-3,
+	.tarf-tiles-4 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.tarf-tiles-5 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+.tarf-tiles {
+	& .basalt-choice {
+		padding: 0.75rem 0.4rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+	& .tarf-choice-slim {
+		padding: 0.65rem 0.4rem;
+	}
+	& .tarf-choice-slot {
+		gap: 0.1rem;
+		padding: 0.6rem 0.3rem;
+	}
+	& .basalt-choice:has(input[type="checkbox"]:checked)::after {
+		content: "\f633";
+		position: absolute;
+		top: 0.3rem;
+		right: 0.4rem;
+		font-family: "bootstrap-icons";
+		font-size: 0.75rem;
+		color: var(--basalt-hue);
+	}
+}
+.tarf-tile-icon {
+	width: 30px;
+	height: 30px;
+	border-radius: 9px;
+	font-size: 0.95rem;
+}
+
+/* The trial preview is a numbered timeline joined by a thin line. */
+.tarf-steps {
+	counter-reset: tarf-step;
+}
+.tarf-steps li {
+	counter-increment: tarf-step;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	padding: 0 0 0.9rem 2rem;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	&::before {
+		content: counter(tarf-step);
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		font-size: 0.7rem;
+		font-weight: 800;
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+	&:not(:last-child)::after {
+		content: "";
+		position: absolute;
+		top: 26px;
+		bottom: 4px;
+		left: 10px;
+		width: 2px;
+		background: color-mix(in srgb, var(--basalt-hue) 25%, transparent);
+	}
+}
+.tarf-steps strong {
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+}
+
+/* The sales preview shows who will quote, for which tier, and the terms. */
+.tarf-quote {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	margin-bottom: 0.8rem;
+}
+.tarf-quote-avatar {
+	flex-shrink: 0;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 800;
+}
+.tarf-quote-plan {
+	display: block;
+	font-size: 1.05rem;
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+.tarf-quote-seats {
+	font-size: 0.8rem;
+	color: var(--tarf-quiet);
+}
+.tarf-quote-list {
+	display: grid;
+	gap: 0.3rem;
+
+	& li {
+		display: grid;
+		gap: 0.4rem;
+		grid-template-columns: 1rem minmax(0, 1fr);
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+	}
+	& .bi {
+		color: var(--basalt-success);
+	}
+}
+
+/* The demo preview is a calendar leaf for the chosen day. */
+.tarf-slot {
+	display: inline-flex;
+	flex-direction: column;
+	width: 72px;
+	margin-bottom: 0.7rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+	text-align: center;
+	background: var(--basalt-plane);
+}
+.tarf-slot-month {
+	min-height: 1.5rem;
+	padding: 0.2rem 0;
+	font-size: 0.7rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.tarf-slot-day {
+	min-height: 2.8rem;
+	padding: 0.3rem 0;
+	font-size: 1.7rem;
+	font-weight: 800;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.tarf-slot-when {
+	margin: 0 0 0.8rem;
+	font-size: 0.88rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* The done step is centered under a round green mark. */
+.tarf-dialog-done {
+	padding: 2.5rem 1.5rem 2rem;
+	text-align: center;
+}
+.tarf-dialog-done-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	margin-bottom: 1rem;
+	border-radius: 50%;
+	font-size: 1.6rem;
+	color: var(--bs-success-text-emphasis);
+	background: var(--basalt-success-soft);
+	animation: tarf-pop 420ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.tarf-dialog-done-title {
+	margin: 0 0 0.4rem;
+	font-size: 1.25rem;
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+.tarf-dialog-done-text {
+	max-width: 28rem;
+	margin: 0 auto;
+	text-wrap: pretty;
+	color: var(--basalt-copy-body);
+}
+
+/* Phones tighten the dialog's padding all round. */
+@media (max-width: 575.98px) {
+	.tarf-dialog-head {
+		padding: 1.1rem 1rem 0.85rem;
+	}
+	.tarf-dialog-body {
+		padding: 1rem;
+	}
+	.tarf-dialog-foot {
+		padding: 0.85rem 1rem 1rem;
+	}
+}
+
+/* Notices stack in the bottom right, above the dock; only the notices take clicks. */
+.tarf-toast-region {
+	position: fixed;
+	right: 1rem;
+	bottom: 6rem;
+	z-index: 1090;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	max-width: calc(100vw - 2rem);
+	pointer-events: none;
+
+	& .toast {
+		pointer-events: auto;
+	}
+}
+
+/* With reduced motion, everything appears in place at once. */
+@media (prefers-reduced-motion: reduce) {
+	.tarf-rise,
+	.tarf-plan.is-best .tarf-plan-badge,
+	.tarf-dialog-done-icon {
+		animation: none;
+	}
+	.tarf-plans-frame.is-placed,
+	.tarf-plans-frame.is-gliding,
+	.tarf-year-bar,
+	.tarf-dock,
+	.tarf-dock.is-shown,
+	.tarf-person-go,
+	.tarf-plan {
+		transition: none;
+	}
+}

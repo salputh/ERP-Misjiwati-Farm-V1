@@ -1,0 +1,524 @@
+/**
+ * Variants of the empty state. The plain .basalt-empty (icon, title, text)
+ * is defined with search results; this file adds the framed card, a ghost
+ * of the content to come, the inline and compact forms, a split layout, a
+ * drop zone, a setup checklist and a retry countdown with its small ring.
+ * empty-states.html shows each one; Basalt.empty in assets/basalt/js/components/empty-states.js
+ * drives the parts that move.
+ */
+
+/* Framed, compact and inline states all set their sentence in the quiet color. */
+.basalt-empty-framed .basalt-empty-text,
+.basalt-empty-compact .basalt-empty-text,
+.basalt-empty-inline .basalt-empty-text {
+	max-width: 34rem;
+	margin: 0;
+	line-height: 1.55;
+	color: var(--basalt-empty-quiet);
+}
+
+/* The framed card is the full-size state: dashed edge, picture, buttons. */
+.basalt-empty-framed {
+	position: relative;
+	gap: 0.4rem;
+	padding: 2.5rem 1.5rem;
+	border: 1.5px dashed var(--basalt-edge-strong);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+
+	&[hidden] {
+		display: none;
+	}
+
+	.basalt-empty-title {
+		font-size: 1.08rem;
+		font-weight: 700;
+		line-height: 1.35;
+	}
+	.basalt-empty-text {
+		font-size: 0.88rem;
+	}
+}
+.basalt-empty-art {
+	width: 9.5rem;
+	max-width: 60%;
+	margin-bottom: 0.85rem;
+}
+.basalt-empty-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: center;
+	margin-top: 1.1rem;
+
+	.btn {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.basalt-empty-hint {
+	display: block;
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	line-height: 2;
+	color: var(--basalt-empty-quiet);
+
+	.bi {
+		margin-right: 0.3rem;
+	}
+}
+
+/* A suggested search looks like a link but is a button that reruns it. */
+.basalt-empty-suggest {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 650;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+	text-underline-offset: 0.2em;
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The ghost sketches rows behind a card and fades them out toward the bottom. */
+.basalt-empty-as-ghost {
+	justify-content: flex-end;
+	min-height: 20rem;
+	padding: 0;
+	overflow: hidden;
+}
+.basalt-empty-ghost {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	gap: 0.9rem;
+	align-content: start;
+	padding: 1.5rem;
+	-webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 95%);
+	mask-image: linear-gradient(to bottom, #000 45%, transparent 95%);
+
+	&-row {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+
+		/* Every bar is a soft pill; the first is an avatar, the last a short tag. */
+		> span {
+			display: block;
+			height: 0.7rem;
+			border-radius: 999px;
+			background: var(--basalt-plane-alt);
+		}
+		> span:first-child {
+			flex-shrink: 0;
+			width: 2.25rem;
+			height: 2.25rem;
+			border-radius: 50%;
+		}
+		> span:last-child {
+			width: 3rem;
+			margin-left: auto;
+		}
+	}
+
+	&-msg {
+		position: relative;
+		display: flex;
+		gap: 0.4rem;
+		flex-direction: column;
+		align-items: center;
+		max-width: 24rem;
+		margin: 1.25rem 1rem;
+		padding: 1.4rem 1.5rem;
+		border-radius: 14px;
+		border: 1px solid var(--basalt-edge);
+		background: var(--basalt-plane);
+		box-shadow: var(--basalt-card-shadow);
+
+		.basalt-empty-actions {
+			margin-top: 0.75rem;
+		}
+	}
+}
+
+/* Compact sits in a table row, a card body or a menu, under a tinted badge. */
+.basalt-empty-compact {
+	gap: 0.2rem;
+	padding: 1.6rem 1rem;
+
+	.basalt-empty-title {
+		font-size: 0.92rem;
+		font-weight: 650;
+	}
+	.basalt-empty-text {
+		font-size: 0.8rem;
+	}
+}
+.basalt-empty-badge {
+	display: grid;
+	place-items: center;
+	width: 2.6rem;
+	height: 2.6rem;
+	margin-bottom: 0.5rem;
+	border-radius: 50%;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-tone) 66%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-tone) 14%, var(--basalt-plane));
+}
+
+/* Inline fits a short sentence and a link onto one line of text. */
+.basalt-empty-inline {
+	display: inline-flex;
+	gap: 0.25rem 0.6rem;
+	flex-direction: row;
+	flex-wrap: wrap;
+	grid-column: auto;
+	align-items: baseline;
+	padding: 0;
+	text-align: left;
+
+	.basalt-empty-text {
+		font-size: 0.86rem;
+	}
+}
+.basalt-empty-link {
+	font-size: 0.86rem;
+	font-weight: 650;
+	text-decoration-color: color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+	text-underline-offset: 0.2em;
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Split puts the picture beside the words, then stacks them on phones. */
+.basalt-empty-split {
+	gap: 2.5rem;
+	flex-direction: row;
+	align-items: center;
+	padding: 2rem 2.25rem;
+	text-align: left;
+
+	.basalt-empty-actions {
+		justify-content: flex-start;
+	}
+	.basalt-empty-hint {
+		margin-top: 0.1rem;
+	}
+	.progress {
+		max-width: 20rem;
+		margin-top: 0.6rem;
+	}
+}
+.basalt-empty-art-wide {
+	flex-shrink: 0;
+	width: 16rem;
+	max-width: 42%;
+	margin: 0;
+}
+.basalt-empty-body {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+@media (max-width: 767.98px) {
+	.basalt-empty-split {
+		gap: 1rem;
+		flex-direction: column;
+		padding: 2rem 1.25rem;
+		text-align: center;
+
+		.basalt-empty-art-wide {
+			max-width: 80%;
+		}
+		.basalt-empty-body {
+			align-items: center;
+		}
+		.basalt-empty-actions {
+			justify-content: center;
+		}
+		.progress {
+			width: 100%;
+		}
+	}
+}
+
+/* The retry pill counts down on a small ring, which spins while it tries. */
+.basalt-retry {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-top: 1rem;
+	padding: 0.4rem 0.95rem 0.4rem 0.4rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.84rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+
+/* The small ring is an SVG circle track under a path bar with
+   pathLength="100", sized to sit in a line of text or a corner of a panel. */
+.basalt-mini-ring {
+	flex-shrink: 0;
+	width: 3.25rem;
+	height: 3.25rem;
+
+	&-sm {
+		width: 1.6rem;
+		height: 1.6rem;
+	}
+	&-track {
+		fill: none;
+		stroke: var(--basalt-plane-alt);
+		stroke-width: 5;
+	}
+	&-bar {
+		fill: none;
+		stroke: var(--basalt-tone, var(--basalt-hue));
+		stroke-width: 5;
+		stroke-linecap: round;
+		stroke-dasharray: 100;
+		stroke-dashoffset: 100;
+		transition: stroke-dashoffset 500ms cubic-bezier(0.3, 0.7, 0.2, 1);
+	}
+}
+.basalt-retry {
+	.basalt-mini-ring-bar {
+		transition: stroke-dashoffset 1000ms linear;
+	}
+
+	&.is-trying {
+		.basalt-mini-ring {
+			animation: basalt-turn 900ms linear infinite;
+		}
+		.basalt-mini-ring-bar {
+			stroke-dashoffset: 70;
+			transition: none;
+		}
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-mini-ring-bar,
+	.basalt-retry .basalt-mini-ring-bar {
+		transition: none;
+	}
+	.basalt-retry.is-trying .basalt-mini-ring {
+		animation: none;
+	}
+}
+
+/* A file held over the drop zone turns its frame solid and shows the overlay. */
+.basalt-empty-drop {
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	&.is-over {
+		border-style: solid;
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue-soft) 70%, var(--basalt-plane));
+	}
+}
+.basalt-empty-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	visibility: hidden;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	border-radius: inherit;
+	font-weight: 700;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue-soft) 88%, var(--basalt-plane));
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		opacity 170ms ease,
+		visibility 170ms;
+
+	.basalt-empty-drop.is-over & {
+		visibility: visible;
+		opacity: 1;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-empty-drop,
+	.basalt-empty-overlay {
+		transition: none;
+	}
+}
+
+/* The checklist numbers each setup step; a finished step swaps its number
+   for a tick on green, and the step just finished pops for a moment. */
+.basalt-empty-checklist {
+	align-items: stretch;
+	padding: 1.75rem;
+	text-align: left;
+}
+.basalt-empty-steps {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+
+	&-head {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		margin-bottom: 1.25rem;
+
+		.basalt-empty-text {
+			font-size: 0.84rem;
+		}
+	}
+
+	&-item {
+		display: grid;
+		gap: 0.85rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.75rem 0.85rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		background: var(--basalt-plane);
+		transition:
+			background-color 200ms ease,
+			border-color 200ms ease;
+
+		&.is-done {
+			background: var(--basalt-canvas);
+		}
+	}
+
+	&-mark {
+		display: grid;
+		place-items: center;
+		width: 1.9rem;
+		height: 1.9rem;
+		border-radius: 50%;
+		border: 1.5px solid var(--basalt-edge-strong);
+		font:
+			600 0.77rem/1 "Chivo Mono",
+			monospace;
+		color: var(--basalt-copy);
+		transition:
+			background-color 200ms ease,
+			border-color 200ms ease,
+			color 200ms ease,
+			transform 260ms cubic-bezier(0.3, 1.6, 0.5, 1);
+
+		.bi {
+			display: none;
+			font-size: 0.95rem;
+		}
+
+		.is-done > & {
+			border-color: transparent;
+			color: var(--basalt-plane);
+			background: color-mix(in srgb, var(--basalt-success) 80%, var(--basalt-copy));
+
+			> span {
+				display: none;
+			}
+			.bi {
+				display: block;
+			}
+		}
+
+		.basalt-empty-steps-item.is-fresh > & {
+			transform: scale(1.15);
+		}
+	}
+
+	&-text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+	&-title {
+		font-size: 0.9rem;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	&-sub {
+		font-size: 0.77rem;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+	&-done {
+		font-size: 0.74rem;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	}
+
+	&-finish {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+
+		&[hidden] {
+			display: none;
+		}
+
+		.basalt-empty-text {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+			font-weight: 600;
+			color: var(--basalt-copy-body);
+		}
+		.bi {
+			font-size: 1.1rem;
+			color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+		}
+	}
+}
+
+/* On the narrowest screens a step's button or "done" drops under its text. */
+@media (max-width: 479.98px) {
+	.basalt-empty-steps-item {
+		grid-template-columns: auto minmax(0, 1fr);
+
+		> .btn,
+		> .basalt-empty-steps-done {
+			grid-column: 2;
+			justify-self: start;
+		}
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-empty-steps-item,
+	.basalt-empty-steps-mark {
+		transition: none;
+	}
+	.basalt-empty-steps-item.is-fresh > .basalt-empty-steps-mark {
+		transform: none;
+	}
+}

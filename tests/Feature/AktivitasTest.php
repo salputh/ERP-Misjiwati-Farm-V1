@@ -142,7 +142,7 @@ class AktivitasTest extends TestCase
     {
         foreach (ModulAktivitas::cases() as $modul) {
             $this->assertNotSame('', $modul->label());
-            $this->assertStringStartsWith('uil-', $modul->ikon());
+            $this->assertStringStartsWith('bi-', $modul->ikon());
         }
 
         $this->assertSame('Laporan harian', ModulAktivitas::LaporanHarian->label());
@@ -164,7 +164,7 @@ class AktivitasTest extends TestCase
             ->assertSeeInOrder(['Laporan ke-7 diubah', 'Laporan ke-6 diubah', 'Laporan ke-2 diubah'])
             ->assertDontSee('Laporan ke-1 diubah')
             ->assertSee('Laporan harian, Periode September 2026, umur 22 hari')
-            ->assertSee('badge-dot badge-dot--big dot-info', false)
+            ->assertSee('lingkar-titik bg-info', false)
             ->assertSee('1 jam yang lalu');
     }
 
@@ -195,7 +195,7 @@ class AktivitasTest extends TestCase
                 'Sabtu, 3 Oktober 2026',
                 '16:45', 'Laporan harian 3 Oktober 2026 ditambahkan',
             ])
-            ->assertSee('dm-tag tag-transparented m-0 tag-danger', false)
+            ->assertSee('badge m-0 bg-danger-subtle text-danger', false)
             ->assertDontSee('Tampilkan lebih banyak');
     }
 
@@ -260,9 +260,9 @@ class AktivitasTest extends TestCase
 
         $this->get(route('aktivitas'))
             ->assertOk()
-            ->assertSee('<a href="'.$tautan.'" class="active">', false);
+            ->assertSee('href="'.$tautan.'" class="basalt-menu-entry active"', false);
 
-        $this->get(route('dashboard'))->assertSee('<a href="'.$tautan.'" class="">', false);
+        $this->get(route('dashboard'))->assertSee('href="'.$tautan.'" class="basalt-menu-entry"', false);
     }
 
     private function formLaporan(?string $tanggal = null): Testable

@@ -1,0 +1,1927 @@
+/* Tickets (tickets.html) owns every .hd- class (helpdesk). It is a
+   full-window app without the admin chrome; shared parts come from
+   basalt.css, and this file lays them out and draws what only a helpdesk
+   has: queue rows, clock chips, the thread, composer and customer panel. */
+
+/* Quiet text and link color are mixed toward body text so both keep 4.5:1
+   on tinted panels and selected rows in every palette. */
+.hd-page {
+	--hd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--hd-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--hd-late: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+	--hd-risk: color-mix(in srgb, var(--basalt-warning) 44%, var(--basalt-copy));
+	--hd-good: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	--hd-selected: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+	--hd-picked: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	--hd-hover: color-mix(in srgb, var(--basalt-copy) 5%, var(--basalt-plane));
+	--hd-line: var(--basalt-edge);
+	--hd-fs-body: 0.9rem;
+	--hd-fs-small: 0.77rem;
+	--hd-x: var(--basalt-pad-x);
+	height: 100%;
+
+	@media (max-width: 767.98px) {
+		--hd-x: var(--basalt-pad-x-narrow);
+	}
+
+	& .dropdown-menu {
+		--bs-dropdown-font-size: var(--hd-fs-body);
+	}
+	& .btn,
+	& .form-control,
+	& .form-select {
+		--bs-btn-font-size: var(--hd-fs-body);
+		font-size: var(--hd-fs-body);
+	}
+}
+.hd-app .basalt-count-pill,
+.hd-app .basalt-tabs-count,
+.hd-app .basalt-status {
+	font-size: var(--hd-fs-small);
+}
+.hd-app .basalt-tabs {
+	font-size: var(--hd-fs-body);
+}
+
+/* The hidden attribute always wins over a rule that sets display. */
+.hd-filter-btn-n[hidden],
+.hd-bulk[hidden],
+.hd-qfoot[hidden],
+.hd-ticket-none[hidden],
+.hd-typing[hidden],
+.hd-composer[hidden],
+.hd-composer-applied[hidden],
+.hd-solvedbar[hidden],
+.hd-side-props[hidden] {
+	display: none;
+}
+
+/* One inset focus ring for the app's own buttons. */
+.hd-ws-btn:focus-visible,
+.hd-row-open:focus-visible,
+button.hd-recent-item:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: -2px;
+}
+
+/* .hd-kbd borrows its button's color; any other kbd is a small gray cap. */
+.hd-kbd {
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.38rem;
+	border-radius: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+	font:
+		600 var(--hd-fs-small)/1.3 "Chivo Mono",
+		monospace;
+	color: inherit;
+	background: transparent;
+	box-shadow: none;
+}
+.hd-page kbd:not(.hd-kbd) {
+	padding: 0.05rem 0.3rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge);
+	font:
+		600 var(--hd-fs-small)/1.3 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+	box-shadow: none;
+}
+
+/* The page never scrolls; only the panes inside do. */
+.hd-shell {
+	height: 100vh;
+	height: 100dvh;
+	min-height: 0;
+	overflow: hidden;
+}
+
+/* Queue, ticket and, from 1200px, the customer. Under 992px the queue and
+   the ticket take turns, with data-view naming the one on screen. */
+.hd-app {
+	--hd-rail: 352px;
+	position: relative;
+	display: grid;
+	grid-template-columns: var(--hd-rail) minmax(0, 1fr);
+	height: 100%;
+	overflow: hidden;
+	background: var(--basalt-plane);
+
+	@media (min-width: 1200px) {
+		grid-template-columns: var(--hd-rail) minmax(0, 1fr) minmax(300px, 340px);
+	}
+}
+@media (max-width: 991.98px) {
+	.hd-app {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.hd-app[data-view="list"] .hd-ticket,
+	.hd-app[data-view="ticket"] .hd-rail {
+		display: none;
+	}
+	.hd-app[data-view="ticket"] .hd-ticket {
+		animation: hd-slide-in 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.hd-app[data-view="list"] .hd-rail {
+		animation: hd-slide-back 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+@keyframes hd-slide-in {
+	from {
+		translate: 2.5rem 0;
+		opacity: 0;
+	}
+}
+@keyframes hd-slide-back {
+	from {
+		translate: -1.5rem 0;
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hd-app .hd-rail,
+	.hd-app .hd-ticket {
+		animation: none;
+	}
+}
+
+/* The rail stacks header, search and tabs; the list takes the height left. */
+.hd-rail {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	border-right: 1px solid var(--hd-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+
+	@media (max-width: 991.98px) {
+		border-right: 0;
+	}
+}
+.hd-rail-head {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem 0.75rem 0.75rem 0.5rem;
+}
+.hd-rail-back.btn-icon {
+	flex: none;
+	color: var(--hd-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The workspace button fills the header between back and new. */
+.hd-ws {
+	flex: 1;
+	min-width: 0;
+}
+.hd-ws-btn {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover,
+	&[aria-expanded="true"] {
+		background: var(--hd-hover);
+	}
+	& .hd-rail-title .bi {
+		margin-left: 0.3rem;
+		font-size: var(--hd-fs-small);
+		color: var(--hd-quiet);
+		transition: rotate 170ms ease;
+	}
+	&[aria-expanded="true"] .hd-rail-title .bi {
+		rotate: 180deg;
+	}
+}
+.hd-rail-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}
+.hd-rail-brand-text {
+	min-width: 0;
+}
+.hd-rail-title {
+	display: flex;
+	align-items: center;
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.hd-rail-sub {
+	display: block;
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--hd-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--hd-quiet);
+}
+.hd-rail-new.btn {
+	flex: none;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+}
+
+.hd-ws-menu.dropdown-menu {
+	min-width: 17.5rem;
+}
+.hd-ws-head {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.5rem 0.7rem 0.4rem;
+}
+.hd-ws-head-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.hd-ws-name {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hd-ws-app {
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+.hd-ws-menu .dropdown-item {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+.hd-menu-key {
+	margin-left: auto;
+	padding-left: 1rem;
+}
+.hd-page kbd.hd-menu-key {
+	font-size: var(--hd-fs-small);
+}
+
+/* The Dark mode item's aria-pressed drives this small switch. */
+.hd-switch {
+	position: relative;
+	flex: none;
+	width: 1.9rem;
+	height: 1.1rem;
+	margin-left: auto;
+	border-radius: 999px;
+	background: var(--basalt-edge-strong);
+	transition: background-color 170ms ease;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0.1rem;
+		left: 0.1rem;
+		width: 0.8rem;
+		height: 0.8rem;
+		border-radius: 50%;
+		background: var(--basalt-plane);
+		transition: translate 170ms ease;
+	}
+}
+[aria-pressed="true"] > .hd-switch {
+	background: var(--basalt-hue);
+}
+[aria-pressed="true"] > .hd-switch::after {
+	translate: 0.8rem 0;
+}
+@media (prefers-reduced-motion: reduce) {
+	.hd-ws-btn .bi,
+	.hd-switch,
+	.hd-switch::after {
+		transition: none;
+	}
+}
+
+/* The / key cap fades on focus and is left off touch screens. */
+.hd-search {
+	position: relative;
+	margin: 0.25rem 0.75rem 0.5rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		translate: 0 -50%;
+		font-size: 0.95rem;
+		color: var(--hd-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+		padding-right: 2rem;
+		border-radius: 9px;
+	}
+	&:focus-within .hd-search-key {
+		opacity: 0;
+	}
+}
+.hd-search-key.hd-kbd {
+	position: absolute;
+	top: 50%;
+	right: 0.5rem;
+	translate: 0 -50%;
+	margin: 0;
+	color: var(--hd-quiet);
+	pointer-events: none;
+}
+@media (hover: none) {
+	.hd-search-key {
+		display: none;
+	}
+}
+
+/* Views: a sunken track with a raised thumb, All open across the top row. */
+.hd-views {
+	flex: none;
+	min-width: 0;
+	padding: 0 0.75rem 0.75rem;
+	border-bottom: 1px solid var(--hd-line);
+
+	& .basalt-tabs-list {
+		display: grid;
+		gap: 2px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		padding: 3px;
+		border-radius: 12px;
+		overflow: visible;
+		background: color-mix(in srgb, var(--basalt-copy) 6%, transparent);
+	}
+	& .basalt-tabs-list > .nav-link {
+		gap: 0.5rem;
+		justify-content: space-between;
+		padding: 0.4rem 0.6rem;
+		border-radius: 9px;
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+
+		&:hover,
+		&.active {
+			color: var(--basalt-copy);
+		}
+	}
+	& .nav-link[data-hd-view="open"] {
+		grid-column: 1 / -1;
+	}
+	& .basalt-tabs-ink {
+		border-radius: 9px;
+		background: var(--basalt-plane);
+		box-shadow:
+			0 1px 3px color-mix(in srgb, var(--basalt-copy) 14%, transparent),
+			inset 0 0 0 1px var(--basalt-edge);
+	}
+	& .basalt-tabs-count {
+		min-width: 1.6rem;
+		padding: 0.22rem 0.4rem;
+		border: 0;
+		text-align: center;
+		color: var(--hd-quiet);
+		background: transparent;
+	}
+	& .nav-link.active .basalt-tabs-count {
+		color: var(--basalt-tab-accent);
+		background: var(--basalt-hue-soft);
+	}
+	/* No counts while loading or after a failure. */
+	& .basalt-tabs-count:empty {
+		display: none;
+	}
+	& .nav-link .hd-count-late:not(.is-zero) {
+		color: var(--hd-late);
+		background: color-mix(in srgb, var(--basalt-danger) 16%, var(--basalt-plane));
+	}
+}
+
+.hd-queue {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-height: 0;
+}
+.hd-queue-pane.active {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+/* Beside an open ticket the active tab already shows the count, so the
+   count line stays for screen readers and the tools take the room. */
+.hd-qhead {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.75rem var(--basalt-pad-x-narrow);
+	border-bottom: 1px solid var(--hd-line);
+
+	@media (max-width: 575.98px) {
+		flex-wrap: wrap;
+	}
+}
+.hd-qhead-all {
+	flex: none;
+	margin: 0;
+}
+.hd-qhead-count {
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--hd-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--hd-quiet);
+
+	@media (min-width: 992px) {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+.hd-qhead-tools {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+
+	@media (min-width: 992px) {
+		flex: 1 1 auto;
+		justify-content: flex-start;
+	}
+	@media (max-width: 575.98px) {
+		flex: 1 1 100%;
+
+		& .dropdown {
+			flex: none;
+		}
+	}
+	& .basalt-select {
+		min-width: 0;
+	}
+}
+.hd-sort,
+.hd-qhead-tools .basalt-select-trigger {
+	max-width: 12rem;
+}
+@media (min-width: 992px), (max-width: 575.98px) {
+	.hd-qhead-tools .basalt-select,
+	.hd-sort {
+		flex: 1 1 auto;
+		max-width: none;
+	}
+	.hd-qhead-tools .basalt-select-trigger {
+		width: 100%;
+		max-width: none;
+	}
+}
+
+/* Filters live in a small form inside a dropdown. */
+.hd-filter-btn {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+.hd-filter {
+	&.dropdown-menu {
+		min-width: 15rem;
+		padding: 0.75rem 0.9rem;
+	}
+	& fieldset {
+		margin-bottom: 0.6rem;
+	}
+	& legend {
+		margin-bottom: 0.3rem;
+		font-size: var(--hd-fs-small);
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--hd-quiet);
+	}
+	& .form-check {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		margin: 0;
+		padding: 0.2rem 0;
+		cursor: pointer;
+	}
+	& .form-check-input {
+		float: none;
+		margin: 0;
+	}
+	& .form-check-label {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		font-size: var(--hd-fs-body);
+		color: var(--basalt-copy);
+	}
+	& .form-check-label .bi {
+		color: var(--hd-quiet);
+	}
+}
+.hd-filter-clear.btn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-color: var(--hd-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+}
+
+/* The bulk bar shows only while tickets are checked. */
+.hd-bulk {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.6rem var(--basalt-pad-x-narrow);
+	border-bottom: 1px solid color-mix(in srgb, var(--basalt-hue) 30%, var(--hd-line));
+	color: var(--basalt-copy);
+	background: var(--hd-selected);
+}
+.hd-bulk-count {
+	font-size: var(--hd-fs-small);
+	font-weight: 650;
+}
+.hd-bulk-actions {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin-left: auto;
+}
+.hd-bulk-clear.btn {
+	--bs-btn-color: var(--hd-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+}
+
+/* An empty or error state takes the list's place in the scrolling area. */
+.hd-list {
+	flex: 1 1 auto;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	list-style: none;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+
+	&:empty {
+		flex: 0 0 auto;
+	}
+}
+[data-hd-list-empty]:not([hidden]) {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+/* The open row is tinted with a hue bar on its left edge; new arrivals flash. */
+.hd-row {
+	position: relative;
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	border-bottom: 1px solid var(--hd-line);
+	background: var(--basalt-plane);
+	transition: background-color 110ms ease;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: 3px;
+		background: transparent;
+	}
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&.is-selected {
+		background: var(--hd-picked);
+	}
+	&.is-active {
+		background: var(--hd-selected);
+	}
+	&.is-active::before {
+		background: var(--basalt-hue);
+	}
+	&.is-fresh {
+		animation: hd-arrive 1.6s ease-out;
+	}
+}
+@keyframes hd-arrive {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 22%, var(--basalt-plane));
+	}
+}
+.hd-row-check {
+	position: relative;
+	z-index: 1;
+	margin: calc(var(--basalt-pad-row-y) + 0.2rem) 0 0 var(--basalt-pad-x-narrow);
+}
+.hd-row-open {
+	display: grid;
+	gap: 0.25rem;
+	width: 100%;
+	min-width: 0;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow) var(--basalt-pad-row-y) 0.6rem;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:focus-visible {
+		border-radius: 4px;
+	}
+}
+.hd-row-top {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-width: 0;
+	font-size: var(--hd-fs-small);
+}
+.hd-row-cust {
+	min-width: 0;
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+/* A fixed track, start-aligned, so "3h" and "34m" begin at the same x. */
+.hd-row-time {
+	flex: none;
+	min-width: 2.6rem;
+	margin-left: auto;
+	font-size: var(--hd-fs-small);
+	text-align: left;
+	font-variant-numeric: tabular-nums;
+	color: var(--hd-quiet);
+}
+.hd-row-subject {
+	display: block;
+	overflow: hidden;
+	font-size: var(--hd-fs-body);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.hd-row.is-unread {
+	& .hd-row-subject {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& .hd-row-cust::before {
+		content: "";
+		display: inline-block;
+		width: 0.4rem;
+		height: 0.4rem;
+		margin-right: 0.3rem;
+		border-radius: 50%;
+		vertical-align: 0.1em;
+		background: var(--basalt-hue);
+	}
+}
+.hd-row-meta {
+	display: flex;
+	gap: 0.3rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-width: 0;
+	font-size: var(--hd-fs-small);
+}
+.hd-row-ch {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-family: "Chivo Mono", monospace;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+.hd-row-end {
+	display: inline-flex;
+	margin-left: auto;
+}
+.hd-row-nobody {
+	display: inline-grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	border: 1px dashed var(--basalt-edge-strong);
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+.hd-row .basalt-status {
+	padding: 0.12rem 0.5rem;
+	font-size: var(--hd-fs-small);
+}
+.hd-row-skeleton {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: none;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+}
+.hd-skel-a {
+	width: 55%;
+}
+.hd-skel-b {
+	width: 35%;
+}
+@media (prefers-reduced-motion: reduce) {
+	.hd-row,
+	.hd-row.is-fresh {
+		transition: none;
+		animation: none;
+	}
+}
+
+/* The priority square is shared by queue rows and the ticket header. */
+.hd-prio,
+.hd-prio-label::before {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 2px;
+	background: var(--basalt-copy-muted);
+}
+.hd-prio {
+	flex: none;
+}
+.hd-prio-urgent,
+.hd-prio-label-urgent::before {
+	background: var(--basalt-danger);
+}
+.hd-prio-high,
+.hd-prio-label-high::before {
+	background: var(--basalt-warning);
+}
+.hd-prio-normal,
+.hd-prio-label-normal::before {
+	background: var(--basalt-hue);
+}
+.hd-prio-low {
+	background: transparent;
+	box-shadow: inset 0 0 0 1.5px var(--basalt-copy-muted);
+}
+
+.hd-plan {
+	flex: none;
+	padding: 0.02rem 0.42rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: var(--hd-fs-small);
+	font-weight: 650;
+	line-height: 1.45;
+	color: var(--hd-quiet);
+	background: var(--basalt-plane);
+}
+.hd-plan-max {
+	border-color: color-mix(in srgb, var(--basalt-hue) 40%, var(--basalt-edge));
+	color: color-mix(in srgb, var(--basalt-hue) 48%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+}
+.hd-plan-pro {
+	border-color: color-mix(in srgb, var(--basalt-flare) 45%, var(--basalt-edge));
+	color: color-mix(in srgb, var(--basalt-flare) 34%, var(--basalt-copy));
+}
+
+/* Clock chips turn amber near the deadline and red past it. */
+.hd-chip {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	padding: 0.1rem 0.4rem;
+	border-radius: 999px;
+	border: 1px solid transparent;
+	font-size: var(--hd-fs-small);
+	font-weight: 650;
+	line-height: 1.4;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.hd-chip-late {
+	border-color: color-mix(in srgb, var(--basalt-danger) 35%, transparent);
+	color: var(--hd-late);
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+.hd-chip-risk {
+	border-color: color-mix(in srgb, var(--basalt-warning) 40%, transparent);
+	color: var(--hd-risk);
+	background: color-mix(in srgb, var(--basalt-warning) 18%, var(--basalt-plane));
+}
+.hd-chip-paused {
+	border-color: var(--basalt-edge-strong);
+	color: var(--hd-quiet);
+	background: var(--basalt-plane);
+}
+.hd-chip-met {
+	color: var(--hd-good);
+	background: color-mix(in srgb, var(--basalt-success) 13%, var(--basalt-plane));
+}
+.hd-chip-missed {
+	color: var(--hd-late);
+	background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+}
+
+.hd-empty {
+	margin: 0.9rem;
+	padding: 2rem 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 14px;
+
+	&.basalt-empty-danger .hd-empty-icon {
+		color: var(--hd-late);
+		background: var(--basalt-danger-soft);
+	}
+	&.basalt-empty-success .hd-empty-icon {
+		color: var(--hd-good);
+		background: var(--basalt-success-soft);
+	}
+	& .basalt-empty-text {
+		max-width: 26rem;
+		color: var(--hd-quiet);
+	}
+}
+.hd-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.5rem;
+	border-radius: 14px;
+	font-size: 1.3rem;
+	color: var(--hd-link);
+	background: var(--basalt-hue-soft);
+}
+
+.hd-qfoot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: center;
+	padding: 0.75rem var(--basalt-pad-x-narrow);
+	border-top: 1px solid var(--hd-line);
+
+	& .basalt-minipager-pos {
+		font-size: var(--hd-fs-small);
+		font-variant-numeric: tabular-nums;
+		color: var(--hd-quiet);
+	}
+}
+
+/* The ticket pane is a size container, so its toolbar reacts to its own width. */
+.hd-ticket {
+	display: flex;
+	flex-direction: column;
+	container: hdticket / inline-size;
+	min-width: 0;
+	min-height: 0;
+	background: var(--basalt-plane);
+}
+.hd-ticket-view:not([hidden]) {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.hd-ticket-none {
+	display: grid;
+	gap: 0.4rem;
+	flex: 1 1 auto;
+	place-items: center;
+	align-content: center;
+	min-height: 18rem;
+	padding: 2rem;
+	text-align: center;
+
+	@media (max-width: 991.98px) {
+		display: none;
+	}
+}
+.hd-ticket-none-icon {
+	display: grid;
+	place-items: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	border-radius: 16px;
+	font-size: 1.35rem;
+	color: var(--hd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.hd-ticket-none-title {
+	margin: 0.25rem 0 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+}
+.hd-ticket-none-text {
+	max-width: 24rem;
+	margin: 0;
+	font-size: var(--hd-fs-body);
+	color: var(--hd-quiet);
+}
+
+/* On a narrow pane the toolbar trades labels for icons. */
+.hd-tbar {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem var(--hd-x);
+	border-bottom: 1px solid var(--hd-line);
+
+	@media (max-width: 767.98px) {
+		gap: 0.3rem;
+		min-height: 4.25rem;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+}
+.hd-tbar-nav {
+	display: flex;
+	gap: 0.1rem;
+	align-items: center;
+}
+.hd-tbar-pos {
+	margin-left: 0.3rem;
+	font-size: var(--hd-fs-small);
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--hd-quiet);
+}
+.hd-tbar-actions {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-left: auto;
+}
+.hd-assign-btn {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+
+	& .basalt-avatar {
+		width: 22px;
+		height: 22px;
+		font-size: 0.5rem;
+	}
+}
+.hd-status .basalt-status {
+	padding: 0.3rem 0.65rem;
+	border: 1px solid transparent;
+	font-size: var(--hd-fs-small);
+}
+.hd-tbar-back {
+	display: none;
+
+	@media (max-width: 991.98px) {
+		display: inline-grid;
+		flex: none;
+		place-items: center;
+	}
+}
+@media (min-width: 1200px) {
+	.hd-tbar-cust {
+		display: none;
+	}
+}
+.hd-show-sm {
+	display: none;
+}
+@container hdticket (max-width: 36rem) {
+	.hd-hide-sm {
+		display: none;
+	}
+	.hd-show-sm {
+		display: list-item;
+	}
+	.hd-tbar-pos {
+		display: none;
+	}
+}
+
+.hd-agent-menu {
+	min-width: 17rem;
+}
+.hd-agent.dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.hd-agent-name {
+	display: grid;
+	flex: 1 1 auto;
+	min-width: 0;
+	line-height: 1.25;
+}
+.hd-agent-sub {
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+.hd-agent.dropdown-item.active .hd-agent-sub,
+.hd-agent.dropdown-item:active .hd-agent-sub {
+	color: inherit;
+}
+.hd-agent-n {
+	min-width: 1.5rem;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	font-size: var(--hd-fs-small);
+	font-weight: 700;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+
+.hd-tscroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	padding: var(--basalt-pad-head) var(--hd-x);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+}
+.hd-thead-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.hd-thead-meta {
+	display: flex;
+	gap: 0.3rem 0.9rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+
+	& > span {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+	}
+}
+.hd-thead-id {
+	font-family: "Chivo Mono", monospace;
+	color: var(--basalt-copy);
+}
+.hd-copy.btn,
+.hd-card-copy .btn {
+	--bs-btn-padding-x: 0.3rem;
+	--bs-btn-padding-y: 0.1rem;
+	--bs-btn-color: var(--hd-quiet);
+	--bs-btn-hover-color: var(--basalt-copy);
+}
+.hd-prio-label {
+	font-weight: 650;
+
+	&::before {
+		content: "";
+	}
+}
+.hd-prio-label-urgent {
+	color: var(--hd-late);
+}
+.hd-prio-label-high {
+	color: var(--hd-risk);
+}
+.hd-esc-flag {
+	font-weight: 600;
+	color: var(--hd-link);
+}
+
+/* The clock is one quiet line: an icon, what is due or late in a word of
+   color, the target muted after it, and while it runs a short bar. */
+.hd-sla {
+	margin: 0.75rem 0 1rem;
+}
+.hd-sla-line {
+	display: flex;
+	gap: 0.2rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: var(--hd-fs-small);
+	color: var(--basalt-copy-body);
+
+	& > .bi {
+		flex: none;
+	}
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& .hd-sla-bar {
+		width: 5rem;
+		margin-left: 0.25rem;
+	}
+}
+.hd-sla-due {
+	color: var(--hd-quiet);
+}
+.hd-sla-row-late .bi,
+.hd-sla-row-late strong {
+	color: var(--hd-late);
+}
+.hd-sla-row-risk .bi,
+.hd-sla-row-risk strong {
+	color: var(--hd-risk);
+}
+.hd-sla-line-met .bi {
+	color: var(--hd-good);
+}
+.hd-sla-line-missed .bi {
+	color: var(--hd-late);
+}
+/* The clock bar and the health bar share one thin track. */
+.hd-sla-bar,
+.hd-health-bar {
+	height: 5px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.hd-sla-bar > span {
+	display: block;
+	width: var(--w, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-hue);
+}
+.hd-sla-row-risk .hd-sla-bar > span {
+	background: var(--basalt-warning);
+}
+.hd-sla-row-late .hd-sla-bar > span {
+	background: var(--basalt-danger);
+}
+
+/* Customers write in gray, replies carry the hue, notes are amber and dashed. */
+.hd-thread {
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hd-msg {
+	display: grid;
+	gap: 0.65rem;
+	grid-template-columns: 32px minmax(0, 1fr);
+
+	&.is-fresh {
+		animation: hd-in 260ms ease-out;
+	}
+}
+@keyframes hd-in {
+	from {
+		transform: translateY(6px);
+	}
+}
+@media (max-width: 767.98px) {
+	.hd-msg {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.hd-msg > .basalt-avatar {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hd-msg.is-fresh {
+		transition: none;
+		animation: none;
+	}
+}
+.hd-msg-body {
+	min-width: 0;
+	padding: 0.65rem 0.9rem 0.7rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px 12px 12px 12px;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 50%, var(--basalt-plane));
+}
+.hd-msg-reply .hd-msg-body {
+	border-color: color-mix(in srgb, var(--basalt-hue) 24%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+}
+.hd-msg-note .hd-msg-body {
+	border: 1px dashed color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--basalt-warning) 11%, var(--basalt-plane));
+}
+.hd-msg.is-pending .hd-msg-body {
+	border-style: dashed;
+}
+.hd-msg-head {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin-bottom: 0.3rem;
+}
+.hd-msg-who {
+	font-size: var(--hd-fs-small);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.hd-msg-role {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	font-size: var(--hd-fs-small);
+	font-weight: 650;
+	letter-spacing: 0.02em;
+	color: var(--hd-quiet);
+}
+.hd-msg-note .hd-msg-role {
+	color: var(--hd-risk);
+}
+.hd-msg-time {
+	margin-left: auto;
+	font-size: var(--hd-fs-small);
+	white-space: nowrap;
+	color: var(--hd-quiet);
+}
+.hd-msg-text {
+	font-size: var(--hd-fs-body);
+	line-height: 1.55;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body);
+
+	& p {
+		margin: 0 0 0.5rem;
+	}
+	& p:last-child {
+		margin-bottom: 0;
+	}
+}
+.hd-msg-files {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0.5rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+		padding: 0.2rem 0.5rem;
+		border: 1px solid var(--basalt-edge-strong);
+		border-radius: 8px;
+		font-size: var(--hd-fs-small);
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+	}
+}
+
+.hd-event {
+	display: block;
+	padding: 0 1rem;
+	font-size: var(--hd-fs-small);
+	text-align: center;
+	color: var(--hd-quiet);
+
+	& .bi {
+		margin-right: 0.3rem;
+	}
+	& time {
+		white-space: nowrap;
+	}
+	& time::before {
+		content: "·";
+		margin: 0 0.4rem;
+	}
+}
+
+.hd-csat {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	padding: 0.75rem 0.9rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+.hd-csat-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: var(--hd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.hd-csat-good {
+	border-color: color-mix(in srgb, var(--basalt-success) 40%, transparent);
+	background: color-mix(in srgb, var(--basalt-success) 8%, var(--basalt-plane));
+
+	& .hd-csat-icon {
+		color: var(--hd-good);
+		background: var(--basalt-success-soft);
+	}
+}
+.hd-csat-bad {
+	border-color: color-mix(in srgb, var(--basalt-danger) 40%, transparent);
+	background: color-mix(in srgb, var(--basalt-danger) 7%, var(--basalt-plane));
+
+	& .hd-csat-icon {
+		color: var(--hd-late);
+		background: var(--basalt-danger-soft);
+	}
+}
+.hd-csat-title {
+	margin: 0;
+	font-size: var(--hd-fs-body);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.hd-csat-text {
+	margin: 0.1rem 0 0;
+	font-size: var(--hd-fs-small);
+	color: var(--basalt-copy-body);
+}
+.hd-typing {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0.85rem 0 0 2.6rem;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+
+/* The composer turns amber in note mode and tightens on phones. */
+.hd-composer {
+	flex: none;
+	padding: 1rem var(--hd-x);
+	border-top: 1px solid var(--hd-line);
+	background: var(--basalt-plane);
+
+	@media (max-width: 767.98px) {
+		padding-top: 0.6rem;
+		padding-bottom: 0.7rem;
+	}
+	&.is-note {
+		background: color-mix(in srgb, var(--basalt-warning) 9%, var(--basalt-plane));
+	}
+}
+.hd-composer-top {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.5rem;
+}
+.hd-macros {
+	margin-left: auto;
+}
+.hd-composer-to {
+	display: flex;
+	gap: 0.3rem;
+	flex: 1 1 100%;
+	align-items: center;
+	order: 3;
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--hd-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--hd-quiet);
+}
+.hd-composer-text {
+	min-height: 4rem;
+	max-height: 40vh;
+	font-size: var(--hd-fs-body);
+	resize: vertical;
+}
+.hd-composer.is-note .hd-composer-text {
+	border-color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-edge));
+}
+.hd-composer-applied {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.5rem 0 0;
+	padding: 0.3rem 0.4rem 0.3rem 0.65rem;
+	border-radius: 8px;
+	font-size: var(--hd-fs-small);
+	color: var(--basalt-copy);
+	background: var(--hd-selected);
+
+	& .btn {
+		--bs-btn-color: var(--hd-link);
+		--bs-btn-hover-color: var(--basalt-copy);
+		--bs-btn-font-size: var(--hd-fs-small);
+		margin-left: auto;
+	}
+}
+.hd-composer-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	margin-top: 0.5rem;
+}
+.hd-composer-hint {
+	margin-right: auto;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+
+	@media (max-width: 767.98px) {
+		display: none;
+	}
+}
+.hd-after,
+.hd-composer-foot .basalt-select-trigger {
+	width: auto;
+	min-width: 10rem;
+}
+@media (max-width: 767.98px) {
+	.hd-composer-foot .basalt-select,
+	.hd-after {
+		flex: 1 1 auto;
+	}
+}
+.hd-macros-menu.dropdown-menu {
+	width: min(24rem, calc(100vw - 2rem));
+}
+
+.hd-solvedbar {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	flex: none;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem var(--hd-x);
+	border-top: 1px solid color-mix(in srgb, var(--basalt-success) 35%, var(--hd-line));
+	font-size: var(--hd-fs-small);
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-success) 8%, var(--basalt-plane));
+
+	& .bi-check2-circle {
+		color: var(--hd-good);
+	}
+}
+
+/* A column from 1200px, Bootstrap's .offcanvas-xl side sheet below that. */
+.hd-side {
+	--bs-offcanvas-width: 22rem;
+	--bs-offcanvas-bg: var(--basalt-plane);
+	min-height: 0;
+	overflow-y: auto;
+	color: var(--basalt-copy);
+
+	& .offcanvas-header {
+		border-bottom: 1px solid var(--hd-line);
+	}
+	& .offcanvas-title {
+		font-size: var(--basalt-fs-section);
+		font-weight: 650;
+	}
+	@media (min-width: 1200px) {
+		border-left: 1px solid var(--hd-line);
+		overscroll-behavior: contain;
+		scrollbar-width: thin;
+	}
+}
+@media (max-width: 1199.98px) {
+	.hd-side.offcanvas-xl {
+		overflow-y: auto;
+	}
+}
+.hd-side-body {
+	padding: 1.25rem var(--basalt-pad-x-narrow) 0.25rem;
+}
+.hd-side-none {
+	margin: 0;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+.hd-side-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.hd-side-props {
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow) var(--basalt-pad-head);
+	border-top: 1px solid var(--hd-line);
+}
+.hd-prop {
+	margin-bottom: 0.75rem;
+}
+.hd-prop-label {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-size: var(--hd-fs-small);
+	font-weight: 600;
+	color: var(--hd-quiet);
+}
+.hd-tags {
+	min-height: 2.35rem;
+}
+
+.hd-co {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+.hd-co-name {
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+}
+.hd-co-sub {
+	margin: 0.1rem 0 0;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+
+/* Fact labels are quiet sentence case in the panel's own scale, not tiny caps. */
+.hd-facts {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 var(--basalt-pad-head);
+
+	& > div {
+		min-width: 0;
+	}
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: var(--hd-fs-small);
+		font-weight: 500;
+		color: var(--hd-quiet);
+	}
+	& dd {
+		display: flex;
+		gap: 0.3rem 0.4rem;
+		flex-wrap: wrap;
+		align-items: center;
+		margin: 0;
+		font-size: var(--hd-fs-small);
+		color: var(--basalt-copy);
+	}
+}
+.hd-facts-wide {
+	grid-column: 1 / -1;
+}
+.hd-facts-num {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+.hd-facts-note {
+	flex-basis: 100%;
+	font-size: var(--hd-fs-small);
+	font-weight: 400;
+	color: var(--hd-quiet);
+}
+
+.hd-health {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-weight: 650;
+}
+.hd-health-score {
+	min-width: 2rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 6px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+.hd-health-good {
+	color: var(--hd-good);
+
+	& .hd-health-score {
+		background: color-mix(in srgb, var(--basalt-success) 15%, var(--basalt-plane));
+	}
+}
+.hd-health-watch {
+	color: var(--hd-risk);
+
+	& .hd-health-score {
+		background: color-mix(in srgb, var(--basalt-warning) 18%, var(--basalt-plane));
+	}
+}
+.hd-health-risk {
+	color: var(--hd-late);
+
+	& .hd-health-score {
+		background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+	}
+}
+.hd-health-bar {
+	flex-basis: 100%;
+}
+.hd-health-bar > span {
+	display: block;
+	width: var(--w, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-success);
+}
+.hd-health-watch + .hd-health-bar > span {
+	background: var(--basalt-warning);
+}
+.hd-health-risk + .hd-health-bar > span {
+	background: var(--basalt-danger);
+}
+.hd-facts dd.hd-addons {
+	gap: 0.4rem;
+	margin-top: 0.75rem;
+}
+.hd-addon {
+	display: inline-flex;
+	align-items: center;
+	min-height: 1.75rem;
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: var(--hd-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+
+.hd-card {
+	margin-bottom: 1rem;
+	padding: 0.7rem 0.8rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 40%, var(--basalt-plane));
+}
+.hd-card-line {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-width: 0;
+	margin: 0.3rem 0 0;
+	font-size: var(--hd-fs-small);
+	color: var(--basalt-copy);
+
+	& > .bi {
+		color: var(--hd-quiet);
+	}
+}
+.hd-card-copy .btn {
+	margin-left: auto;
+}
+.hd-card-muted {
+	margin: 0.3rem 0 0.6rem;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+.hd-person {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.hd-person-name {
+	margin: 0;
+	font-size: var(--hd-fs-body);
+	font-weight: 650;
+}
+.hd-person-sub {
+	margin: 0;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+
+.hd-recent {
+	margin: 0 0 var(--basalt-pad-head);
+	padding: 0;
+	list-style: none;
+
+	& li + li {
+		border-top: 1px solid var(--hd-line);
+	}
+}
+.hd-recent-item {
+	display: grid;
+	gap: 0.1rem;
+	/* The hover fill bleeds past the text so the text keeps the panel's edge. */
+	width: calc(100% + 0.7rem);
+	margin: 0 -0.35rem;
+	padding: 0.8rem 0.3rem;
+	border: 0;
+	border-radius: 8px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+}
+button.hd-recent-item:hover {
+	background: var(--basalt-wash);
+}
+.hd-recent-subject {
+	font-size: var(--hd-fs-small);
+	font-weight: 600;
+}
+button.hd-recent-item .hd-recent-subject {
+	color: var(--hd-link);
+}
+.hd-recent-meta {
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+
+/* Service levels: four tiles, the SLA one with a meter and a target tick. */
+.hd-metrics {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (max-width: 767.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.hd-metrics-none {
+	grid-column: 1 / -1;
+	margin: 0;
+	font-size: var(--hd-fs-body);
+	color: var(--hd-quiet);
+}
+.hd-metric {
+	position: relative;
+	min-width: 0;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+}
+.hd-metric-skeleton {
+	display: grid;
+	gap: 0.6rem;
+	align-content: center;
+	min-height: 6.5rem;
+}
+.hd-metric-label {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: var(--hd-fs-small);
+	font-weight: 600;
+	color: var(--hd-quiet);
+
+	& .bi {
+		color: var(--hd-link);
+	}
+}
+.hd-metric-value {
+	margin: 0 0 0.4rem;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.hd-metric-sub {
+	display: flex;
+	gap: 0.25rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+
+	& .basalt-trend {
+		font-size: var(--hd-fs-small);
+	}
+}
+.hd-meter {
+	position: relative;
+	height: 6px;
+	margin-top: 0.65rem;
+	border-radius: 999px;
+	background: var(--basalt-plane-alt);
+}
+.hd-meter-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--w, 0%);
+	border-radius: inherit;
+	background: var(--basalt-grad);
+}
+.hd-meter-target {
+	position: absolute;
+	top: -3px;
+	bottom: -3px;
+	left: var(--l, 100%);
+	width: 2px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+
+/* Escalation team choices, the dialog hint lines and the shortcut list. */
+.hd-esc-teams {
+	&.basalt-choices {
+		margin-bottom: 0.6rem;
+	}
+	& .basalt-choice {
+		justify-content: center;
+		text-align: center;
+	}
+}
+.hd-esc-who {
+	min-height: 1.2em;
+	margin: 0 0 0.9rem;
+	font-size: var(--hd-fs-small);
+	color: var(--hd-quiet);
+}
+.hd-new-sla {
+	margin: 0.4rem 0 0;
+	color: var(--hd-quiet);
+}
+/* Hint lines inside a modal keep the readable gray. */
+.hd-dialog .hd-esc-who,
+.hd-dialog .hd-new-sla {
+	--hd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+}
+.hd-keys {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+	}
+	& dt {
+		flex: 0 0 7.5rem;
+		font-weight: 400;
+
+		@media (max-width: 767.98px) {
+			flex-basis: 6rem;
+		}
+	}
+	& dd {
+		margin: 0;
+		font-size: var(--hd-fs-body);
+		color: var(--basalt-copy-body);
+	}
+}
+.modal .basalt-dialog-body > .row {
+	--bs-gutter-y: 1.25rem;
+}
+
+/* Print keeps the open ticket and lets the thread run its full length. */
+@media print {
+	.hd-shell,
+	.hd-app {
+		height: auto;
+		overflow: visible;
+	}
+	.hd-app {
+		display: block;
+	}
+	.hd-rail,
+	.hd-composer,
+	.hd-tbar,
+	.hd-side .offcanvas-header {
+		display: none;
+	}
+	.hd-tscroll {
+		overflow: visible;
+	}
+	.hd-row,
+	.hd-msg {
+		transition: none;
+		animation: none;
+	}
+}

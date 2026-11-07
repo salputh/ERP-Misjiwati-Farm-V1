@@ -3,37 +3,36 @@
         <x-breadcrumb judul="Recording harian pemeliharaan ayam broiler" :jejak="['Produksi', 'Recording harian']" />
 
         @if ($this->terpilih)
-            <div class="col-12 mb-25">
-                <div class="card card-default card-md">
-                    <div class="card-header">
-                        <ul class="card-tab-links nav-tabs nav" role="tablist">
+            <div class="col-12 mb-4">
+                <section class="card basalt-box db-card">
+<div class="db-card-body">
+<header class="db-card-head">
+<ul class="nav nav-pills nav-sm" role="tablist">
                             @foreach ($this->daftarKandang as $pilihan)
                                 <li>
                                     <a
                                         href="{{ route('recording.harian', ['periode' => $this->periode->id, 'kandang' => $pilihan->id]) }}"
                                         role="tab"
                                         wire:click.prevent="pilihKandang({{ $pilihan->id }})"
-                                        @class(['active' => $pilihan->is($this->terpilih)])
+                                        @class(['nav-link', 'active' => $pilihan->is($this->terpilih)])
                                         aria-selected="{{ $pilihan->is($this->terpilih) ? 'true' : 'false' }}"
                                     >{{ $pilihan->kandang->nama }}</a>
                                 </li>
                             @endforeach
                         </ul>
-                        <div class="card-extra">
-                            <div class="dropdown dropdown-click">
-                                <button class="btn btn-primary btn-sm btn-squared" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="las la-download" aria-hidden="true"></i>Export<i class="las la-angle-down ms-2 me-0" aria-hidden="true"></i>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-download" aria-hidden="true"></i>Export<i class="bi bi-chevron-down ms-2 me-0" aria-hidden="true"></i>
                                 </button>
-                                <div class="dropdown-default dropdown-menu dropdown-menu-end">
+                                <div class="dropdown-menu dropdown-menu-end">
                                     <a href="{{ route('recording.harian.export', ['periodeKandang' => $this->terpilih->id, 'format' => 'pdf']) }}" class="dropdown-item">PDF</a>
                                     <a href="{{ route('recording.harian.export', ['periodeKandang' => $this->terpilih->id, 'format' => 'xlsx']) }}" class="dropdown-item">Excel (XLSX)</a>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="card-body">
-                        <x-info class="mb-25">
+</header>
+                        <x-info class="mb-4">
                             <x-info.butir label="Peternak">Misjiwati</x-info.butir>
                             <x-info.butir label="Populasi">@angka($this->terpilih->populasi_awal) ekor</x-info.butir>
                             <x-info.butir label="Tanggal chick-in">{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</x-info.butir>
@@ -43,7 +42,7 @@
                         <div class="recording-gulung" tabindex="0" role="region" aria-label="Tabel recording harian {{ $this->terpilih->kandang->nama }}, bisa digulir">
                             <table class="table table-bordered tabel-recording mb-0">
                                 <thead>
-                                    <tr class="recording-kepala-1">
+                                    <tr>
                                         <th rowspan="3" class="recording-lekat-1">Tanggal</th>
                                         <th rowspan="3" class="recording-lekat-2">Umur</th>
                                         <th colspan="6" class="grup-awal">Deplesi</th>
@@ -53,7 +52,7 @@
                                         <th colspan="3" rowspan="2" class="grup-awal">FCR</th>
                                         <th rowspan="3" class="grup-awal">Saldo ayam</th>
                                     </tr>
-                                    <tr class="recording-kepala-2">
+                                    <tr>
                                         <th colspan="4" class="grup-awal">Aktual</th>
                                         <th colspan="2">Standar</th>
                                         <th colspan="4" class="grup-awal">Standar</th>
@@ -139,7 +138,7 @@
                                             <x-recording.sel :nilai="$hari['fcr'] ?? null" :desimal="3" />
                                             <x-recording.sel :nilai="$hari['selisih_fcr'] ?? null" :desimal="3" />
 
-                                            <x-recording.sel :nilai="$hari['saldo']" class="grup-awal fw-500" />
+                                            <x-recording.sel :nilai="$hari['saldo']" class="grup-awal fw-medium" />
                                         </tr>
 
                                         @if ($hari['umur'] % 7 === 0)
@@ -153,12 +152,13 @@
                             </table>
                         </div>
 
-                        <p class="fs-13 color-light mt-15 mb-0">
+                        <p class="small text-body-secondary mt-3 mb-0">
                             Angka <span class="recording-masukan">ungu</span> diisi dari catatan harian (mati, afkir, pakan, ABW); kolom lain dihitung otomatis.
                             Angka dalam kurung berarti negatif. Konversi kg pakan memakai berat per zak pada master tiap jenis pakan.
                         </p>
-                    </div>
-                </div>
+                    
+</div>
+</section>
             </div>
         @else
             <x-kosong judul="Belum ada kandang untuk direkam">Lembar recording muncul setelah periode dibuat dan kandangnya diisi populasi awal.</x-kosong>

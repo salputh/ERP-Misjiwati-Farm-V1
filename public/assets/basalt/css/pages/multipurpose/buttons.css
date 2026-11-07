@@ -1,0 +1,437 @@
+/*
+ * Buttons page (buttons.html). These rules are the page's own
+ * furniture, all under .bt-: the kind filter, the two-column card
+ * grid, each card's head, demo stage and code snippet, and the few
+ * stages that need a layout of their own. Nothing here styles a
+ * button; the button types on show (.btn-soft-*, .btn-loading,
+ * .basalt-segmented and so on) come from basalt.css, and the colors
+ * are the --basalt-* tokens, so every palette and both themes read.
+ */
+
+/* The page root carries the one color the page adds: a muted copy
+   tone mixed from the tokens, used by every secondary line below. */
+.bt-page {
+	--bt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The filter row: a line of chips with a live count under it. */
+.bt-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.bt-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.bt-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+/* The pressed chip inverts, so it reads as the one in force. */
+.bt-chips .bt-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.bt-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--bt-quiet);
+}
+
+/* The grid is twelve columns wide; a card spans all of them on narrow
+   screens and half of them from 1200px, where the pairing begins.
+   The script marks an odd card out of a run with .is-alone. */
+.bt-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.bt-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.bt-card.is-hidden {
+	display: none;
+}
+@media (min-width: 1200px) {
+	.bt-card {
+		grid-column: span 6;
+	}
+	.bt-card-full,
+	.bt-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A card is a column: head, stage, snippet. The stage grows, so
+   paired cards keep their snippets on one line. */
+.bt-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.bt-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+.bt-card .card-body {
+	& > .bt-stage {
+		flex: 1 0 auto;
+		align-content: center;
+	}
+	& > .bt-stage-col {
+		align-content: stretch;
+		justify-content: flex-start;
+	}
+	& > :nth-last-child(2) {
+		margin-bottom: 1.75rem;
+	}
+}
+
+/* The head reverses its children, so the kind tag sits above the title
+   on screen while the title stays first for a screen reader. */
+.bt-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.bt-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bt-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--bt-quiet);
+
+	& kbd {
+		padding: 0.05rem 0.3rem;
+		border-radius: 4px;
+		border: 1px solid var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+		box-shadow: none;
+	}
+}
+.bt-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--bt-quiet);
+}
+
+/* The stage is the pale panel the specimens sit on, and a row inside
+   it wraps the same way; a column stage stacks its rows instead. */
+.bt-stage,
+.bt-row {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.bt-stage {
+	padding: 1.5rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+.bt-stage-col {
+	gap: 1.1rem;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+/* Small pieces of text and controls that appear inside the stages. */
+.bt-note {
+	min-height: 1.3em;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--bt-quiet);
+}
+.bt-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85em;
+	letter-spacing: 0.01em;
+}
+.bt-ref {
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.bt-undo {
+	--bs-btn-padding-x: 0.25rem;
+	--bs-btn-padding-y: 0;
+	vertical-align: baseline;
+}
+.bt-field {
+	max-width: 26rem;
+
+	& .form-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* A basket line: name and detail on the left, the action on the right.
+   A removed line slides out before it is hidden. */
+.bt-line {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	transition:
+		opacity 240ms ease,
+		transform 240ms ease;
+
+	&.is-gone {
+		transform: translateX(1rem);
+		opacity: 0;
+	}
+	@media (max-width: 479.98px) {
+		flex-wrap: wrap;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.bt-line-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	line-height: 1.35;
+
+	& strong {
+		font-size: 0.9rem;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.8rem;
+		color: var(--bt-quiet);
+	}
+}
+.bt-cart {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* The loading card splits in two from 992px: the live buttons on the
+   left, the states held still on the right. */
+.bt-loading {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 992px) {
+	.bt-loading {
+		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+	}
+}
+.bt-states {
+	display: flex;
+	gap: 1.25rem 1rem;
+	flex-wrap: wrap;
+	align-content: center;
+	margin: 0;
+	padding: 1.25rem;
+	border-radius: 14px;
+	border: 1px dashed var(--basalt-edge-strong);
+	list-style: none;
+}
+.bt-states-item {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: flex-start;
+
+	& .btn {
+		pointer-events: none;
+	}
+}
+.bt-states-cap {
+	font-size: 0.71rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	color: var(--bt-quiet);
+}
+
+/* The segmented readout keeps its digits the same width, so the
+   figure does not jitter while it counts up. */
+.bt-seg-demo {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.bt-seg-read {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--bt-quiet);
+}
+.bt-seg-read-num {
+	margin-right: 0.1rem;
+	font-size: 1.35rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+/* The speed dial stage is tall enough for the open stack, with the
+   dial pinned to its bottom right corner. */
+.bt-stage-dial {
+	position: relative;
+	align-items: flex-start;
+	min-height: 18rem;
+
+	& .basalt-speed-dial {
+		position: absolute;
+		right: 1.25rem;
+		bottom: 1.25rem;
+	}
+}
+.bt-dial-copy {
+	max-width: 60%;
+}
+.bt-dial-copy-title {
+	margin: 0 0 0.25rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+/* The code snippet closes each card: a disclosure line whose chevron
+   turns when open, a copy button over the block, and the block itself. */
+.bt-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.bt-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.bt-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* On paper every card shows, the filter and the snippets go, and
+   nothing moves. */
+@media print {
+	.bt-filter,
+	.bt-code {
+		display: none;
+	}
+	.bt-card.is-hidden {
+		display: block;
+	}
+	.bt-page * {
+		transition: none;
+		animation: none;
+	}
+}

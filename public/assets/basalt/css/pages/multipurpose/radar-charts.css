@@ -1,0 +1,416 @@
+/* Basalt - Radar charts page
+   Namespaced under .radars-*
+   Every color comes from the --basalt-* tokens, so the
+   legends, score lists and swatches follow the palette the
+   same way the canvases do (radar-charts.js reads the same
+   tokens). */
+
+.radars-page {
+	/* Small gray text: the muted token pulled a little toward the body
+     color, so it clears 4.5:1 on the lighter palettes too. */
+	--radars-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The header subtitle. Bootstrap's text-body-secondary is just under 4.5:1
+   on the page background in Verdant, Mono and Pastel Pop light. */
+
+/* Filter row */
+.radars-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+}
+.radars-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.radars-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.radars-chip:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.radars-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.radars-chips .radars-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.radars-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--radars-quiet);
+}
+
+/* Grid */
+/* Two across from desktop width up. Radars are round and their axis names sit
+   outside the shape, so they need more room than a line chart to read. */
+.radars-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.radars-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.radars-card.is-hidden {
+	display: none;
+}
+/* Below 1200px every chart takes the whole row; pairs start at desktop width. */
+@media (min-width: 1200px) {
+	.radars-card {
+		grid-column: span 6;
+	}
+	.radars-card-full {
+		grid-column: span 12;
+	}
+}
+/* A filtered view shows one card, so it gets the whole row. */
+.radars-grid.is-filtered .radars-card {
+	grid-column: span 12;
+}
+
+/* Card */
+.radars-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+/* The chart kind sits above the title (it comes after it in the markup, so
+   the title is read first) and never competes with it for width. */
+.radars-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.radars-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.radars-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--radars-quiet);
+}
+.radars-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--radars-quiet);
+}
+
+/* Chart boxes */
+/* A radar is as wide as it is tall, so the box follows the card's width
+   instead of leaving empty bands above and below a narrow chart. */
+.radars-chart {
+	position: relative;
+	width: 100%;
+	min-height: 240px;
+	max-height: 360px;
+	aspect-ratio: 10 / 9;
+	margin-top: auto;
+}
+.radars-grid.is-filtered .radars-chart {
+	max-height: 420px;
+}
+/* A canvas not yet drawn keeps the browser's 300px default; this stops it
+   pushing a narrow card wider than the screen before it scrolls into view. */
+.radars-card canvas {
+	display: block;
+	max-width: 100%;
+}
+
+/* Legend (HTML, so it wraps instead of colliding) */
+.radars-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--radars-quiet);
+	list-style: none;
+}
+.radars-key li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.radars-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--radars-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.radars-key-line-faint {
+	border-top-color: var(--radars-quiet);
+	border-top-width: 1.5px;
+	border-top-style: dashed;
+}
+.radars-key-band {
+	width: 14px;
+	height: 14px;
+	border-radius: 4px;
+	border: 2px solid var(--radars-c, var(--basalt-series-1));
+	background: color-mix(in srgb, var(--radars-c, var(--basalt-series-1)) 22%, transparent);
+}
+/* Point-style swatches: a small triangle and a diamond. */
+.radars-key-tri {
+	width: 0;
+	height: 0;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-bottom: 10px solid var(--radars-c, var(--basalt-series-1));
+}
+.radars-key-diamond {
+	transform: rotate(45deg);
+	width: 9px;
+	height: 9px;
+	margin: 0 1.5px;
+	background: var(--radars-c, var(--basalt-series-1));
+}
+.radars-c1 {
+	--radars-c: var(--basalt-series-1);
+}
+.radars-c2 {
+	--radars-c: var(--basalt-series-2);
+}
+.radars-c3 {
+	--radars-c: var(--basalt-series-3);
+}
+.radars-c4 {
+	--radars-c: var(--basalt-series-4);
+}
+.radars-c5 {
+	--radars-c: var(--basalt-series-5);
+}
+.radars-c8 {
+	--radars-c: var(--basalt-series-8);
+}
+
+/* Scored profile: radar with its values beside it */
+.radars-scored {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: center;
+	margin-top: auto;
+}
+@media (min-width: 768px) {
+	.radars-scored {
+		grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+	}
+}
+.radars-scored .radars-chart {
+	margin-top: 0;
+}
+.radars-total {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1rem;
+}
+.radars-total-value {
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.radars-total-label {
+	font-size: 0.8rem;
+	color: var(--radars-quiet);
+}
+.radars-scores {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.radars-score {
+	display: grid;
+	gap: 0.3rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.6rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.radars-score:last-child {
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.radars-score-name {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.radars-score-value {
+	font-size: 0.85rem;
+	font-weight: 650;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.radars-score-bar {
+	grid-column: 1 / -1;
+	height: 4px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+}
+.radars-score-bar span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-1);
+}
+
+/* Small multiples */
+.radars-multiples {
+	display: grid;
+	gap: 1.75rem 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 576px) {
+	.radars-multiples {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (min-width: 768px) {
+	.radars-multiples {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+@media (min-width: 1400px) {
+	.radars-multiples {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+}
+.radars-multiple-name {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.radars-multiple-note {
+	margin: 0.1rem 0 0.4rem;
+	font-size: 0.77rem;
+	color: var(--radars-quiet);
+}
+.radars-multiple-chart {
+	position: relative;
+	height: 200px;
+}
+
+/* Highlight picker (sits above its chart) */
+.radars-picker {
+	margin-bottom: 1rem;
+}
+.radars-picker .radars-chip {
+	padding: 0.3rem 0.75rem;
+	font-size: 0.77rem;
+}
+
+/* Short note under a chart */
+.radars-note {
+	margin: 0.9rem 0 0;
+	font-size: 0.8rem;
+	color: var(--radars-quiet);
+}
+.radars-note strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Config snippet */
+.radars-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.radars-code summary {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+}
+.radars-code summary::-webkit-details-marker {
+	display: none;
+}
+.radars-code summary:hover {
+	color: var(--basalt-copy);
+}
+.radars-code summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.radars-code summary .bi {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.radars-code[open] summary .bi {
+	transform: rotate(90deg);
+}
+.radars-code pre {
+	margin: 0.75rem 0 0;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	overflow-x: auto;
+	overflow-y: hidden;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.radars-chip,
+	.radars-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.radars-filter,
+	.radars-code {
+		display: none;
+	}
+	.radars-card.is-hidden {
+		display: block;
+	}
+}

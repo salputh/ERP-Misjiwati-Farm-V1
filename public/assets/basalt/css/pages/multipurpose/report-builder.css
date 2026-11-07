@@ -1,0 +1,457 @@
+/* Basalt - Report Builder (report-builder.html)
+   Namespaced under .rb-*
+   Built from shared parts: the page header, styled selects, the date
+   picker, segmented controls, empty states, the dialog parts and
+   toasts. This file lays out the three steps top to bottom: what to
+   show, the live preview with its table, and the saved reports.
+   Three type sizes below the card titles: the headline figure, body
+   text (--rb-fs-body) and one small size (--rb-fs-small). */
+
+.rb-page,
+.rb-dialog {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--rb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary as text: on its own it is under 4.5:1 in a few light palettes. */
+	--rb-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--rb-line: var(--basalt-edge);
+	--rb-fs-body: 0.875rem;
+	--rb-fs-small: 0.77rem;
+}
+.rb-help {
+	margin: 0.4rem 0 0;
+	font-size: var(--rb-fs-small);
+	color: var(--rb-quiet);
+}
+
+/* Cards */
+.rb-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.rb-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.rb-card-headtext {
+	min-width: 0;
+}
+.rb-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.rb-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--rb-fs-body);
+	color: var(--rb-quiet);
+}
+.rb-card-head-list {
+	align-items: center;
+	padding-bottom: var(--basalt-pad-head);
+	border-bottom: 1px solid var(--rb-line);
+}
+.rb-card-head-list > div {
+	flex: 1 1 20rem;
+	min-width: 0;
+}
+.rb-card-head-list .btn {
+	white-space: nowrap;
+}
+
+/* 1. What to show
+   Fields sit in one row at their natural width and wrap when the card
+   runs out of room. The filters are the second row. */
+.rb-setup {
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-head);
+}
+.rb-fields {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.rb-fields-filters {
+	margin-top: 1.25rem;
+	padding-top: 1.25rem;
+	border-top: 1px dashed var(--rb-line);
+}
+.rb-field {
+	flex: 0 1 11.5rem;
+	min-width: 10rem;
+}
+.rb-field-measure {
+	flex-basis: 13rem;
+}
+.rb-field-date {
+	flex-basis: 12rem;
+}
+.rb-field[hidden] {
+	display: none;
+}
+.rb-field .form-label {
+	font-size: var(--rb-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.rb-field .form-select,
+.rb-field .form-control {
+	font-size: var(--rb-fs-body);
+}
+.rb-show {
+	white-space: nowrap;
+}
+.rb-reset {
+	--bs-btn-color: var(--rb-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	padding-bottom: 0.5rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+.rb-reset[hidden] {
+	display: none;
+}
+@container (max-width: 520px) {
+	.rb-field,
+	.rb-field-measure,
+	.rb-field-date {
+		flex: 1 1 100%;
+	}
+	.rb-show {
+		display: flex;
+	}
+	.rb-show .basalt-segmented-option {
+		flex: 1 1 0;
+		text-align: center;
+	}
+}
+
+/* 2. Preview */
+.rb-card-head-preview {
+	align-items: flex-end;
+}
+.rb-eyebrow {
+	margin: 0 0 0.3rem;
+	font-size: var(--rb-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--rb-quiet);
+}
+.rb-headline {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	margin: 0;
+	text-align: right;
+}
+.rb-headline-value {
+	font-size: 1.6rem;
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.rb-headline-note {
+	margin-top: 0.3rem;
+	font-size: var(--rb-fs-small);
+	white-space: nowrap;
+	color: var(--rb-quiet);
+}
+.rb-headline-note .rb-up {
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+}
+.rb-headline-note .rb-down {
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+@container (max-width: 800px) {
+	.rb-headline {
+		align-items: flex-start;
+		text-align: left;
+	}
+}
+
+.rb-preview {
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-head);
+}
+.rb-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+.rb-legend:empty {
+	display: none;
+}
+.rb-legend li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: var(--rb-fs-small);
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.rb-legend-dot {
+	flex: none;
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 3px;
+}
+.rb-legend-dash {
+	flex: none;
+	width: 1rem;
+	height: 0;
+	border-top: 2px dashed var(--rb-quiet);
+}
+.rb-chart {
+	position: relative;
+	height: 20rem;
+}
+.rb-chart[hidden] {
+	display: none;
+}
+@container (max-width: 560px) {
+	.rb-chart {
+		height: 16rem;
+	}
+}
+
+.rb-nodata {
+	max-width: 30rem;
+	margin: 1.5rem auto;
+	text-align: center;
+}
+.rb-nodata-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.6rem;
+	border-radius: 14px;
+	font-size: var(--basalt-fs-card-title);
+	color: var(--rb-link);
+	background: var(--basalt-hue-soft);
+}
+.rb-nodata .basalt-empty-title {
+	font-size: var(--basalt-fs-section);
+}
+.rb-nodata .basalt-empty-text {
+	font-size: var(--rb-fs-body);
+	color: var(--rb-quiet);
+}
+.rb-nodata .basalt-empty-actions {
+	justify-content: center;
+}
+
+/* Tables */
+.rb-table-wrap {
+	border-top: 1px solid var(--rb-line);
+	overflow: hidden;
+}
+.rb-card-head-list + .rb-table-wrap {
+	border-top: 0;
+}
+.rb-table {
+	--bs-table-bg: transparent;
+	table-layout: fixed;
+}
+.rb-table > :not(caption) > * > * {
+	padding: 0.8rem 0.75rem;
+	border-color: var(--rb-line);
+	overflow: hidden;
+	font-size: var(--rb-fs-body);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.rb-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.rb-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+}
+.rb-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--rb-quiet);
+}
+.rb-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.rb-table tfoot th,
+.rb-table tfoot td {
+	border-top: 1px solid var(--rb-line);
+	border-bottom: 0;
+	font-weight: 700;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.rb-table .rb-r {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+.rb-table .rb-col-num {
+	width: 9rem;
+}
+.rb-table .rb-col-share {
+	width: 7rem;
+}
+.rb-table .rb-col-change {
+	width: 9rem;
+}
+.rb-group {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	max-width: 100%;
+}
+.rb-group-dot {
+	flex: none;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 3px;
+}
+.rb-group-name {
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+}
+.rb-quiet {
+	color: var(--rb-quiet);
+}
+.rb-headline[hidden] {
+	display: none;
+}
+.rb-mon-short {
+	display: none;
+}
+@container (max-width: 480px) {
+	.rb-mon-long {
+		display: none;
+	}
+	.rb-mon-short {
+		display: inline;
+	}
+}
+.rb-up {
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+}
+.rb-down {
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+.rb-share {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: flex-end;
+}
+.rb-share-bar {
+	width: 3rem;
+	height: 0.3rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+}
+.rb-share-bar > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+}
+@container (max-width: 560px) {
+	.rb-table .rb-col-share,
+	.rb-table .rb-cell-share {
+		display: none;
+	}
+	.rb-table .rb-col-num,
+	.rb-table .rb-col-change {
+		width: 7.25rem;
+	}
+}
+
+/* 3. Saved reports */
+.rb-table-saved .rb-col-what {
+	width: 15rem;
+}
+.rb-table-saved .rb-col-when {
+	width: 8rem;
+}
+.rb-table-saved .rb-col-open {
+	width: 6.5rem;
+}
+.rb-table-saved td:last-child {
+	overflow: visible;
+	text-align: right;
+}
+.rb-row {
+	cursor: pointer;
+}
+.rb-row:hover > * {
+	background: var(--basalt-wash);
+}
+.rb-row.is-loaded > * {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+.rb-row-name {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.rb-row-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.rb-row-name:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.rb-new {
+	margin-left: 0.5rem;
+}
+.rb-noicon {
+	visibility: hidden;
+	pointer-events: none;
+}
+.rb-row-what-inline {
+	display: none;
+}
+@container (max-width: 700px) {
+	.rb-card-head-list {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rb-table-saved .rb-col-what,
+	.rb-table-saved .rb-cell-what {
+		display: none;
+	}
+	.rb-row-what-inline {
+		display: block;
+		margin-top: 0.2rem;
+		overflow: hidden;
+		font-size: var(--rb-fs-small);
+		text-overflow: ellipsis;
+		color: var(--rb-quiet);
+	}
+}
+@container (max-width: 480px) {
+	.rb-table-saved .rb-col-when,
+	.rb-table-saved .rb-cell-when {
+		display: none;
+	}
+}

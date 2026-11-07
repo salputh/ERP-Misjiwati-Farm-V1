@@ -1,0 +1,918 @@
+/*
+ * Blog comment moderation (comments.html). Every class here starts
+ * with .cc-.
+ *
+ * This file covers the queue itself, the kind pills, the two cards under
+ * the queue and the inside of the comment side sheet. The page header,
+ * side sheets, selects, empty states and toasts come from the shared kit.
+ */
+
+/* Tokens for the page and for the side sheets, which live outside <main>. */
+.cc-page,
+.cc-layer {
+	/* Small gray text leans toward the body color so it still clears 4.5:1
+     on the lighter palettes and on hovered rows. */
+	--cc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Plain primary drops under 4.5:1 as link text in a few light palettes. */
+	--cc-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+}
+:is(.cc-page, .cc-layer) a:not(.btn):not(.dropdown-item) {
+	color: var(--cc-link);
+}
+
+/* Each kind of comment borrows one chart color; its pill, its arc in the
+   ring and its row in the legend all share it. */
+.cc-kind-question {
+	--cc-tone: var(--basalt-series-1);
+}
+.cc-kind-praise {
+	--cc-tone: var(--basalt-series-3);
+}
+.cc-kind-correction {
+	--cc-tone: var(--basalt-series-5);
+}
+.cc-kind-complaint {
+	--cc-tone: var(--basalt-series-6);
+}
+.cc-kind-promotion {
+	--cc-tone: var(--basalt-series-8);
+}
+
+/* All three cards share one padding and a title block; a footer link, if
+   any, sinks to the bottom. */
+.cc-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.5rem 1rem;
+	}
+}
+.cc-card-head {
+	margin-bottom: 1.5rem;
+}
+.cc-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cc-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--cc-quiet);
+}
+.cc-card-foot {
+	margin: auto 0 0;
+	padding-top: 1.5rem;
+	font-size: 0.875rem;
+}
+
+/* The queue's tabs are five tiles, one per status and tinted in its
+   color; the chosen tile gets a wash and a bar inside its left edge. */
+.cc-status-waiting {
+	--cc-st: var(--basalt-warning);
+}
+.cc-status-published {
+	--cc-st: var(--basalt-success);
+}
+.cc-status-support {
+	--cc-st: var(--basalt-info);
+}
+.cc-status-spam {
+	--cc-st: var(--basalt-danger);
+}
+.cc-status-bin {
+	--cc-st: var(--basalt-copy-muted);
+}
+.cc-card-queue .card-body {
+	container: cc-queue / inline-size;
+}
+.cc-status {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin-bottom: 1.5rem;
+}
+.cc-status-tab {
+	position: relative;
+	display: grid;
+	gap: 0 0.7rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	grid-template-areas:
+		"icon  num"
+		"label label"
+		"sub   sub";
+	align-items: center;
+	padding: 1rem 1.1rem 1rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	text-align: start;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&.active {
+		border-color: color-mix(in srgb, var(--cc-st) 45%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--cc-st) 9%, var(--basalt-plane));
+
+		&::before {
+			content: "";
+			position: absolute;
+			top: 1rem;
+			bottom: 1rem;
+			left: 0.5rem;
+			width: 3px;
+			border-radius: 3px;
+			background: var(--cc-st);
+		}
+		/* The wash already marks the chosen tile, so it needs no focus ring. */
+		&:focus-visible {
+			box-shadow: none;
+		}
+	}
+}
+.cc-status-icon {
+	display: inline-grid;
+	grid-area: icon;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--cc-st) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cc-st) 16%, transparent);
+}
+.cc-status-num {
+	grid-area: num;
+	font-size: 1.6rem;
+	font-weight: 700;
+	line-height: 1;
+}
+.cc-status-label {
+	grid-area: label;
+	margin-top: 0.75rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+.cc-status-sub {
+	grid-area: sub;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+}
+
+/* When the card is narrow, Waiting (the tab used most) spans the first
+   row and the other four sit in two even pairs below it. */
+@container cc-queue (max-width: 680px) {
+	.cc-status {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.cc-status-waiting {
+		grid-column: 1 / -1;
+	}
+}
+
+/* Toolbar: search, the two filters, then the count pushed to the right. */
+.cc-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.cc-toolbar-filters {
+	display: flex;
+	gap: 0.75rem;
+	flex: 1 1 auto;
+	align-items: center;
+	min-width: 0;
+}
+.cc-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 12rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--cc-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.cc-select {
+	width: auto;
+	max-width: 100%;
+}
+.cc-toolbar-selects {
+	display: contents;
+}
+.cc-toolbar-select {
+	flex: 0 0 auto;
+	min-width: 0;
+}
+.cc-toolbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--cc-quiet);
+}
+
+/* Below 768px the search takes a full row, the two filters split the next
+   row evenly, and the count moves to the left edge. */
+@media (max-width: 767.98px) {
+	.cc-toolbar-filters {
+		flex: 1 1 100%;
+		flex-wrap: wrap;
+	}
+	.cc-search {
+		flex-basis: 100%;
+	}
+	.cc-toolbar-selects {
+		display: flex;
+		gap: 0.5rem;
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.cc-toolbar-select {
+		flex: 1 1 0;
+	}
+	.cc-toolbar-select .cc-select {
+		width: 100%;
+	}
+	.cc-toolbar-count {
+		margin-left: 0;
+	}
+}
+
+/* Fields on the page and in the side sheets sit on the card surface with
+   the stronger edge, and placeholders use the quiet gray at full opacity. */
+:is(.cc-page, .cc-layer) .form-control,
+:is(.cc-page, .cc-layer) .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+:is(.cc-page, .cc-layer) .form-control::placeholder {
+	color: var(--cc-quiet);
+	opacity: 1;
+}
+
+/* With rows ticked, a tinted bar offers the actions for that tab. */
+.cc-bulk {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+	padding: 0.6rem 0.6rem 0.6rem 1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn-outline-secondary {
+		--bs-btn-bg: var(--basalt-plane);
+		white-space: nowrap;
+	}
+}
+.cc-bulk-text {
+	margin: 0;
+}
+.cc-bulk-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* The table reaches out by the cells' side padding, so its first column
+   lines up with the card title above it. */
+.cc-scroll {
+	margin: 0 -0.75rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cc-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		vertical-align: top;
+	}
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		vertical-align: middle;
+		color: var(--cc-quiet);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& tbody tr:hover > * {
+		--bs-table-bg-state: var(--basalt-wash);
+	}
+	& tbody tr.is-picked > * {
+		--bs-table-bg-state: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	}
+}
+.cc-row {
+	cursor: pointer;
+}
+
+/* Checkboxes: a fixed first column, a slightly darker edge than Bootstrap's. */
+.cc-check {
+	width: 2.5rem;
+}
+.cc-table .cc-check .form-check-input {
+	margin: 0.1rem 0 0;
+	cursor: pointer;
+}
+.cc-table > thead .cc-check .form-check-input {
+	margin: 0;
+}
+:is(.cc-page, .cc-layer) .form-check-input {
+	border-color: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+}
+
+.cc-cell-reader {
+	width: 13.5rem;
+}
+.cc-cell-kind {
+	width: 8rem;
+}
+.cc-cell-when {
+	width: 7.5rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.cc-cell-act {
+	width: 8.5rem;
+}
+
+/* The reader cell: avatar, then the name as a button that opens the
+   sheet, with the company (or email) under it. */
+.cc-reader {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	min-width: 0;
+
+	& .basalt-avatar {
+		flex-shrink: 0;
+	}
+}
+.cc-reader-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cc-reader-open {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	text-align: start;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--cc-link);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.cc-reader-co {
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--cc-quiet);
+}
+
+/* The comment, then which post it is on and any ticket or reply. */
+.cc-row-text {
+	max-width: 40rem;
+	margin: 0 0 0.4rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+}
+.cc-row-post,
+.cc-row-note {
+	display: block;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+}
+.cc-row-note {
+	margin-top: 0.2rem;
+
+	& .bi {
+		margin-right: 0.3rem;
+	}
+}
+
+.cc-kind {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--cc-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cc-tone) 14%, transparent);
+
+	& .bi {
+		font-size: 0.85em;
+	}
+}
+
+/* The main action button and the three-dot menu end each row. */
+.cc-actions {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	justify-content: flex-end;
+
+	& > .btn {
+		white-space: nowrap;
+	}
+}
+.cc-more.btn-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.cc-actions .dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+
+/* When the card cannot fit the full table, each row turns into a small
+   card: reader and kind on top, the comment, then the time on the left
+   and the actions on the right. It answers to the card's width, not the
+   window's. */
+.cc-card .tab-content {
+	container: cc-list / inline-size;
+}
+@container cc-list (max-width: 860px) {
+	.cc-scroll {
+		margin: 0;
+	}
+	.cc-table,
+	.cc-table > tbody {
+		display: block;
+	}
+	.cc-table > thead > tr {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		border-bottom: 1px solid var(--basalt-edge-strong);
+	}
+	.cc-table > thead > tr > th {
+		display: none;
+	}
+	.cc-table > thead > tr > th:nth-child(-n + 2) {
+		display: block;
+		padding: 0.65rem 0;
+		border: 0;
+	}
+	.cc-table > thead {
+		display: block;
+	}
+	.cc-table > tbody > tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+		grid-template-areas:
+			"check reader kind"
+			".     text   text"
+			".     when   act";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.cc-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.cc-table > tbody > tr > * {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.cc-table > tbody > tr > .cc-check {
+		grid-area: check;
+		align-self: start;
+	}
+	.cc-cell-reader {
+		grid-area: reader;
+	}
+	.cc-cell-text {
+		grid-area: text;
+	}
+	.cc-cell-kind {
+		grid-area: kind;
+		align-self: start;
+	}
+	.cc-cell-when {
+		grid-area: when;
+		font-size: 0.8rem;
+		color: var(--cc-quiet);
+	}
+	.cc-cell-act {
+		grid-area: act;
+	}
+	.cc-table tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.cc-table tbody tr.is-picked {
+		background: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	}
+}
+/* Narrower still, the kind pill drops onto its own line under the reader. */
+@container cc-list (max-width: 420px) {
+	.cc-table > tbody > tr {
+		grid-template-areas:
+			"check reader reader"
+			".     kind   kind"
+			".     text   text"
+			".     when   act";
+	}
+	.cc-cell-kind {
+		align-self: auto;
+	}
+}
+
+/* The two cards under the queue stack below 1200px and pair up above it. */
+.cc-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 1.5rem;
+
+	@media (min-width: 1200px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Most discussed: each post's title and count over a bar scaled to the top post. */
+.cc-ranks {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cc-rank {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"title count"
+		"bar   bar";
+}
+.cc-page .cc-ranks .cc-rank a.cc-rank-title {
+	grid-area: title;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--cc-link);
+	}
+}
+.cc-rank-count {
+	grid-area: count;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cc-rank-bar {
+	display: block;
+	grid-area: bar;
+	height: 8px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 7%, transparent);
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-grad);
+	}
+}
+
+/* What readers write: the ring with the total in its middle, and the
+   legend beside it that wraps underneath when space runs out. */
+.cc-kinds {
+	display: flex;
+	gap: 1.5rem 2.5rem;
+	flex-wrap: wrap;
+	flex: 1;
+	align-items: center;
+}
+.cc-ring {
+	position: relative;
+	flex-shrink: 0;
+	width: 11rem;
+	height: 11rem;
+
+	& svg {
+		width: 100%;
+		height: 100%;
+	}
+}
+.cc-ring-track {
+	fill: none;
+	stroke: color-mix(in srgb, var(--basalt-copy) 6%, transparent);
+	stroke-width: 5;
+}
+.cc-ring-arc {
+	fill: none;
+	stroke: var(--cc-tone);
+	stroke-width: 5;
+}
+.cc-ring-mid {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+.cc-ring-num {
+	font-size: 1.75rem;
+	font-weight: 700;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+}
+.cc-ring-lbl {
+	font-size: 0.77rem;
+	color: var(--cc-quiet);
+}
+.cc-kinds-list {
+	display: flex;
+	flex: 1 1 14rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cc-kinds-item {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 0.65rem minmax(0, 1fr) 2.5rem 2.75rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.cc-kinds-dot {
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 50%;
+	background: var(--cc-tone);
+}
+.cc-kinds-name {
+	color: var(--basalt-copy);
+}
+.cc-kinds-n {
+	font-weight: 700;
+	text-align: end;
+	color: var(--basalt-copy);
+}
+.cc-kinds-pct {
+	text-align: end;
+	color: var(--cc-quiet);
+}
+
+/* The comment side sheet. At phone width it keeps the step arrows but
+   drops the avatar and hides the position text, so the name has room. */
+.cc-drawer .offcanvas-header {
+	gap: 0.75rem;
+}
+@container basalt-drawer (max-width: 400px) {
+	.cc-drawer .offcanvas-header > .basalt-avatar {
+		display: none;
+	}
+	.cc-drawer .basalt-drawer-pos {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+
+/* Status pill, then why the comment is where it is. */
+.cc-d-state {
+	margin-bottom: 1.5rem;
+
+	& .basalt-status {
+		margin-bottom: 0.5rem;
+	}
+}
+.cc-d-state-why {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.cc-d-state-link {
+	display: block;
+	margin-top: 0.3rem;
+}
+
+/* The comment itself: a soft box with a bar in its kind's color inside
+   the rounded left edge. */
+.cc-d-quote {
+	position: relative;
+	margin: 0;
+	padding: 1rem 1.1rem 1rem 1.4rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.85rem;
+		bottom: 0.85rem;
+		left: 0.5rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--cc-tone);
+	}
+	& p {
+		margin: 0 0 0.85rem;
+		line-height: 1.55;
+		color: var(--basalt-copy);
+	}
+}
+.cc-d-quote-foot {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+}
+.cc-d-post {
+	margin: 0.75rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.cc-d-reply-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-bottom: 0.5rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	& > span:last-child {
+		font-size: 0.8rem;
+		color: var(--cc-quiet);
+	}
+}
+.cc-d-reply p {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* About the reader: label and value rows split by hairlines. */
+.cc-d-facts {
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+
+		&:first-child {
+			padding-top: 0;
+		}
+		&:last-child {
+			padding-bottom: 0;
+			border-bottom: 0;
+		}
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--cc-quiet);
+	}
+	& dd {
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+.cc-d-facts-note {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+}
+
+/* The reply box, its hint, and the row with the email switch and Post. */
+.cc-d-answer[hidden] {
+	display: none;
+}
+.cc-d-answer-hint {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cc-d-answer-row {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* The comment rules sheet: small hints under options and inline number rows. */
+.cc-rules .basalt-drawer-section > .form-check:last-child {
+	margin-bottom: 0;
+}
+.cc-hint {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--cc-quiet);
+}
+.cc-inline {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}

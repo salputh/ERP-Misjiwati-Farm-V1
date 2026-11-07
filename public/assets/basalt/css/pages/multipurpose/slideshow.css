@@ -1,0 +1,408 @@
+/* Basalt - Slideshow page
+   Only what this demo page needs, namespaced under .ss-*. The slideshow
+   itself (the track, arrows, dots, count and progress bar) lives in
+   basalt.css and basalt.js. Colors come from the --basalt-* tokens. */
+.ss-page {
+	--ss-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+}
+.ss-page code {
+	padding: 0 0.3em;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px;
+	font-size: 0.85em;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Filter row */
+.ss-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.ss-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.ss-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.ss-chip:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.ss-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.ss-chips .ss-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.ss-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ss-quiet);
+}
+
+/* Grid */
+.ss-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.ss-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.ss-card.is-hidden {
+	display: none;
+}
+@media (min-width: 1200px) {
+	.ss-card {
+		grid-column: span 6;
+	}
+	.ss-card-full,
+	.ss-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Card */
+.ss-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.ss-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+.ss-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.ss-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ss-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ss-quiet);
+}
+.ss-card-meta {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.ss-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--ss-quiet);
+}
+.ss-card-origin {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.71rem;
+	color: var(--ss-quiet);
+}
+.ss-card-origin .bi {
+	font-size: 0.8rem;
+}
+
+/* Code snippet */
+.ss-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.ss-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.ss-code summary {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+}
+.ss-code summary::-webkit-details-marker {
+	display: none;
+}
+.ss-code summary:hover {
+	color: var(--basalt-copy);
+}
+.ss-code summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.ss-code summary .bi {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.ss-code[open] summary .bi {
+	transform: rotate(90deg);
+}
+.ss-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.ss-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+.ss-code pre {
+	margin: 0;
+	padding: 2.9rem 1rem 0.9rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	line-height: 1.6;
+	/* Long lines wrap, so the sample never scrolls inside the card. */
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Photos fill the slide at one height, with rounded corners. */
+.ss-photos .basalt-slides-track {
+	border-radius: 14px;
+}
+.ss-photo {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 3 / 2;
+	object-fit: cover;
+}
+
+/* Banners: a tinted panel per slide, its words on the left. */
+.ss-banner {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-height: 15rem;
+	padding: 2rem 2rem 3rem;
+	border-radius: 14px;
+	color: #fff;
+}
+.ss-banner-1 {
+	background: linear-gradient(135deg, var(--basalt-series-1), color-mix(in srgb, var(--basalt-series-1) 55%, #000));
+}
+.ss-banner-2 {
+	background: linear-gradient(135deg, var(--basalt-series-5), color-mix(in srgb, var(--basalt-series-5) 55%, #000));
+}
+.ss-banner-3 {
+	background: linear-gradient(135deg, var(--basalt-series-3), color-mix(in srgb, var(--basalt-series-3) 50%, #000));
+}
+:root[data-basalt-gradients="off"] .ss-banner-1 {
+	background: var(--basalt-series-1);
+}
+:root[data-basalt-gradients="off"] .ss-banner-2 {
+	background: var(--basalt-series-5);
+}
+:root[data-basalt-gradients="off"] .ss-banner-3 {
+	background: var(--basalt-series-3);
+}
+.ss-banner-title {
+	max-width: 22ch;
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 800;
+	line-height: 1.2;
+}
+.ss-banner-text {
+	max-width: 44ch;
+	margin: 0 0 0.5rem;
+	font-size: 0.9rem;
+	opacity: 0.9;
+}
+
+/* Quotes: one at a time, centered. */
+.ss-quote {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	align-items: center;
+	margin: 0;
+	padding: 1.5rem 1rem 0.5rem;
+	text-align: center;
+
+	& blockquote {
+		max-width: 46ch;
+		margin: 0;
+		font-size: 1.1rem;
+		line-height: 1.55;
+		color: var(--basalt-copy);
+	}
+	& figcaption {
+		display: flex;
+		gap: 0.7rem;
+		align-items: center;
+		font-size: 0.85rem;
+		text-align: left;
+		color: var(--ss-quiet);
+	}
+	& strong {
+		display: block;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Cards: three to a row, two on a tablet, one on a phone, with the
+   arrows beside the row's title rather than over the cards. */
+.ss-cards {
+	--basalt-slides-per: 3;
+	--basalt-slides-gap: 1rem;
+}
+@media (max-width: 991.98px) {
+	.ss-cards {
+		--basalt-slides-per: 2;
+	}
+}
+@media (max-width: 575.98px) {
+	.ss-cards {
+		--basalt-slides-per: 1;
+	}
+}
+.ss-cards-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.ss-cards-label {
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ss-cards-arrows {
+	display: flex;
+	gap: 0.5rem;
+
+	& .basalt-slides-arrow {
+		position: static;
+		width: 2.25rem;
+		height: 2.25rem;
+		border: 1px solid var(--basalt-edge-strong);
+		box-shadow: none;
+		transform: none;
+	}
+	& .basalt-slides-arrow:hover {
+		transform: none;
+		background: var(--basalt-wash);
+	}
+}
+.ss-product {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	& img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 1;
+		margin-bottom: 0.6rem;
+		border-radius: 12px;
+		object-fit: cover;
+	}
+	&:hover .ss-product-name {
+		text-decoration: underline;
+	}
+}
+.ss-product-name {
+	font-weight: 650;
+}
+.ss-product-price {
+	font-size: 0.875rem;
+	color: var(--ss-quiet);
+}
+
+/* Thumbnails under the photo; the one showing is outlined. */
+.ss-thumbs-stage {
+	position: relative;
+}
+.ss-thumbs {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin-top: 0.75rem;
+}
+.ss-thumb {
+	padding: 0;
+	border: 2px solid transparent;
+	border-radius: 10px;
+	overflow: hidden;
+	background: none;
+	opacity: 0.7;
+	transition: opacity 170ms ease;
+
+	& img {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 3 / 2;
+		object-fit: cover;
+	}
+	&:hover {
+		opacity: 1;
+	}
+	&[aria-current="true"] {
+		border-color: var(--basalt-hue);
+		opacity: 1;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ss-thumb {
+		transition: none;
+	}
+}

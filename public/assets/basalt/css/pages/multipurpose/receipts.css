@@ -1,0 +1,1262 @@
+/* Receipts (receipts.html), namespaced .rcp-*. The page header, cards,
+   status pills, choice cards, segmented control, empty state, side sheet
+   and dialog come from basalt.css; this sheet lays them out and styles what
+   is the page's own: the stage tiles, the payment list, the two charts and
+   the side sheet's contents. Colors are --basalt-* tokens passed through
+   color-mix(), so each palette and mode keeps its hues. The sheet and the
+   dialog sit outside the page container, so they get the page's mixes too. */
+
+.rcp-page,
+.rcp-drawer,
+.rcp-modal {
+	/* Small gray text leans toward the body color so it clears 4.5:1 on the
+     lighter palettes and on a hovered row. Links lean the same way, because
+     the primary alone falls short in a few light palettes. */
+	--rcp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--rcp-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--rcp-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	--rcp-row-on: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+/* Each way of paying owns one hue from the theme ramp. The ring reads the
+   same tokens, so an icon in the list matches its slice; the day chart uses
+   the status colors instead, like the tiles and the pills. */
+.rcp-method-card {
+	--rcp-tone: var(--basalt-series-1);
+}
+.rcp-method-ach {
+	--rcp-tone: var(--basalt-series-2);
+}
+.rcp-method-wire {
+	--rcp-tone: var(--basalt-series-3);
+}
+.rcp-method-check {
+	--rcp-tone: var(--basalt-series-4);
+}
+
+.rcp-ref {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85rem;
+}
+.rcp-optional {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--rcp-quiet);
+}
+
+.rcp-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--rcp-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Form controls take the page's surfaces inside the page, the sheet and
+   the dialog alike. */
+.rcp-page .form-control,
+.rcp-page .form-select,
+.rcp-drawer .form-control,
+.rcp-drawer .form-select,
+.rcp-modal .form-control,
+.rcp-modal .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.rcp-page .form-control::placeholder,
+.rcp-drawer .form-control::placeholder,
+.rcp-modal .form-control::placeholder {
+	color: var(--rcp-quiet);
+	opacity: 1;
+}
+.rcp-page .btn,
+.rcp-drawer .btn {
+	white-space: nowrap;
+}
+.rcp-page .btn-outline-secondary {
+	background-color: var(--basalt-plane);
+}
+
+/* The cards share one padding, tighter on a phone. */
+.rcp-card.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.rcp-card.basalt-box > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.rcp-card-head {
+	margin-bottom: 1.5rem;
+}
+.rcp-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rcp-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rcp-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Where the money is: one bar split by place, then four tiles in the same
+   tones that give each place's total and pick what the list shows. A tile
+   carries a pale wash and an icon chip in its tone; the chosen one deepens
+   its wash and edge, which doubles as its focus marker. */
+.rcp-stage-all {
+	--rcp-stage: var(--basalt-hue);
+}
+.rcp-stage-clearing,
+.rcp-track-seg-clearing {
+	--rcp-stage: var(--basalt-info);
+}
+.rcp-stage-bank,
+.rcp-track-seg-bank {
+	--rcp-stage: var(--basalt-success);
+}
+.rcp-stage-problem,
+.rcp-track-seg-problem {
+	--rcp-stage: var(--basalt-danger);
+}
+
+.rcp-track {
+	display: flex;
+	gap: 4px;
+	height: 0.65rem;
+	margin: 0 0 1.1rem;
+}
+.rcp-track-seg {
+	flex: 0 0 auto;
+	min-width: 6px;
+	border-radius: 999px;
+	background: var(--rcp-stage);
+	transition: flex-grow 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.rcp-stages {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+}
+.rcp-stage {
+	position: relative;
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 3.6rem 1.1rem 1.1rem;
+	border: 1px solid color-mix(in srgb, var(--rcp-stage) 20%, var(--basalt-edge));
+	border-radius: 14px;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--rcp-stage) 5%, var(--basalt-plane));
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--rcp-stage) 40%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--rcp-stage) 9%, var(--basalt-plane));
+	}
+	&[aria-selected="true"] {
+		border-color: color-mix(in srgb, var(--rcp-stage) 65%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--rcp-stage) 12%, var(--basalt-plane));
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rcp-stage) 65%, var(--basalt-edge));
+	}
+	/* With gradients off the tiles are plain surfaces, and the chosen one
+     keeps only its colored border. */
+	:root[data-basalt-gradients="off"] &,
+	:root[data-basalt-gradients="off"] &:hover,
+	:root[data-basalt-gradients="off"] &[aria-selected="true"] {
+		background: var(--basalt-plane);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible:not([aria-selected="true"]) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.rcp-stage-icon {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--rcp-stage) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rcp-stage) 16%, var(--basalt-plane));
+}
+.rcp-stage-label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.rcp-stage-value {
+	font-size: 1.5rem;
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rcp-stage-meta {
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--rcp-quiet);
+}
+@media (max-width: 1199.98px) {
+	.rcp-stages {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 575.98px) {
+	.rcp-stages {
+		gap: 0.6rem;
+	}
+	.rcp-stage {
+		padding: 0.9rem 0.85rem;
+	}
+	.rcp-stage-icon {
+		position: static;
+		width: 2rem;
+		height: 2rem;
+		margin-bottom: 0.3rem;
+		font-size: 0.9rem;
+	}
+	.rcp-stage-value {
+		font-size: 1.2rem;
+	}
+	.rcp-stage-meta {
+		white-space: normal;
+	}
+}
+
+/* The toolbar over the list: search, the way-of-paying select and a count
+   that hugs the right edge. */
+.rcp-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.5rem;
+}
+.rcp-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--rcp-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.rcp-method-select.form-select {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 14.5rem;
+}
+.rcp-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--rcp-quiet);
+}
+@media (max-width: 767.98px) {
+	.rcp-search {
+		flex: 1 1 100%;
+	}
+	.rcp-method-select.form-select {
+		flex: 1 1 auto;
+		max-width: 16rem;
+	}
+}
+
+/* The payment list. The wrap is pulled out by the cells' side padding, so
+   the first column starts on the card's left edge under the title and the
+   search box. */
+.rcp-table-wrap {
+	position: relative;
+	container: rcp-list / inline-size;
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.rcp-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+}
+.rcp-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.6rem;
+	border-bottom-color: var(--basalt-edge);
+	color: inherit;
+	background: transparent;
+}
+.rcp-table > tbody > tr:last-child > * {
+	border-bottom: 0;
+}
+.rcp-table thead th {
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--rcp-quiet);
+}
+
+/* A sortable heading is a button that looks like the heading around it. */
+.rcp-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+[aria-sort] .rcp-sort {
+	color: var(--basalt-copy);
+}
+.rcp-sort-idle {
+	opacity: 0.55;
+
+	.rcp-sort:hover & {
+		opacity: 1;
+	}
+}
+
+/* Column widths. The customer column takes what is left, so a long name
+   ends in an ellipsis instead of widening the table. */
+.rcp-col-who {
+	min-width: 17rem;
+}
+.rcp-table td.rcp-col-who {
+	max-width: 0;
+}
+.rcp-col-method {
+	width: 13rem;
+}
+.rcp-col-date {
+	width: 6.5rem;
+}
+.rcp-col-status {
+	width: 8.5rem;
+}
+.rcp-col-amt {
+	width: 9.5rem;
+	text-align: right;
+
+	& .rcp-sort {
+		flex-direction: row-reverse;
+	}
+}
+.rcp-col-go {
+	width: 5.5rem;
+	text-align: right;
+}
+
+.rcp-row {
+	cursor: pointer;
+
+	&:hover {
+		background: var(--rcp-row-hover);
+	}
+	&.is-selected {
+		background: var(--rcp-row-on);
+	}
+	&.is-fresh {
+		animation: rcp-fresh 1.8s ease;
+	}
+}
+@keyframes rcp-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+/* The customer cell: a lettered tile, the name, and what the money paid for. */
+.rcp-who {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	min-width: 0;
+}
+.rcp-who-text {
+	min-width: 0;
+}
+.rcp-who-name {
+	display: block;
+	width: fit-content;
+	max-width: 100%;
+	border-radius: 4px;
+	overflow: hidden;
+	font-weight: 650;
+	text-overflow: ellipsis;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.rcp-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--rcp-quiet);
+}
+.rcp-sub-note {
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.rcp-sub-for {
+	border-radius: 4px;
+	text-decoration: none;
+	color: inherit;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--rcp-link);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.basalt-avatar.rcp-mark {
+	flex: none;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 0.8rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+}
+.basalt-avatar.rcp-mark-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+}
+
+/* The way a payment came in: an icon chip in the method's tone and a word. */
+.rcp-method {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+	white-space: nowrap;
+
+	& > .bi {
+		display: inline-grid;
+		flex: none;
+		place-items: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 8px;
+		font-size: 0.85rem;
+		color: color-mix(in srgb, var(--rcp-tone) 62%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--rcp-tone) 14%, var(--basalt-plane));
+	}
+}
+.rcp-date {
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.rcp-amt {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rcp-row-date {
+	display: none;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--rcp-quiet);
+}
+
+.rcp-more {
+	display: flex;
+	justify-content: center;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.rcp-empty {
+	margin: 1.5rem 0 0.5rem;
+}
+/* A hidden part stays hidden whatever display it was given. */
+.rcp-table-wrap[hidden],
+.rcp-more[hidden],
+.rcp-empty[hidden] {
+	display: none;
+}
+
+/* The list follows the room its card has rather than the window: with the
+   menu open, a 1024px window leaves the card about as narrow as a tablet.
+   The outer cells keep the wrap's inset so the first column stays on the
+   card's edge, and the letter tile steps back so names keep their line. */
+@container rcp-list (max-width: 1000px) {
+	.rcp-table > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	.rcp-table > :not(caption) > * > :first-child {
+		padding-left: 0.6rem;
+	}
+	.rcp-table > :not(caption) > * > :last-child {
+		padding-right: 0.6rem;
+	}
+	.rcp-col-who {
+		min-width: 12rem;
+	}
+	.rcp-col-method {
+		width: 10.5rem;
+	}
+	.rcp-col-status {
+		width: 7.5rem;
+	}
+	.rcp-col-amt {
+		width: 7.5rem;
+	}
+	.rcp-col-go {
+		width: 5rem;
+	}
+	.rcp-who > .rcp-mark {
+		display: none;
+	}
+}
+
+/* Narrower still, the date gives up its column and joins the method. */
+@container rcp-list (max-width: 860px) {
+	.rcp-col-method {
+		width: 10.5rem;
+	}
+	.rcp-col-status {
+		width: 7rem;
+	}
+	.rcp-col-amt {
+		width: 7rem;
+	}
+	.rcp-table .rcp-col-date {
+		display: none;
+	}
+	.rcp-row-date {
+		display: block;
+		margin-top: 0.3rem;
+		padding-left: 2.3rem;
+	}
+	.rcp-sub {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+
+/* At the narrowest, each payment becomes a small stacked record: who and
+   the amount on top, what it paid for under that, then how and the status.
+   The date always sits under the method, so every record has the same three
+   lines whatever the length of the card's name, and the method drops its
+   icon to leave room for the pill and the two action icons. */
+@container rcp-list (max-width: 680px) {
+	.rcp-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.rcp-table,
+	.rcp-table tbody {
+		display: block;
+	}
+	.rcp-table tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"who    who    amt"
+			"method status go";
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.rcp-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.rcp-table > :not(caption) > * > *,
+	.rcp-table > :not(caption) > * > :first-child,
+	.rcp-table > :not(caption) > * > :last-child {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.rcp-table td.rcp-col-who {
+		grid-area: who;
+		max-width: none;
+	}
+	.rcp-table .rcp-col-amt {
+		grid-area: amt;
+		text-align: right;
+	}
+	.rcp-table .rcp-col-method {
+		display: flex;
+		gap: 0.25rem;
+		flex-direction: column;
+		grid-area: method;
+		align-items: flex-start;
+	}
+	.rcp-table .rcp-col-status {
+		grid-area: status;
+		align-self: center;
+		justify-self: end;
+	}
+	.rcp-table .basalt-row-actions {
+		gap: 0;
+	}
+	.rcp-table .rcp-method > .bi {
+		display: none;
+	}
+	.rcp-table .rcp-col-go {
+		grid-area: go;
+		align-self: center;
+		justify-self: end;
+		margin: -0.4rem -0.4rem -0.4rem 0;
+	}
+	.rcp-row-date {
+		display: inline;
+		margin: 0;
+		padding: 0;
+	}
+}
+
+/* On a phone a payment keeps who paid, how, the amount and its status;
+   the order it settles and the date wait in the quick view. */
+@media (max-width: 575.98px) {
+	.rcp-table :is(.rcp-sub-for, .rcp-row-date) {
+		display: none;
+	}
+}
+
+/* The two chart cards. The canvas sits out of the flow so the chart fills
+   the card without pushing it taller. */
+.rcp-chart-card {
+	display: flex;
+	flex-direction: column;
+}
+.rcp-legend {
+	display: flex;
+	gap: 0.5rem 1.4rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		white-space: nowrap;
+	}
+}
+.rcp-legend-swatch,
+.rcp-way-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--rcp-tone);
+}
+.rcp-legend-bank {
+	--rcp-tone: var(--basalt-success);
+}
+.rcp-legend-clearing {
+	--rcp-tone: var(--basalt-info);
+}
+.rcp-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 260px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+}
+
+/* The ring beside its list; the list moves under the ring on a narrow card. */
+.rcp-ways {
+	display: flex;
+	gap: 1.75rem;
+	flex: 1 1 auto;
+	align-items: center;
+	container: rcp-ways / inline-size;
+}
+.rcp-ring {
+	position: relative;
+	flex: none;
+	width: 172px;
+	height: 172px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+}
+.rcp-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	pointer-events: none;
+}
+.rcp-ring-value {
+	font-size: 1.3rem;
+	font-weight: 750;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+}
+.rcp-ring-label {
+	font-size: 0.77rem;
+	color: var(--rcp-quiet);
+}
+.rcp-ways-list {
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rcp-way {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+.rcp-way-text {
+	min-width: 0;
+
+	& .rcp-sub {
+		white-space: normal;
+	}
+}
+.rcp-way-name {
+	display: block;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.rcp-way-fig {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.rcp-way-amt {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rcp-way-share {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--rcp-quiet);
+}
+@media (max-width: 575.98px) {
+	.rcp-ways {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rcp-ring {
+		align-self: center;
+	}
+	.rcp-chart {
+		min-height: 220px;
+	}
+}
+
+/* The side sheet. On a phone the header keeps to the name: the letter tile
+   goes, and the position is read out but not shown. */
+.rcp-drawer.offcanvas {
+	--bs-offcanvas-width: 480px;
+}
+@media (max-width: 575.98px) {
+	.rcp-drawer.offcanvas {
+		--bs-offcanvas-width: min(400px, 92vw);
+	}
+	.rcp-drawer .rcp-mark-lg {
+		display: none;
+	}
+	.rcp-drawer .basalt-drawer-pos {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+.rcp-drawer .offcanvas-title:focus {
+	outline: 0;
+}
+.rcp-d-status {
+	margin: 0 0 0.6rem;
+}
+.rcp-d-lead {
+	margin: 0;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The money: one line per movement, the closing line in bold. */
+.rcp-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rcp-line {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.9rem;
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+.rcp-line-text {
+	min-width: 0;
+
+	& .rcp-sub {
+		white-space: normal;
+	}
+}
+.rcp-line-name {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rcp-line-amt {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rcp-line-total {
+	border-top-color: var(--basalt-edge-strong);
+
+	& .rcp-line-name,
+	& .rcp-line-amt {
+		font-weight: 700;
+	}
+}
+
+/* Details as term and value pairs; the terms drop above the values when
+   the sheet is narrow. */
+.rcp-facts {
+	margin: 0;
+}
+.rcp-fact {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 7rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.9rem;
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--rcp-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& dd .rcp-sub {
+		white-space: normal;
+	}
+	@container basalt-drawer (max-width: 420px) {
+		& {
+			gap: 0.3rem;
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+}
+
+/* History is a run of filled markers joined by a line: status, not
+   checkboxes. The marker's tone says how the step went. */
+.rcp-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rcp-step {
+	position: relative;
+	padding: 0 0 1.1rem 1.6rem;
+	font-size: 0.9rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.4rem;
+		left: 0.2rem;
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 50%;
+		background: var(--rcp-step, var(--basalt-success));
+	}
+	&:not(:last-child)::after {
+		content: "";
+		position: absolute;
+		top: 1.2rem;
+		bottom: 0.1rem;
+		left: calc(0.5rem - 1px);
+		width: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+}
+.rcp-step-wait {
+	--rcp-step: var(--basalt-warning);
+}
+.rcp-step-bad {
+	--rcp-step: var(--basalt-danger);
+}
+.rcp-step-back {
+	--rcp-step: var(--basalt-info);
+}
+.rcp-step-what {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rcp-step-when {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--rcp-quiet);
+}
+
+/* The refund and evidence faces: a form where the details were. A row of
+   fields keeps Bootstrap's gutter pull, so its fields line up with the rest. */
+.rcp-view-title {
+	margin: 0 0 0.4rem;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: 0;
+	}
+}
+.rcp-view-desc {
+	margin: 0 0 1.5rem;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.rcp-form-row {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+.row.rcp-form-row {
+	margin: calc(-1 * var(--bs-gutter-y)) calc(-0.5 * var(--bs-gutter-x)) 1.25rem;
+}
+.rcp-drawer legend.form-label,
+.rcp-modal legend.form-label {
+	float: none;
+	margin-bottom: 0.5rem;
+	font-size: inherit;
+	line-height: inherit;
+}
+.rcp-drawer p.form-label {
+	margin-bottom: 0.5rem;
+}
+.rcp-reason-select.form-select {
+	width: auto;
+	min-width: 16rem;
+	max-width: 100%;
+}
+
+/* Attached files, each with a remove button; the list collapses when empty. */
+.rcp-files {
+	margin: 0 0 0.75rem;
+	padding: 0;
+	list-style: none;
+
+	&:empty {
+		display: none;
+	}
+}
+.rcp-file {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-bottom: 0.5rem;
+	padding: 0.5rem 0.4rem 0.5rem 0.75rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.875rem;
+
+	& > .bi {
+		color: var(--rcp-quiet);
+	}
+}
+.rcp-file-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rcp-file-x {
+	display: inline-grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	border: 0;
+	border-radius: 8px;
+	color: var(--rcp-quiet);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.rcp-files-none {
+	margin: 0 0 0.75rem;
+	font-size: 0.85rem;
+	color: var(--rcp-quiet);
+}
+
+/* The record-a-payment dialog. The three way-of-paying tiles become slim
+   rows on a phone, icon beside the label. */
+.rcp-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.85rem;
+	color: var(--rcp-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.rcp-invoice-select.form-select {
+	width: auto;
+	min-width: 14rem;
+	max-width: 100%;
+}
+.rcp-tiles {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.rcp-tile.basalt-choice-card {
+	align-items: center;
+	padding-left: 0.75rem;
+	padding-right: 0.75rem;
+	text-align: center;
+}
+.rcp-tile .basalt-choice-card-icon {
+	margin-bottom: 0.3rem;
+}
+.rcp-tile .basalt-choice-card-title {
+	font-size: 0.92rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.rcp-tiles {
+		gap: 0.6rem;
+		grid-template-columns: 1fr;
+	}
+	.rcp-tile.basalt-choice-card {
+		gap: 0.85rem;
+		flex-direction: row;
+		justify-content: flex-start;
+		padding: 0.7rem 1rem;
+		text-align: left;
+	}
+	.rcp-tile .basalt-choice-card-icon {
+		flex: none;
+		width: 2.25rem;
+		height: 2.25rem;
+		margin: 0;
+	}
+}
+
+/* An amount field shows one focus ring around the whole group, not the
+   input inside it, and its message sits under the group so the ring stays
+   round the field. */
+.rcp-amount {
+	max-width: 14rem;
+
+	&:focus-within {
+		border-radius: var(--bs-border-radius);
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 25%, transparent);
+	}
+	&:focus-within .input-group-text,
+	&:focus-within .form-control {
+		border-color: var(--basalt-hue);
+	}
+	& .form-control:focus {
+		box-shadow: none;
+	}
+	& .input-group-text {
+		border-color: var(--basalt-edge-strong);
+		color: var(--rcp-quiet);
+		background: var(--basalt-plane-alt);
+	}
+	&:has(.is-invalid) + .invalid-feedback {
+		display: block;
+	}
+	& .form-control[readonly] {
+		color: var(--basalt-copy-body);
+		background-color: var(--basalt-plane-alt);
+	}
+}
+.rcp-modal .rcp-amount {
+	max-width: none;
+}
+
+/* Printing drops the controls; printing and reduced motion both still the
+   tiles, the rows and the track. */
+@media print {
+	.rcp-toolbar,
+	.rcp-more,
+	.rcp-col-go,
+	.basalt-pagehead-actions {
+		display: none;
+	}
+}
+@media print, (prefers-reduced-motion: reduce) {
+	.rcp-row,
+	.rcp-stage,
+	.rcp-track-seg {
+		transition: none;
+	}
+	.rcp-row.is-fresh {
+		animation: none;
+	}
+}

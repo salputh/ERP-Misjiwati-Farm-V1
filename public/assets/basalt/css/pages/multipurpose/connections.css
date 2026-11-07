@@ -1,0 +1,931 @@
+/* Connections screen (connections.html). Every class here starts with
+   .itg-. Hero, alerts, badges, tabs, segmented controls, pager,
+   skeletons, empty states, dialogs and the side panel shell all come
+   from basalt.css; what follows places the cards and draws the service
+   rows, the shelf of tiles, the log and the panel's inner parts. */
+
+/* Muted text is pulled toward the body color so it still reads at 4.5:1
+   on pale palettes and on hovered rows; the same goes for the red and
+   green used as text. */
+.itg-page,
+.itg-drawer,
+.itg-connect-dialog,
+.itg-disconnect-dialog {
+	--itg-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--itg-danger-text: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	--itg-success-text: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+}
+
+/* A service's mark is two letters on a pale wash of its chart hue. */
+.itg-tone-1 {
+	--itg-tone: var(--basalt-series-1);
+}
+.itg-tone-2 {
+	--itg-tone: var(--basalt-series-2);
+}
+.itg-tone-3 {
+	--itg-tone: var(--basalt-series-3);
+}
+.itg-tone-4 {
+	--itg-tone: var(--basalt-series-4);
+}
+.itg-tone-5 {
+	--itg-tone: var(--basalt-series-5);
+}
+.itg-tone-6 {
+	--itg-tone: var(--basalt-series-6);
+}
+.itg-tone-7 {
+	--itg-tone: var(--basalt-series-7);
+}
+.itg-tone-8 {
+	--itg-tone: var(--basalt-series-8);
+}
+
+.itg-logo {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.95rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.01em;
+	color: color-mix(in srgb, var(--itg-tone, var(--basalt-hue)) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--itg-tone, var(--basalt-hue)) 18%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--itg-tone, var(--basalt-hue)) 30%, transparent);
+}
+.itg-logo-lg {
+	width: 3.1rem;
+	height: 3.1rem;
+	border-radius: 14px;
+	font-size: 1.05rem;
+}
+
+/* Alerts sit above the cards, two abreast on wide screens, and the
+   whole list folds away once nothing is left in it. */
+.itg-attention {
+	margin-bottom: 2rem;
+}
+
+.itg-section-title {
+	margin: 0 0 0.85rem;
+	font-size: 0.77rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--itg-quiet);
+}
+
+.itg-attention-list {
+	display: grid;
+	gap: 0.85rem;
+
+	&:empty {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.itg-attention-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.itg-attention-list > :only-child {
+		grid-column: 1 / -1;
+	}
+}
+
+.itg-alert {
+	height: 100%;
+	margin: 0;
+}
+
+/* A row's action reads on one line ("Sign in again"), never stacked. */
+[data-itg-fix],
+[data-itg-sync],
+[data-itg-resume] {
+	white-space: nowrap;
+}
+
+.itg-allclear {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	padding: 1rem 1.25rem;
+	border-radius: 14px;
+	border: 1px solid color-mix(in srgb, var(--basalt-success) 30%, var(--basalt-edge));
+	font-size: 0.9rem;
+	font-weight: 550;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-success) 8%, var(--basalt-plane));
+
+	& .bi {
+		font-size: 1.1rem;
+		color: var(--itg-success-text);
+	}
+}
+
+/* Cards fill the row until 1200px, then pair up; full-width cards keep
+   the whole row at every size. */
+.itg-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.itg-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+@media (min-width: 1200px) {
+	.itg-card {
+		grid-column: span 6;
+	}
+	.itg-card-full {
+		grid-column: span 12;
+	}
+}
+
+.itg-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+
+.itg-card-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+}
+
+.itg-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.itg-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--itg-quiet);
+}
+
+.itg-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--itg-quiet);
+}
+
+/* Filter rows under a card's heading wrap freely; a search field
+   grows to take the slack and a result count is pushed to the far end. */
+.itg-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: var(--basalt-pad-head);
+
+	& .form-check-label {
+		font-size: 0.86rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+.itg-toolbar-field {
+	flex: 0 1 13rem;
+	min-width: 10rem;
+}
+
+.itg-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--itg-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+.itg-count {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--itg-quiet);
+}
+
+/* Each linked service is one row. The list measures its own width, not
+   the window's, because beside the sidebar the card is far narrower
+   than the viewport suggests: one column first, then two lines, then a
+   single line of five fixed columns. */
+.itg-apps {
+	container: itg-apps / inline-size;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.itg-app {
+	display: grid;
+	gap: 0.6rem 1rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	grid-template-areas:
+		"logo main"
+		"logo state"
+		"logo volume"
+		"logo actions";
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 0.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0.25rem;
+		border-top: 0;
+	}
+	&[data-itg-app] {
+		cursor: pointer;
+	}
+	& > .itg-logo,
+	& > .itg-logo-ghost {
+		grid-area: logo;
+		align-self: start;
+	}
+}
+
+.itg-app-main {
+	grid-area: main;
+	min-width: 0;
+}
+
+.itg-app-name {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 650;
+	line-height: 1.3;
+}
+
+.itg-app-open {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	text-decoration: underline;
+	text-decoration-color: transparent;
+	text-underline-offset: 0.2em;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+	transition: text-decoration-color 170ms ease;
+
+	&:hover {
+		text-decoration-color: currentColor;
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.itg-app-meta {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--itg-quiet);
+}
+
+.itg-app-state {
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	grid-area: state;
+	align-items: center;
+	min-width: 0;
+}
+
+.itg-app-when {
+	font-size: 0.8rem;
+	color: var(--itg-quiet);
+}
+
+.itg-app-progress {
+	flex: 1 0 100%;
+	max-width: 12rem;
+	height: 0.3rem;
+	background: var(--basalt-plane-alt);
+
+	& .progress-bar {
+		background: var(--basalt-info);
+		transition: width 500ms ease;
+
+		@media (prefers-reduced-motion: reduce), print {
+			transition: none;
+		}
+	}
+}
+
+.itg-app-volume {
+	display: flex;
+	gap: 0.75rem;
+	grid-area: volume;
+	align-items: center;
+	min-width: 0;
+}
+
+.itg-app-count {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--itg-quiet);
+
+	& strong {
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+.itg-spark {
+	flex-shrink: 0;
+	width: 5.75rem;
+	height: 1.5rem;
+	color: var(--itg-tone);
+
+	& rect {
+		fill: currentColor;
+	}
+}
+.itg-app.is-paused .itg-spark {
+	color: var(--basalt-edge-strong);
+}
+
+.itg-app-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	grid-area: actions;
+	align-items: center;
+}
+
+/* Loading rows keep the real row's grid so nothing jumps when the
+   data arrives. */
+.itg-app-ghost {
+	pointer-events: none;
+
+	& .basalt-skeleton-title {
+		width: 55%;
+		margin-bottom: 0.3rem;
+	}
+}
+.itg-logo-ghost.basalt-skeleton-circle {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+}
+
+.itg-apps-empty {
+	margin-top: 0.5rem;
+}
+
+@container itg-apps (min-width: 520px) {
+	.itg-app {
+		grid-template-columns: 2.75rem minmax(0, 1fr) minmax(0, 1fr) auto;
+		grid-template-areas:
+			"logo main main actions"
+			"logo state volume volume";
+	}
+	.itg-app-actions {
+		flex-wrap: nowrap;
+		justify-content: flex-end;
+	}
+}
+/* Fixed outer columns line each row up with the next. */
+@container itg-apps (min-width: 860px) {
+	.itg-app {
+		grid-template-columns: 2.75rem minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 1fr) 13rem;
+		grid-template-areas: "logo main state volume actions";
+
+		& > .itg-logo,
+		& > .itg-logo-ghost {
+			align-self: center;
+		}
+	}
+}
+
+/* The health card leads with three figures, then the stacked bars and a
+   hand-drawn legend, with a one-line reading underneath. */
+.itg-stats {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0 0 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.77rem;
+		font-weight: 600;
+		color: var(--itg-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.5rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+.itg-chart {
+	position: relative;
+	min-width: 0;
+	height: 240px;
+}
+.itg-card canvas {
+	display: block;
+	max-width: 100%;
+}
+
+.itg-legend {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 1rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+
+.itg-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+}
+.itg-legend-swatch-ok {
+	background: var(--basalt-series-1);
+}
+.itg-legend-swatch-fail {
+	background: var(--basalt-danger);
+}
+
+.itg-note {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.55;
+	color: var(--itg-quiet);
+}
+
+/* Log entries are separated by hairlines; failures turn red, and a
+   fresh entry flashes once. The panel's history reuses these rows. */
+.itg-feed {
+	flex: 1;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.itg-event {
+	display: flex;
+	gap: 0.8rem;
+	align-items: flex-start;
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	&:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&.is-fresh {
+		animation: itg-fresh 900ms ease;
+
+		@media (prefers-reduced-motion: reduce), print {
+			animation: none;
+		}
+	}
+}
+@keyframes itg-fresh {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+	}
+}
+
+.itg-event-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	color: var(--itg-success-text);
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+
+.itg-event-body {
+	flex: 1;
+	min-width: 0;
+}
+.itg-event-text {
+	margin: 0;
+	font-size: 0.86rem;
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.itg-event-meta {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin: 0.1rem 0 0;
+	font-size: 0.76rem;
+	color: var(--itg-quiet);
+}
+
+.itg-event.is-failed {
+	& .itg-event-icon {
+		color: var(--itg-danger-text);
+		background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+	}
+	& .itg-event-text {
+		font-weight: 550;
+		color: var(--itg-danger-text);
+	}
+}
+
+.itg-event-ghost {
+	& .basalt-skeleton-circle {
+		width: 1.75rem;
+		height: 1.75rem;
+	}
+	& .basalt-skeleton-text {
+		margin: 0.3rem 0;
+	}
+}
+.itg-event-none .itg-event-text {
+	color: var(--itg-quiet);
+}
+
+.itg-pager {
+	margin-top: 1.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+	& .basalt-pager-size label {
+		margin: 0;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--itg-quiet);
+	}
+}
+
+/* Services still to add fill a grid of equal tiles under the category
+   tabs; a tile lifts and picks up its hue on hover or keyboard focus. */
+.itg-cats {
+	margin-bottom: 1.25rem;
+}
+.itg-toolbar-catalog {
+	margin-bottom: 1.5rem;
+}
+
+.itg-tiles {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.itg-tile {
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+	padding: 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover,
+	&:has(:focus-visible) {
+		border-color: color-mix(in srgb, var(--itg-tone, var(--basalt-hue)) 40%, var(--basalt-edge-strong));
+		box-shadow: 0 6px 18px -12px color-mix(in srgb, var(--basalt-copy) 40%, transparent);
+	}
+	@media (prefers-reduced-motion: reduce), print {
+		transition: none;
+	}
+}
+
+.itg-tile-head {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+}
+.itg-tile-who {
+	flex: 1;
+	min-width: 0;
+}
+.itg-tile-name {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.itg-tile-cat {
+	margin: 0.1rem 0 0;
+	font-size: 0.76rem;
+	color: var(--itg-quiet);
+}
+.itg-tile-tag {
+	align-self: flex-start;
+}
+.itg-tile-desc {
+	flex: 1;
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.itg-tile-foot {
+	display: flex;
+}
+
+.itg-ask {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.5rem;
+	padding: 1rem 1.25rem;
+	border-radius: 14px;
+	font-size: 0.88rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The quick-view panel is a little wider than basalt's default record
+   panel and stacks status, a health ring, facts, access and settings. */
+.itg-drawer {
+	&.basalt-drawer-record {
+		--bs-offcanvas-width: 480px;
+	}
+	& .offcanvas-header {
+		gap: 0.85rem;
+	}
+}
+
+.itg-drawer-status {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.itg-drawer-when {
+	font-size: 0.8rem;
+	color: var(--itg-quiet);
+}
+.itg-drawer-tabs {
+	margin-bottom: 1.25rem;
+}
+
+.itg-health {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+	padding: 1rem 1.1rem;
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+}
+
+.itg-health-ring {
+	--basalt-tone: var(--basalt-success);
+
+	&.is-low {
+		--basalt-tone: var(--basalt-danger);
+	}
+}
+.itg-health-value {
+	margin: 0;
+	font-size: 1.35rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+}
+.itg-health-label {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--itg-quiet);
+}
+
+.itg-facts {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.76rem;
+		font-weight: 600;
+		color: var(--itg-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.88rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+.itg-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Access lists share one look: a green tick per line, and the line about
+   what is never shared in the quiet gray. */
+.itg-scopes,
+.itg-perms {
+	display: grid;
+	gap: 0.4rem;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+.itg-scopes li,
+.itg-perms li {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	font-size: 0.86rem;
+	color: var(--basalt-copy-body);
+}
+.itg-scopes .bi,
+.itg-perms .bi {
+	color: var(--itg-success-text);
+}
+.itg-perms {
+	margin-bottom: 0;
+
+	& .is-never,
+	& .is-never .bi {
+		color: var(--itg-quiet);
+	}
+}
+
+.itg-hint {
+	margin: 0 0 0.6rem;
+	font-size: 0.8rem;
+	color: var(--itg-quiet);
+}
+.itg-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+}
+
+.itg-settings {
+	display: grid;
+	gap: 1.1rem;
+}
+
+.itg-toggle {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	& .form-switch .form-check-input {
+		width: 2.5em;
+		height: 1.35em;
+		margin-top: 0.1rem;
+	}
+}
+.itg-toggle-title {
+	display: block;
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+.itg-toggle-text {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--itg-quiet);
+}
+
+.itg-field .form-label {
+	font-size: 0.86rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.itg-field-inline {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+
+	& .form-text {
+		color: var(--itg-quiet);
+	}
+}
+.itg-settings-save {
+	justify-self: start;
+}
+
+.itg-retry {
+	margin-bottom: 1rem;
+	padding: 1.75rem 1.25rem;
+}
+
+/* Disconnect reads red in the panel's footer before any hover. */
+.itg-drawer .basalt-drawer-foot .itg-danger-link {
+	color: var(--itg-danger-text);
+
+	&:hover,
+	&:focus-visible {
+		border-color: color-mix(in srgb, var(--basalt-danger) 45%, var(--basalt-edge-strong));
+		color: var(--itg-danger-text);
+		background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+	}
+}
+
+/* The connect dialog's sections are fieldsets with legends styled as
+   small headings, and its notes use the quiet gray. */
+.itg-legend-title {
+	margin-bottom: 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.itg-connect-dialog {
+	& .basalt-dialog-head .itg-logo {
+		flex-shrink: 0;
+	}
+	& .form-text {
+		color: var(--itg-quiet);
+	}
+}

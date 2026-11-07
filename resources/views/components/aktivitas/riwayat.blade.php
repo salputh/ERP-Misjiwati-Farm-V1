@@ -1,7 +1,7 @@
 @props(['perHari', 'dimuat', 'total', 'jenis', 'modul'])
 
-{{-- Riwayat aktivitas per hari, terbaru di atas (HexaDash: Basic Table, Basic Usage). Dua dropdown menyaring jenis aksi dan modul. --}}
-<div class="col-12 mb-25">
+{{-- Riwayat aktivitas per hari, terbaru di atas . Dua dropdown menyaring jenis aksi dan modul. --}}
+<div class="col-12 mb-4">
     <x-kartu badan="p-0">
         <x-slot:judul>@angka($total) aktivitas</x-slot:judul>
         <x-slot:ekstra class="d-flex flex-wrap gap-2 tanpa-kapital">
@@ -19,15 +19,15 @@
             </x-pilih>
         </x-slot:ekstra>
 
-        <div class="table4 p-25">
+        <div class="tabel-data">
             <div class="table-responsive">
-                <table class="table mb-0">
+                <table class="table mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">Waktu</span></th>
-                            <th><span class="userDatatable-title">Aksi</span></th>
-                            <th><span class="userDatatable-title">Modul</span></th>
-                            <th><span class="userDatatable-title">Keterangan</span></th>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Aksi</th>
+                            <th>Modul</th>
+                            <th>Keterangan</th>
                         </tr>
                     </thead>
                     @forelse ($perHari as $tanggal => $sehari)
@@ -35,13 +35,13 @@
                             <x-tabel.grup kolom="4" :judul="$sehari->first()->created_at->translatedFormat('l, j F Y')" />
                             @foreach ($sehari as $aktivitas)
                                 <tr wire:key="aktivitas-{{ $aktivitas->id }}">
-                                    <td><div class="userDatatable-content">{{ $aktivitas->created_at->format('H:i') }}</div></td>
-                                    <td><span class="dm-tag tag-transparented m-0 tag-{{ $aktivitas->jenis->warna() }}">{{ $aktivitas->jenis->label() }}</span></td>
-                                    <td><div class="userDatatable-content"><i class="uil {{ $aktivitas->modul->ikon() }} color-light me-1" aria-hidden="true"></i>{{ $aktivitas->modul->label() }}</div></td>
+                                    <td>{{ $aktivitas->created_at->format('H:i') }}</td>
+                                    <td><span class="badge m-0 bg-{{ $aktivitas->jenis->warna() }}-subtle text-{{ $aktivitas->jenis->warna() }}">{{ $aktivitas->jenis->label() }}</span></td>
+                                    <td><i class="bi {{ $aktivitas->modul->ikon() }} text-body-secondary me-1" aria-hidden="true"></i>{{ $aktivitas->modul->label() }}</td>
                                     <td class="w-50">
-                                        <span class="d-block color-dark fw-500">{{ $aktivitas->kalimat() }}</span>
+                                        <span class="d-block text-body fw-medium">{{ $aktivitas->kalimat() }}</span>
                                         @isset($aktivitas->rincian)
-                                            <span class="d-block fs-13 color-light">{{ $aktivitas->rincian }}</span>
+                                            <span class="d-block small text-body-secondary">{{ $aktivitas->rincian }}</span>
                                         @endisset
                                     </td>
                                 </tr>
@@ -50,7 +50,7 @@
                     @empty
                         <tbody>
                             <tr>
-                                <td colspan="4" class="text-center color-light">Tidak ada aktivitas yang cocok dengan saringan ini.</td>
+                                <td colspan="4" class="text-center text-body-secondary">Tidak ada aktivitas yang cocok dengan saringan ini.</td>
                             </tr>
                         </tbody>
                     @endforelse
@@ -58,12 +58,12 @@
             </div>
 
             @if ($dimuat < $total)
-                <div class="text-center mt-25">
+                <div class="text-center mt-4">
                     <x-tombol warna="light" variasi="outlined" wire:click="muatLagi">Tampilkan lebih banyak</x-tombol>
-                    <span class="d-block fs-13 color-light mt-10">Menampilkan @angka($dimuat) dari @angka($total) aktivitas</span>
+                    <span class="d-block small text-body-secondary mt-2">Menampilkan @angka($dimuat) dari @angka($total) aktivitas</span>
                 </div>
             @endif
-            <p class="fs-13 color-light mt-15 mb-0">Satu baris untuk tiap aksi simpan atau hapus, terbaru di atas. Keterangan adalah salinan saat aksi dilakukan, jadi tetap terbaca setelah datanya diubah atau dihapus.</p>
+            <p class="small text-body-secondary mt-3 mb-0">Satu baris untuk tiap aksi simpan atau hapus, terbaru di atas. Keterangan adalah salinan saat aksi dilakukan, jadi tetap terbaca setelah datanya diubah atau dihapus.</p>
         </div>
     </x-kartu>
 </div>

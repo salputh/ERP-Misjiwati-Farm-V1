@@ -1,0 +1,1567 @@
+/**
+ * Broadway Street Clinic, Bayline Health's demo practice in North
+ * Beach: a multi-provider clinic with twelve infusion and observation
+ * chairs, plus the two wards and the ER at Mission Bay Hospital, the
+ * group's hospital. One day's worth of data, dated against Friday,
+ * October 9, 2026 at 11:20, and the numbers hold together across the
+ * pages: 86 visits booked, 31 seen, 9 waiting, 6 rooms in use, 9
+ * chairs taken; at the hospital 9 of 12 ward beds taken, 8 in the ER.
+ *
+ * window.Basalt.data.clinic carries the departments and who works in
+ * them, the providers, the sites and days they work and their day,
+ * every exam room, chair and bed, the next patients due, the small
+ * chart band per page, and one patient's chart. Replace any list with
+ * the same fields to run it on real records.
+ */
+(() => {
+	'use strict';
+
+	const AS_OF = '2026-10-09';
+	const NOW = '11:20';
+
+	/* Each department stands for a part of the body on the Providers
+	   page: `organ` names the drawn organ, `spot` is where its chip
+	   floats (percent of the stage), `tone` picks a chart color. */
+	const departments = [
+		{
+			key: 'gp',
+			name: 'Primary care',
+			what: 'Check-ups, vaccines, referrals',
+			organ: 'shoulder',
+			tone: 1,
+			side: 'left',
+			spot: [31, 22],
+			visits: 15,
+			lastWeek: 13,
+			week: [68, 61],
+			month: [284, 270],
+			days: [12, 14, 13, 16, 13, 0, 0],
+			wait: 9,
+			slots: [9, 12],
+			staff: ['ev', 'pn'],
+		},
+		{
+			key: 'resp',
+			name: 'Respiratory',
+			what: 'Chest, breathing, asthma',
+			organ: 'lungs',
+			tone: 7,
+			side: 'left',
+			spot: [36, 44],
+			visits: 14,
+			lastWeek: 9,
+			week: [59, 41],
+			month: [212, 188],
+			days: [9, 11, 12, 13, 14, 0, 0],
+			wait: 14,
+			slots: [11, 12],
+			staff: ['km', 'nh'],
+		},
+		{
+			key: 'gastro',
+			name: 'Gastroenterology',
+			what: 'Stomach and digestion',
+			organ: 'gut',
+			tone: 5,
+			side: 'left',
+			spot: [28, 62],
+			visits: 8,
+			lastWeek: 10,
+			week: [37, 44],
+			month: [161, 158],
+			days: [8, 7, 9, 6, 8, 0, 0],
+			wait: 8,
+			slots: [6, 10],
+			staff: ['mt'],
+		},
+		{
+			key: 'ortho',
+			name: 'Orthopedics',
+			what: 'Back, joints, fractures',
+			organ: 'joints',
+			tone: 4,
+			side: 'left',
+			spot: [35, 80],
+			visits: 12,
+			lastWeek: 12,
+			week: [55, 52],
+			month: [236, 230],
+			days: [11, 10, 12, 10, 12, 0, 0],
+			wait: 12,
+			slots: [8, 9],
+			staff: ['ta', 'lr'],
+		},
+		{
+			key: 'mind',
+			name: 'Mental health',
+			what: 'Counseling and psychiatry',
+			organ: 'brain',
+			tone: 8,
+			side: 'right',
+			spot: [65, 5],
+			visits: 7,
+			lastWeek: 6,
+			week: [33, 29],
+			month: [140, 131],
+			days: [6, 7, 6, 7, 7, 0, 0],
+			wait: 4,
+			slots: [7, 8],
+			staff: ['sr'],
+		},
+		{
+			key: 'ent',
+			name: 'Ear, nose & throat',
+			what: 'Ears, sinuses, throat',
+			organ: 'throat',
+			tone: 2,
+			side: 'right',
+			spot: [70, 24],
+			visits: 11,
+			lastWeek: 8,
+			week: [48, 39],
+			month: [196, 184],
+			days: [9, 10, 8, 10, 11, 0, 0],
+			wait: 10,
+			slots: [9, 10],
+			staff: ['ao', 'hm'],
+		},
+		{
+			key: 'cardio',
+			name: 'Cardiology',
+			what: 'Heart and blood pressure',
+			organ: 'heart',
+			tone: 6,
+			side: 'right',
+			spot: [64, 42],
+			visits: 6,
+			lastWeek: 7,
+			week: [27, 31],
+			month: [118, 124],
+			days: [5, 6, 5, 5, 6, 0, 0],
+			wait: 19,
+			slots: [5, 6],
+			staff: ['rc'],
+		},
+		{
+			key: 'derm',
+			name: 'Dermatology',
+			what: 'Skin, moles, allergies',
+			organ: 'skin',
+			tone: 3,
+			side: 'right',
+			spot: [69, 62],
+			visits: 5,
+			lastWeek: 5,
+			week: [22, 24],
+			month: [97, 101],
+			days: [4, 5, 4, 4, 5, 0, 0],
+			wait: 6,
+			slots: [4, 8],
+			staff: ['co'],
+		},
+	];
+
+	/* Everyone seeing patients. The first six have a room and a lane on
+	   Appointments; the rest are in today without a room of their own.
+	   `face` is a headshot that stands in for the initials wherever the
+	   provider's avatar shows. */
+	const providers = [
+		{
+			id: 'ev',
+			name: 'Dr. Emily Pearce',
+			face: 'assets/basalt/images/multipurpose/clinic/portrait-doctor-1-face.svg',
+			role: 'Family medicine',
+			dept: 'gp',
+			room: 'E1',
+			booked: 12,
+			seen: 6,
+			sites: [['Broadway Street', 'Mon–Fri']],
+		},
+		{
+			id: 'km',
+			name: 'Dr. Edward Morgan',
+			role: 'Internal medicine',
+			dept: 'resp',
+			room: 'E2',
+			booked: 11,
+			seen: 5,
+			sites: [
+				['Broadway Street', 'Mon, Wed, Fri'],
+				['Nob Hill', 'Tue, Thu'],
+			],
+		},
+		{
+			id: 'ao',
+			name: 'Dr. Laura Hughes',
+			face: 'assets/basalt/images/multipurpose/clinic/portrait-nurse-1-face.svg',
+			role: 'Pediatrics',
+			dept: 'ent',
+			room: 'E4',
+			booked: 14,
+			seen: 7,
+			sites: [
+				['Broadway Street', 'Tue–Fri'],
+				['Marina', 'Mon'],
+			],
+		},
+		{
+			id: 'rc',
+			name: 'Dr. Robert Hayes',
+			face: 'assets/basalt/images/multipurpose/clinic/portrait-doctor-2-face.svg',
+			role: 'Cardiology',
+			dept: 'cardio',
+			room: 'E6',
+			booked: 9,
+			seen: 3,
+			sites: [
+				['Broadway Street', 'Mon, Wed, Fri'],
+				['Mission Bay Hospital', 'Tue, Thu'],
+			],
+		},
+		{
+			id: 'pn',
+			name: 'Megan Price',
+			role: 'Nurse practitioner',
+			dept: 'gp',
+			room: 'E7',
+			booked: 13,
+			seen: 6,
+			sites: [['Broadway Street', 'Mon–Fri']],
+		},
+		{
+			id: 'ta',
+			name: 'Dr. Russell Ashby',
+			face: 'assets/basalt/images/multipurpose/clinic/portrait-nurse-2-face.svg',
+			role: 'Orthopedics',
+			dept: 'ortho',
+			room: 'E8',
+			booked: 9,
+			seen: 2,
+			sites: [
+				['Broadway Street', 'Tue–Fri'],
+				['Mission Bay Hospital', 'Mon'],
+			],
+		},
+		{
+			id: 'nh',
+			name: 'Dr. Rachel Moore',
+			role: 'Pulmonology',
+			dept: 'resp',
+			room: null,
+			booked: 6,
+			seen: 2,
+			sites: [
+				['Broadway Street', 'Wed, Fri'],
+				['Presidio', 'Mon, Tue, Thu'],
+			],
+		},
+		{
+			id: 'mt',
+			name: 'Dr. Susan Clark',
+			face: 'assets/basalt/images/multipurpose/clinic/portrait-nurse-3-face.svg',
+			role: 'Gastroenterology',
+			dept: 'gastro',
+			room: null,
+			booked: 8,
+			seen: 3,
+			sites: [
+				['Broadway Street', 'Thu, Fri'],
+				['Mission Bay Hospital', 'Mon–Wed'],
+			],
+		},
+		{
+			id: 'lr',
+			name: 'Dr. Kevin Ward',
+			role: 'Physical therapy',
+			dept: 'ortho',
+			room: null,
+			booked: 7,
+			seen: 4,
+			sites: [
+				['Broadway Street', 'Mon, Wed, Fri'],
+				['Marina', 'Tue, Thu'],
+			],
+		},
+		{
+			id: 'sr',
+			name: 'Dr. Diane Ellery',
+			role: 'Psychiatry',
+			dept: 'mind',
+			room: null,
+			booked: 7,
+			seen: 3,
+			sites: [
+				['Broadway Street', 'Fri'],
+				['Video', 'Mon–Thu'],
+			],
+		},
+		{
+			id: 'hm',
+			name: 'Dr. Paul Foster',
+			role: 'Ear, nose & throat',
+			dept: 'ent',
+			room: null,
+			booked: 6,
+			seen: 2,
+			sites: [
+				['Broadway Street', 'Wed, Fri'],
+				['Nob Hill', 'Mon, Tue'],
+			],
+		},
+		{
+			id: 'co',
+			name: 'Dr. Brian Lewis',
+			role: 'Dermatology',
+			dept: 'derm',
+			room: null,
+			booked: 5,
+			seen: 2,
+			sites: [
+				['Broadway Street', 'Fri'],
+				['Marina', 'Mon–Wed'],
+			],
+		},
+	];
+
+	/* The doctors at Mission Bay Hospital whom the ER and the wards name:
+	   they are not Broadway Street's providers, so they stay out of the
+	   lists above, but `provider(id)` finds them. */
+	const hospital = {
+		name: 'Mission Bay Hospital',
+		staff: [
+			{ id: 'hc', name: 'Dr. Hannah Cho', role: 'Emergency medicine', unit: 'er' },
+			{ id: 'cd', name: 'Dr. Claire Donovan', role: 'Emergency medicine', unit: 'er' },
+			{ id: 'vs', name: 'Dr. Victor Salazar', role: 'Hospitalist', unit: 'ward' },
+			{ id: 'sa', name: 'Dr. Samuel Adeyemi', role: 'Hospitalist', unit: 'ward' },
+			{ id: 'it', name: 'Dr. Isaac Turner', role: 'General surgery', unit: 'ward' },
+		],
+	};
+
+	/* The eight exam rooms along the corridor. */
+	const rooms = [
+		{ id: 'E1', state: 'busy', who: 'ev', since: 12, patient: 'Peggy Townsend' },
+		{ id: 'E2', state: 'busy', who: 'km', since: 4, patient: 'Rory Pruett' },
+		{ id: 'E3', state: 'free' },
+		{ id: 'E4', state: 'busy', who: 'ao', since: 21, patient: 'Brenda Morris' },
+		{ id: 'E5', state: 'clean' },
+		{ id: 'E6', state: 'busy', who: 'rc', since: 8, patient: 'Ellen Dean' },
+		{ id: 'E7', state: 'busy', who: 'pn', since: 15, patient: 'Jamie Ellis' },
+		{ id: 'E8', state: 'busy', who: 'ta', since: 31, patient: 'Oscar Reed' },
+	];
+
+	/* Twenty-four chairs in the waiting area; a taken chair carries who
+	   is in it, who they are seeing, why, and the minutes waited. */
+	const seats = {
+		0: { name: 'Jake Mann', with: 'ev', why: 'new patient', minutes: 4 },
+		2: { name: 'Tyler Walsh', with: 'ao', why: 'asthma review', minutes: 9 },
+		3: { name: 'Rose Parker', with: 'km', why: 'follow-up', minutes: 14 },
+		5: { name: 'Anthony Cole', with: 'km', why: 'follow-up', minutes: 2 },
+		7: { name: 'Fiona Ross', with: 'ta', why: 'knee follow-up', minutes: 22 },
+		9: { name: 'Amy Dunn', with: 'ev', why: 'check-up', minutes: 11 },
+		12: { name: 'Joan Allen', with: 'pn', why: 'blood draw', minutes: 6 },
+		14: { name: 'Harold Merritt', with: 'rc', why: 'stress test', minutes: 27 },
+		17: { name: 'Jill Hunt', with: 'ao', why: 'vaccines', minutes: 8 },
+	};
+
+	/* Mission Bay Hospital's two wards, bed by bed: 4 West (medical,
+	   beds 401 to 406) and 5 West (surgical, 501 to 506). */
+	const beds = [
+		{
+			id: '401',
+			state: 'taken',
+			note: 'Day 3',
+			patient: 'Bonnie Stroud',
+			with: 'rc',
+			why: 'Chest pain, on watch',
+			home: 'Oct 10',
+			check: 'Vitals at 10:30, steady',
+		},
+		{
+			id: '402',
+			state: 'taken',
+			note: 'Day 1',
+			patient: 'Harvey Lund',
+			with: 'vs',
+			why: 'Pneumonia, IV antibiotics',
+			home: 'Oct 13',
+			check: 'O2 sat 95% at 10:00',
+		},
+		{ id: '403', state: 'free', note: 'Free' },
+		{
+			id: '404',
+			state: 'taken',
+			note: 'Day 5',
+			patient: 'Warren Burkett',
+			with: 'sa',
+			why: 'Heart failure, fluid off',
+			home: 'Oct 10',
+			check: 'Weight down 2 lb at 06:00',
+		},
+		{
+			id: '405',
+			state: 'watch',
+			note: 'Watch',
+			patient: 'Norma Vail',
+			with: 'rc',
+			why: 'Fainted, on a monitor',
+			home: 'Not set',
+			check: 'Monitor alarm cleared 09:40',
+		},
+		{ id: '406', state: 'clean', note: 'Being cleaned' },
+		{
+			id: '501',
+			state: 'taken',
+			note: 'Day 2',
+			patient: 'Curtis Galt',
+			with: 'it',
+			why: 'Gallbladder out',
+			home: 'Oct 10',
+			check: 'Wound dry at 10:15',
+		},
+		{
+			id: '502',
+			state: 'home',
+			note: 'Home today',
+			patient: 'Otis Rourke',
+			with: 'ta',
+			why: 'New hip, walking',
+			home: 'Today',
+			check: 'Cleared by PT at 08:30',
+		},
+		{
+			id: '503',
+			state: 'taken',
+			note: 'Day 1',
+			patient: 'Corinne Tarrant',
+			with: 'it',
+			why: 'Appendix out',
+			home: 'Oct 11',
+			check: 'Pain 3 of 10 at 10:40',
+		},
+		{ id: '504', state: 'free', note: 'Free' },
+		{
+			id: '505',
+			state: 'taken',
+			note: 'Day 4',
+			patient: 'Delia Ramos',
+			with: 'ta',
+			why: 'Knee wound infection',
+			home: 'Oct 12',
+			check: 'Temperature 99.3°F at 10:20',
+		},
+		{
+			id: '506',
+			state: 'home',
+			note: 'Home today',
+			patient: 'Nadine Bristow',
+			with: 'mt',
+			why: 'Pancreatitis, settled',
+			home: 'Today',
+			check: 'Eating again at 08:00',
+		},
+	];
+
+	/* Broadway Street Clinic's infusion and observation room, chair by
+	   chair: infusions, IV fluids and patients kept to watch for a while.
+	   Same fields as a bed; `home` is when the chair frees up. */
+	const chairs = [
+		{
+			id: 'I1',
+			state: 'taken',
+			note: '1 of 2 h',
+			patient: 'Lorraine Wilder',
+			with: 'pn',
+			why: 'Iron infusion',
+			home: '12:20',
+			check: 'Pressure 118/76 at 11:00',
+		},
+		{
+			id: 'I2',
+			state: 'taken',
+			note: '30 of 60 min',
+			patient: 'Roland Gibbs',
+			with: 'ev',
+			why: 'IV antibiotics, cellulitis',
+			home: '11:50',
+			check: 'Leg redness marked at 10:50',
+		},
+		{ id: 'I3', state: 'free', note: 'Free' },
+		{
+			id: 'I4',
+			state: 'taken',
+			note: '2 of 3 h',
+			patient: 'Marisol Vega',
+			with: 'mt',
+			why: "Infusion for Crohn's",
+			home: '12:20',
+			check: 'No reaction at 11:15',
+		},
+		{
+			id: 'I5',
+			state: 'watch',
+			note: 'Watch',
+			patient: 'Dwayne Pryor',
+			with: 'rc',
+			why: 'Fainted in the waiting room',
+			home: 'Not set',
+			check: 'Pressure steady at 11:10',
+		},
+		{ id: 'I6', state: 'clean', note: 'Being cleaned' },
+		{
+			id: 'I7',
+			state: 'taken',
+			note: '40 of 60 min',
+			patient: 'Hollis Gentry',
+			with: 'pn',
+			why: 'IV fluids, stomach bug',
+			home: '11:40',
+			check: 'Kept water down at 11:05',
+		},
+		{
+			id: 'I8',
+			state: 'home',
+			note: 'Done',
+			patient: 'Bernadette Coyle',
+			with: 'km',
+			why: 'Asthma, nebulizer done',
+			home: 'Now',
+			check: 'Peak flow normal at 11:00',
+		},
+		{
+			id: 'I9',
+			state: 'taken',
+			note: '20 of 30 min',
+			patient: 'Martin Kellogg',
+			with: 'hm',
+			why: 'Allergy shot, on watch',
+			home: '11:30',
+			check: 'No hives at 11:15',
+		},
+		{ id: 'I10', state: 'free', note: 'Free' },
+		{
+			id: 'I11',
+			state: 'taken',
+			note: '10 of 30 min',
+			patient: 'Ruth Kincaid',
+			with: 'ev',
+			why: 'Bone infusion, osteoporosis',
+			home: '11:40',
+			check: 'Pressure 124/80 at 11:10',
+		},
+		{
+			id: 'I12',
+			state: 'home',
+			note: 'Done',
+			patient: 'Lucille Faraday',
+			with: 'ev',
+			why: 'IV antibiotics, day 3 of 3',
+			home: 'Now',
+			check: 'Line out at 11:05',
+		},
+	];
+
+	/* One lane per provider with a room: visits as [start, length, label,
+	   kind], minutes from 08:00. A kind of `break` is lunch, `gone` is a
+	   no-show; the page works out the rest against NOW. */
+	const lanes = {
+		ev: [
+			[0, 30, 'Heidi Fairley'],
+			[30, 20, 'Oliver Hart'],
+			[60, 30, 'Check-up'],
+			[90, 30, 'Peggy Townsend'],
+			[120, 20, 'Follow-up'],
+			[150, 30, 'Dolores Easton'],
+			[185, 30, 'Jake Mann'],
+			[220, 30, 'Amy Dunn'],
+			[255, 20, 'Phone visit'],
+			[300, 60, 'Lunch', 'break'],
+			[360, 30, 'Shelby Stone'],
+			[390, 30, 'Follow-up'],
+			[430, 30, 'Ian Porter'],
+			[470, 30, 'New patient'],
+			[510, 30, 'Courtney Thorne'],
+			[550, 30, 'Check-up'],
+		],
+		km: [
+			[15, 30, 'Lisa Talley'],
+			[45, 30, 'Diabetes review'],
+			[80, 30, 'Peter Owens', 'gone'],
+			[110, 30, 'Sylvia Croft'],
+			[150, 30, 'Rory Pruett'],
+			[190, 30, 'Rose Parker'],
+			[225, 30, 'Follow-up'],
+			[260, 30, 'Anthony Cole'],
+			[300, 60, 'Lunch', 'break'],
+			[360, 30, 'Blood pressure'],
+			[400, 30, 'Bruce Lanham'],
+			[440, 30, 'Follow-up'],
+			[480, 40, 'New patient'],
+			[530, 30, 'Nancy Benson'],
+		],
+		ao: [
+			[0, 20, 'Cody Raines'],
+			[20, 20, 'Vaccines'],
+			[40, 20, 'Elaine Collins'],
+			[60, 20, 'Ear check'],
+			[80, 20, 'Baby Sims'],
+			[100, 20, 'Vaccines'],
+			[120, 20, 'Tyler Walsh'],
+			[140, 20, 'Asthma review'],
+			[160, 20, 'Olga Norris'],
+			[185, 25, 'Brenda Morris'],
+			[215, 20, 'Vaccines'],
+			[240, 20, 'Jill Hunt'],
+			[265, 20, 'Fever'],
+			[300, 60, 'Lunch', 'break'],
+			[360, 25, 'New patient'],
+			[390, 20, 'Nick Ford'],
+			[415, 20, 'Vaccines'],
+			[440, 20, 'Ear check'],
+			[470, 25, 'Clayton Bryce'],
+			[500, 20, 'Follow-up'],
+			[530, 25, 'Molly Jensen'],
+		],
+		rc: [
+			[30, 45, 'Walter Buckley'],
+			[75, 45, 'Echo review'],
+			[120, 40, 'Ellen Dean'],
+			[165, 45, 'Harold Merritt'],
+			[215, 45, 'Stress test'],
+			[265, 30, 'Follow-up'],
+			[300, 60, 'Lunch', 'break'],
+			[360, 45, 'Betty Shaw'],
+			[410, 45, 'New patient'],
+			[470, 45, 'Harry Lane'],
+			[520, 40, 'Follow-up'],
+		],
+		pn: [
+			[0, 20, 'Wound care'],
+			[20, 25, 'Dana Rice'],
+			[45, 20, 'Injection'],
+			[70, 25, 'Blood draw'],
+			[95, 25, 'Carl Gamble'],
+			[125, 20, 'Dressing'],
+			[150, 25, 'Joan Allen'],
+			[180, 25, 'Travel vaccines'],
+			[210, 25, 'Injection'],
+			[240, 25, 'Blood draw'],
+			[270, 25, 'Jamie Ellis'],
+			[300, 60, 'Lunch', 'break'],
+			[360, 25, 'Wound care'],
+			[390, 25, 'Blood draw'],
+			[420, 25, 'Nina Vaughn'],
+			[450, 25, 'Injection'],
+			[480, 25, 'Dressing'],
+			[510, 25, 'Blood draw'],
+			[540, 25, 'Follow-up'],
+		],
+		ta: [
+			[45, 40, 'Knee follow-up'],
+			[90, 40, 'Oscar Reed'],
+			[135, 40, 'Fracture check', 'gone'],
+			[180, 40, 'Fiona Ross'],
+			[230, 40, 'Post-op visit'],
+			[275, 25, 'Brace fitting'],
+			[300, 60, 'Lunch', 'break'],
+			[360, 40, 'Shoulder review'],
+			[410, 40, 'Kirk Waldron'],
+			[460, 40, 'New patient'],
+			[510, 45, 'Cast removal'],
+		],
+	};
+
+	/* The next patients due in a room. */
+	const nextUp = [
+		{
+			at: '11:30',
+			room: 'E1',
+			name: 'Jake Mann',
+			with: 'ev',
+			why: 'new patient',
+			state: 'checked',
+			label: 'Checked in',
+		},
+		{
+			at: '11:30',
+			room: 'E8',
+			name: 'Fiona Ross',
+			with: 'ta',
+			why: 'knee follow-up',
+			state: 'late',
+			label: 'Waited 22 min',
+		},
+		{
+			at: '11:35',
+			room: 'E6',
+			name: 'Harold Merritt',
+			with: 'rc',
+			why: 'stress test',
+			state: 'late',
+			label: 'Waited 27 min',
+		},
+		{
+			at: '11:40',
+			room: 'E4',
+			name: 'Tyler Walsh',
+			with: 'ao',
+			why: 'asthma review',
+			state: 'booked',
+			label: 'Booked',
+		},
+		{
+			at: '11:45',
+			room: 'E2',
+			name: 'Anthony Cole',
+			with: 'km',
+			why: 'follow-up',
+			state: 'booked',
+			label: 'Booked',
+		},
+	];
+
+	/* Today's video visits on Telehealth: start time, patient, provider,
+	   why, minutes (taken so far when live, waited when in the waiting
+	   room), and where the visit stands. */
+	const video = [
+		{ at: '9:00', name: 'Oliver Hart', with: 'ev', why: 'results', minutes: 14, state: 'done' },
+		{ at: '9:30', name: 'Amy Dunn', with: 'ev', why: 'prescription review', minutes: 9, state: 'done' },
+		{ at: '10:15', name: 'Rory Pruett', with: 'km', why: 'diabetes check', minutes: 18, state: 'done' },
+		{ at: '11:05', name: 'Rose Parker', with: 'km', why: 'follow-up', minutes: 12, state: 'live' },
+		{ at: '11:30', name: 'Anthony Cole', with: 'km', why: 'follow-up', minutes: 11, state: 'waiting' },
+		{ at: '11:45', name: 'Courtney Thorne', with: 'ev', why: 'results', minutes: 3, state: 'waiting' },
+		{ at: '14:00', name: 'Nancy Benson', with: 'sr', why: 'counseling', minutes: 50, state: 'booked' },
+		{ at: '16:00', name: 'Heidi Fairley', with: 'ta', why: 'knee check-in', minutes: 20, state: 'booked' },
+	];
+
+	/* Lab results back and waiting for a signature. `range` is the normal
+	   band as a share of the bar, `at` where this value sits on it. */
+	const results = [
+		{
+			name: 'Walter Buckley',
+			with: 'rc',
+			test: 'LDL cholesterol',
+			value: '168 mg/dL',
+			range: [0, 62],
+			at: 84,
+			out: true,
+			spoken: 'Above range, normal is under 130',
+		},
+		{
+			name: 'Lisa Talley',
+			with: 'km',
+			test: 'HbA1c',
+			value: '6.1 %',
+			range: [20, 58],
+			at: 54,
+			out: false,
+			spoken: 'In range, 4 to 6.4',
+		},
+		{
+			name: 'Shelby Stone',
+			with: 'ev',
+			test: 'Hemoglobin',
+			value: '10.4 g/dL',
+			range: [36, 78],
+			at: 24,
+			out: true,
+			spoken: 'Below range, normal is 12 to 15.5',
+		},
+		{
+			name: 'Carl Gamble',
+			with: 'pn',
+			test: 'TSH',
+			value: '2.3 mIU/L',
+			range: [10, 70],
+			at: 38,
+			out: false,
+			spoken: 'In range, 0.4 to 4',
+		},
+		{
+			name: 'Ellen Dean',
+			with: 'rc',
+			test: 'Potassium',
+			value: '4.2 mmol/L',
+			range: [30, 72],
+			at: 52,
+			out: false,
+			spoken: 'In range, 3.5 to 5',
+		},
+	];
+
+	/* The clinic on a monitor: what cannot be read off the lanes. The
+	   average wait per quarter hour since 08:00, and the beds through the
+	   day (two go home at 15:00). */
+	const monitor = {
+		waits: [3, 4, 6, 8, 9, 12, 11, 14, 13, 11, 12, 10, 11, 11],
+		beds: { until: 28, before: 9, after: 7 },
+	};
+
+	/* What the director sees first thing. */
+	const today = {
+		booked: { value: 86, lastWeek: 81 },
+		seen: { value: 31, lastWeek: 29 },
+		late: { value: 4, lastWeek: 6 },
+		noShows: { value: 2, lastWeek: 5 },
+		longestWait: 27,
+		providersIn: [11, 12],
+		money: {
+			billed: 48200,
+			collected: 41650,
+			outstanding: 23900,
+			claimsOver30: 7,
+			weeks: ['Aug 17', 'Aug 24', 'Aug 31', 'Sep 7', 'Sep 14', 'Sep 21', 'Sep 28', 'Oct 5'],
+			billedWeeks: [44.1, 45.3, 43.8, 46.9, 47.2, 47.8, 48.9, 48.2],
+			collectedWeeks: [34.2, 36.8, 35.1, 38.4, 39.0, 40.2, 42.5, 41.7],
+		},
+	};
+
+	/* One patient's chart. Problems light the body the same way the
+	   departments do, so the drawing is shared. */
+	const patient = {
+		id: '#10427',
+		name: 'Heidi Fairley',
+		born: '1979-03-14',
+		age: 47,
+		sex: 'Female',
+		phone: '+1 415 555 0142',
+		gp: 'ev',
+		allergies: ['Penicillin', 'Latex'],
+		problems: [
+			{
+				key: 'asthma',
+				name: 'Asthma',
+				organ: 'lungs',
+				tone: 7,
+				side: 'left',
+				spot: [36, 40],
+				since: 2019,
+				with: 'km',
+				visits: 6,
+				last: 'Sep 30',
+				next: 'Spirometry on Oct 23',
+				state: 'Controlled',
+				due: '2026-10-23',
+				step: 'Spirometry',
+				measure: {
+					name: 'Peak flow',
+					unit: 'L/min',
+					series: [372, 384, 395, 401, 410],
+					target: 'Above 380 is good for her',
+				},
+				treats: ['Budesonide inhaler', 'Albuterol inhaler'],
+				history: [
+					['Sep 30', 'Asthma review', 'Peak flow 410, inhaler technique good'],
+					['Jun 3', 'Night cough', 'Budesonide kept at 180 mcg'],
+					['Feb 11', 'Asthma review', 'No attacks since last winter'],
+				],
+			},
+			{
+				key: 'bp',
+				name: 'High blood pressure',
+				organ: 'heart',
+				tone: 6,
+				side: 'right',
+				spot: [64, 36],
+				since: 2022,
+				with: 'rc',
+				visits: 4,
+				last: 'Aug 12',
+				next: 'Repeat reading today',
+				state: 'Watch',
+				due: '2026-10-09',
+				step: 'Repeat reading',
+				measure: {
+					name: 'Blood pressure, top number',
+					unit: 'mmHg',
+					series: [142, 139, 136, 131, 128],
+					target: 'Under 130 is the goal',
+				},
+				treats: ['Amlodipine'],
+				history: [
+					['Aug 12', 'Blood pressure check', '131/84, amlodipine kept at 5 mg'],
+					['May 20', 'Blood pressure check', '136/86, home readings asked for'],
+					['Jan 14', 'Started treatment', '142/90 twice, amlodipine 5 mg'],
+				],
+			},
+			{
+				key: 'knee',
+				name: 'Left knee, meniscus',
+				organ: 'joints',
+				tone: 4,
+				side: 'left',
+				spot: [34, 78],
+				since: 2025,
+				with: 'ta',
+				visits: 3,
+				last: 'Oct 2',
+				next: 'PT twice a week',
+				state: 'Improving',
+				due: '2026-10-12',
+				step: 'PT',
+				measure: {
+					name: 'Pain, 0 to 10',
+					unit: 'of 10',
+					series: [7, 6, 5, 4, 3],
+					target: 'Two or less means PT is done',
+				},
+				treats: ['Naproxen', 'PT twice a week'],
+				history: [
+					['Oct 2', 'Knee follow-up', 'Swelling down, PT four more weeks'],
+					['Jul 21', 'MRI', 'Meniscus tear, no surgery for now'],
+					['Jul 2', 'Twisted knee', 'X-ray clear, naproxen and PT'],
+				],
+			},
+			{
+				key: 'eczema',
+				name: 'Eczema',
+				organ: 'skin',
+				tone: 3,
+				side: 'right',
+				spot: [69, 60],
+				since: 2016,
+				with: 'co',
+				visits: 1,
+				last: 'Mar 4',
+				next: 'As needed',
+				state: 'Quiet',
+				due: '2027-03-04',
+				step: 'Yearly skin check',
+				measure: {
+					name: 'Flare-ups a year',
+					unit: 'a year',
+					series: [5, 4, 3, 2, 1],
+					target: 'One or none is quiet',
+				},
+				treats: ['Moisturizer twice a day'],
+				history: [
+					['Mar 4', 'Skin check', 'Quiet, cream as needed'],
+					['Nov 9, 2025', 'Flare-up', 'Short course of steroid cream'],
+					['Mar 2, 2025', 'Skin check', 'Two flare-ups over winter'],
+				],
+			},
+		],
+		vitals: [
+			{
+				key: 'hr',
+				name: 'Heart rate',
+				value: '72',
+				unit: 'bpm',
+				tone: 6,
+				series: [78, 76, 80, 74, 75, 71, 73, 72],
+			},
+			{
+				key: 'bp',
+				name: 'Blood pressure',
+				value: '128/82',
+				unit: 'mmHg',
+				tone: 1,
+				series: [142, 139, 136, 134, 131, 130, 129, 128],
+			},
+			{ key: 'spo2', name: 'Oxygen', value: '97', unit: '%', tone: 7, series: [95, 96, 95, 97, 96, 97, 97, 97] },
+			{
+				key: 'temp',
+				name: 'Temperature',
+				value: '98.2',
+				unit: '°F',
+				tone: 5,
+				series: [98.4, 98.1, 98.2, 98.8, 98.2, 97.9, 98.2, 98.2],
+			},
+		],
+		medications: [
+			{
+				name: 'Budesonide inhaler',
+				dose: '180 mcg, twice a day',
+				since: '2019',
+				with: 'km',
+				for: 'asthma',
+				refill: ['ok', 'Refill in 9 days'],
+			},
+			{
+				name: 'Amlodipine',
+				dose: '5 mg, every morning',
+				since: '2022',
+				with: 'rc',
+				for: 'bp',
+				refill: ['due', 'Refill due'],
+			},
+			{
+				name: 'Naproxen',
+				dose: '250 mg, as needed',
+				since: '2025',
+				with: 'ta',
+				for: 'knee',
+				refill: ['', 'As needed'],
+			},
+		],
+		results: [
+			{
+				test: 'Total cholesterol',
+				lab: 'chol',
+				value: '184 mg/dL',
+				range: [0, 66],
+				at: 60,
+				out: false,
+				spoken: 'In range, under 200',
+				on: 'Sep 30',
+			},
+			{
+				test: 'Blood glucose, fasting',
+				lab: 'glucose',
+				value: '104 mg/dL',
+				range: [18, 62],
+				at: 66,
+				out: true,
+				spoken: 'Slightly above range, normal is 70 to 99',
+				on: 'Sep 30',
+			},
+			{
+				test: 'Peak flow',
+				value: '410 L/min',
+				range: [40, 100],
+				at: 62,
+				out: false,
+				spoken: 'In range for her height',
+				on: 'Sep 30',
+			},
+		],
+		upcoming: [
+			{ on: 'Oct 23', what: 'Spirometry', with: 'km', where: 'Lab, 20 minutes', kind: 'visit' },
+			{ on: 'Nov 6', what: 'Knee check-in', with: 'ta', where: 'Video visit', kind: 'video' },
+			{ on: 'Dec 11', what: 'Blood pressure review', with: 'rc', where: 'E6, 30 minutes', kind: 'visit' },
+		],
+		visits: [
+			{ on: 'Oct 2', with: 'ta', why: 'Knee follow-up', note: 'Swelling down, PT twice a week.' },
+			{ on: 'Sep 30', with: 'km', why: 'Asthma review', note: 'Peak flow steady. Keep the inhaler as is.' },
+			{ on: 'Aug 12', with: 'rc', why: 'Blood pressure', note: 'Down to 131/84. Repeat in two months.' },
+			{ on: 'Jun 3', with: 'ev', why: 'Annual check-up', note: 'Labs ordered. Flu shot given.' },
+		],
+	};
+
+	/* The register: a record for every patient the day mentions, keyed by
+	   name. Visits booked under a reason rather than a name (a "Check-up")
+	   draw a patient from the walk-in list below. */
+	const register = {
+		'Heidi Fairley': {
+			id: '#10427',
+			age: 47,
+			born: '1979-03-14',
+			plan: 'hhp',
+			member: 'HHP-104270',
+			until: '2027-03-31',
+			phone: '+1 415 555 0142',
+			allergies: 'Penicillin, latex',
+			last: 'Oct 2',
+		},
+		'Oliver Hart': { id: '#10988', age: 52, phone: '+1 415 555 0177', allergies: 'None known', last: 'Jun 18' },
+		'Peggy Townsend': { id: '#11204', age: 34, phone: '+1 415 555 0231', allergies: 'None known', last: 'Sep 12' },
+		'Dolores Easton': {
+			id: '#09871',
+			age: 61,
+			phone: '+1 415 555 0190',
+			allergies: 'Sulfa drugs',
+			last: 'Aug 30',
+		},
+		'Jake Mann': {
+			id: '#12033',
+			age: 29,
+			phone: '+1 415 555 0344',
+			allergies: 'None known',
+			last: 'New patient',
+		},
+		'Amy Dunn': { id: '#10550', age: 45, phone: '+1 415 555 0118', allergies: 'Ibuprofen', last: 'Jul 7' },
+		'Shelby Stone': { id: '#11762', age: 38, phone: '+1 415 555 0276', allergies: 'None known', last: 'Sep 30' },
+		'Ian Porter': { id: '#10102', age: 66, phone: '+1 415 555 0163', allergies: 'Penicillin', last: 'May 22' },
+		'Courtney Thorne': { id: '#11390', age: 31, phone: '+1 415 555 0298', allergies: 'None known', last: 'Aug 4' },
+		'Lisa Talley': { id: '#10715', age: 58, phone: '+1 415 555 0205', allergies: 'None known', last: 'Sep 30' },
+		'Peter Owens': { id: '#11840', age: 43, phone: '+1 415 555 0311', allergies: 'Latex', last: 'Jun 2' },
+		'Sylvia Croft': { id: '#10266', age: 50, phone: '+1 415 555 0139', allergies: 'None known', last: 'Jul 29' },
+		'Rory Pruett': { id: '#11577', age: 37, phone: '+1 415 555 0254', allergies: 'Codeine', last: 'Sep 3' },
+		'Rose Parker': { id: '#10931', age: 69, phone: '+1 415 555 0182', allergies: 'None known', last: 'Sep 25' },
+		'Anthony Cole': { id: '#12090', age: 27, phone: '+1 415 555 0367', allergies: 'None known', last: 'Aug 15' },
+		'Bruce Lanham': { id: '#11455', age: 41, phone: '+1 415 555 0220', allergies: 'None known', last: 'Jul 11' },
+		'Nancy Benson': { id: '#10689', age: 55, phone: '+1 415 555 0147', allergies: 'Aspirin', last: 'Oct 1' },
+		'Cody Raines': { id: '#12201', age: 6, phone: '+1 415 555 0402', allergies: 'Peanuts', last: 'Apr 9' },
+		'Elaine Collins': { id: '#11932', age: 4, phone: '+1 415 555 0388', allergies: 'None known', last: 'Jun 27' },
+		'Baby Sims': { id: '#12310', age: 0, phone: '+1 415 555 0419', allergies: 'None known', last: 'Sep 16' },
+		'Tyler Walsh': { id: '#11618', age: 9, phone: '+1 415 555 0263', allergies: 'None known', last: 'Sep 2' },
+		'Olga Norris': { id: '#12047', age: 7, phone: '+1 415 555 0351', allergies: 'Egg', last: 'Aug 21' },
+		'Brenda Morris': { id: '#11873', age: 11, phone: '+1 415 555 0329', allergies: 'None known', last: 'Jul 3' },
+		'Jill Hunt': { id: '#12158', age: 3, phone: '+1 415 555 0394', allergies: 'None known', last: 'May 30' },
+		'Nick Ford': { id: '#11701', age: 8, phone: '+1 415 555 0287', allergies: 'None known', last: 'Jun 10' },
+		'Clayton Bryce': {
+			id: '#12264',
+			age: 5,
+			phone: '+1 415 555 0410',
+			allergies: 'Penicillin',
+			last: 'New patient',
+		},
+		'Molly Jensen': { id: '#11986', age: 12, phone: '+1 415 555 0372', allergies: 'None known', last: 'Aug 8' },
+		'Walter Buckley': {
+			id: '#09654',
+			age: 72,
+			phone: '+1 415 555 0121',
+			allergies: 'None known',
+			last: 'Sep 30',
+		},
+		'Ellen Dean': { id: '#10377', age: 63, phone: '+1 415 555 0158', allergies: 'None known', last: 'Sep 30' },
+		'Harold Merritt': {
+			id: '#09802',
+			age: 70,
+			phone: '+1 415 555 0134',
+			allergies: 'Contrast dye',
+			last: 'Aug 19',
+			since: '2015-03-02',
+			visits: 23,
+			plan: 'hhp',
+			member: '#77120',
+			until: '2027-01-31',
+		},
+		'Betty Shaw': {
+			id: '#10843',
+			age: 59,
+			phone: '+1 415 555 0196',
+			allergies: 'None known',
+			last: 'Sep 28',
+		},
+		'Harry Lane': {
+			id: '#10499',
+			age: 64,
+			phone: '+1 415 555 0170',
+			allergies: 'None known',
+			last: 'Sep 17',
+		},
+		'Dana Rice': { id: '#11325', age: 36, phone: '+1 415 555 0242', allergies: 'None known', last: 'Sep 19' },
+		'Carl Gamble': { id: '#11069', age: 48, phone: '+1 415 555 0213', allergies: 'None known', last: 'Sep 30' },
+		'Joan Allen': { id: '#09730', age: 74, phone: '+1 415 555 0127', allergies: 'Penicillin', last: 'Oct 5' },
+		'Jamie Ellis': { id: '#11893', age: 33, phone: '+1 415 555 0335', allergies: 'None known', last: 'Jul 24' },
+		'Nina Vaughn': {
+			id: '#10622',
+			age: 53,
+			phone: '+1 415 555 0151',
+			allergies: 'None known',
+			last: 'Aug 30',
+		},
+		'Oscar Reed': {
+			id: '#11148',
+			age: 44,
+			phone: '+1 415 555 0228',
+			allergies: 'None known',
+			last: 'Sep 26',
+		},
+		'Fiona Ross': { id: '#11536', age: 39, phone: '+1 415 555 0249', allergies: 'None known', last: 'Sep 18' },
+		'Kirk Waldron': { id: '#12112', age: 30, phone: '+1 415 555 0359', allergies: 'None known', last: 'Aug 27' },
+	};
+	const walkIns = [
+		'Paula Day',
+		'Tim Baxley',
+		'Alice Ray',
+		'Malcolm Sutton',
+		'Leslie White',
+		'Shane Walker',
+		'Candace Nash',
+		'Rory Gerald',
+		'Irene Moss',
+		'Barnaby Doyle',
+		'Amanda Sharp',
+		'Bo Cobb',
+		'Greta Lund',
+		'Vernon Ashe',
+		'Della Moran',
+		'Tessa Crowley',
+		'Wade Hollins',
+		'Iris Coleman',
+		'Neil Patton',
+		'June Harlan',
+		'Abel Ortega',
+		'Nell Cotter',
+		'Glen Sutter',
+		'Pearl Hendricks',
+		'Vera Castillo',
+		'Edna Whalen',
+		'Ada Morrow',
+	];
+
+	/* The store room and the pharmacy shelf: what is on the shelf against
+	   the point where a reorder is due. */
+	const stock = [
+		{ name: 'Nitrile gloves, medium', unit: 'boxes', have: 4, point: 12, max: 40 },
+		{ name: 'Flu vaccine, 2026', unit: 'doses', have: 18, point: 40, max: 120 },
+		{ name: 'Amoxicillin 500 mg', unit: 'packs', have: 6, point: 10, max: 30 },
+		{ name: 'ECG electrodes', unit: 'packs', have: 5, point: 8, max: 24 },
+		{ name: 'Saline 0.9%, 500 mL', unit: 'bags', have: 22, point: 20, max: 60 },
+		{ name: 'Albuterol inhalers', unit: 'units', have: 14, point: 10, max: 30 },
+		{ name: 'Blood tubes, lavender', unit: 'boxes', have: 9, point: 6, max: 20 },
+		{ name: 'Amlodipine 5 mg', unit: 'packs', have: 25, point: 12, max: 40 },
+		{ name: 'Paper rolls, exam table', unit: 'rolls', have: 30, point: 15, max: 50 },
+		{ name: 'Wound dressings, large', unit: 'boxes', have: 11, point: 8, max: 24 },
+	];
+
+	/* Mission Bay Hospital's emergency queue by triage level, with
+	   minutes waited so far. */
+	const emergency = [
+		{
+			name: 'Nora Vasquez',
+			level: 2,
+			why: 'Chest pain, 70, on arrival 10:52',
+			waited: 28,
+			with: 'hc',
+			where: 'Bay 1',
+		},
+		{
+			name: 'Ted Brannigan',
+			level: 3,
+			why: 'Deep cut, left hand, bleeding controlled',
+			waited: 34,
+			with: null,
+			where: 'Chair 2',
+		},
+		{ name: 'Alma Rojas', level: 3, why: 'Asthma, wheeze, O2 sat 94%', waited: 21, with: 'cd', where: 'Bay 2' },
+		{
+			name: 'Miles Stanhope',
+			level: 3,
+			why: 'Fall from a ladder, wrist swollen',
+			waited: 12,
+			with: null,
+			where: 'Chair 5',
+		},
+		{
+			name: 'Lena Waite',
+			level: 4,
+			why: 'Fever two days, sore throat',
+			waited: 40,
+			with: null,
+			where: 'Chair 1',
+		},
+		{ name: 'Simon Wardell', level: 4, why: 'Back pain after lifting', waited: 26, with: null, where: 'Chair 7' },
+		{ name: 'Carla Nesbitt', level: 4, why: 'Ear pain, child, 6', waited: 15, with: 'cd', where: 'Chair 3' },
+		{ name: 'Russell Grady', level: 5, why: 'Prescription ran out', waited: 48, with: null, where: 'Chair 9' },
+	];
+
+	/* What a visit costs and what each insurer pays: covers is the share
+	   of the fee after the copay, which the patient pays at the desk. */
+	const cover = {
+		plans: [
+			{ id: 'hhp', name: 'Golden Shore Health', covers: 0.8, copay: 25 },
+			{ id: 'pm', name: 'Pacific Mutual', covers: 0.7, copay: 35 },
+			{ id: 'br', name: 'Sierra Crest', covers: 0.75, copay: 30 },
+			{ id: 'mc', name: 'Medicare', covers: 0.8, copay: 0 },
+		],
+		visits: [
+			{ id: 'follow', name: 'Follow-up', fee: 120 },
+			{ id: 'check', name: 'Check-up', fee: 160 },
+			{ id: 'new', name: 'New patient', fee: 220 },
+			{ id: 'test', name: 'Test or procedure', fee: 380 },
+		],
+	};
+
+	/** A birthday that fits the age, and insurance, for a record without
+	 * them: over 65 is on Medicare, and one card in seven lapsed at the end
+	 * of September. */
+	function insured(record, hash) {
+		const day = `${String((hash % 12) + 1).padStart(2, '0')}-${String((hash % 27) + 1).padStart(2, '0')}`;
+		const year = Number(AS_OF.slice(0, 4)) - record.age - (day > AS_OF.slice(5) ? 1 : 0);
+		const born = `${year}-${day}`;
+		const plan = record.age >= 65 ? 'mc' : cover.plans[hash % 3].id;
+		return {
+			born,
+			plan,
+			member: `${plan.toUpperCase()}-${String(hash).padStart(6, '0')}`,
+			until: hash % 7 === 0 ? '2026-09-30' : '2027-03-31',
+		};
+	}
+
+	/* The analytics band on every working page: three or four small
+	   charts drawn from the clinic's year. Each tile has a takeaway of a
+	   few words, so the chart says something before anyone reads an axis. */
+	const months = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+	const weeks = ['Aug 17', 'Aug 24', 'Aug 31', 'Sep 7', 'Sep 14', 'Sep 21', 'Sep 28', 'Oct 5'];
+	const insights = {
+		patients: [
+			{
+				kind: 'line',
+				title: 'The register',
+				take: 'Up 164 this year',
+				labels: months,
+				series: [
+					{
+						name: 'Patients',
+						data: [1120, 1131, 1148, 1162, 1181, 1203, 1221, 1236, 1248, 1259, 1271, 1284],
+					},
+				],
+				unit: '',
+			},
+			{
+				kind: 'bars',
+				title: 'By age',
+				take: 'Half are over fifty',
+				labels: ['0–17', '18–34', '35–49', '50–64', '65+'],
+				series: [{ name: 'Patients', data: [186, 214, 243, 338, 303] }],
+			},
+			{
+				kind: 'ring',
+				title: 'Seen this year',
+				take: '112 not seen in a year',
+				labels: ['Active', 'New this year', 'No visit in a year'],
+				series: [{ name: 'Patients', data: [1015, 157, 112] }],
+			},
+			{
+				kind: 'hbar',
+				title: 'Top conditions',
+				take: 'Hypertension leads',
+				labels: ['Hypertension', 'Asthma', 'Diabetes', 'Anxiety', 'Eczema'],
+				series: [{ name: 'Patients', data: [212, 148, 131, 96, 74] }],
+			},
+		],
+		'appointment-details': [
+			{
+				kind: 'ring',
+				title: 'Does he come',
+				take: 'Missed one visit since 2022',
+				labels: ['On time', 'Late', 'Missed'],
+				series: [{ name: 'Visits', data: [14, 3, 1] }],
+			},
+			{
+				kind: 'bars',
+				title: 'Booked and taken',
+				take: 'Runs about eight minutes over',
+				labels: ['Feb', 'May', 'Jun', 'Aug', 'Sep', 'Oct 2'],
+				series: [
+					{ name: 'Booked', data: [20, 30, 20, 20, 30, 20] },
+					{ name: 'Taken', data: [26, 38, 27, 25, 36, 29] },
+				],
+				unit: ' min',
+			},
+			{
+				kind: 'bars',
+				title: 'Visits by year',
+				take: 'Twice as many this year',
+				labels: ['2022', '2023', '2024', '2025', '2026'],
+				series: [{ name: 'Visits', data: [2, 3, 2, 4, 7] }],
+			},
+		],
+		/* Visit Notes shows one wide chart with the facts a medical
+		   director reads beside it, rather than a band of small tiles. */
+		'visit-notes': [
+			{
+				kind: 'bars',
+				title: 'Notes this week',
+				take: 'Friday’s pile is still open',
+				labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+				series: [
+					{ name: 'Signed', data: [71, 68, 74, 66, 52] },
+					{ name: 'Not signed yet', data: [3, 5, 4, 6, 14] },
+				],
+				stacked: true,
+				facts: [
+					['Signed within a day', '71%', 'Target 90%, 19 points short'],
+					['Visit to signed note', '6 h 40 min', 'Median this week, down from 9 h'],
+					['Charting after 7 pm', '14 h', 'Across 12 providers this week'],
+				],
+			},
+		],
+		'provider-schedule': [
+			{
+				kind: 'bars',
+				title: 'Slots used, by day',
+				take: 'Thursday is the quiet day',
+				labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+				series: [{ name: 'Used %', data: [95, 90, 80, 65, 90] }],
+				unit: '%',
+			},
+			{
+				kind: 'ring',
+				title: 'Visit types this week',
+				take: 'Half are follow-ups',
+				labels: ['Follow-ups', 'New patients', 'Check-ups', 'Phone and video'],
+				series: [{ name: 'Visits', data: [38, 12, 14, 9] }],
+			},
+			{
+				kind: 'hbar',
+				title: 'Minutes per visit type',
+				take: 'New patients run over',
+				labels: ['New patient', 'Check-up', 'Follow-up', 'Phone and video'],
+				series: [{ name: 'Minutes', data: [36, 28, 22, 14] }],
+				unit: ' min',
+			},
+		],
+		prescriptions: [
+			{
+				kind: 'bars',
+				title: 'Dispensed per day',
+				take: 'Mondays are the peak',
+				labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+				series: [{ name: 'Dispensed', data: [48, 31, 29, 33, 36, 52, 34, 30, 35, 22] }],
+			},
+			{
+				kind: 'hbar',
+				title: 'Most prescribed',
+				take: 'Blood pressure and asthma',
+				labels: ['Amlodipine', 'Albuterol', 'Metformin', 'Atorvastatin', 'Amoxicillin'],
+				series: [{ name: 'Scripts', data: [64, 51, 47, 39, 33] }],
+			},
+			{
+				kind: 'ring',
+				title: 'Renewals signed',
+				take: 'Most within a day',
+				labels: ['Within a day', 'Two to three days', 'Longer'],
+				series: [{ name: 'Renewals', data: [78, 16, 6] }],
+			},
+		],
+		referrals: [
+			{
+				kind: 'hbar',
+				title: 'Days to accept',
+				take: 'Cardiac rehab takes three weeks',
+				labels: ['Telegraph Heart Center', 'City Endoscopy', 'Lombard Eye Clinic', 'Northside PT', 'In house'],
+				series: [{ name: 'Days', data: [19, 12, 9, 4, 2] }],
+				unit: ' days',
+			},
+			{
+				kind: 'bars',
+				title: 'Referrals per month',
+				take: 'Rising since flu season',
+				labels: months.slice(6),
+				series: [{ name: 'Sent', data: [8, 9, 11, 10, 12, 14] }],
+			},
+			{
+				kind: 'ring',
+				title: 'Outcome, last quarter',
+				take: 'Nine in ten are seen',
+				labels: ['Seen', 'Still waiting', 'Declined'],
+				series: [{ name: 'Referrals', data: [31, 4, 1] }],
+			},
+		],
+		telehealth: [
+			{
+				kind: 'line',
+				title: 'Video share',
+				take: 'One visit in five',
+				labels: weeks,
+				series: [{ name: 'Video %', data: [11, 12, 14, 15, 16, 18, 19, 21] }],
+				unit: '%',
+			},
+			{
+				kind: 'bars',
+				title: 'Call length',
+				take: 'Mostly 10 to 20 minutes',
+				labels: ['Under 10', '10–20', '20–30', 'Over 30'],
+				series: [{ name: 'Calls', data: [14, 41, 19, 6] }],
+			},
+			{
+				kind: 'bars',
+				title: 'No-shows by kind',
+				take: 'Video is missed half as often',
+				labels: ['In person', 'Video'],
+				series: [{ name: 'Missed %', data: [6.2, 2.9] }],
+				unit: '%',
+			},
+		],
+		supplies: [
+			{
+				kind: 'line',
+				title: 'Used and delivered',
+				take: 'Flu vaccines run low',
+				labels: weeks,
+				series: [
+					{ name: 'Used', data: [310, 330, 360, 410, 470, 520, 560, 590] },
+					{ name: 'Delivered', data: [400, 300, 400, 400, 450, 450, 500, 500] },
+				],
+			},
+			{
+				kind: 'ring',
+				title: 'Spend by category',
+				take: 'Vaccines are a third',
+				labels: ['Vaccines', 'Medicines', 'Consumables', 'Lab', 'Equipment'],
+				series: [{ name: 'Share', data: [34, 28, 19, 12, 7] }],
+			},
+			{
+				kind: 'bars',
+				title: 'Below reorder point',
+				take: 'Four today, up from one',
+				labels: weeks,
+				series: [{ name: 'Items', data: [1, 1, 2, 1, 2, 3, 3, 4] }],
+			},
+		],
+		wards: [
+			{
+				kind: 'line',
+				title: 'Beds taken',
+				take: '4 and 5 West full twice',
+				labels: ['Sep 26', 'Sep 28', 'Sep 30', 'Oct 2', 'Oct 4', 'Oct 6', 'Oct 8', 'Today'],
+				series: [{ name: 'Beds', data: [8, 10, 12, 11, 9, 12, 10, 9] }],
+			},
+			{
+				kind: 'bars',
+				title: 'Nights per stay',
+				take: 'Mostly two nights or fewer',
+				labels: ['1', '2', '3', '4', '5+'],
+				series: [{ name: 'Stays', data: [21, 18, 9, 5, 4] }],
+			},
+			{
+				kind: 'hbar',
+				title: 'Admitted for',
+				take: 'Chest pain leads',
+				labels: ['Chest pain', 'After surgery', 'Infection', 'Falls', 'Other'],
+				series: [{ name: 'Stays', data: [14, 12, 9, 6, 8] }],
+			},
+		],
+	};
+
+	const byId = new Map([...providers, ...hospital.staff].map((p) => [p.id, p]));
+
+	window.Basalt.data = window.Basalt.data || {};
+	window.Basalt.data.clinic = {
+		asOf: AS_OF,
+		now: NOW,
+		name: 'Broadway Street Clinic',
+		departments,
+		providers,
+		rooms,
+		seats,
+		beds,
+		chairs,
+		hospital,
+		lanes,
+		nextUp,
+		video,
+		results,
+		today,
+		monitor,
+		patient,
+		register,
+		walkIns,
+		insights,
+		stock,
+		emergency,
+		/** The record for a patient's name, or a stand-in for a name not on the register. */
+		cover,
+		/** The record for a patient's name, or a stand-in for a name not on
+		 * the register; either way with a birthday and their insurance. */
+		patientRecord(name) {
+			let hash = 0;
+			for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) % 100000;
+			const base = register[name]
+				? { name, ...register[name] }
+				: {
+						name,
+						id: `HSC-${String(12400 + (hash % 900)).padStart(5, '0')}`,
+						age: 20 + (hash % 60),
+						phone: `+1 415 555 ${String(500 + (hash % 400)).padStart(4, '0')}`,
+						allergies: 'None known',
+						last: 'First visit',
+					};
+			return { ...insured(base, hash), ...base };
+		},
+		/** The provider with this id, or undefined. */
+		provider(id) {
+			return byId.get(id);
+		},
+		/** A provider's short form for a line of text: "Dr. Hayes". */
+		short(id) {
+			const p = byId.get(id);
+			if (!p) return '';
+			const last = p.name.split(' ').pop();
+			return p.name.startsWith('Dr.') ? `Dr. ${last}` : last;
+		},
+	};
+})();

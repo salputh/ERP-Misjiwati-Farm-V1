@@ -1,0 +1,356 @@
+/**
+ * Styles for the Alerts page (alerts.html), under .al-*.
+ * This sheet covers the page around the demos: the kind filter, the card
+ * grid, each card's head and code snippet, and the small props the demos
+ * stand in (the closed-alert notes, the miniature page, the product
+ * tile). The alerts on show (.alert tones, .basalt-alert, .basalt-banner,
+ * .basalt-alert-group) are styled in basalt.css. Colors are --basalt-*
+ * tokens, mixed so text keeps 4.5:1 or more in every palette and mode.
+ */
+
+/* The page wrapper defines a quiet gray for small text and a primary
+   leaning toward the body color for text set on tints. Inline code in
+   the card descriptions gets a small framed chip. */
+.al-page {
+	--al-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--al-accent-text: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The kind filter sits above the grid: a row of chips, then the count. */
+.al-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.al-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.al-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.al-chips .al-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.al-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--al-quiet);
+}
+
+/* Cards fill a twelve-track grid. Every card spans the row below 1200px;
+   from there they pair up, unless marked full or left alone by the
+   filter. */
+.al-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.al-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+
+	@media (min-width: 1200px) {
+		grid-column: span 6;
+	}
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.75rem;
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem;
+		}
+	}
+}
+@media (min-width: 1200px) {
+	.al-card-full,
+	.al-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* The kind pill shows above the title, though the markup puts it after
+   so the title is read first. */
+.al-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.al-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.al-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--al-quiet);
+}
+.al-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--al-quiet);
+}
+
+/* The eight Bootstrap tones lay out one per row, two per row from 768px. */
+.al-colors {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 768px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+/* Demos with several alerts stack them; gaps do the spacing, so the
+   alerts lose their own bottom margin. */
+.al-stack {
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+}
+.al-stack > .alert,
+.al-colors > .alert,
+.al-compact-demo .alert {
+	margin-bottom: 0;
+}
+
+/* A dashed note takes a demo's place once its alert is closed, with a
+   text button that brings it back. */
+.al-gone {
+	margin: 0;
+	padding: 0.9rem 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	font-size: 0.85rem;
+	color: var(--al-quiet);
+}
+.al-gone-frame {
+	margin: 1rem 1.25rem 0;
+}
+.al-link {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--al-accent-text);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The compact demo puts one alert inside a product tile, above three on
+   their own. */
+.al-compact-demo {
+	display: grid;
+	gap: 0.6rem;
+}
+.al-mini {
+	display: grid;
+	gap: 0.6rem;
+	margin-bottom: 0.4rem;
+	padding: 0.85rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-canvas);
+}
+.al-mini-head {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	font-size: 0.88rem;
+}
+.al-mini-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.al-mini-price {
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+}
+
+/* The banners sit atop a page in miniature, drawn as gray bars, so they
+   read as the top of a screen. */
+.al-frame {
+	position: relative;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--basalt-canvas);
+}
+.al-frame-page {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	padding: 1.5rem 1.25rem 1.75rem;
+}
+.al-frame-line {
+	display: block;
+	width: 70%;
+	height: 0.6rem;
+	border-radius: 999px;
+	background: var(--basalt-edge);
+}
+.al-frame-line-title {
+	width: 34%;
+	height: 0.9rem;
+	background: var(--basalt-edge-strong);
+}
+.al-frame-line-short {
+	width: 48%;
+}
+
+/* The error summary sits above its small form and shows a ring in the
+   alert's ink when it takes focus. */
+.al-form .basalt-alert {
+	margin-bottom: 1.25rem;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-alert-ink);
+		outline-offset: 2px;
+	}
+}
+
+/* Each card ends with a folded code snippet pinned to the bottom, with
+   room above it whatever the demo ends with. */
+.al-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.al-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.al-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.al-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* Reduced motion drops the transitions; print shows every card and
+   leaves out the filter and the snippets. */
+@media (prefers-reduced-motion: reduce) {
+	.al-chip,
+	.al-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.al-filter,
+	.al-code {
+		display: none;
+	}
+	.al-card.is-hidden {
+		display: block;
+	}
+}

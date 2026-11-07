@@ -1,0 +1,1452 @@
+/* The color picker page (color-fields.html). Classes start with cpick-;
+   page colors all come from --basalt-* tokens, and the only fixed colors are
+   the ones a visitor picks, which the script hands over as --swatch or
+   inline fills. */
+
+.cpick-page {
+	/* Muted text leans toward the body color so it clears 4.5:1 on the light palettes. */
+	--cpick-quiet: color-mix(in srgb, var(--basalt-copy-muted) 80%, var(--basalt-copy));
+	--cpick-danger: color-mix(in srgb, var(--basalt-danger) 72%, var(--basalt-copy));
+	--cpick-line: color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	--cpick-checker: conic-gradient(
+			var(--basalt-edge-strong) 25%,
+			var(--basalt-plane) 0 50%,
+			var(--basalt-edge-strong) 0 75%,
+			var(--basalt-plane) 0
+		)
+		0 0 / 10px 10px;
+	--cpick-mono: "Chivo Mono", ui-monospace, monospace;
+	/* The primary fill leans toward the text color too, so its label stays
+     readable on Verdant and Pastel Pop; hover leans further, which darkens
+     it in light themes and lightens it in dark ones. */
+	--cpick-fill: color-mix(in srgb, var(--basalt-hue) 84%, var(--basalt-copy));
+	--cpick-fill-hover: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+
+	/* Primary buttons take the palette's on-primary text instead of Bootstrap's
+     white, which washes out on the pale primaries of the dark palettes. */
+	& .btn-primary {
+		--bs-btn-bg: var(--cpick-fill);
+		--bs-btn-border-color: var(--cpick-fill);
+		--bs-btn-hover-bg: var(--cpick-fill-hover);
+		--bs-btn-hover-border-color: var(--cpick-fill-hover);
+		--bs-btn-active-bg: var(--cpick-fill-hover);
+		--bs-btn-active-border-color: var(--cpick-fill-hover);
+		--bs-btn-color: var(--basalt-on-hue);
+		--bs-btn-hover-color: var(--basalt-on-hue);
+		--bs-btn-active-color: var(--basalt-on-hue);
+		--bs-btn-disabled-color: var(--basalt-on-hue);
+	}
+}
+
+/* Every custom control shows the same primary ring when focused from the keyboard. */
+.cpick-chip:focus-visible,
+.cpick-field-swatch:focus-visible,
+.cpick-colorchip:focus-visible,
+.cpick-upload-input:focus-visible + label {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.cpick-code summary:focus-visible,
+.cpick-sv:focus-visible,
+.cpick-sw-btn:focus-visible,
+.cpick-photo-stage canvas:focus-visible,
+.cpick-gstop:focus-visible,
+.cpick-tile:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+/* The chip row filters the grid; the pressed chip turns solid. */
+.cpick-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+.cpick-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .cpick-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.cpick-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.cpick-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cpick-quiet);
+}
+
+/* Cards fill the row below 1200px and pair up from there; a filtered grid goes back to full rows. */
+.cpick-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.cpick-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+	& .card-body > :nth-last-child(2) {
+		margin-bottom: 1.5rem;
+	}
+}
+@media (min-width: 1200px) {
+	.cpick-card {
+		grid-column: span 6;
+	}
+	.cpick-card-full {
+		grid-column: span 12;
+	}
+	.cpick-card-wide {
+		grid-column: span 8;
+	}
+	.cpick-card-narrow {
+		grid-column: span 4;
+	}
+	.cpick-grid.is-filtered .cpick-card {
+		grid-column: span 12;
+	}
+}
+
+/* A card body is a column, so the code drawer can sink to the bottom. */
+.cpick-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+@media (min-width: 768px) {
+	.cpick-card.basalt-box .card-body {
+		padding: 1.75rem;
+	}
+}
+
+/* The kind pill sits above the title even though it follows it in the markup. */
+.cpick-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.cpick-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cpick-card-desc {
+	max-width: 64ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cpick-quiet);
+
+	& code {
+		font-family: var(--cpick-mono);
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+	}
+}
+.cpick-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--cpick-quiet);
+}
+
+/* The code drawer closes each card; its chevron turns a quarter when open. */
+.cpick-code {
+	margin-top: auto;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+}
+.cpick-code pre,
+.cpick-out-pre {
+	margin: 0.75rem 0 0;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	overflow-x: auto;
+	overflow-y: hidden;
+	font-family: var(--cpick-mono);
+	font-size: 0.76rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Small print used across cards: help, errors, live messages, legends and headings. */
+.cpick-help {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	color: var(--cpick-quiet);
+}
+.cpick-error {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--cpick-danger);
+}
+.cpick-status {
+	min-height: 1.2em;
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cpick-quiet);
+
+	&:empty {
+		min-height: 0;
+		margin: 0;
+	}
+}
+.cpick-legend {
+	float: none;
+	margin-bottom: 0.65rem;
+	padding: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& span {
+		font-weight: 500;
+		color: var(--cpick-quiet);
+	}
+}
+.cpick-subhead {
+	margin: 1.25rem 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--cpick-quiet);
+}
+.cpick-empty {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cpick-quiet);
+}
+.cpick-dot {
+	display: inline-block;
+	flex-shrink: 0;
+	width: 1rem;
+	height: 1rem;
+	border-radius: 50%;
+	background: var(--swatch, var(--basalt-edge-strong));
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+}
+
+/* A native color well next to a hex box that takes the rest of the row. */
+.cpick-native {
+	display: flex;
+	gap: 0.5rem;
+
+	& .form-control-color {
+		flex: 0 0 3rem;
+		width: 3rem;
+	}
+	& .form-control:not(.form-control-color) {
+		flex: 1 1 auto;
+		min-width: 0;
+		font-family: var(--cpick-mono);
+		font-size: 0.88rem;
+	}
+}
+
+/* Generated code blocks wrap, and the copy result sits beside the button. */
+.cpick-out {
+	margin-top: 1rem;
+}
+.cpick-out-pre {
+	margin: 0 0 0.6rem;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+.cpick-out .cpick-status {
+	display: inline-block;
+	margin: 0 0 0 0.6rem;
+}
+
+/* Term and value rows that read out what a choice works out to. */
+.cpick-readout {
+	display: grid;
+	gap: 0.4rem;
+	margin: 1.25rem 0 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+		justify-content: space-between;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 400;
+		color: var(--cpick-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 600;
+		text-align: right;
+		color: var(--basalt-copy);
+	}
+	& code {
+		font-family: var(--cpick-mono);
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The picker panel stacks the square, the sliders, the typed fields and the swatch rows. */
+.cpick-panel {
+	display: grid;
+	gap: 0.9rem;
+
+	&[hidden] {
+		display: none;
+	}
+	& > .cpick-error {
+		margin: -0.4rem 0 0;
+	}
+}
+.cpick-panel-inline {
+	width: 100%;
+	max-width: 360px;
+}
+.cpick-sv {
+	position: relative;
+	aspect-ratio: 4 / 3;
+	border-radius: 12px;
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+	cursor: crosshair;
+	touch-action: none;
+}
+.cpick-sv-thumb {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	border: 3px solid var(--basalt-plane);
+	background: var(--swatch);
+	box-shadow:
+		0 0 0 1px var(--basalt-copy),
+		0 2px 6px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	pointer-events: none;
+}
+
+/* Hue and opacity tracks share one shape; opacity is drawn over a checkerboard. */
+.cpick-tracks {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+}
+.cpick-tracks-rows {
+	display: grid;
+	gap: 0.8rem;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.cpick-range,
+.cpick-range-wrap {
+	display: block;
+	width: 100%;
+	height: 14px;
+	border-radius: 999px;
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+}
+.cpick-range {
+	margin: 0;
+	background: var(--cpick-track, transparent);
+	cursor: pointer;
+	appearance: none;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+}
+.cpick-range-wrap {
+	background: var(--cpick-track), var(--cpick-checker);
+
+	& .cpick-range {
+		background: transparent;
+		box-shadow: none;
+	}
+}
+.cpick-range::-webkit-slider-thumb {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	border: 0;
+	background: var(--basalt-plane);
+	box-shadow:
+		0 0 0 1px var(--basalt-copy),
+		0 2px 5px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	-webkit-appearance: none;
+}
+.cpick-range::-moz-range-thumb {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	border: 0;
+	background: var(--basalt-plane);
+	box-shadow: 0 0 0 1px var(--basalt-copy);
+}
+.cpick-range::-moz-range-track {
+	background: transparent;
+}
+.cpick-current {
+	flex: 0 0 auto;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	overflow: hidden;
+	background: var(--cpick-checker);
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+
+	& span {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+}
+
+/* The format switch is a pill of hidden radios; the checked one is filled. */
+.cpick-format {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+}
+.cpick-seg {
+	display: inline-flex;
+	gap: 0.1rem;
+	padding: 0.2rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+
+	& label {
+		position: relative;
+		margin: 0;
+		cursor: pointer;
+	}
+	& span {
+		display: block;
+		padding: 0.25rem 0.7rem;
+		border-radius: 999px;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		color: var(--basalt-copy-body);
+	}
+	& label:hover span {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	& input:checked + span {
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+	& input:focus-visible + span {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.cpick-eye {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Typed fields: hex gets a wide box, RGB and HSL four equal ones. */
+.cpick-inputs {
+	display: grid;
+	gap: 0.5rem;
+
+	& .form-control {
+		font-family: var(--cpick-mono);
+		font-size: 0.8rem;
+	}
+}
+.cpick-inputs-hex {
+	grid-template-columns: minmax(0, 1fr) 5.5rem;
+}
+.cpick-inputs-rgb,
+.cpick-inputs-hsl {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.cpick-inputs-label {
+	display: block;
+	margin-bottom: 0.2rem;
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--cpick-quiet);
+}
+
+/* Preset and recent swatches sit eight to a row; the active one gets a double ring. */
+.cpick-sw[hidden] {
+	display: none;
+}
+.cpick-sw-label {
+	margin: 0 0 0.4rem;
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--cpick-quiet);
+}
+.cpick-sw-grid {
+	display: grid;
+	gap: 0.4rem;
+	grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+.cpick-sw-btn {
+	width: 100%;
+	aspect-ratio: 1;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: var(--swatch);
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+	cursor: pointer;
+	transition: transform 130ms ease;
+
+	&:hover {
+		transform: translateY(-1px);
+	}
+	&[aria-pressed="true"] {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-copy);
+	}
+}
+.cpick-panel-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	padding-top: 0.25rem;
+}
+
+/* The popup field is a swatch button and a hex box; the panel drops below them. */
+.cpick-field {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+	max-width: 15rem;
+}
+.cpick-field-swatch {
+	flex: 0 0 auto;
+	width: 38px;
+	height: 38px;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: linear-gradient(var(--swatch), var(--swatch)), var(--cpick-checker);
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+	cursor: pointer;
+
+	&[aria-expanded="true"] {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-copy);
+	}
+}
+.cpick-field-hex {
+	font-family: var(--cpick-mono);
+	font-size: 0.88rem;
+}
+.cpick-panel-popup {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	left: 0;
+	z-index: 30;
+	width: min(330px, calc(100vw - 3rem));
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	box-shadow: 0 18px 40px color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+
+	& .cpick-sv {
+		aspect-ratio: 16 / 10;
+	}
+}
+
+/* The tint scale: controls in a wrapping row, then tiles that copy their hex. */
+.cpick-ramp-controls {
+	display: flex;
+	gap: 1.25rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+
+	& > div {
+		flex: 0 1 15rem;
+		min-width: 0;
+	}
+	& > div:last-child {
+		flex: 0 0 auto;
+	}
+}
+.cpick-ramp-tiles {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@media (min-width: 992px) {
+	.cpick-ramp-tiles {
+		grid-template-columns: repeat(var(--cpick-tiles, 9), minmax(0, 1fr));
+	}
+}
+.cpick-tile {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: space-between;
+	width: 100%;
+	aspect-ratio: 1 / 1.1;
+	padding: 0.5rem 0.6rem;
+	border: 0;
+	border-radius: 12px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+	cursor: copy;
+	transition: transform 130ms ease;
+
+	&:hover {
+		transform: translateY(-2px);
+	}
+}
+.cpick-tile-base {
+	font-size: 0.66rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+}
+.cpick-tile-hex {
+	display: block;
+	margin-top: 0.3rem;
+	font-family: var(--cpick-mono);
+	font-size: 0.7rem;
+	color: var(--cpick-quiet);
+}
+.cpick-ramp-out {
+	margin-top: 1.75rem;
+}
+.cpick-ramp-fmt {
+	max-width: 14rem;
+}
+
+/* The inline picker and the portal mock-up stack, then sit side by side from 1200px. */
+.cpick-brand {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.cpick-brand {
+		gap: 3rem;
+		grid-template-columns: 340px minmax(0, 1fr);
+		align-items: start;
+	}
+}
+.cpick-shop-caption {
+	margin: 0 0 0.6rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--cpick-quiet);
+}
+.cpick-shop-frame {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.cpick-shop-bar {
+	margin: 0;
+	padding: 0.5rem 1rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-align: center;
+}
+.cpick-shop-product {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+	padding: 1.5rem;
+}
+.cpick-shop-art {
+	display: grid;
+	place-items: center;
+	width: min(100%, 120px);
+	aspect-ratio: 1;
+	border-radius: 12px;
+	font-size: 3rem;
+	background: var(--basalt-plane-alt);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+}
+@media (min-width: 576px) {
+	.cpick-shop-product {
+		gap: 1.75rem;
+		grid-template-columns: 170px minmax(0, 1fr);
+	}
+	.cpick-shop-art {
+		width: 100%;
+	}
+}
+.cpick-shop-badge {
+	display: inline-block;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--cpick-soft, var(--basalt-hue)) 16%, var(--basalt-plane));
+}
+.cpick-shop-name {
+	margin: 0.6rem 0 0.2rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cpick-shop-notes {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--cpick-quiet);
+}
+.cpick-shop-price {
+	margin: 0.75rem 0 1rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.cpick-shop-btn {
+	display: inline-block;
+	padding: 0.6rem 1.25rem;
+	border-radius: 8px;
+	font-size: 0.88rem;
+	font-weight: 600;
+}
+
+/* The gift box art takes its fill from the checked swatch. */
+.cpick-case {
+	display: grid;
+	gap: 1.25rem;
+}
+.cpick-case-art {
+	display: grid;
+	place-items: center;
+	padding: 0.75rem;
+	border-radius: 14px;
+	background: var(--basalt-canvas);
+
+	& svg {
+		width: 150px;
+		height: auto;
+	}
+}
+.cpick-case-body {
+	fill: var(--cpick-case-color);
+	stroke: var(--cpick-line);
+	stroke-width: 1;
+	transition: fill 200ms ease;
+}
+.cpick-case-rim {
+	fill: color-mix(in srgb, var(--cpick-case-color) 78%, var(--basalt-copy));
+	transition: fill 200ms ease;
+}
+.cpick-case-handle {
+	fill: none;
+	stroke: var(--cpick-case-color);
+	stroke-width: 8;
+	transition: stroke 200ms ease;
+}
+
+/* Swatch radios, shared by the gift box and the tag colors: hidden inputs, round dots. */
+.cpick-colors,
+.cpick-tone {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.cpick-colors-list,
+.cpick-tone-list {
+	display: flex;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.6rem;
+}
+.cpick-swatch {
+	position: relative;
+	display: inline-flex;
+	margin: 0;
+	cursor: pointer;
+
+	&:hover .cpick-swatch-dot {
+		box-shadow:
+			inset 0 0 0 1px var(--cpick-line),
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-edge-strong);
+	}
+	& input:checked + .cpick-swatch-dot {
+		box-shadow:
+			inset 0 0 0 1px var(--cpick-line),
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-copy);
+	}
+	& input:focus-visible + .cpick-swatch-dot {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 5px;
+	}
+	&.is-sold {
+		cursor: not-allowed;
+	}
+	&.is-sold .cpick-swatch-dot {
+		background:
+			linear-gradient(to top right, transparent 46%, var(--basalt-plane) 46% 54%, transparent 54%), var(--swatch);
+		opacity: 0.5;
+	}
+}
+.cpick-swatch input,
+.cpick-seg input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+.cpick-swatch-dot {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: var(--swatch);
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+	transition: box-shadow 130ms ease;
+}
+.cpick-swatch-sm .cpick-swatch-dot {
+	width: 28px;
+	height: 28px;
+}
+
+/* The sampler puts the photo first and its readouts in a 220px column from 768px. */
+.cpick-photo {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 768px) {
+	.cpick-photo {
+		gap: 2rem;
+		grid-template-columns: minmax(0, 1fr) 220px;
+	}
+}
+.cpick-photo-stage {
+	position: relative;
+	align-self: start;
+
+	& canvas {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: 12px;
+		box-shadow: inset 0 0 0 1px var(--cpick-line);
+		cursor: crosshair;
+	}
+}
+.cpick-photo-reticle {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	border: 3px solid var(--basalt-plane);
+	background: var(--swatch);
+	box-shadow:
+		0 0 0 1px var(--basalt-copy),
+		0 4px 12px color-mix(in srgb, var(--basalt-copy) 35%, transparent);
+	pointer-events: none;
+}
+.cpick-photo-now {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	font-family: var(--cpick-mono);
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& .cpick-dot {
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 8px;
+	}
+}
+.cpick-photo-side .cpick-subhead:first-of-type {
+	margin-top: 1.1rem;
+}
+.cpick-chipset {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+
+	&:empty {
+		display: none;
+	}
+}
+.cpick-colorchip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.22rem 0.6rem 0.22rem 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-family: var(--cpick-mono);
+	font-size: 0.71rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.cpick-photo-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.25rem;
+}
+
+/* The file input is hidden but focusable; its label button shows the ring. */
+.cpick-upload {
+	position: relative;
+}
+.cpick-upload-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	opacity: 0;
+	clip-path: inset(50%);
+}
+
+/* Tags are pills filled with a chart token; the remove button inherits the pill's ink. */
+.cpick-tags-list {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	min-height: 2rem;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+.cpick-tag {
+	display: inline-flex;
+	gap: 0.2rem;
+	align-items: center;
+	padding: 0.3rem 0.3rem 0.3rem 0.8rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+}
+.cpick-tag-remove {
+	display: inline-grid;
+	place-items: center;
+	width: 1.4rem;
+	height: 1.4rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	color: inherit;
+	background: transparent;
+	cursor: pointer;
+
+	&:hover {
+		background: color-mix(in srgb, currentColor 18%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 1px;
+	}
+}
+.cpick-tags-form {
+	display: grid;
+	gap: 1.1rem;
+}
+
+/* Ink and paper stack on phones and flank the swap button from 576px. */
+.cpick-contrast-pair {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+}
+.cpick-contrast-swap {
+	justify-self: start;
+}
+@media (min-width: 576px) {
+	.cpick-contrast-pair {
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	}
+	.cpick-contrast-swap {
+		margin-top: 2rem;
+	}
+}
+.cpick-label {
+	margin: 1.5rem 0;
+	padding: 1.4rem 1.5rem;
+	border-radius: 14px;
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+}
+.cpick-label-name {
+	margin: 0 0 0.3rem;
+	font-size: 1.4rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+.cpick-label-small {
+	margin: 0;
+	font-size: 0.85rem;
+}
+.cpick-contrast-result {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.cpick-ratio {
+	display: grid;
+	margin: 0;
+
+	& > span:first-child {
+		font-size: 2.1rem;
+		font-weight: 700;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+		color: var(--basalt-copy);
+	}
+}
+.cpick-ratio-note {
+	font-size: 0.77rem;
+	color: var(--cpick-quiet);
+}
+.cpick-checks {
+	display: grid;
+	gap: 0.4rem;
+	flex: 1 1 14rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		font-size: 0.84rem;
+		color: var(--basalt-copy);
+	}
+	& .is-pass .bi {
+		color: var(--basalt-success);
+	}
+	& .is-fail .bi {
+		color: var(--basalt-danger);
+	}
+}
+.cpick-checks-need {
+	margin-left: auto;
+	font-family: var(--cpick-mono);
+	font-size: 0.75rem;
+	color: var(--cpick-quiet);
+}
+.cpick-contrast-fix {
+	margin-top: 1rem;
+}
+
+/* The gradient editor: the gift card preview, then the stop bar and its controls. */
+.cpick-grad {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.cpick-grad {
+		gap: 3rem;
+		grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+	}
+}
+.cpick-gift {
+	position: relative;
+	max-width: 460px;
+	aspect-ratio: 1.586;
+	border-radius: 18px;
+	box-shadow:
+		0 16px 36px color-mix(in srgb, var(--basalt-copy) 18%, transparent),
+		inset 0 0 0 1px var(--cpick-line);
+}
+.cpick-gift-label {
+	position: absolute;
+	bottom: 1.1rem;
+	left: 1.1rem;
+	display: grid;
+	gap: 0.1rem;
+	margin: 0;
+	padding: 0.6rem 0.95rem;
+	border-radius: 12px;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.cpick-gift-brand {
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--cpick-quiet);
+}
+.cpick-gift-amount {
+	font-size: 1.05rem;
+	font-weight: 700;
+}
+.cpick-grad-presets {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.5rem;
+}
+
+/* Stop handles ride on a checkered bar; the selected one grows and comes to the front. */
+.cpick-gbar {
+	position: relative;
+	height: 30px;
+	margin: 0 12px;
+	border-radius: 8px;
+	background: var(--cpick-checker);
+	box-shadow: inset 0 0 0 1px var(--cpick-line);
+	cursor: copy;
+	touch-action: none;
+}
+.cpick-gbar-fill {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+}
+.cpick-gstop {
+	position: absolute;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	border: 3px solid var(--basalt-plane);
+	background: var(--swatch);
+	box-shadow:
+		0 0 0 1px var(--basalt-edge-strong),
+		0 2px 6px color-mix(in srgb, var(--basalt-copy) 25%, transparent);
+	cursor: grab;
+
+	&.is-selected {
+		z-index: 1;
+		width: 28px;
+		height: 28px;
+		box-shadow:
+			0 0 0 2px var(--basalt-copy),
+			0 3px 8px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	}
+}
+.cpick-grad-row {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-top: 1.25rem;
+
+	& > div:first-child {
+		flex: 1 1 13rem;
+		min-width: 0;
+	}
+}
+.cpick-grad-type {
+	flex: 0 0 auto;
+	min-width: 11rem;
+	margin: 0;
+}
+.cpick-grad-angle {
+	flex: 1 1 12rem;
+	min-width: 0;
+
+	&[hidden] {
+		display: none;
+	}
+	& output {
+		margin-left: 0.25rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+.cpick-grad-angle-head {
+	display: flex;
+	gap: 0.3rem;
+	align-items: baseline;
+}
+.cpick-grad-remove {
+	padding-bottom: 0.2rem;
+}
+
+/* Native inputs on their own, then the livery form beside a van preview from 1200px. */
+.cpick-livery {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.cpick-livery {
+		gap: 3rem;
+		grid-template-columns: minmax(0, 1fr) 320px;
+	}
+}
+.cpick-natives-row {
+	display: flex;
+	gap: 1.25rem 2.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+.cpick-natives-row .cpick-subhead,
+.cpick-livery-form > .cpick-subhead {
+	margin-top: 0;
+}
+.cpick-natives-solo,
+.cpick-natives-sizes {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-end;
+}
+.cpick-natives-sizes {
+	gap: 1.25rem;
+	align-items: flex-start;
+
+	& .form-label {
+		display: block;
+	}
+}
+.cpick-natives-value {
+	padding-bottom: 0.5rem;
+	font-family: var(--cpick-mono);
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cpick-livery-actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-top: 1.75rem;
+}
+.cpick-done {
+	margin: 1.25rem 0 0;
+	font-size: 0.88rem;
+	color: var(--basalt-copy);
+
+	&:not(:empty) {
+		padding: 0.85rem 1.1rem;
+		border-radius: 12px;
+		border: 1px solid color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-success) 7%, var(--basalt-plane));
+	}
+}
+.cpick-livery-preview {
+	display: flex;
+	flex-direction: column;
+	align-self: start;
+	align-items: center;
+	padding: 2rem 1.5rem 1.5rem;
+	border-radius: 16px;
+	background: var(--basalt-canvas);
+
+	& .cpick-readout {
+		width: 100%;
+	}
+}
+
+/* The van, side on: a ladder rack, the body with a cab window and two
+   wheels, and the stripe that carries the chosen colors. */
+.cpick-van {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding-bottom: 20px;
+}
+.cpick-van-rack {
+	width: 150px;
+	height: 10px;
+	margin: 0 0 4px 22px;
+	border-radius: 3px;
+	background: repeating-linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--basalt-copy) 60%, var(--basalt-plane)) 0 4px,
+		transparent 4px 18px
+	);
+	box-shadow:
+		inset 0 2px 0 color-mix(in srgb, var(--basalt-copy) 60%, var(--basalt-plane)),
+		inset 0 -2px 0 color-mix(in srgb, var(--basalt-copy) 60%, var(--basalt-plane));
+}
+.cpick-van-body {
+	position: relative;
+	width: 260px;
+	height: 128px;
+	border-radius: 14px 52px 12px 12px;
+	background: color-mix(in srgb, var(--basalt-copy) 6%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 14px;
+		right: 14px;
+		width: 54px;
+		height: 40px;
+		border-radius: 6px 34px 4px 4px;
+		background: color-mix(in srgb, var(--basalt-copy) 24%, var(--basalt-plane));
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		right: 0;
+		bottom: -20px;
+		left: 0;
+		height: 40px;
+		background:
+			radial-gradient(
+				circle at 22% 50%,
+				color-mix(in srgb, var(--basalt-copy) 25%, var(--basalt-plane)) 0 7px,
+				color-mix(in srgb, var(--basalt-copy) 82%, var(--basalt-plane)) 7.5px 19px,
+				transparent 19.5px
+			),
+			radial-gradient(
+				circle at 76% 50%,
+				color-mix(in srgb, var(--basalt-copy) 25%, var(--basalt-plane)) 0 7px,
+				color-mix(in srgb, var(--basalt-copy) 82%, var(--basalt-plane)) 7.5px 19px,
+				transparent 19.5px
+			);
+	}
+}
+.cpick-van-band {
+	position: absolute;
+	inset: 52px 80px 30px 0;
+	display: grid;
+	place-items: center;
+	padding: 0 0.9rem;
+	text-align: center;
+}
+.cpick-van-name {
+	font-size: 1rem;
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+	overflow-wrap: anywhere;
+}
+.cpick-van-note {
+	max-width: 16rem;
+	margin: 1rem 0 0;
+	font-size: 0.77rem;
+	font-weight: 600;
+	text-align: center;
+	color: var(--cpick-danger);
+}
+
+/* With reduced motion, nothing slides or fades. */
+@media (prefers-reduced-motion: reduce) {
+	.cpick-chip,
+	.cpick-code summary .bi,
+	.cpick-sw-btn,
+	.cpick-tile,
+	.cpick-swatch-dot,
+	.cpick-case-body,
+	.cpick-case-rim,
+	.cpick-case-handle {
+		transition: none;
+	}
+	.cpick-sw-btn:hover,
+	.cpick-tile:hover {
+		transform: none;
+	}
+}
+
+/* On paper every card prints, and the filter row and code drawers are left out. */
+@media print {
+	.cpick-filter,
+	.cpick-code {
+		display: none;
+	}
+	.cpick-card.is-hidden {
+		display: block;
+	}
+}

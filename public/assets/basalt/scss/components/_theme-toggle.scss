@@ -1,0 +1,47 @@
+/* The full-screen button carries both icons. While the page is full screen
+   it is pressed, and shows the way back instead. */
+.basalt-fullscreen-exit {
+	display: none;
+}
+.basalt-fullscreen {
+	&[aria-pressed="true"] .basalt-fullscreen-enter {
+		display: none;
+	}
+	&[aria-pressed="true"] .basalt-fullscreen-exit {
+		display: inline-block;
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The light/dark switch carries the sun and the moon. The theme attribute
+   on <html> turns one in and the other out, with a quarter turn. */
+.basalt-modeswitch {
+	position: relative;
+}
+.basalt-modeswitch-day,
+.basalt-modeswitch-night {
+	transition:
+		opacity 200ms ease,
+		transform 300ms ease;
+}
+.basalt-modeswitch-night {
+	position: absolute;
+	inset: 0;
+	transform: rotate(-90deg);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+}
+[data-bs-theme="dark"] {
+	.basalt-modeswitch-day {
+		transform: rotate(90deg);
+		opacity: 0;
+	}
+	.basalt-modeswitch-night {
+		transform: rotate(0deg);
+		opacity: 1;
+	}
+}

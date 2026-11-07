@@ -5,8 +5,8 @@
     <td>
         {{ $baris['label'] }}
         @isset($baris['rumus'])
-            <span class="d-block fs-12 color-light">{{ $baris['rumus'] }}</span>
+            <span class="d-block small text-body-secondary">{{ $baris['rumus'] }}</span>
         @endisset
     </td>
-    <td @class(['text-end', 'color-gray' => $baris['jumlah'] === 0])>@angka($baris['jumlah'] ?: null)</td>
+    <td @class(['text-end', 'text-body-secondary' => $baris['jumlah'] === 0])>@angka($baris['jumlah'] ?: null)</td>
 </tr>

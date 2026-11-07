@@ -1,0 +1,567 @@
+/* Basalt - Receipt Details (receipt-details.html)
+   One customer payment. Namespaced under .rd-*.
+   The detail header, cards, status pills, dialogs and toasts are the
+   shared components from basalt.css; this file lays out the payment's
+   facts, the problem card, the timeline, the fees, notes and activity.
+   Every color is a --basalt-* token mixed with color-mix(), so each
+   palette and mode keeps its own hues. Cards stay plain surfaces. */
+
+.rd-page,
+.rd-modal {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes. */
+	--rd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--rd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--rd-line: var(--basalt-edge);
+}
+
+.rd-ref {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85rem;
+}
+.rd-nowrap {
+	white-space: nowrap;
+}
+.rd-quiet {
+	font-weight: 400;
+	color: var(--rd-quiet);
+}
+.rd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--rd-link);
+}
+.rd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.rd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+.rd-page .btn,
+.rd-modal .btn {
+	white-space: nowrap;
+}
+.rd-page .form-control,
+.rd-modal .form-control,
+.rd-modal .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.rd-page .form-control::placeholder,
+.rd-modal .form-control::placeholder {
+	color: var(--rd-quiet);
+	opacity: 1;
+}
+
+/* Header: back link, customer, amount, actions */
+.basalt-hero-detail.rd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.rd-head .basalt-hero-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-self: end;
+	justify-content: flex-end;
+	margin: 0;
+}
+.rd-head .basalt-hero-actions:empty {
+	display: none;
+}
+.rd-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.rd-who-text {
+	min-width: 0;
+}
+.rd-mark {
+	flex: none;
+	font-weight: 700;
+}
+.rd-tags {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+.rd-tags .basalt-status {
+	padding: 0.25rem 0.7rem;
+	font-size: 0.77rem;
+}
+.rd-tag {
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+@media (max-width: 767.98px) {
+	.basalt-hero-detail.rd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.rd-head .basalt-hero-actions {
+		justify-content: flex-start;
+	}
+}
+@media (max-width: 575.98px) {
+	.rd-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.rd-who .basalt-avatar-xl {
+		width: 56px;
+		height: 56px;
+		font-size: 1.2rem;
+	}
+}
+
+/* Cards */
+.rd-card {
+	min-width: 0;
+}
+.rd-card[hidden] {
+	display: none;
+}
+.rd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.rd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.rd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.rd-card-head > div {
+	min-width: 0;
+}
+.rd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rd-quiet);
+}
+.rd-card-desc:empty {
+	display: none;
+}
+
+/* Rows whose cards end level: timeline beside the money, notes beside
+   the activity. Below 1200px every card takes the full row. */
+.rd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.rd-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: stretch;
+	}
+}
+
+/* What went wrong */
+.rd-issue {
+	display: flex;
+	gap: 1.1rem;
+	align-items: flex-start;
+}
+.rd-issue-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+}
+.rd-issue-body {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.rd-issue-text {
+	max-width: 48rem;
+	margin: 0.4rem 0 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.rd-issue-facts {
+	display: flex;
+	gap: 0.75rem 2.5rem;
+	flex-wrap: wrap;
+	margin: 1.25rem 0 0;
+}
+.rd-issue-fact dt {
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--rd-quiet);
+}
+.rd-issue-fact dd {
+	margin: 0.2rem 0 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rd-issue-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.5rem;
+}
+.rd-issue-actions[hidden] {
+	display: none;
+}
+@media (max-width: 575.98px) {
+	.rd-issue-icon {
+		display: none;
+	}
+}
+
+/* Who, for what, when, how */
+.rd-facts {
+	display: grid;
+	gap: 1.25rem 1.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+}
+@media (min-width: 768px) {
+	.rd-facts {
+		gap: 1.25rem 2rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+@media (min-width: 1200px) {
+	.rd-facts {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+}
+.rd-fact {
+	min-width: 0;
+}
+.rd-fact dt {
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--rd-quiet);
+}
+.rd-fact dd {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	margin: 0.3rem 0 0;
+}
+.rd-fact-main {
+	font-size: 0.9rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.rd-fact-sub {
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--rd-quiet);
+}
+
+/* Timeline */
+.rd-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-step {
+	position: relative;
+	padding: 0 0 1.1rem 1.75rem;
+	font-size: 0.875rem;
+}
+.rd-step:last-child {
+	padding-bottom: 0;
+}
+.rd-step::before {
+	content: "";
+	position: absolute;
+	top: 0.3rem;
+	left: 0;
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 50%;
+	background: var(--rd-step, var(--basalt-success));
+}
+.rd-step:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	top: 1.25rem;
+	bottom: 0.1rem;
+	left: calc(0.375rem - 1px);
+	width: 2px;
+	background: var(--rd-line);
+}
+/* Still to come: a hollow ring instead of a dot. */
+.rd-step-wait::before {
+	background: var(--basalt-plane);
+	box-shadow: inset 0 0 0 2px var(--basalt-warning);
+}
+.rd-step-bad {
+	--rd-step: var(--basalt-danger);
+}
+.rd-step-back {
+	--rd-step: var(--basalt-info);
+}
+.rd-step-what {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rd-step-when {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+
+/* Fees and payout */
+.rd-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-line {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.75rem 0;
+	border-top: 1px solid var(--rd-line);
+	font-size: 0.875rem;
+}
+.rd-line:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+.rd-line-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rd-line-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rd-line-note {
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+.rd-line-amt {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rd-line-total {
+	border-top-color: var(--basalt-edge-strong);
+}
+.rd-line-total .rd-line-name,
+.rd-line-total .rd-line-amt {
+	font-weight: 700;
+}
+.rd-payout {
+	display: grid;
+	gap: 0.65rem;
+	margin: 1.25rem 0 0;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--rd-line);
+}
+.rd-payout-row {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	font-size: 0.875rem;
+}
+.rd-payout-row dt {
+	font-weight: 500;
+	color: var(--rd-quiet);
+}
+.rd-payout-row dd {
+	margin: 0;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+/* Notes */
+.rd-notes {
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+.rd-notes:empty {
+	display: none;
+}
+.rd-note {
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--rd-line);
+}
+.rd-note:first-child {
+	padding-top: 0;
+}
+.rd-note-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.rd-note-meta {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-none {
+	margin: 0 0 1rem;
+	font-size: 0.875rem;
+	color: var(--rd-quiet);
+}
+.rd-none[hidden] {
+	display: none;
+}
+.rd-note-form-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+}
+.rd-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+}
+.rd-error[hidden] {
+	display: none;
+}
+
+/* Activity */
+.rd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+}
+.rd-feed-item:last-child {
+	padding-bottom: 0;
+}
+.rd-feed-item:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.2rem;
+	bottom: 0.2rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	background: var(--rd-line);
+}
+.rd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.rd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+}
+.rd-feed-text strong {
+	font-weight: 650;
+}
+.rd-feed-time {
+	font-size: 0.77rem;
+	color: var(--rd-quiet);
+}
+.rd-feed-item.is-fresh .rd-feed-icon,
+.rd-note.is-fresh {
+	animation: rd-in 400ms ease both;
+}
+@keyframes rd-in {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.rd-feed-item.is-fresh .rd-feed-icon,
+	.rd-note.is-fresh {
+		animation: none;
+	}
+}
+
+/* Dialogs */
+.rd-form-row {
+	margin-bottom: 1.25rem;
+}
+.rd-form-row:last-child {
+	margin-bottom: 0;
+}
+.rd-amount {
+	max-width: 13rem;
+}
+.rd-select {
+	max-width: 18rem;
+}
+.rd-date {
+	max-width: 12rem;
+}
+.rd-ref-field {
+	max-width: 20rem;
+}
+.rd-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+.rd-optional {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--rd-quiet);
+}
+.rd-amount .invalid-feedback,
+.rd-form-row .invalid-feedback {
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+}
+.rd-amount:has(.is-invalid) ~ .invalid-feedback {
+	display: block;
+}

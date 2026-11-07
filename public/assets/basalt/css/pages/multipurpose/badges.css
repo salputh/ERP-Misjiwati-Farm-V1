@@ -1,0 +1,476 @@
+/* Basalt - Badges page
+   The page shell (.bdg-*): the card grid, kind pill, filter
+   chips, code snippet and demo furniture. The badge types it
+   shows live in basalt.css. Colors come from the --basalt-*
+   tokens and every text color is mixed to clear 4.5:1 in
+   all palettes. */
+
+.bdg-page {
+	/* Small gray text: the muted token pulled toward the body color. */
+	--bdg-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+}
+.bdg-page code {
+	padding: 0 0.3em;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px;
+	font-size: 0.85em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Filter row */
+.bdg-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.bdg-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.bdg-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.bdg-chip:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.bdg-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.bdg-chips .bdg-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.bdg-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--bdg-quiet);
+}
+
+/* Grid */
+.bdg-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.bdg-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.bdg-card.is-hidden {
+	display: none;
+}
+/* Below 1200px every card takes the row; pairs start at desktop width. */
+@media (min-width: 1200px) {
+	.bdg-card {
+		grid-column: span 6;
+	}
+	.bdg-card-full,
+	.bdg-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Card */
+.bdg-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.bdg-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+/* The kind sits above the title (it follows it in the markup, so the
+   title is read first). */
+.bdg-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.bdg-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bdg-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--bdg-quiet);
+}
+.bdg-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--bdg-quiet);
+}
+
+/* The demo area: a quiet stage the components sit on. */
+.bdg-stage {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.5rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+.bdg-stage-stack {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+}
+.bdg-stage-stack > .bdg-stage-label {
+	flex-basis: auto;
+}
+@media (max-width: 575.98px) {
+	.bdg-stage {
+		padding: 1rem;
+	}
+}
+.bdg-stage-label {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--bdg-quiet);
+}
+.bdg-stage-label:not(:first-child) {
+	margin-top: 0.5rem;
+}
+
+/* Code snippet */
+.bdg-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+/* Space above the snippet line, whatever the demo ends with. */
+.bdg-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.bdg-code summary {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+}
+.bdg-code summary::-webkit-details-marker {
+	display: none;
+}
+.bdg-code summary:hover {
+	color: var(--basalt-copy);
+}
+.bdg-code summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.bdg-code summary .bi {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.bdg-code[open] summary .bi {
+	transform: rotate(90deg);
+}
+.bdg-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.bdg-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+.bdg-code pre {
+	margin: 0;
+	padding: 2.9rem 1rem 0.9rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	overflow-x: auto;
+	overflow-y: hidden;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Demo furniture (page only) */
+.bdg-controls {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.bdg-hint {
+	display: flex;
+	gap: 0.3rem 0.9rem;
+	flex-wrap: wrap;
+	margin: 0.9rem 0 0;
+	padding: 0;
+	font-size: 0.77rem;
+	color: var(--bdg-quiet);
+	list-style: none;
+}
+.bdg-hint kbd {
+	padding: 0.05rem 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 4px;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.71rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+/* Filter bar for the removable badges. */
+.bdg-filterbar {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-height: 3.4rem;
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+}
+.bdg-filterbar-label {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--bdg-quiet);
+}
+.bdg-filterbar-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.bdg-filterbar-status {
+	margin: 0;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Orders table for the status menu. */
+.bdg-orders {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.85rem;
+}
+.bdg-orders th {
+	padding: 0 0.75rem 0.6rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-align: left;
+	text-transform: uppercase;
+	color: var(--bdg-quiet);
+}
+.bdg-orders td {
+	padding: 0.75rem 0.75rem 0.75rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	vertical-align: middle;
+	color: var(--basalt-copy-body);
+}
+.bdg-orders tr:last-child td {
+	border-bottom: 0;
+}
+.bdg-orders td:last-child,
+.bdg-orders th:last-child {
+	padding-right: 0;
+	text-align: right;
+}
+.bdg-orders-id {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+	color: var(--basalt-copy);
+}
+.bdg-orders-item {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--bdg-quiet);
+}
+@media (max-width: 575.98px) {
+	.bdg-orders .bdg-hide-sm {
+		display: none;
+	}
+}
+
+/* Icon buttons carrying a counter. */
+.bdg-stage-counter {
+	gap: 1.75rem;
+	flex-direction: column;
+	flex-grow: 1;
+	justify-content: center;
+	padding: 2.5rem 1.5rem;
+}
+.bdg-counter-row {
+	display: flex;
+	gap: 2rem;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+.bdg-iconbtn {
+	--bs-btn-padding-x: 0.8rem;
+	--bs-btn-padding-y: 0.7rem;
+	border-radius: 12px;
+	font-size: 1.35rem;
+	line-height: 1;
+}
+
+/* Product list the toggle badges filter. */
+.bdg-products {
+	display: grid;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@media (min-width: 576px) {
+	.bdg-products {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+/* The name takes the full width of the card and the category sits under
+   it as a small tag, so a long category never pushes past the edge. */
+.bdg-products li {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	align-items: flex-start;
+	padding: 0.55rem 0.8rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 8px;
+	font-size: 0.84rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.bdg-products li[hidden] {
+	display: none;
+}
+.bdg-products-type {
+	padding: 0.05rem 0.45rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	line-height: 1.5;
+	white-space: nowrap;
+	color: var(--bdg-quiet);
+	background: var(--basalt-wash);
+}
+.bdg-products-count {
+	margin: 0.75rem 0 0.5rem;
+	font-size: 0.8rem;
+	color: var(--bdg-quiet);
+}
+
+/* KPI tiles for the trend badge. */
+.bdg-kpis {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	width: 100%;
+}
+.bdg-kpi {
+	min-width: 0;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+}
+.bdg-kpi-label {
+	display: block;
+	margin-bottom: 0.25rem;
+	font-size: 0.76rem;
+	color: var(--bdg-quiet);
+}
+.bdg-kpi-row {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.bdg-kpi-value {
+	font-size: 1.25rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+@media (max-width: 399.98px) {
+	.bdg-kpis {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Heading and button demos. */
+.bdg-headings {
+	display: grid;
+	gap: 0.6rem;
+}
+.bdg-headings > * {
+	margin: 0;
+	color: var(--basalt-copy);
+}
+
+/* The positioned dot needs a ring the color of what it sits on. */
+.bdg-page .bdg-ring {
+	--bs-border-color: var(--basalt-plane);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bdg-chip,
+	.bdg-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.bdg-filter,
+	.bdg-code {
+		display: none;
+	}
+	.bdg-card.is-hidden {
+		display: block;
+	}
+}
