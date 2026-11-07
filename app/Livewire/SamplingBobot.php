@@ -13,6 +13,7 @@ use App\Support\Format;
 use App\Support\HasilSampling;
 use App\Support\LembarRecording;
 use App\Support\Standar;
+use App\Support\SusunanSampling;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -280,7 +281,7 @@ class SamplingBobot extends Component
                 'umur' => $sesi->umur,
                 'dengan_sexing' => $sesi->dengan_sexing,
                 'ekor' => $ekor,
-                'lantai' => array_map(fn (array $info): string => $info['label'], config('sampling.lantai')),
+                'lantai' => array_map(fn (array $info): string => $info['label'], $this->susunanLantai()),
                 'hasil' => $hasil,
                 'pakan' => $pakan,
             ],
@@ -465,7 +466,7 @@ class SamplingBobot extends Component
             $sesi->fill(['umur' => $this->umur, 'dengan_sexing' => $this->denganSexing])->save();
 
             $sesi->titik()->delete();
-            foreach (config('sampling.lantai') as $lantai => $info) {
+            foreach ($this->susunanLantai() as $lantai => $info) {
                 foreach ($kelaminAktif as $kelamin) {
                     foreach ($info['line'] as $line) {
                         for ($urutan = 1; $urutan <= config('sampling.sampel_per_line'); $urutan++) {
@@ -571,6 +572,16 @@ class SamplingBobot extends Component
      * Tanggal sampling baru harus berada di rentang kandang dan belum punya sesi. Pesan kesalahannya
      * menunjuk ke riwayat, supaya sesi yang sudah ada diubah dari sana dan tidak tertimpa diam-diam.
      */
+    /**
+     * Lantai dan line kandang terpilih (kandang tertentu punya susunan line sendiri).
+     *
+     * @return array<string, array{label: string, line: list<string>}>
+     */
+    public function susunanLantai(): array
+    {
+        return SusunanSampling::untuk($this->terpilih?->kandang?->nama);
+    }
+
     private function periksaTanggalBaru(): bool
     {
         if (! $this->tanggalSah($this->tanggal)) {
@@ -628,7 +639,7 @@ class SamplingBobot extends Component
     {
         $aturan = $this->aturanEkor();
         foreach (HasilSampling::kelamin($this->denganSexing) as $kelamin) {
-            foreach (config('sampling.lantai') as $lantai => $info) {
+            foreach ($this->susunanLantai() as $lantai => $info) {
                 foreach ($info['line'] as $line) {
                     for ($urutan = 1; $urutan <= config('sampling.sampel_per_line'); $urutan++) {
                         $aturan["berat.{$lantai}.{$kelamin}.{$line}.{$urutan}"] = ['required', 'integer', 'min:1', 'max:1000000'];
@@ -667,6 +678,7 @@ class SamplingBobot extends Component
             $kelompok,
             $acuan['hari'],
             $hariAcuanKelompok,
+            $this->susunanLantai(),
         );
     }
 
@@ -750,7 +762,7 @@ class SamplingBobot extends Component
         foreach (HasilSampling::kelamin($this->denganSexing) as $kelamin) {
             $nilai = $this->ekor[$kelamin] ?? null;
             $ekor = is_numeric($nilai) && (int) $nilai > 0 ? (int) $nilai : null;
-            foreach (config('sampling.lantai') as $lantai => $info) {
+            foreach ($this->susunanLantai() as $lantai => $info) {
                 foreach ($info['line'] as $line) {
                     for ($urutan = 1; $urutan <= config('sampling.sampel_per_line'); $urutan++) {
                         $this->ekorTitik[$lantai][$kelamin][$line][$urutan] = $ekor;

@@ -28,12 +28,12 @@
                         </x-info>
 
                         <div class="row g-4 mb-4">
-                            @foreach (config('sampling.lantai') as $lantai => $info)
+                            @foreach ($lembar['lantai'] as $lantai => $labelLantai)
                                 <div class="col-12" wire:key="riwayat-lantai-{{ $sesi->id }}-{{ $lantai }}">
                                     <section class="card basalt-box db-card bg-transparent">
 <div class="db-card-body">
 <header class="db-card-head">
-<div><h2 class="db-card-title">{{ $info['label'] }}</h2></div>
+<div><h2 class="db-card-title">{{ $labelLantai }}</h2></div>
 </header>
                                     <div class="row g-4">
                                         @foreach ($hasil['kelamin'] as $kelamin)

@@ -19,6 +19,7 @@ class HasilSampling
      * @param  array<string, array<string, ?float>>  $abwKelompokSebelumnya  [lantai][kelamin] => ABW sesi sebelumnya
      * @param  int  $hariAcuan  Jarak hari antara sesi ini dan acuan gabungan
      * @param  int  $hariAcuanKelompok  Jarak hari antara sesi ini dan sesi sebelumnya
+     * @param  ?array<string, array{label: string, line: list<string>}>  $susunanLantai  Susunan lantai dan line kandangnya; bawaan config
      * @return array<string, mixed>
      */
     public static function hitung(
@@ -31,7 +32,9 @@ class HasilSampling
         array $abwKelompokSebelumnya = [],
         int $hariAcuan = 1,
         int $hariAcuanKelompok = 1,
+        ?array $susunanLantai = null,
     ): array {
+        $susunanLantai ??= config('sampling.lantai');
         $kelaminAktif = self::kelamin($denganSexing);
         $sampelPerLine = config('sampling.sampel_per_line');
         $abwStandar = $standar->abw($umur);
@@ -40,7 +43,7 @@ class HasilSampling
         $hariAcuanKelompok = max(1, $hariAcuanKelompok);
 
         $lantai = [];
-        foreach (config('sampling.lantai') as $kunciLantai => $infoLantai) {
+        foreach ($susunanLantai as $kunciLantai => $infoLantai) {
             foreach ($kelaminAktif as $kelamin) {
                 $baris = [];
                 foreach ($infoLantai['line'] as $line) {
@@ -114,7 +117,7 @@ class HasilSampling
         $abw = $ekor > 0 ? $total / $ekor : null;
         $dg = $abw !== null && $abwSebelumnya !== null ? $abw - $abwSebelumnya : null;
         $dgPerHari = $dg !== null ? $dg / $hariAcuan : null;
-        $jumlahTitikPenuh = count($kelaminAktif) * array_sum(array_map(fn (array $info): int => count($info['line']), config('sampling.lantai'))) * $sampelPerLine;
+        $jumlahTitikPenuh = count($kelaminAktif) * array_sum(array_map(fn (array $info): int => count($info['line']), $susunanLantai)) * $sampelPerLine;
 
         return [
             'kelamin' => $kelaminAktif,
@@ -122,7 +125,7 @@ class HasilSampling
             'per_kelamin' => $perKelamin,
             'gabungan' => [
                 'total' => $total,
-                'jumlah_line' => array_sum(array_map(fn (array $info): int => count($info['line']), config('sampling.lantai'))),
+                'jumlah_line' => array_sum(array_map(fn (array $info): int => count($info['line']), $susunanLantai)),
                 'jumlah_titik' => array_sum(array_column($perKelamin, 'jumlah_titik')),
                 'jumlah_titik_penuh' => $jumlahTitikPenuh,
                 'ekor' => $ekor,
