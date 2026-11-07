@@ -1,0 +1,1027 @@
+/* Finance Reports (finance-reports.html), everything under .fr-*. The
+   page header, tabs, segmented controls, styled selects, status pills,
+   avatars, choice tiles, the drawer, dialogs, empty states and toasts are
+   shared parts; this sheet arranges them and styles what is this page's
+   own: the two glance cards, the statement tables, the budget meter, the
+   aged columns, the saved reports list and the drawer's bars. */
+
+.fr-page,
+.fr-drawer,
+.fr-builder-dialog {
+	/* Muted text is pulled toward the body color so it holds 4.5:1 on the
+     lighter palettes and on tinted rows; the change colors do the same. */
+	--fr-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--fr-line: var(--basalt-edge);
+	--fr-up: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	--fr-down: color-mix(in srgb, var(--basalt-danger) 52%, var(--basalt-copy));
+	--fr-warn: color-mix(in srgb, var(--basalt-warning) 46%, var(--basalt-copy));
+}
+
+/* The period select in the header drives every card below it. */
+.fr-period .form-select,
+.fr-period .basalt-select {
+	width: 12.5rem;
+	max-width: 100%;
+}
+
+/* Two glance cards side by side from 1200px up, their rows ending level. */
+.fr-glance {
+	display: grid;
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+
+	@media (min-width: 1200px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	& > .card {
+		margin: 0;
+	}
+}
+
+/* Of every dollar earned: one big figure, a split bar and its key. */
+.fr-kept-body {
+	padding: 0.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.fr-kept-big {
+	display: flex;
+	gap: 0.25rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0 0 1rem;
+}
+.fr-kept-cents {
+	font-size: 2.4rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: color-mix(in srgb, var(--basalt-series-3) 55%, var(--basalt-copy));
+}
+.fr-kept-what {
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.fr-split {
+	display: flex;
+	gap: 3px;
+	height: 1rem;
+	margin-bottom: 1.25rem;
+}
+.fr-split-part {
+	transform-origin: left;
+	flex: 1 1 0;
+	border-radius: 4px;
+	background: var(--fr-tone);
+	animation: fr-grow 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	&:first-child {
+		border-radius: 999px 4px 4px 999px;
+	}
+	&:last-child {
+		border-radius: 4px 999px 999px 4px;
+	}
+}
+.fr-split-legend {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.fr-split-item {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) 3rem 4.5rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--fr-line);
+
+	.fr-dot {
+		margin: 0;
+	}
+	@media (max-width: 420px) {
+		grid-template-columns: auto minmax(0, 1fr) 2.5rem;
+	}
+}
+.fr-split-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.fr-split-label {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.fr-split-note {
+	font-size: 0.8rem;
+	color: var(--fr-quiet);
+}
+.fr-split-cents,
+.fr-split-value {
+	font-size: 0.9rem;
+	text-align: right;
+	white-space: nowrap;
+}
+.fr-split-cents {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fr-split-value {
+	color: var(--fr-quiet);
+
+	@media (max-width: 420px) {
+		display: none;
+	}
+}
+
+/* Net income by month: six columns, the chosen period's in full color. */
+.fr-trend {
+	display: flex;
+	flex-direction: column;
+}
+.fr-cols {
+	display: grid;
+	gap: 0.75rem;
+	flex: 1 1 auto;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	min-height: 15rem;
+	margin: 0;
+	padding: 0.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+	list-style: none;
+
+	@media (max-width: 420px) {
+		gap: 0.3rem;
+		min-height: 12.5rem;
+	}
+}
+.fr-cols-col {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+
+	&.is-on .fr-cols-bar {
+		background: var(--basalt-series-3);
+	}
+	&.is-on .fr-cols-value {
+		color: var(--basalt-copy);
+	}
+	&.is-on .fr-cols-month {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.fr-cols-track {
+	position: relative;
+	flex: 1 1 auto;
+	width: 100%;
+	max-width: 3.5rem;
+}
+.fr-cols-bar {
+	position: absolute;
+	inset: auto 0 0;
+	transform-origin: bottom;
+	border-radius: 8px 8px 3px 3px;
+	background: color-mix(in srgb, var(--basalt-series-3) 28%, var(--basalt-plane));
+	animation: fr-rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.fr-cols-value {
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--fr-quiet);
+
+	@media (max-width: 420px) {
+		font-size: 0.71rem;
+	}
+}
+.fr-cols-month {
+	font-size: 0.8rem;
+	color: var(--fr-quiet);
+}
+@keyframes fr-rise {
+	from {
+		transform: scaleY(0);
+	}
+}
+
+/* The report switch, then the card that holds whichever report is chosen.
+   The card is a container, so its tables adapt to the card's width rather
+   than the window's. */
+.fr-tabs {
+	margin-bottom: 1rem;
+}
+.fr-report {
+	container-type: inline-size;
+}
+.fr-cardhead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.fr-cardhead-text {
+	flex: 1 1 20rem;
+	min-width: 0;
+}
+.fr-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fr-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.88rem;
+	color: var(--fr-quiet);
+}
+.fr-cardhead-actions > .btn {
+	white-space: nowrap;
+}
+
+/* The toolbar holds the comparison, the live note for aged reports, and
+   the summary or detail switch on the right. */
+.fr-toolbar {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1rem var(--basalt-pad-x) var(--basalt-pad-head);
+	border-bottom: 1px solid var(--fr-line);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.fr-field {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	min-width: 0;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.fr-field-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--fr-quiet);
+}
+.fr-field-compare .form-select,
+.fr-field-compare .basalt-select {
+	width: 15rem;
+	max-width: 100%;
+}
+.fr-field-view {
+	margin-left: auto;
+}
+.fr-asof {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.88rem;
+	color: var(--basalt-copy-body);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Report tables. Amounts sit right aligned so they compare down a column;
+   the first and last cells reach the card's edges. */
+.fr-body {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.fr-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy);
+	margin: 0;
+
+	& > :not(caption) > * > * {
+		padding: calc(var(--basalt-pad-row-y) * 0.8) 1rem;
+		border-color: var(--fr-line);
+		font-size: 0.9rem;
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& thead th {
+		padding-top: calc(var(--basalt-pad-row-y) * 0.6);
+		padding-bottom: calc(var(--basalt-pad-row-y) * 0.6);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--fr-quiet);
+		background: var(--basalt-plane-alt);
+	}
+	& tbody th {
+		font-weight: 400;
+	}
+	& td.fr-muted {
+		color: var(--fr-quiet);
+	}
+	& td.fr-up {
+		color: var(--fr-up);
+	}
+	& td.fr-down {
+		color: var(--fr-down);
+	}
+	& td.fr-warn {
+		color: var(--fr-warn);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+}
+.fr-num {
+	text-align: right;
+	white-space: nowrap;
+}
+.fr-table-statement thead th:first-child {
+	width: 40%;
+}
+.fr-table-single thead th:first-child {
+	width: auto;
+}
+.fr-muted {
+	color: var(--fr-quiet);
+}
+.fr-strong {
+	font-weight: 700;
+}
+.fr-nil {
+	color: var(--fr-quiet);
+}
+
+/* Section names carry a colored dot from the chart ramp; subtotals and
+   the grand total get heavier, the total a tinted band. */
+.fr-row-head > th {
+	padding-top: calc(var(--basalt-pad-row-y) * 1.1);
+	font-size: 0.77rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+}
+.fr-table .fr-row-head > th {
+	font-weight: 700;
+}
+.fr-dot {
+	display: inline-block;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.6rem;
+	border-radius: 50%;
+	vertical-align: 0.05rem;
+	background: var(--fr-tone);
+}
+.fr-table .fr-row-sub > * {
+	font-weight: 700;
+}
+.fr-table .fr-row-sub-strong > * {
+	background: var(--basalt-plane-alt);
+}
+.fr-table .fr-row-sub-quiet > * {
+	font-weight: 400;
+	color: var(--fr-quiet);
+}
+.fr-table .fr-row-total > * {
+	border-top: 2px solid color-mix(in srgb, var(--basalt-hue) 35%, var(--fr-line));
+	font-weight: 700;
+	background: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+}
+
+/* A line you can open reads as plain text until hover or focus, when its
+   chevron appears and slides right. */
+.fr-line {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	max-width: 100%;
+	margin: -0.2rem -0.4rem;
+	padding: 0.2rem 0.4rem;
+	border: 0;
+	border-radius: 6px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+	cursor: pointer;
+
+	& > .bi {
+		font-size: 0.75rem;
+		color: var(--fr-quiet);
+		opacity: 0;
+		transition:
+			opacity 170ms ease,
+			transform 170ms ease;
+	}
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:hover > .bi,
+	&:focus-visible > .bi {
+		transform: translateX(2px);
+		opacity: 1;
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.fr-table-statement .fr-row-line > th:first-child,
+.fr-table-budget .fr-row-line > th:first-child {
+	padding-left: calc(var(--basalt-pad-x) + 1.1rem);
+}
+
+/* Budget against actual: a small meter of how much of each line is used. */
+.fr-used-head {
+	width: 11rem;
+}
+.fr-used {
+	white-space: nowrap;
+
+	&.is-over .fr-used-bar > span {
+		background: var(--basalt-danger);
+	}
+	&.is-over .fr-used-pct {
+		font-weight: 700;
+		color: var(--fr-down);
+	}
+}
+.fr-used-bar {
+	display: inline-block;
+	width: 6rem;
+	height: 0.4rem;
+	margin-right: 0.65rem;
+	border-radius: 999px;
+	overflow: hidden;
+	vertical-align: middle;
+	background: var(--basalt-plane-alt);
+	box-shadow: inset 0 0 0 1px var(--fr-line);
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-series-1);
+	}
+}
+.fr-used-pct {
+	display: inline-block;
+	min-width: 2.75rem;
+	font-size: 0.86rem;
+	text-align: right;
+	vertical-align: middle;
+}
+
+/* Owed by customers and owed to suppliers: a party per row, with its
+   name and a note beside the avatar. The overdue column only shows once
+   the per-bucket columns have gone. */
+.fr-table-aging thead th:first-child {
+	width: 34%;
+}
+.fr-col-overdue {
+	display: none;
+}
+.fr-line-who {
+	gap: 0.75rem;
+}
+.fr-who {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.fr-who-name {
+	font-weight: 600;
+	white-space: nowrap;
+}
+.fr-who-note {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--fr-quiet);
+}
+.fr-who-others {
+	padding-left: calc(32px + 0.75rem);
+}
+
+/* Trial balance: account codes in a narrow quiet column. */
+.fr-table-trial .fr-code {
+	width: 6rem;
+	color: var(--fr-quiet);
+}
+.fr-table-trial thead .fr-code {
+	font-size: 0.71rem;
+}
+
+.fr-foot {
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x) 1.25rem;
+	border-top: 1px solid var(--fr-line);
+	font-size: 0.8rem;
+	color: var(--fr-quiet);
+}
+
+/* As the report card narrows it keeps the figure and the change and lets
+   the rest go: comparison and percentage columns first, then padding,
+   then the meters and the not-due column. */
+@container (max-width: 720px) {
+	.fr-col-cmp,
+	.fr-col-pct,
+	.fr-col-bucket,
+	.fr-code {
+		display: none;
+	}
+	.fr-col-overdue {
+		display: table-cell;
+	}
+	.fr-table-statement thead th:first-child {
+		width: auto;
+	}
+	.fr-table-statement .fr-row-line > th:first-child,
+	.fr-table-budget .fr-row-line > th:first-child {
+		padding-left: calc(var(--basalt-pad-x) + 0.75rem);
+	}
+	.fr-table-aging thead th:first-child {
+		width: auto;
+	}
+	.fr-who-note,
+	.fr-who-name {
+		white-space: normal;
+		word-break: normal;
+		overflow-wrap: normal;
+	}
+	.fr-who-others {
+		padding-left: 0;
+	}
+	.fr-line-who .basalt-avatar {
+		display: none;
+	}
+	.fr-used-head {
+		width: auto;
+	}
+	.fr-used-bar {
+		width: 3.5rem;
+	}
+}
+@container (max-width: 560px) {
+	.fr-toolbar {
+		gap: 0.75rem;
+	}
+	.fr-field {
+		display: grid;
+		grid-template-columns: 5.5rem minmax(0, 15rem);
+		width: 100%;
+	}
+	.fr-field-compare .form-select,
+	.fr-field-compare .basalt-select {
+		width: 100%;
+	}
+	.fr-field-view {
+		display: flex;
+		width: auto;
+		margin-left: calc(5.5rem + 0.6rem);
+	}
+}
+@container (max-width: 460px) {
+	.fr-cardhead,
+	.fr-toolbar,
+	.fr-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.fr-table > :not(caption) > * > * {
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
+	}
+	.fr-table > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.fr-table > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.fr-table-statement .fr-row-line > th:first-child,
+	.fr-table-budget .fr-row-line > th:first-child {
+		padding-left: calc(var(--basalt-pad-x-narrow) + 0.5rem);
+	}
+	.fr-num {
+		font-size: 0.8rem;
+	}
+	.fr-used-bar {
+		display: none;
+	}
+	.fr-col-notdue {
+		display: none;
+	}
+}
+@container (max-width: 360px) {
+	.fr-field {
+		gap: 0.4rem;
+		grid-template-columns: minmax(0, 15rem);
+	}
+	.fr-field-view {
+		margin-left: 0;
+	}
+	.fr-table > :not(caption) > * > * {
+		padding-left: 0.3rem;
+		padding-right: 0.3rem;
+		font-size: 0.8rem;
+	}
+	.fr-table-statement .fr-row-line > th:first-child,
+	.fr-table-budget .fr-row-line > th:first-child {
+		padding-left: calc(var(--basalt-pad-x-narrow) + 0.3rem);
+	}
+}
+
+/* Saved reports: an icon tile, name and description, owner, schedule
+   and the row's actions. Narrow cards stack the owner and schedule
+   under the name. */
+.fr-saved {
+	container-type: inline-size;
+}
+.fr-saved-list {
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid var(--fr-line);
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.fr-saved-row {
+	display: grid;
+	gap: 0.5rem 1.25rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr) 11rem 12rem auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--fr-line);
+	cursor: pointer;
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.fr-saved-icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--fr-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--fr-tone) 16%, var(--basalt-plane));
+}
+.fr-saved-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.fr-saved-name {
+	align-self: flex-start;
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	text-align: start;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.fr-saved-desc {
+	font-size: 0.8rem;
+	color: var(--fr-quiet);
+}
+.fr-saved-owner {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.86rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.fr-saved-when {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	font-size: 0.86rem;
+}
+.fr-saved-schedule {
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.fr-saved-run {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--fr-quiet);
+}
+/* Wide enough for both icons and the menu, so rows without a full page
+   line up with the one that has it. */
+.fr-saved-actions {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	justify-content: flex-end;
+	min-width: 6.875rem;
+}
+.fr-saved-empty {
+	border-top: 1px solid var(--fr-line);
+
+	&[hidden] {
+		display: none;
+	}
+}
+@container (max-width: 820px) {
+	.fr-saved-row {
+		grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+		grid-template-areas: "icon text actions" ". owner owner" ". when when";
+		align-items: start;
+	}
+	.fr-saved-icon {
+		grid-area: icon;
+	}
+	.fr-saved-text {
+		grid-area: text;
+	}
+	.fr-saved-actions {
+		grid-area: actions;
+	}
+	.fr-saved-owner {
+		grid-area: owner;
+	}
+	.fr-saved-when {
+		gap: 0.25rem 0.75rem;
+		flex-direction: row;
+		flex-wrap: wrap;
+		grid-area: when;
+	}
+}
+@container (max-width: 460px) {
+	.fr-saved-row {
+		gap: 0.5rem 0.9rem;
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The drawer: a lead sentence, then sections of bars, open documents or
+   a small table. */
+.fr-drawer {
+	--bs-offcanvas-width: 460px;
+
+	.offcanvas-body {
+		padding: 1.5rem;
+	}
+}
+.fr-dlede {
+	margin: 0 0 1.5rem;
+	font-size: 0.95rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.fr-dsec + .fr-dsec {
+	margin-top: 1.5rem;
+}
+.fr-dsec-title {
+	margin: 0 0 1rem;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fr-dswitch {
+	margin: 0 0 1.5rem;
+}
+
+/* Bars: a name, a track and a value per row, with a note under the name
+   when there is one. */
+.fr-bars {
+	display: grid;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.fr-bars-row {
+	display: grid;
+	gap: 0.2rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "name value" "note note" "track track";
+}
+.fr-bars-name {
+	grid-area: name;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.fr-bars-value {
+	grid-area: value;
+	font-size: 0.88rem;
+	color: var(--basalt-copy);
+}
+.fr-bars-note {
+	grid-area: note;
+	font-size: 0.77rem;
+	color: var(--fr-quiet);
+}
+.fr-bars-track {
+	display: block;
+	grid-area: track;
+	height: 0.5rem;
+	margin-top: 0.3rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.fr-bars-fill {
+	transform-origin: left;
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--fr-tone);
+	animation: fr-grow 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	&.is-neg {
+		background: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-plane));
+	}
+}
+@keyframes fr-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+/* Open invoices or bills: number and what it is for on the left, the
+   amount and its status on the right. */
+.fr-docs {
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid var(--fr-line);
+	list-style: none;
+
+	.basalt-status {
+		white-space: nowrap;
+	}
+}
+.fr-docs-row {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--fr-line);
+}
+.fr-docs-main {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.fr-docs-num {
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+a.fr-docs-num {
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+	text-underline-offset: 3px;
+
+	&:hover {
+		text-decoration-color: currentColor;
+	}
+}
+.fr-docs-what {
+	font-size: 0.8rem;
+	color: var(--fr-quiet);
+}
+.fr-docs-side {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	flex-shrink: 0;
+	align-items: flex-end;
+}
+.fr-docs-amount {
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* A small table inside the drawer loses the card's edge padding. */
+.fr-table-mini {
+	border-top: 1px solid var(--fr-line);
+}
+.fr-drawer .fr-table-mini {
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		background: transparent;
+	}
+	& > :not(caption) > * > * {
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+}
+
+/* The new report dialog: a name, a figure to show, how to split it, and
+   a preview of the first three bars. */
+.fr-builder-row {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+.fr-builder legend.form-label {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+}
+.fr-measures {
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	.basalt-choice-card {
+		align-items: center;
+		padding: 1.1rem 2rem 1rem;
+		text-align: center;
+	}
+	/* The left padding matches the room kept for the check mark, so the title stays centered. */
+	.basalt-choice-card-title {
+		padding-left: 1.75rem;
+		white-space: nowrap;
+	}
+}
+.fr-builder-hint {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--fr-quiet);
+}
+.fr-builder-preview {
+	margin-top: 1.5rem;
+	padding: 1.25rem;
+	border: 1px solid var(--fr-line);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+
+	.fr-bars-track {
+		background: var(--basalt-plane);
+	}
+}
+.fr-builder-preview-label {
+	margin: 0 0 0.9rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--fr-quiet);
+}
+
+/* Nothing grows in when motion is reduced, or on paper. */
+@media (prefers-reduced-motion: reduce), print {
+	.fr-bars-fill,
+	.fr-split-part,
+	.fr-cols-bar {
+		animation: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.fr-line > .bi {
+		transition: none;
+	}
+}

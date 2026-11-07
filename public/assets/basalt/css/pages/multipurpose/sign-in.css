@@ -1,0 +1,1604 @@
+/*
+ * The sign-in pages come in two complete sets that never link to each other.
+ * Daylight (body.signin-body-daylight: sign-in.html, sign-up.html and their
+ * siblings) puts the form under a sky that follows the visitor's clock.
+ * Threshold (body.signin-body-threshold: sign-in-2.html, sign-up-2.html and
+ * theirs) stands a doorway over the form that brightens as fields come right
+ * and opens on success. Colors are drawn only from the --basalt-* tokens, so
+ * every palette, both themes, the neutral canvas and flat gradients reach
+ * these pages too. assets/js/pages/sign-in.js supplies the behavior.
+ */
+
+.signin-body {
+	--signin-link: color-mix(in srgb, var(--basalt-hue) 78%, var(--basalt-copy));
+	--signin-danger: color-mix(in srgb, var(--basalt-danger) 72%, var(--basalt-copy));
+	--signin-success: color-mix(in srgb, var(--basalt-success) 72%, var(--basalt-copy));
+	--signin-warning: color-mix(in srgb, var(--basalt-warning) 60%, var(--basalt-copy));
+	--signin-google: color-mix(in srgb, var(--basalt-series-6) 74%, var(--basalt-copy));
+	/* Muted copy is pulled toward the main copy color because the plain muted
+     token misses 4.5:1 on the canvas in the Verdant, Mono and Pastel Pop
+     light palettes. */
+	--signin-muted: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--signin-ring: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+	/* The main button's two gradient stops. A white label in light mode needs
+     a deepened primary into primary-deep; the dark label in dark mode needs
+     a lightened primary into primary. Both hold the label at 4.5:1 or more
+     across all nine palettes. */
+	--signin-btn-a: color-mix(in srgb, var(--basalt-hue) 65%, var(--basalt-hue-deep));
+	--signin-btn-b: var(--basalt-hue-deep);
+	min-height: 100vh;
+	margin: 0;
+	overflow-x: hidden;
+	color: var(--basalt-copy);
+	background-color: var(--basalt-canvas);
+
+	[data-bs-theme="dark"] & {
+		--signin-btn-a: color-mix(in srgb, var(--basalt-hue) 72%, #ffffff);
+		--signin-btn-b: var(--basalt-hue);
+	}
+
+	& a {
+		text-decoration: none;
+		color: var(--signin-link);
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+/* Hidden steps of a flow stay out of the layout until sign-in.js swaps them in. */
+:root .signin-body .signin-hidden {
+	display: none;
+}
+
+.signin-page {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+/* The bar across the top carries the wordmark on the left and the theme switch on the right. */
+.signin-top {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 30px clamp(16px, 5.5vw, 80px);
+
+	@media (width <= 767.98px) {
+		padding: 18px 16px;
+	}
+}
+
+.signin-brand {
+	display: inline-flex;
+	gap: 10px;
+	align-items: center;
+	font-size: 21px;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+
+	& svg {
+		flex: none;
+		width: 28px;
+		height: 28px;
+	}
+	& path {
+		fill: currentColor;
+	}
+}
+.signin-body .signin-brand {
+	&,
+	&:hover {
+		text-decoration: none;
+		color: inherit;
+	}
+}
+
+.signin-theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	border: 1px solid var(--signin-toggle-line, var(--basalt-edge-strong));
+	color: inherit;
+	background: transparent;
+	cursor: pointer;
+	transition: background-color 150ms ease;
+
+	&:hover {
+		background: color-mix(in srgb, currentColor 10%, transparent);
+	}
+	& .bi {
+		font-size: 1rem;
+	}
+	/* The moon shows in light mode and the sun in dark, each offering the other theme. */
+	& .bi-brightness-high {
+		display: none;
+
+		[data-bs-theme="dark"] & {
+			display: inline;
+		}
+	}
+	[data-bs-theme="dark"] & .bi-moon {
+		display: none;
+	}
+}
+
+/* A field is a label row over a box; the box may hold an eye button for passwords. */
+.signin-field {
+	position: relative;
+	min-width: 0;
+}
+
+.signin-label {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 7px;
+	line-height: 20px;
+}
+.signin-label label,
+.signin-box label {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.signin-label a {
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.signin-box {
+	position: relative;
+}
+.signin-body .signin-box .form-control {
+	width: 100%;
+	border: 1px solid var(--basalt-edge-strong);
+	font: inherit;
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+	box-shadow: none;
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&::placeholder {
+		color: var(--signin-muted);
+		opacity: 0.75;
+	}
+	&:focus {
+		border-color: var(--basalt-hue);
+		outline: 0;
+		box-shadow: var(--signin-ring);
+	}
+	&.is-invalid {
+		padding-right: 18px;
+		border-color: var(--basalt-danger);
+		background-image: none;
+	}
+	/* Comes after the invalid state so the eye button keeps its room either way. */
+	&[data-signin-password] {
+		padding-right: 48px;
+	}
+}
+
+.signin-toggle-pw {
+	position: absolute;
+	right: 8px;
+	bottom: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 100%;
+	max-height: 58px;
+	border: 0;
+	border-radius: 10px;
+	color: var(--signin-muted);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+.signin-body .invalid-feedback {
+	margin-top: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--signin-danger);
+}
+.signin-field:has(.is-invalid) > .invalid-feedback {
+	display: block;
+}
+
+/* Three bars under a new password fill in red, amber or green with the rating. */
+.signin-strength {
+	margin-top: 10px;
+
+	&[data-level="1"] {
+		& .signin-strength-bar:nth-child(-n + 1) {
+			background: var(--basalt-danger);
+		}
+		& .signin-strength-label-text {
+			color: var(--signin-danger);
+		}
+	}
+	&[data-level="2"] {
+		& .signin-strength-bar:nth-child(-n + 2) {
+			background: var(--basalt-warning);
+		}
+		& .signin-strength-label-text {
+			color: var(--signin-warning);
+		}
+	}
+	&[data-level="3"] {
+		& .signin-strength-bar {
+			background: var(--basalt-success);
+		}
+		& .signin-strength-label-text {
+			color: var(--signin-success);
+		}
+	}
+}
+.signin-strength-bars {
+	display: grid;
+	gap: 6px;
+	grid-template-columns: repeat(3, 1fr);
+	margin-bottom: 6px;
+}
+.signin-strength-bar {
+	height: 5px;
+	border-radius: 3px;
+	background: var(--basalt-edge-strong);
+	transition: background-color 200ms ease;
+}
+.signin-strength-label {
+	display: flex;
+	justify-content: space-between;
+	font-size: 12.5px;
+	color: var(--signin-muted);
+}
+.signin-strength-label-text {
+	font-weight: 700;
+}
+
+.signin-check {
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+	font-size: 14px;
+	color: var(--basalt-copy-body);
+
+	& input {
+		flex: none;
+		width: 17px;
+		height: 17px;
+		margin: 0;
+		accent-color: var(--basalt-hue);
+
+		&.is-invalid {
+			outline: 2px solid var(--basalt-danger);
+			outline-offset: 2px;
+		}
+	}
+}
+
+/* One-time codes get six equal boxes; a rejected code shakes them once. */
+.signin-otp {
+	--signin-otp-h: 72px;
+	display: grid;
+	gap: 10px;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+
+	@media (width <= 767.98px) {
+		--signin-otp-h: 64px;
+		gap: 6px;
+	}
+}
+.signin-otp-input {
+	width: 100%;
+	min-width: 0;
+	height: var(--signin-otp-h, 72px);
+	padding: 0;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge-strong);
+	font: inherit;
+	font-size: 1.5rem;
+	font-weight: 700;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:focus {
+		border-color: var(--basalt-hue);
+		outline: 0;
+		box-shadow: var(--signin-ring);
+	}
+	&.is-filled {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	}
+	&.is-invalid {
+		border-color: var(--basalt-danger);
+		animation: signin-shake 0.35s ease;
+	}
+
+	@media (width <= 767.98px) {
+		font-size: 1.25rem;
+	}
+}
+@keyframes signin-shake {
+	25% {
+		transform: translateX(-4px);
+	}
+	75% {
+		transform: translateX(4px);
+	}
+}
+
+/* The resend control reads as a link once its countdown has run out. */
+.signin-resend {
+	font-size: 14px;
+	color: var(--signin-muted);
+
+	& button {
+		padding: 0;
+		border: 0;
+		font: inherit;
+		font-weight: 700;
+		color: var(--signin-link);
+		background: none;
+
+		&:disabled {
+			font-weight: 500;
+			color: var(--signin-muted);
+			cursor: default;
+		}
+	}
+}
+
+/* The main button is a full-width gradient; the quiet one is a plain outlined plane. */
+.signin-btn {
+	display: inline-flex;
+	gap: 10px;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 54px;
+	border: 0;
+	border-radius: 14px;
+	font: inherit;
+	font-size: 17px;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-on-hue);
+	/* Its darker stop doubles as the solid color under the gradient. */
+	background: linear-gradient(135deg, var(--signin-btn-a), var(--signin-btn-b)) var(--signin-btn-b);
+	cursor: pointer;
+	transition:
+		transform 110ms ease,
+		filter 150ms ease;
+
+	&:hover:not(:disabled) {
+		transform: translateY(-1px);
+		filter: brightness(1.05);
+	}
+	/* A disabled button keeps its full color so the label stays legible; the
+     empty fields next to it already explain why it is waiting. */
+	&:disabled {
+		cursor: not-allowed;
+	}
+	& .spinner-border {
+		width: 1rem;
+		height: 1rem;
+		border-width: 2px;
+	}
+}
+.signin-body a.signin-btn {
+	&,
+	&:hover {
+		text-decoration: none;
+		color: var(--basalt-on-hue);
+	}
+}
+.signin-btn-quiet {
+	border: 1px solid var(--basalt-edge-strong);
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover:not(:disabled) {
+		background: var(--basalt-wash);
+		filter: none;
+	}
+}
+.signin-body a.signin-btn-quiet {
+	&,
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+:root[data-basalt-gradients="off"] .signin-btn:not(.signin-btn-quiet) {
+	background: var(--signin-btn-b);
+}
+
+.signin-linkbtn {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 700;
+	color: var(--signin-link);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+	}
+	& .bi-chevron-down {
+		font-size: 12px;
+		transition: transform 200ms ease;
+	}
+	&[aria-expanded="true"] .bi-chevron-down {
+		transform: rotate(180deg);
+	}
+}
+
+/* Other sign-in methods stay folded away until the visitor asks for them. */
+.signin-others {
+	display: grid;
+	gap: 10px;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin-top: 14px;
+
+	&[hidden] {
+		display: none;
+	}
+
+	@media (width <= 767.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.signin-other {
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+	justify-content: center;
+	height: 46px;
+	padding: 0 14px;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge-strong);
+	font: inherit;
+	font-size: 14px;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover {
+		border-color: var(--basalt-hue-border);
+		background: var(--basalt-wash);
+	}
+	& .bi-google {
+		color: var(--signin-google);
+	}
+	& .bi-microsoft {
+		color: var(--basalt-series-2);
+	}
+}
+.signin-body a.signin-other {
+	&,
+	&:hover {
+		text-decoration: none;
+		color: var(--basalt-copy);
+	}
+}
+/* What replaces a form once it has gone through. */
+.signin-success {
+	text-align: center;
+	animation: signin-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+	& .signin-btn {
+		max-width: 360px;
+		height: 52px;
+	}
+	& .signin-resend {
+		margin-top: 14px;
+	}
+}
+.signin-success-title,
+.signin-done-title {
+	font-size: 30px;
+	font-weight: 900;
+	letter-spacing: -0.03em;
+	color: var(--basalt-copy);
+}
+.signin-success-title {
+	margin: 0;
+}
+.signin-success-text {
+	max-width: 46ch;
+	margin: 6px auto 18px;
+	color: var(--signin-muted);
+}
+
+/* Notes explain a state in a sentence or two; the warning kind is tinted amber. */
+.signin-note {
+	display: flex;
+	gap: 12px;
+	padding: 14px 16px;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 14.5px;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	& > .bi {
+		flex: none;
+		font-size: 18px;
+		line-height: 1.35;
+		color: var(--signin-muted);
+	}
+	& p {
+		margin: 0;
+	}
+	& p + p {
+		margin-top: 4px;
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+	& a {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+.signin-note-warning {
+	border-color: color-mix(in srgb, var(--basalt-warning) 45%, transparent);
+	background: color-mix(in srgb, var(--basalt-warning) 9%, var(--basalt-plane));
+
+	& > .bi {
+		color: var(--signin-warning);
+	}
+}
+
+/* Step numbers and an identity provider's initials share one tinted badge. */
+.signin-steps li::before,
+.signin-provider-logo {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	font-weight: 800;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+
+.signin-steps {
+	counter-reset: signin-step;
+	display: grid;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	text-align: left;
+	list-style: none;
+
+	& li {
+		counter-increment: signin-step;
+		display: flex;
+		gap: 12px;
+		font-size: 14.5px;
+		color: var(--basalt-copy-body);
+
+		&::before {
+			content: counter(signin-step);
+			width: 24px;
+			height: 24px;
+			border-radius: 50%;
+			font-size: 12px;
+		}
+	}
+}
+
+/* A reference code sits in a dashed frame with its copy button. */
+.signin-ref {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 8px 8px 14px;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	font-size: 14px;
+	color: var(--signin-muted);
+
+	& code {
+		font-family: "Chivo Mono", ui-monospace, monospace;
+		font-size: 14px;
+		color: var(--basalt-copy);
+	}
+	& button {
+		padding: 5px 10px;
+		border: 0;
+		border-radius: 8px;
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+
+		&:hover {
+			background: var(--basalt-wash);
+		}
+	}
+}
+
+.signin-provider {
+	display: flex;
+	gap: 14px;
+	align-items: center;
+	padding: 14px 16px;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	text-align: left;
+	background: var(--basalt-plane);
+
+	& > .bi {
+		margin-left: auto;
+		font-size: 20px;
+		color: var(--signin-success);
+	}
+}
+.signin-provider-logo {
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+}
+.signin-provider-name,
+.signin-provider-meta {
+	display: block;
+}
+.signin-provider-name {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.signin-provider-meta {
+	font-size: 13px;
+	color: var(--signin-muted);
+}
+
+.signin-address {
+	display: inline-block;
+	padding: 1px 10px;
+	border-radius: 999px;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+	background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* Paired buttons share a row until the screen is too narrow for two. */
+.signin-actions {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	& .signin-btn {
+		height: 54px;
+	}
+
+	@media (width <= 767.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.signin-links {
+	display: flex;
+	gap: 8px 22px;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: 600;
+
+	& .bi {
+		margin-right: 4px;
+	}
+
+	/* A link-styled button, such as the switch to a backup code. */
+	& > button {
+		padding: 0;
+		border: 0;
+		font: inherit;
+		color: var(--signin-link);
+		background: none;
+
+		&:hover span {
+			text-decoration: underline;
+		}
+	}
+}
+.signin-body .signin-links .signin-link-danger {
+	color: var(--signin-danger);
+}
+
+.signin-foot {
+	margin-top: auto;
+	padding: 28px 16px;
+	font-size: 14px;
+	text-align: center;
+	color: var(--basalt-copy-body);
+
+	& a {
+		font-weight: 700;
+	}
+}
+.signin-foot-sep {
+	margin: 0 10px;
+}
+
+@keyframes signin-rise {
+	from {
+		transform: translateY(20px);
+		opacity: 0;
+	}
+}
+
+/* Notices drop in at the top center and lift away again; only the cards take clicks. */
+.signin-toast-wrap {
+	position: fixed;
+	top: 16px;
+	left: 50%;
+	z-index: 1080;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 8px;
+	flex-direction: column;
+	max-width: calc(100% - 32px);
+	pointer-events: none;
+}
+.signin-toast {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	min-width: 280px;
+	padding: 12px 16px;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 20px 40px -20px rgba(25, 20, 48, 0.3);
+	pointer-events: auto;
+	animation: signin-toast-in 0.32s ease both;
+
+	& i {
+		font-size: 1.1rem;
+	}
+	&.is-leaving {
+		animation: signin-toast-out 0.28s ease forwards;
+	}
+}
+.signin-toast-success i {
+	color: var(--signin-success);
+}
+.signin-toast-danger i {
+	color: var(--signin-danger);
+}
+.signin-toast-info i {
+	color: var(--signin-link);
+}
+@keyframes signin-toast-in {
+	from {
+		transform: translateY(-12px);
+		opacity: 0;
+	}
+}
+@keyframes signin-toast-out {
+	to {
+		transform: translateY(-12px);
+		opacity: 0;
+	}
+}
+
+/*
+ * Daylight. sign-in.js writes the phase (dawn, day, dusk or night) onto the
+ * sky from the visitor's clock and places the sun along its arc; adding
+ * ?sky=night or another phase to the address previews it.
+ */
+
+.signin-body-daylight .signin-sky {
+	--pick: var(--basalt-hue);
+	--sky-a: color-mix(in srgb, var(--pick) 32%, #9fd0ff);
+	--sky-b: color-mix(in srgb, var(--pick) 12%, #d9eeff);
+	--sky-c: #f3faff;
+	--sky-ink: #0f1a2c;
+	--sky-line: rgba(15, 26, 44, 0.2);
+	--hill-back: color-mix(in srgb, var(--pick) 40%, #ffffff);
+	--hill-mid: color-mix(in srgb, var(--pick) 62%, #1a2440);
+	--sun: #fff5cf;
+	--sun-glow: 0 0 0 18px rgba(255, 236, 170, 0.25), 0 0 120px 40px rgba(255, 214, 120, 0.55);
+	--stars: 0;
+	--clouds: 1;
+	--hill-h: clamp(110px, 16vw, 230px);
+	--sky-b-at: 58%;
+	--signin-toggle-line: var(--sky-line);
+	position: relative;
+	padding-bottom: var(--hill-h);
+	overflow: hidden;
+	color: var(--sky-ink);
+	background: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) var(--sky-b-at), var(--sky-c) 100%);
+
+	[data-bs-theme="dark"] & {
+		--pick: var(--basalt-hue-deep);
+	}
+
+	&[data-phase="dawn"] {
+		--sky-a: color-mix(in srgb, var(--basalt-series-4) 35%, #cdd6f4);
+		--sky-b: color-mix(in srgb, var(--basalt-series-6) 40%, #ffd4c0);
+		--sky-c: #fff0de;
+		--sun: #ffcf86;
+		--clouds: 0.6;
+	}
+
+	/* Dusk and night share white ink, darker hills and a cloudless sky. */
+	&[data-phase="dusk"],
+	&[data-phase="night"] {
+		--sky-ink: #ffffff;
+		--sky-line: rgba(255, 255, 255, 0.35);
+		--hill-back: color-mix(in srgb, var(--pick) 40%, #0b1022);
+		--hill-mid: color-mix(in srgb, var(--pick) 62%, #070a16);
+		--clouds: 0;
+	}
+
+	/* At dusk the glow sits low behind the hills, which keeps the white text above it legible. */
+	&[data-phase="dusk"] {
+		--sky-a: color-mix(in srgb, var(--pick) 55%, #1c1440);
+		--sky-b: color-mix(in srgb, var(--basalt-series-6) 40%, #5a2150);
+		--sky-b-at: 72%;
+		--sky-c: color-mix(in srgb, var(--basalt-series-5) 60%, #ff9a5c);
+		--sun: #ffcf86;
+		--stars: 0.35;
+	}
+
+	&[data-phase="night"] {
+		--sky-a: #04060d;
+		--sky-b: color-mix(in srgb, var(--pick) 30%, #0a0f24);
+		--sky-c: color-mix(in srgb, var(--pick) 45%, #141a38);
+		--sun: #f3efe2;
+		--sun-glow: inset -18px -10px 0 0 rgba(0, 0, 0, 0.12), 0 0 80px 20px rgba(220, 230, 255, 0.25);
+		--stars: 1;
+	}
+
+	:root[data-basalt-gradients="off"] & {
+		background: var(--sky-b);
+	}
+}
+
+.signin-sky-art {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+/* Each star layer is one pixel whose shadows are the stars; the second layer twinkles out of step. */
+.signin-sky-stars {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1px;
+	height: 1px;
+	border-radius: 50%;
+	opacity: var(--stars);
+	box-shadow:
+		1.4vw 10px 0 0px #fff,
+		20.4vw 188px 0 1px #fff,
+		39.4vw 366px 0 0.5px #fff,
+		58.5vw 164px 0 0px #fff,
+		77.5vw 342px 0 1px #fff,
+		96.5vw 140px 0 0.5px #fff,
+		18.3vw 318px 0 0px #fff,
+		37.4vw 116px 0 1px #fff,
+		56.4vw 294px 0 0.5px #fff,
+		75.4vw 92px 0 0px #fff,
+		94.4vw 270px 0 1px #fff,
+		16.2vw 68px 0 0.5px #fff,
+		35.3vw 246px 0 0px #fff,
+		54.3vw 44px 0 1px #fff,
+		73.3vw 222px 0 0.5px #fff,
+		92.4vw 20px 0 0px #fff,
+		14.2vw 198px 0 1px #fff,
+		33.2vw 376px 0 0.5px #fff,
+		52.2vw 174px 0 0px #fff,
+		71.2vw 352px 0 1px #fff;
+	transition: opacity 800ms ease;
+	animation: signin-twinkle 4s ease-in-out infinite;
+}
+.signin-sky-stars-b {
+	box-shadow:
+		10.9vw 99px 0 0.5px #fff,
+		29.9vw 277px 0 0px #fff,
+		49vw 75px 0 1px #fff,
+		68vw 253px 0 0.5px #fff,
+		87vw 51px 0 0px #fff,
+		8.8vw 229px 0 1px #fff,
+		27.8vw 27px 0 0.5px #fff,
+		46.9vw 205px 0 0px #fff,
+		65.9vw 383px 0 1px #fff,
+		84.9vw 181px 0 0.5px #fff,
+		6.7vw 359px 0 0px #fff,
+		25.8vw 157px 0 1px #fff,
+		44.8vw 335px 0 0.5px #fff,
+		63.8vw 133px 0 0px #fff,
+		82.8vw 311px 0 1px #fff,
+		4.7vw 109px 0 0.5px #fff,
+		23.7vw 287px 0 0px #fff,
+		42.7vw 85px 0 1px #fff,
+		61.7vw 263px 0 0.5px #fff,
+		80.8vw 61px 0 0px #fff;
+	animation-delay: -2s;
+	animation-duration: 5s;
+}
+@keyframes signin-twinkle {
+	0%,
+	100% {
+		filter: opacity(0.35);
+	}
+	50% {
+		filter: opacity(1);
+	}
+}
+
+.signin-sky-sun {
+	position: absolute;
+	top: var(--sun-y, 26%);
+	left: var(--sun-x, 72%);
+	width: 96px;
+	height: 96px;
+	margin: -48px 0 0 -48px;
+	border-radius: 50%;
+	background: var(--sun);
+	box-shadow: var(--sun-glow);
+	transition:
+		left 800ms ease,
+		top 800ms ease;
+	animation: signin-glow 6s ease-in-out infinite;
+
+	@media (width <= 767.98px) {
+		width: 64px;
+		height: 64px;
+		margin: -32px 0 0 -32px;
+	}
+}
+@keyframes signin-glow {
+	50% {
+		transform: scale(1.08);
+	}
+}
+
+/* Two soft cloud shapes ride on a wide strip that drifts slowly back and forth. */
+.signin-sky-clouds {
+	position: absolute;
+	top: 150px;
+	left: 0;
+	width: 1800px;
+	height: 110px;
+	opacity: var(--clouds);
+	transition: opacity 800ms ease;
+	animation: signin-drift 40s linear infinite alternate;
+
+	&::before,
+	&::after {
+		content: "";
+		position: absolute;
+		border-radius: 30px;
+		background: rgba(255, 255, 255, 0.55);
+		filter: blur(2px);
+	}
+	&::before {
+		top: 20px;
+		left: 180px;
+		width: 220px;
+		height: 44px;
+	}
+	&::after {
+		top: 70px;
+		left: 1180px;
+		width: 160px;
+		height: 34px;
+		background: rgba(255, 255, 255, 0.45);
+	}
+}
+@keyframes signin-drift {
+	to {
+		transform: translateX(-160px);
+	}
+}
+
+/* The hills hang a pixel below the edge so rounding never leaves a sliver of sky beneath them. */
+.signin-sky-hills {
+	position: absolute;
+	bottom: -1px;
+	left: 0;
+	display: block;
+	width: 100%;
+	height: calc(var(--hill-h) + 1px);
+}
+.signin-hill-back {
+	fill: var(--hill-back);
+}
+.signin-hill-mid {
+	fill: var(--hill-mid);
+}
+.signin-hill-front {
+	fill: var(--basalt-canvas);
+}
+
+.signin-body-daylight {
+	& .signin-intro {
+		position: relative;
+		z-index: 1;
+		padding: clamp(24px, 6vh, 70px) 16px 0;
+		text-align: center;
+		animation: signin-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	}
+	& .signin-eyebrow {
+		margin: 0;
+		font-family: "Chivo Mono", ui-monospace, monospace;
+		font-size: 14px;
+		font-weight: 500;
+		letter-spacing: 0.035em;
+	}
+	& .signin-title {
+		max-width: 14ch;
+		margin: 12px auto 0;
+		font-size: clamp(52px, 8.2vw, 112px);
+		font-weight: 900;
+		line-height: 0.95;
+		letter-spacing: -0.055em;
+		text-wrap: balance;
+	}
+	& .signin-title-long {
+		max-width: 18ch;
+		font-size: clamp(40px, 6vw, 84px);
+		line-height: 1;
+		letter-spacing: -0.045em;
+	}
+	& .signin-lead {
+		max-width: 52ch;
+		margin: 16px auto 0;
+		font-size: 17px;
+		text-wrap: balance;
+
+		@media (width <= 767.98px) {
+			font-size: 15.5px;
+		}
+	}
+	/* A headline meant for a single line on wide screens, 32px clear above and
+     below; on narrower ones it wraps into two balanced lines. */
+	& .signin-title-oneline {
+		max-width: none;
+		margin: 32px auto;
+		font-size: clamp(38px, 5vw, 76px);
+	}
+	& .signin-title-oneline + .signin-lead {
+		margin-top: 0;
+	}
+
+	& .signin-main {
+		position: relative;
+		z-index: 1;
+		width: min(900px, calc(100% - 32px));
+		margin: 32px auto 0;
+		animation: signin-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) 200ms both;
+	}
+	& .signin-main-narrow {
+		width: min(640px, calc(100% - 32px));
+	}
+	& .signin-stack {
+		display: grid;
+		gap: 16px;
+	}
+	& .signin-box .form-control {
+		height: 58px;
+		padding: 0 18px;
+		border-radius: 14px;
+		font-size: 16px;
+
+		&[data-signin-password] {
+			padding-right: 48px;
+		}
+	}
+}
+
+/* Daylight's own layout: the fields and the button stand side by side on one line. */
+.signin-row {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(var(--signin-cols, 2), minmax(0, 1fr)) var(--signin-go, 190px);
+	align-items: start;
+}
+.signin-row-fields {
+	grid-template-columns: repeat(var(--signin-cols, 2), minmax(0, 1fr));
+}
+/* A single field with its button: forgot password, magic link, SSO and the lock screen. */
+.signin-row-one {
+	--signin-cols: 1;
+	--signin-go: 240px;
+}
+/* The sign-up terms line beside a longer button label. */
+.signin-row-terms {
+	--signin-cols: 1;
+	--signin-go: 270px;
+}
+/* Reset password: two fields and a longer button label. */
+.signin-row-roomy {
+	--signin-go: 230px;
+}
+.signin-row-go {
+	padding-top: 27px;
+}
+.signin-body-daylight .signin-btn {
+	height: 58px;
+}
+.signin-row-otp {
+	--signin-go: 230px;
+	grid-template-columns: minmax(0, 1fr) var(--signin-go);
+}
+.signin-row-otp .signin-row-go {
+	padding-top: 0;
+}
+/* Beside the taller code boxes the button grows to match, so the row stays
+   level; once the row stacks on phones it keeps its usual height. */
+@media (width > 767.98px) {
+	.signin-row-otp .signin-btn {
+		height: 72px;
+	}
+}
+.signin-row-end {
+	display: flex;
+	align-items: center;
+	min-height: 58px;
+}
+
+/* Below tablet width every row collapses to one column and the button drops under its fields. */
+@media (width <= 767.98px) {
+	.signin-row,
+	.signin-row-fields,
+	.signin-row-otp {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.signin-row-go {
+		padding-top: 0;
+	}
+	.signin-row-end {
+		min-height: 0;
+	}
+}
+
+.signin-body-daylight .signin-sub {
+	display: flex;
+	gap: 10px 20px;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 16px;
+	font-size: 14px;
+}
+.signin-body .signin-sub-end {
+	justify-content: flex-end;
+}
+
+/* The confirmation that takes a finished form's place on the same line. */
+.signin-done {
+	display: flex;
+	gap: 18px;
+	align-items: center;
+	justify-content: center;
+	min-height: 88px;
+	animation: signin-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+	@media (width <= 767.98px) {
+		flex-wrap: wrap;
+		text-align: center;
+	}
+}
+.signin-done-mark {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	font-size: 28px;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}
+.signin-done-text {
+	color: var(--signin-muted);
+}
+
+/*
+ * Threshold. sign-in.js raises --signin-open from 0 to 1 as the form comes right:
+ * light fills the doorway, the seam down its middle shortens, and a pool of
+ * light widens across the floor.
+ */
+
+.signin-body-threshold {
+	& .signin-page {
+		--signin-open: 0;
+		align-items: center;
+	}
+	& .signin-top {
+		position: absolute;
+		top: 0;
+		right: 0;
+		left: 0;
+		padding: 30px clamp(16px, 4vw, 60px);
+
+		@media (width <= 575.98px) {
+			padding: 18px 16px;
+		}
+	}
+	& .signin-brand path {
+		fill: var(--basalt-hue);
+	}
+	& .signin-theme-toggle {
+		width: 38px;
+		height: 38px;
+		border-radius: 50%;
+	}
+}
+
+.signin-door {
+	--door-w: 240px;
+	--door-h: 300px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	margin-top: 76px;
+
+	@media (width <= 575.98px) {
+		--door-w: 176px;
+		--door-h: 220px;
+		margin-top: 84px;
+	}
+}
+.signin-door-arch {
+	position: relative;
+	z-index: 1;
+	width: var(--door-w);
+	height: var(--door-h);
+	border-radius: calc(var(--door-w) / 2) calc(var(--door-w) / 2) 0 0;
+	border: 1.5px solid var(--basalt-edge-strong);
+	border-bottom: 0;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.signin-door-light {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		120% 90% at 50% 100%,
+		var(--basalt-series-3) 0%,
+		var(--basalt-series-1) 45%,
+		var(--basalt-hue-deep) 100%
+	);
+	opacity: calc(0.22 + var(--signin-open) * 0.78);
+	transition: opacity 700ms ease;
+	animation: signin-breathe 5s ease-in-out infinite;
+
+	:root[data-basalt-gradients="off"] & {
+		background: var(--basalt-hue);
+	}
+}
+@keyframes signin-breathe {
+	0%,
+	100% {
+		filter: opacity(0.85);
+	}
+	50% {
+		filter: opacity(1);
+	}
+}
+.signin-door-seam {
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	width: 2px;
+	height: calc((1 - var(--signin-open)) * 100%);
+	margin-left: -1px;
+	background: var(--basalt-plane);
+	opacity: 0.7;
+	transition: height 700ms ease;
+}
+.signin-door-floor {
+	position: relative;
+	z-index: 1;
+	width: min(420px, 86vw);
+	height: 2px;
+	background: var(--basalt-edge-strong);
+}
+.signin-door-spill {
+	position: absolute;
+	top: calc(var(--door-h) - 88px);
+	left: 50%;
+	transform: translateX(-50%);
+	width: calc(300px + var(--signin-open) * 700px);
+	max-width: 100vw;
+	height: 180px;
+	border-radius: 50%;
+	background: radial-gradient(closest-side, var(--basalt-series-3), transparent);
+	opacity: calc(0.1 + var(--signin-open) * 0.45);
+	pointer-events: none;
+	transition:
+		width 700ms ease,
+		opacity 700ms ease;
+
+	:root[data-basalt-gradients="off"] & {
+		display: none;
+	}
+}
+
+/* On the lock screen the signed-in person's initials wait in the doorway. */
+.signin-door-who {
+	position: absolute;
+	bottom: 26px;
+	left: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 76px;
+	height: 76px;
+	margin-left: -38px;
+	border-radius: 50%;
+	font-size: 24px;
+	font-weight: 800;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.45);
+
+	@media (width <= 575.98px) {
+		bottom: 18px;
+		width: 60px;
+		height: 60px;
+		margin-left: -30px;
+		font-size: 19px;
+	}
+}
+
+/* A suspended account gets a red-lit door with a padlock fixed on it. */
+.signin-door-locked .signin-door-light {
+	background: radial-gradient(
+		120% 90% at 50% 100%,
+		color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-plane)),
+		var(--basalt-plane) 80%
+	);
+}
+.signin-door-lock {
+	position: absolute;
+	top: 56%;
+	left: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	margin: -28px 0 0 -28px;
+	border-radius: 16px;
+	font-size: 24px;
+	color: var(--signin-danger);
+	background: var(--basalt-plane);
+	box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.4);
+}
+
+.signin-body-threshold {
+	& .signin-intro {
+		position: relative;
+		z-index: 1;
+		width: min(460px, calc(100% - 32px));
+		margin-top: 28px;
+		text-align: center;
+		animation: signin-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) 150ms both;
+	}
+	& .signin-eyebrow {
+		margin: 0 0 8px;
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--signin-muted);
+	}
+	& .signin-title {
+		margin: 0;
+		font-size: clamp(38px, 5vw, 52px);
+		font-weight: 900;
+		line-height: 1;
+		letter-spacing: -0.045em;
+		text-wrap: balance;
+	}
+	& .signin-lead {
+		margin: 12px 0 0;
+		text-wrap: balance;
+		color: var(--signin-muted);
+	}
+	& .signin-main {
+		position: relative;
+		z-index: 1;
+		width: min(400px, calc(100% - 32px));
+		margin-top: 22px;
+		animation: signin-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) 250ms both;
+	}
+	& .signin-main-wide {
+		width: min(460px, calc(100% - 32px));
+	}
+	& .signin-stack {
+		display: grid;
+		gap: 10px;
+	}
+	& .signin-stack-roomy {
+		gap: 16px;
+	}
+
+	/* The label sits inside the field box, to the left of what is typed. */
+	& .signin-box {
+		display: flex;
+		align-items: center;
+		height: 54px;
+		padding: 0 6px 0 16px;
+		border-radius: 14px;
+		border: 1px solid var(--basalt-edge-strong);
+		text-align: left;
+		background: var(--basalt-plane);
+		transition:
+			border-color 150ms ease,
+			box-shadow 150ms ease;
+
+		&:focus-within {
+			border-color: var(--basalt-hue);
+			box-shadow: var(--signin-ring);
+		}
+		&:has(.is-invalid) {
+			border-color: var(--basalt-danger);
+		}
+		& label {
+			flex: none;
+			width: 84px;
+			font-size: 13px;
+			font-weight: 700;
+			color: var(--signin-muted);
+
+			@media (width <= 575.98px) {
+				width: 72px;
+			}
+		}
+	}
+}
+.signin-body-threshold .signin-box .form-control,
+.signin-body-threshold .signin-box .form-control:focus,
+.signin-body-threshold .signin-box .form-control.is-invalid {
+	flex: 1;
+	min-width: 0;
+	height: 100%;
+	padding: 0 8px 0 0;
+	border: 0;
+	font-size: 15px;
+	background: transparent;
+	box-shadow: none;
+}
+
+.signin-body-threshold {
+	& .signin-toggle-pw {
+		position: static;
+		flex: none;
+		height: 40px;
+	}
+	& .invalid-feedback {
+		text-align: left;
+	}
+	& .signin-btn {
+		height: 54px;
+		margin-top: 4px;
+		font-size: 16px;
+	}
+	& .signin-sub {
+		display: flex;
+		gap: 8px 16px;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		margin-top: 6px;
+		font-size: 14px;
+	}
+	& .signin-sub a,
+	& .signin-sub .signin-linkbtn {
+		font-weight: 600;
+	}
+	& .signin-others {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+		justify-content: center;
+		margin-top: 8px;
+	}
+	& .signin-other {
+		height: 42px;
+		padding: 0 16px;
+		border-radius: 999px;
+		font-size: 13px;
+	}
+	& .signin-check {
+		justify-content: flex-start;
+		text-align: left;
+	}
+	& .signin-actions {
+		gap: 10px;
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	/* Once a flow has finished, the intro steps aside for the result. */
+	& .signin-page:has(.signin-success:not(.signin-hidden), .signin-done:not(.signin-hidden)) .signin-intro {
+		display: none;
+	}
+	& .signin-main:has(.signin-success:not(.signin-hidden), .signin-done:not(.signin-hidden)) {
+		margin-top: 28px;
+	}
+	& .signin-success-title {
+		font-size: clamp(34px, 4.4vw, 42px);
+		line-height: 1.05;
+		letter-spacing: -0.04em;
+	}
+	& .signin-done {
+		gap: 6px;
+		flex-direction: column;
+		min-height: 0;
+	}
+	& .signin-done-mark {
+		display: none;
+	}
+	& .signin-done-title {
+		font-size: 44px;
+		letter-spacing: -0.045em;
+	}
+	& .signin-foot {
+		font-size: 13.5px;
+	}
+}
+
+/* Motion stops for visitors who ask for less of it and on paper. :root lifts
+   the rule above the two-class selectors that start each animation. */
+@media (prefers-reduced-motion: reduce), print {
+	:root .signin-body *,
+	:root .signin-body *::before,
+	:root .signin-body *::after {
+		transition: none;
+		animation: none;
+	}
+}
+
+/* A printout keeps the words and drops the scenery and controls. */
+@media print {
+	.signin-sky-art,
+	.signin-door,
+	.signin-theme-toggle,
+	.signin-toast-wrap {
+		display: none;
+	}
+}

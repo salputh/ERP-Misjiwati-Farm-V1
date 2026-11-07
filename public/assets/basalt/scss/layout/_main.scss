@@ -1,0 +1,56 @@
+/* The page column grows to fill the window, so on a short page the footer
+   still sits at the bottom of the screen. */
+.basalt-stage {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-height: calc(100vh - var(--basalt-header-h, 72px));
+
+	&:focus {
+		outline: none;
+	}
+}
+
+/* The footer is one row: the note on the left, the links on the right, and
+   the links drop under the note once the two no longer fit side by side.
+   Its text and links share the muted secondary gray and stay that color on
+   hover. */
+.basalt-pagefoot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding: 1.25rem 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	background-color: var(--basalt-plane);
+
+	@media (min-width: 992px) {
+		padding-inline: 1.5rem;
+	}
+
+	a {
+		text-decoration: none;
+	}
+}
+.basalt-pagefoot-note,
+.basalt-pagefoot-links a {
+	color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+.basalt-pagefoot-note,
+.basalt-pagefoot-links {
+	margin: 0;
+	font-size: 0.81rem;
+}
+.basalt-pagefoot-links {
+	padding: 0;
+	list-style: none;
+
+	> li {
+		display: inline-block;
+	}
+	> li:not(:last-child) {
+		margin-right: 0.5rem;
+	}
+}

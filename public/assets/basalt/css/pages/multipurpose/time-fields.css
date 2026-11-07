@@ -1,0 +1,1304 @@
+/* Styles for the eight time fields on time-fields.html, all under the
+   .tp- prefix. Colors are --basalt-* tokens or mixes of them, so every
+   field follows the active palette and dark mode; time-fields.js
+   adds the state classes used here. */
+
+.tp-page {
+	/* Quiet text is the muted token nudged toward body copy, which keeps it
+     above 4.5:1 on the paler palettes. */
+	--tp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	/* Error and success text lean toward the copy color: darker on light
+     surfaces, lighter on dark ones. */
+	--tp-danger-text: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--tp-ok-text: color-mix(in srgb, var(--basalt-success) 58%, var(--basalt-copy));
+	--tp-line: color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	--tp-well: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	/* Selected fills carry text, so the primary is pulled toward the copy
+     color until on-primary text clears 4.5:1. */
+	--tp-fill: color-mix(in srgb, var(--basalt-hue) 84%, var(--basalt-copy));
+
+	/* Primary buttons take the palette's on-primary text; Bootstrap's white
+     washes out on the pale primaries of the dark palettes. */
+	& .btn-primary {
+		--bs-btn-color: var(--basalt-on-hue);
+		--bs-btn-hover-color: var(--basalt-on-hue);
+		--bs-btn-active-color: var(--basalt-on-hue);
+		--bs-btn-disabled-color: var(--basalt-on-hue);
+		--bs-btn-bg: var(--tp-fill);
+		--bs-btn-border-color: var(--tp-fill);
+		--bs-btn-hover-bg: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+		--bs-btn-hover-border-color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+		--bs-btn-active-bg: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+		--bs-btn-active-border-color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	}
+}
+
+/* On the dark theme the shared hover label of an outline button sinks into
+   its tinted fill, so it switches to the copy color. */
+[data-bs-theme="dark"] .tp-page .btn-outline-secondary {
+	--bs-btn-hover-color: var(--basalt-copy);
+}
+
+/* One 2px ring in the primary marks keyboard focus on chips and the clock
+   digits. */
+.tp-chip:focus-visible,
+.tp-clock-seg:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Controls drawn over a hidden radio show that ring only while the radio
+   has focus and is not yet chosen. */
+.tp-seg-opt:has(input:focus-visible:not(:checked)),
+.tp-slot:has(input:focus-visible:not(:checked)) {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* The radio stays in the page for keyboards and screen readers but is never
+   seen or clicked; its label is the control. */
+.tp-seg-opt input,
+.tp-slot input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* Status lines with nothing to say take no room. */
+.tp-page .tp-invalid:empty,
+.tp-week-err:empty,
+.tp-native-saved:empty,
+.tp-week-saved:empty {
+	display: none;
+}
+
+/* The filter sits above the grid: a row of kind chips and a live count. */
+.tp-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+
+.tp-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.tp-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* A pressed chip turns solid in the copy color. */
+.tp-page .tp-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+
+.tp-chip-sm {
+	padding: 0.3rem 0.75rem;
+	font-size: 0.77rem;
+}
+
+.tp-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--tp-quiet);
+}
+
+/* Cards fill a twelve-column grid. Each takes a whole row until 1200px,
+   where they pair up and only the wide ones keep the full row. */
+.tp-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.tp-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+
+	@media (min-width: 1200px) {
+		grid-column: span 6;
+	}
+}
+
+@media (min-width: 1200px) {
+	.tp-card-full {
+		grid-column: span 12;
+	}
+	.tp-grid .tp-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* The card body is a column, so the code toggle can drop to the bottom. */
+.tp-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+
+	@media (min-width: 768px) {
+		padding: 1.75rem;
+	}
+}
+
+/* The kind pill comes after the title in the markup, so the title is read
+   first, and the reversed column lifts the pill above it. */
+.tp-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+
+.tp-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.tp-card-desc {
+	max-width: 64ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tp-quiet);
+}
+
+.tp-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--tp-quiet);
+}
+
+/* The code toggle closes each card, pushed down by the space above it. */
+.tp-code {
+	margin-top: 1.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:hover {
+		color: var(--basalt-copy);
+	}
+	& summary:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+.tp-card .card-body {
+	& > .tp-code {
+		margin-top: auto;
+	}
+	& > :nth-last-child(2) {
+		margin-bottom: 1.75rem;
+	}
+}
+
+/* Form parts shared by several cards: legends, help and error text, inline
+   code, notes, preset rows and the success line. */
+.tp-page .tp-legend {
+	float: none;
+	width: 100%;
+	margin: 0 0 0.6rem;
+	padding: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+}
+
+.tp-page .tp-help,
+.tp-page .basalt-choice-hint {
+	color: var(--tp-quiet);
+}
+
+.tp-page .tp-invalid,
+.tp-invalid-text {
+	display: block;
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--tp-danger-text);
+}
+
+.tp-page code {
+	padding: 0.1rem 0.3rem;
+	border-radius: 5px;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+}
+
+.tp-note {
+	display: flex;
+	gap: 0.4rem;
+	align-items: flex-start;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--tp-quiet);
+
+	& .bi {
+		margin-top: 0.1rem;
+	}
+}
+
+.tp-presets {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.tp-ok {
+	display: flex;
+	gap: 0.4rem;
+	align-items: flex-start;
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: var(--tp-ok-text);
+}
+
+/* A segmented switch draws a radio group as one pill, default first. */
+.tp-seg {
+	display: inline-flex;
+	gap: 0.1rem;
+	min-width: 0;
+	margin: 0;
+	padding: 0.2rem;
+	border: 1px solid var(--tp-line);
+	border-radius: 999px;
+	background: var(--basalt-plane);
+}
+
+.tp-seg-opt {
+	position: relative;
+	padding: 0.3rem 0.85rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	cursor: pointer;
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:has(input:checked) {
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+
+/* The error summary opens a form that failed to save, with one link per
+   field to fix. */
+.tp-errors {
+	margin-bottom: 1.25rem;
+	padding: 0.9rem 1.1rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 45%, transparent);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-danger) 6%, var(--basalt-plane));
+
+	&:focus {
+		outline: 2px solid var(--basalt-danger);
+		outline-offset: 2px;
+	}
+
+	& ul {
+		margin: 0;
+		padding-left: 1.6rem;
+		font-size: 0.84rem;
+	}
+	& a {
+		text-underline-offset: 2px;
+		color: var(--tp-danger-text);
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+.tp-errors-title {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--tp-danger-text);
+	}
+}
+
+/* Typed entry: a field and a clock button, with the hour and minute grid
+   opening below them. */
+.tp-typed {
+	max-width: 26rem;
+
+	& .form-label {
+		display: block;
+	}
+}
+
+.tp-typed-field {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+
+	& .form-control {
+		flex: 1;
+		min-width: 0;
+		font-variant-numeric: tabular-nums;
+	}
+}
+
+.tp-typed-open {
+	flex-shrink: 0;
+}
+
+.tp-typed-out {
+	margin-top: 0.9rem;
+	font-size: 0.8rem;
+	color: var(--tp-quiet);
+}
+
+.tp-pop {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	left: 0;
+	z-index: 30;
+	width: min(100%, 20rem);
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	box-shadow: 0 14px 34px color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.tp-pop-label {
+	margin: 0 0 0.4rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--tp-quiet);
+}
+
+.tp-pop-grid {
+	display: grid;
+	gap: 0.25rem;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	margin-bottom: 0.9rem;
+}
+
+.tp-pop-btn {
+	padding: 0.3rem 0;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.84rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&[aria-pressed="true"] {
+		color: var(--basalt-on-hue);
+		background: var(--tp-fill);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+.tp-pop-ap {
+	margin-bottom: 0.9rem;
+}
+
+.tp-pop-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* Clock dial: the digit readout above, a round face below, and the hand
+   drawn in SVG under a ring of numbers. */
+.tp-clock {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+	align-items: center;
+	margin: auto 0;
+}
+
+.tp-clock-readout {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+}
+
+.tp-clock-digits {
+	display: flex;
+	gap: 0.1rem;
+	align-items: center;
+}
+
+.tp-clock-seg {
+	padding: 0.1rem 0.4rem;
+	border: 0;
+	border-radius: 12px;
+	font-size: 2.75rem;
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--tp-quiet);
+	background: transparent;
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&[aria-pressed="true"] {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+	}
+}
+
+.tp-clock-colon {
+	font-size: 2.4rem;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--tp-quiet);
+}
+
+.tp-clock-dial {
+	position: relative;
+	width: min(100%, 264px);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	cursor: pointer;
+	user-select: none;
+	touch-action: none;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+}
+
+.tp-clock-svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+.tp-clock-face {
+	fill: var(--tp-well);
+	stroke: var(--tp-line);
+	stroke-width: 1;
+}
+.tp-clock-hand {
+	stroke: var(--basalt-hue);
+	stroke-width: 2;
+	stroke-linecap: round;
+}
+.tp-clock-pin,
+.tp-clock-tip {
+	fill: var(--basalt-hue);
+}
+
+/* The hand eases between values, except while it follows a drag. */
+:is(.tp-clock-hand, .tp-clock-tip) {
+	transition: all 180ms ease;
+
+	.tp-clock-dial.is-dragging & {
+		transition: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.tp-clock-nums {
+	position: absolute;
+	inset: 0;
+}
+
+.tp-clock-num {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.3rem;
+	height: 2.3rem;
+	border-radius: 50%;
+	font-size: 0.9rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	pointer-events: none;
+
+	&.is-on {
+		color: var(--basalt-on-hue);
+		background: var(--tp-fill);
+	}
+}
+
+.tp-clock-summary {
+	margin: 0;
+	font-size: 0.875rem;
+	text-align: center;
+	color: var(--basalt-copy-body);
+}
+
+/* Scroll wheel: five rows show at once and a tinted band marks the middle
+   one. The readout sits beside the wheel from 576px up. */
+.tp-wheelbox {
+	display: grid;
+	gap: 1.75rem;
+	align-items: center;
+	justify-items: center;
+	margin: auto 0;
+
+	@media (min-width: 576px) {
+		gap: 2.25rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		justify-items: start;
+	}
+}
+
+.tp-wheel {
+	--tp-row: 2.6rem;
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(3, 4.25rem);
+	height: calc(var(--tp-row) * 5);
+	padding: 0 0.3rem;
+	border: 1px solid var(--tp-line);
+	border-radius: 18px;
+	overflow: hidden;
+	background: var(--tp-well);
+}
+
+.tp-wheel-band {
+	position: absolute;
+	top: 50%;
+	right: 0.4rem;
+	left: 0.4rem;
+	transform: translateY(-50%);
+	height: var(--tp-row);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+	pointer-events: none;
+}
+
+.tp-wheel-col {
+	position: relative;
+	scroll-snap-type: y mandatory;
+	height: 100%;
+	border-radius: 10px;
+	overflow-y: auto;
+	scrollbar-width: none;
+	overscroll-behavior: contain;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+
+.tp-wheel-pad {
+	height: calc(var(--tp-row) * 2);
+}
+
+.tp-wheel-item {
+	scroll-snap-align: center;
+	height: var(--tp-row);
+	font-size: 1.05rem;
+	font-weight: 500;
+	line-height: var(--tp-row);
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	color: var(--tp-quiet);
+	cursor: pointer;
+	transition: color 110ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	&.is-on {
+		font-weight: 700;
+		font-size: 1.2rem;
+		color: var(--basalt-copy);
+	}
+}
+
+.tp-wheelout-label {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--tp-quiet);
+}
+
+.tp-wheelout-time {
+	margin: 0.1rem 0;
+	font-size: clamp(2rem, 1.6rem + 1.2vw, 2.6rem);
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+.tp-wheelout-note {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* Visit length: two steppers side by side, red-edged below the minimum. */
+.tp-duration-fields {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+
+.tp-duration-row {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+}
+
+.tp-duration-unit {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--tp-quiet);
+}
+
+.tp-duration .basalt-stepper {
+	&[aria-invalid="true"],
+	&.is-invalid {
+		border-color: var(--basalt-danger);
+	}
+}
+
+/* Delivery window: the booked load as bars, a two-handle track under them
+   and hour labels along the bottom. Bars and labels are inset by half a
+   handle so they line up with the track. */
+.tp-window {
+	--tp-thumb: 22px;
+}
+
+.tp-window-top {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+
+.tp-window-label {
+	margin: 0 0 0.2rem;
+	font-size: 0.8rem;
+	color: var(--tp-quiet);
+}
+
+.tp-window-value {
+	margin: 0;
+	font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2rem);
+	font-weight: 700;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+.tp-window-to {
+	font-weight: 500;
+	color: var(--tp-quiet);
+}
+
+.tp-window-fee {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-end;
+
+	@media (max-width: 575.98px) {
+		align-items: flex-start;
+	}
+}
+
+.tp-window-len {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.tp-window-price {
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+
+	&.is-paid {
+		background: color-mix(in srgb, var(--basalt-warning) 20%, var(--basalt-plane));
+	}
+}
+
+.tp-window-load,
+.tp-window-ticks {
+	padding: 0 calc(var(--tp-thumb) / 2);
+}
+
+.tp-window-load {
+	display: flex;
+	gap: 3px;
+	align-items: flex-end;
+	height: 64px;
+	margin-bottom: 0.6rem;
+}
+
+.tp-window-bar {
+	flex: 1;
+	min-width: 0;
+	border-radius: 4px 4px 1px 1px;
+	background: color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+	transition: background-color 170ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	&.is-in {
+		background: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-plane));
+	}
+}
+
+.tp-window-track {
+	position: relative;
+	height: 8px;
+	margin: 0 calc(var(--tp-thumb) / 2);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+	cursor: pointer;
+	touch-action: none;
+
+	/* An invisible strip above and below makes the thin track easy to grab. */
+	&::before {
+		content: "";
+		position: absolute;
+		inset: -14px 0;
+	}
+}
+
+.tp-window-fill {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-radius: 999px;
+	background: var(--basalt-hue);
+}
+
+.tp-window-thumb {
+	position: absolute;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: var(--tp-thumb);
+	height: var(--tp-thumb);
+	padding: 0;
+	border: 3px solid var(--basalt-hue);
+	border-radius: 50%;
+	background: var(--basalt-plane);
+	box-shadow: 0 2px 6px color-mix(in srgb, var(--basalt-copy) 18%, transparent);
+	cursor: grab;
+	transition: box-shadow 150ms ease;
+	touch-action: none;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	&:hover {
+		box-shadow: 0 0 0 6px color-mix(in srgb, var(--basalt-hue) 16%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	&.is-dragging {
+		box-shadow: 0 0 0 8px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+		cursor: grabbing;
+	}
+}
+
+.tp-window-ticks {
+	position: relative;
+	height: 1.4rem;
+	margin-top: 0.7rem;
+}
+
+.tp-window-tick {
+	position: absolute;
+	top: 0;
+	transform: translateX(-50%);
+	font-size: 0.71rem;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--tp-quiet);
+
+	/* Phones keep every other label so they do not run together. */
+	@media (max-width: 575.98px) {
+		&:nth-child(even) {
+			display: none;
+		}
+	}
+}
+
+.tp-window-foot {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.5rem;
+}
+
+/* Pickup slots: day choices on top, then the quarter-hour tiles, with the
+   booking summary in a sticky column beside them from 992px. */
+.tp-days {
+	--basalt-choice-min: 88px;
+	margin-bottom: 1.75rem;
+}
+
+.tp-slots-body {
+	display: grid;
+	gap: 1.75rem;
+
+	@media (min-width: 992px) {
+		gap: 2.25rem;
+		grid-template-columns: minmax(0, 1fr) 17rem;
+		align-items: start;
+	}
+}
+
+.tp-slots-groups {
+	display: grid;
+	gap: 1.5rem;
+	border-radius: 12px;
+
+	&.is-invalid {
+		outline: 2px solid color-mix(in srgb, var(--basalt-danger) 55%, transparent);
+		outline-offset: 8px;
+	}
+}
+
+.tp-slotgroup {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	& .tp-legend {
+		display: flex;
+		gap: 0.6rem;
+		align-items: baseline;
+	}
+}
+
+.tp-slotgroup-count {
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--tp-quiet);
+}
+
+.tp-slotgrid {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
+}
+
+.tp-slot {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 3.1rem;
+	padding: 0.4rem 0.25rem;
+	border: 1px solid var(--tp-line);
+	border-radius: 10px;
+	font-size: 0.86rem;
+	font-weight: 600;
+	line-height: 1.2;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease,
+		color 150ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.tp-slot-left {
+	margin-top: 0.1rem;
+	font-size: 0.67rem;
+	font-weight: 500;
+	color: var(--tp-quiet);
+}
+
+.tp-slot:hover {
+	border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--tp-line));
+}
+
+.tp-slot:has(input:checked) {
+	border-color: var(--tp-fill);
+	color: var(--basalt-on-hue);
+	background: var(--tp-fill);
+
+	& .tp-slot-left {
+		color: var(--basalt-on-hue);
+	}
+}
+
+/* A full slot stays in the grid, dashed and struck through, and ignores
+   the hover edge. */
+.tp-slot.is-full {
+	border-style: dashed;
+	color: var(--tp-quiet);
+	background: var(--tp-well);
+	cursor: not-allowed;
+
+	& .tp-slot-time {
+		text-decoration: line-through;
+	}
+	&:hover {
+		border-color: var(--tp-line);
+	}
+}
+
+.tp-slots-empty {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--tp-quiet);
+}
+
+.tp-slots-summary {
+	padding: 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--tp-well);
+
+	@media (min-width: 992px) {
+		position: sticky;
+		top: 90px;
+	}
+}
+
+.tp-slots-eyebrow {
+	margin: 0 0 0.3rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--tp-quiet);
+}
+
+.tp-slots-pick {
+	margin: 0 0 0.9rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+
+	&.is-empty {
+		font-weight: 500;
+		font-size: 1rem;
+		color: var(--tp-quiet);
+	}
+}
+
+.tp-slots-meta {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: 0.8rem;
+	color: var(--tp-quiet);
+}
+
+.tp-slots-done {
+	margin: 0.9rem 0 0;
+}
+
+/* Weekly hours: on narrow cards each day stacks its name and switch over
+   the times; from 1200px a day is one line with any error under the times. */
+.tp-week-rows {
+	border-top: 1px solid var(--basalt-edge);
+}
+
+.tp-week-row {
+	display: grid;
+	gap: 0.6rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"day open"
+		"times times"
+		"err err";
+	align-items: center;
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	@media (min-width: 1200px) {
+		grid-template-columns: 8rem 7.5rem minmax(0, 1fr);
+		grid-template-areas:
+			"day open times"
+			". . err";
+	}
+}
+
+.tp-week-day {
+	grid-area: day;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.tp-week-open {
+	grid-area: open;
+	margin: 0;
+
+	& .form-check-label {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+.tp-week-times {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	grid-area: times;
+	align-items: center;
+
+	& .form-select {
+		width: 9.75rem;
+		font-variant-numeric: tabular-nums;
+
+		@media (max-width: 575.98px) {
+			flex: 1;
+			width: auto;
+			min-width: 0;
+		}
+	}
+}
+
+.tp-week-sep {
+	font-size: 0.85rem;
+	color: var(--tp-quiet);
+}
+
+/* On phones the length drops to its own line, and leaves none when empty. */
+.tp-week-len {
+	margin-left: 0.25rem;
+	font-size: 0.77rem;
+	color: var(--tp-quiet);
+
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+		margin-left: 0;
+
+		&:empty {
+			display: none;
+		}
+	}
+}
+
+.tp-week-closed {
+	font-size: 0.85rem;
+	font-style: italic;
+	color: var(--tp-quiet);
+}
+
+.tp-week-err {
+	grid-area: err;
+	margin: 0;
+}
+
+.tp-week-row.is-closed .tp-week-day {
+	color: var(--tp-quiet);
+}
+
+.tp-week-foot {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.5rem;
+}
+
+.tp-week-total {
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+.tp-week-saved {
+	margin: 1rem 0 0;
+}
+
+/* Native input: the browser draws the picker; only the digits line up. */
+.tp-native .form-control {
+	font-variant-numeric: tabular-nums;
+}
+
+.tp-native-value {
+	margin: 1.25rem 0 0;
+	font-size: 0.8rem;
+	color: var(--tp-quiet);
+}
+
+.tp-native-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+}
+
+/* A printout keeps every card, filtered or not, and drops the controls
+   that only work on screen. */
+@media print {
+	.tp-filter,
+	.tp-code {
+		display: none;
+	}
+	.tp-card.is-hidden {
+		display: block;
+	}
+}

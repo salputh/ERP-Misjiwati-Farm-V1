@@ -1,0 +1,1049 @@
+/**
+ * Accordion page (accordion.html), everything under .ac-*.
+ * The demos are plain Bootstrap .accordion markup driven by its collapse
+ * plugin; these rules only reskin them. Card grid, kind pill and snippet
+ * block follow the same pattern as the forms and chart pages. Every color
+ * is a --basalt-* token or a mix of two, tuned so small text keeps 4.5:1
+ * in each palette, light and dark alike.
+ */
+
+/* The page root sets the tokens the rest of the file reads. Quiet text is
+   the muted token pulled toward the body color; accent text is primary
+   pulled the same way, since the raw fill color can fall under 4.5:1 on
+   the soft tint in some palettes. */
+.ac-page {
+	--ac-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--ac-accent-text: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--ac-open-bg: var(--basalt-hue-soft);
+	--ac-focus: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* Primary buttons take the on-primary text color over a fill nudged toward
+   the text color, which keeps the lighter palettes above 4.5:1. */
+.ac-page .btn-primary,
+[data-ac-open-all].btn-primary {
+	--ac-btn: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	--ac-btn-hover: color-mix(in srgb, var(--basalt-hue) 74%, var(--basalt-copy));
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-bg: var(--ac-btn);
+	--bs-btn-border-color: var(--ac-btn);
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-hover-bg: var(--ac-btn-hover);
+	--bs-btn-hover-border-color: var(--ac-btn-hover);
+	--bs-btn-active-color: var(--basalt-on-hue);
+	--bs-btn-active-bg: var(--ac-btn-hover);
+	--bs-btn-active-border-color: var(--ac-btn-hover);
+}
+
+/* Family chips sit above the grid with the count on its own line. */
+.ac-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.ac-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.ac-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.ac-chips .ac-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.ac-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ac-quiet);
+}
+
+/* The grid is twelve columns; cards pair up from desktop width, and below
+   that every card takes the row. */
+.ac-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.ac-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.ac-card {
+		grid-column: span 6;
+	}
+	.ac-card-full,
+	.ac-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A card is a column: head, demo, then the snippet pushed to the foot. */
+.ac-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.ac-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+/* The kind pill is drawn above the title although it follows it in the
+   markup, so assistive tech meets the title first. */
+.ac-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.ac-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ac-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ac-quiet);
+}
+.ac-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--ac-quiet);
+}
+
+/* The accordion skin: Bootstrap's own variables pointed at the theme
+   tokens. The chevron is a glyph from the icon font rather than
+   Bootstrap's SVG, so it inherits the text color in every palette. */
+.ac-page .accordion {
+	--bs-accordion-color: var(--basalt-copy-body);
+	--bs-accordion-bg: var(--basalt-plane);
+	--bs-accordion-border-color: var(--basalt-edge);
+	--bs-accordion-border-radius: 12px;
+	--bs-accordion-inner-border-radius: 11px;
+	--bs-accordion-btn-padding-x: 1.1rem;
+	--bs-accordion-btn-padding-y: 0.95rem;
+	--bs-accordion-btn-color: var(--basalt-copy);
+	--bs-accordion-btn-bg: var(--basalt-plane);
+	--bs-accordion-btn-icon: none;
+	--bs-accordion-btn-active-icon: none;
+	--bs-accordion-btn-icon-width: 1rem;
+	--bs-accordion-btn-focus-box-shadow: var(--ac-focus);
+	--bs-accordion-body-padding-x: 1.1rem;
+	--bs-accordion-body-padding-y: 1rem;
+	--bs-accordion-active-color: var(--ac-accent-text);
+	--bs-accordion-active-bg: var(--ac-open-bg);
+	font-size: 0.9rem;
+}
+
+/* Headers are real h3 and h4 elements for the outline; the button, not the
+   heading, decides the type size. */
+.ac-page .accordion-header {
+	font-size: inherit;
+	line-height: inherit;
+}
+.ac-page .accordion-button {
+	gap: 0.75rem;
+	font-weight: 600;
+	font-size: inherit;
+	line-height: 1.35;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	/* Bootstrap's dark mode paints its SVG on the pseudo element itself, so
+     the background image is cleared here as well. */
+	&::after {
+		content: "\f282";
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		height: 1rem;
+		font-family: "bootstrap-icons";
+		font-size: 0.85rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--ac-quiet);
+		background-image: none;
+	}
+	&:not(.collapsed)::after {
+		color: inherit;
+	}
+	/* When a count, tag or state already hugs the right edge, the chevron
+     simply follows it. */
+	&:has(.ac-count, .ac-tag, .ac-state)::after {
+		margin-left: 0;
+	}
+	&.collapsed:hover {
+		background-color: var(--basalt-wash);
+	}
+	&:not(.collapsed):hover {
+		background-color: color-mix(in srgb, var(--ac-open-bg) 70%, var(--basalt-wash));
+	}
+	&:focus-visible {
+		z-index: 3;
+	}
+	/* A disabled header goes quiet and refuses the pointer. */
+	&:disabled {
+		color: var(--ac-quiet);
+		background: var(--basalt-canvas);
+		cursor: not-allowed;
+	}
+}
+.ac-page .accordion-body {
+	line-height: 1.6;
+}
+
+/* Inside a header: a title with an optional second line. */
+.ac-head {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.ac-head-title {
+	min-width: 0;
+}
+.ac-head-sub {
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--ac-quiet);
+}
+.accordion-button:not(.collapsed) .ac-head-sub {
+	color: var(--basalt-copy-body);
+}
+
+/* The icon tile picks up the accent once its panel is open. */
+.ac-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.accordion-button:not(.collapsed) .ac-icon {
+	border-color: var(--basalt-hue-border);
+	color: var(--ac-accent-text);
+	background: var(--basalt-plane);
+}
+
+/* Counts and tags are pushed to the end of the header, just before the
+   chevron; a tag followed by a count hands the push over to the tag. */
+.ac-count,
+.ac-tag {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.3rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 600;
+	line-height: 1;
+	white-space: nowrap;
+}
+.ac-count {
+	justify-content: center;
+	min-width: 1.9rem;
+	margin-left: auto;
+	border: 1px solid var(--basalt-edge);
+	font-family: "Chivo Mono", monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+.ac-head-title + .ac-tag {
+	margin-left: auto;
+}
+.ac-tag + .ac-count {
+	margin-left: 0;
+}
+.ac-tag {
+	border: 1px solid var(--basalt-edge-strong);
+	color: var(--ac-quiet);
+	background: var(--basalt-plane);
+}
+.ac-tag-new {
+	border-color: color-mix(in srgb, var(--basalt-success) 45%, transparent);
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	background: var(--basalt-plane);
+}
+.ac-tag-low {
+	border-color: color-mix(in srgb, var(--basalt-warning) 55%, transparent);
+	color: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	background: var(--basalt-plane);
+}
+
+/* Indicator styles. Plus and minus swap the glyph instead of rotating it. */
+.ac-page .ac-ind-plus .accordion-button {
+	&::after {
+		content: "\f64d";
+		transform: none;
+	}
+	&:not(.collapsed)::after {
+		content: "\f63b";
+	}
+}
+/* The caret is a filled triangle that turns a quarter turn. */
+.ac-page .ac-ind-caret .accordion-button {
+	&::after {
+		content: "\f229";
+		transform: rotate(-90deg);
+		font-size: 0.7rem;
+	}
+	&:not(.collapsed)::after {
+		transform: none;
+	}
+}
+/* Chevron first moves the marker ahead of the title. */
+.ac-page .ac-ind-start .accordion-button {
+	&::after {
+		content: "\f285";
+		transform: none;
+		order: -1;
+		margin-left: 0;
+	}
+	&:not(.collapsed)::after {
+		transform: rotate(90deg);
+	}
+}
+
+/* A Show and Hide label on the right replaces the chevron; the two words
+   swap with the state. */
+.ac-page .ac-texttoggle .accordion-button::after {
+	content: none;
+}
+.ac-toggle {
+	flex-shrink: 0;
+	margin-left: auto;
+	padding: 0.3rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+.accordion-button.collapsed .ac-toggle-hide,
+.accordion-button:not(.collapsed) .ac-toggle-show {
+	display: none;
+}
+.accordion-button:not(.collapsed) .ac-toggle {
+	border-color: var(--basalt-hue-border);
+	color: var(--ac-accent-text);
+}
+
+/* Separated items: each one its own rounded card, the open one lifted. */
+.ac-page .ac-separated {
+	display: grid;
+	gap: 0.75rem;
+}
+.ac-page .ac-separated .accordion-item {
+	border: 1px solid var(--basalt-edge);
+	border-radius: var(--bs-accordion-border-radius);
+	overflow: hidden;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:has(.accordion-collapse.show) {
+		border-color: var(--basalt-hue-border);
+		box-shadow: var(--basalt-card-shadow);
+	}
+}
+.ac-page .ac-separated .accordion-button {
+	border-radius: 0;
+
+	&:not(.collapsed) {
+		box-shadow: none;
+	}
+	&:focus-visible {
+		box-shadow: inset var(--ac-focus);
+	}
+}
+
+/* Sizes change padding, radius and type together. */
+.ac-page .ac-size-sm {
+	--bs-accordion-btn-padding-x: 0.85rem;
+	--bs-accordion-btn-padding-y: 0.5rem;
+	--bs-accordion-body-padding-x: 0.85rem;
+	--bs-accordion-body-padding-y: 0.65rem;
+	--bs-accordion-border-radius: 8px;
+	--bs-accordion-inner-border-radius: 7px;
+	font-size: 0.8rem;
+}
+.ac-page .ac-size-lg {
+	--bs-accordion-btn-padding-x: 1.4rem;
+	--bs-accordion-btn-padding-y: 1.3rem;
+	--bs-accordion-body-padding-x: 1.4rem;
+	--bs-accordion-body-padding-y: 1.25rem;
+	--bs-accordion-border-radius: 16px;
+	--bs-accordion-inner-border-radius: 15px;
+	font-size: 1.02rem;
+}
+
+/* A nested accordion is flush, slightly smaller and marked by a left rule. */
+.ac-page .ac-nest-body {
+	padding: 0.3rem 0.75rem 0.75rem;
+}
+.ac-page .ac-inner {
+	--bs-accordion-btn-padding-y: 0.7rem;
+	--bs-accordion-active-bg: transparent;
+	border-left: 2px solid var(--basalt-hue-border);
+	font-size: 0.86rem;
+}
+.ac-page .ac-inner .accordion-button {
+	font-weight: 550;
+}
+
+/* The segmented switch above a demo; the picked option takes the brand
+   fill nudged toward the text color so the lighter palettes clear 4.5:1. */
+.ac-seg {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.25rem;
+
+	& .btn {
+		border-radius: 999px;
+		font-weight: 600;
+		font-size: 0.77rem;
+	}
+	& .btn-check:checked + .btn {
+		--ac-seg-on: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+		border-color: var(--ac-seg-on);
+		color: var(--basalt-on-hue);
+		background-color: var(--ac-seg-on);
+	}
+}
+
+/* An outline button with nothing left to do goes dashed and quiet rather
+   than faded. */
+.ac-page .btn-outline-secondary:disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: var(--ac-quiet);
+	--bs-btn-disabled-bg: transparent;
+	--bs-btn-disabled-border-color: var(--basalt-edge-strong);
+	border-style: dashed;
+}
+
+/* The FAQ: a search column that sticks beside the list from 992px up. */
+.ac-faq {
+	display: grid;
+	gap: 1.5rem;
+}
+@media (min-width: 992px) {
+	.ac-faq {
+		gap: 2rem;
+		grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr);
+		align-items: start;
+	}
+	.ac-faq-side {
+		position: sticky;
+		top: 5.5rem;
+	}
+}
+.ac-faq .form-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ac-faq-field {
+	position: relative;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		color: var(--ac-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.35rem;
+
+		&::placeholder {
+			color: var(--ac-quiet);
+			opacity: 1;
+		}
+	}
+}
+.ac-faq-count {
+	margin: 0.6rem 0 1rem;
+	font-size: 0.8rem;
+	color: var(--ac-quiet);
+}
+.ac-faq-try {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.ac-faq-try-label {
+	margin-right: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--ac-quiet);
+}
+.ac-try {
+	padding: 0.25rem 0.6rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Search hits are marked in a warm tint, inside open headers as well. */
+.ac-page mark {
+	padding: 0 0.12em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 32%, var(--basalt-plane));
+}
+.ac-page .accordion-button:not(.collapsed) mark {
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 32%, var(--basalt-plane));
+}
+
+/* Bootstrap rounds only the first and last item, so once a search hides
+   some, the script marks the visible ends and these rules round them. */
+.ac-faq-list .accordion-item {
+	&[hidden] {
+		display: none;
+	}
+	&.is-first {
+		border-top-left-radius: var(--bs-accordion-border-radius);
+		border-top-right-radius: var(--bs-accordion-border-radius);
+		border-top: var(--bs-accordion-border-width) solid var(--bs-accordion-border-color);
+
+		& .accordion-button {
+			border-top-left-radius: var(--bs-accordion-inner-border-radius);
+			border-top-right-radius: var(--bs-accordion-inner-border-radius);
+		}
+	}
+	&.is-last {
+		border-bottom-left-radius: var(--bs-accordion-border-radius);
+		border-bottom-right-radius: var(--bs-accordion-border-radius);
+
+		& .accordion-button.collapsed {
+			border-bottom-left-radius: var(--bs-accordion-inner-border-radius);
+			border-bottom-right-radius: var(--bs-accordion-inner-border-radius);
+		}
+	}
+}
+.ac-empty {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 2.5rem 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	text-align: center;
+	color: var(--ac-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		font-size: 1.4rem;
+	}
+}
+.ac-empty-text {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+}
+
+/* The expand and collapse toolbar keeps its count on the right. */
+.ac-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.ac-toolbar-btns {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.ac-toolbar-status {
+	margin: 0;
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--ac-quiet);
+}
+
+/* Stepped: a numbered disc that turns into a tick once the step is done,
+   and goes dashed while the step is still locked. */
+.ac-step-num {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	border-radius: 50%;
+	border: 1.5px solid var(--basalt-edge-strong);
+	font:
+		600 0.8rem/1 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	& .bi {
+		display: none;
+		font-size: 0.9rem;
+	}
+}
+.accordion-button:not(.collapsed) .ac-step-num {
+	border-color: var(--basalt-hue-border);
+	color: var(--ac-accent-text);
+}
+.ac-steps .is-done .ac-step-num {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+
+	& > span {
+		display: none;
+	}
+	& .bi {
+		display: block;
+	}
+}
+.ac-page .ac-steps .accordion-button:disabled {
+	background: var(--basalt-plane);
+
+	&::after {
+		content: none;
+	}
+	& .ac-step-num {
+		border-style: dashed;
+		color: var(--ac-quiet);
+	}
+}
+.ac-step-field {
+	display: grid;
+	gap: 0.4rem;
+	max-width: 22rem;
+	margin: 0 0 1.1rem;
+}
+.ac-step-done {
+	margin-top: 1rem;
+	font-size: 0.86rem;
+	color: var(--basalt-copy-body);
+
+	&:empty {
+		display: none;
+	}
+	& .bi {
+		margin-right: 0.3rem;
+		color: var(--ac-accent-text);
+	}
+	& button {
+		margin-left: 0.5rem;
+	}
+}
+.ac-page .form-check-label {
+	color: var(--basalt-copy-body);
+}
+
+/* Lazy panels: a state word in the header, a shimmer while loading and a
+   short list of rows once the content lands. */
+.ac-state {
+	margin-left: auto;
+	font-size: 0.71rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--ac-quiet);
+}
+.accordion-button:not(.collapsed) .ac-state {
+	color: var(--basalt-copy-body);
+}
+.ac-skel {
+	display: grid;
+	gap: 0.6rem;
+
+	& span {
+		display: block;
+		height: 0.75rem;
+		border-radius: 6px;
+		background: linear-gradient(90deg, var(--basalt-canvas) 0%, var(--basalt-wash) 50%, var(--basalt-canvas) 100%);
+		background-size: 200% 100%;
+		animation: ac-shimmer 1.1s linear infinite;
+
+		&:nth-child(2) {
+			width: 80%;
+		}
+		&:nth-child(3) {
+			width: 60%;
+		}
+	}
+}
+@keyframes ac-shimmer {
+	from {
+		background-position: 100% 0;
+	}
+	to {
+		background-position: -100% 0;
+	}
+}
+.ac-rows {
+	display: grid;
+	gap: 0.1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.4rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+
+		&:last-child {
+			border-bottom: 0;
+		}
+	}
+}
+.ac-rows-val {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ac-note {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+}
+.ac-note-text {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ac-quiet);
+}
+
+/* The sideways row: tall tabs, with the open panel filling what is left.
+   The inner block is given a fixed width (the row minus all the tabs) so
+   Bootstrap's width animation never reflows the text inside it. */
+.ac-h {
+	--ac-h-n: 4;
+	--ac-h-tab: 4.25rem;
+	--ac-h-gap: 0.5rem;
+	display: flex;
+	gap: var(--ac-h-gap);
+	container-type: inline-size;
+	min-height: 17rem;
+}
+.ac-h-item {
+	display: flex;
+	min-width: 0;
+}
+.ac-h-item:has(.ac-h-panel.show),
+.ac-h-item:has(.ac-h-panel.collapsing) {
+	flex: 1 1 auto;
+}
+.ac-h-btn {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: space-between;
+	width: var(--ac-h-tab);
+	padding: 1.1rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: none;
+		box-shadow: var(--ac-focus);
+	}
+	&:not(.collapsed) {
+		border-color: var(--basalt-hue-border);
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+		color: var(--ac-accent-text);
+		background: var(--ac-open-bg);
+	}
+}
+.ac-h-num {
+	font:
+		600 0.77rem/1 "Chivo Mono",
+		monospace;
+	color: inherit;
+}
+.ac-h-label {
+	transform: rotate(180deg);
+	font-size: 0.95rem;
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+}
+.ac-h-panel {
+	flex: 1 1 auto;
+	min-width: 0;
+
+	&.collapsing {
+		flex: 0 0 auto;
+		overflow: hidden;
+	}
+}
+.ac-h-inner {
+	width: calc(100cqw - var(--ac-h-n) * var(--ac-h-tab) - (var(--ac-h-n) - 1) * var(--ac-h-gap));
+	height: 100%;
+	padding: 1.75rem 2rem;
+	border: 1px solid var(--basalt-hue-border);
+	border-left: 0;
+	border-radius: 0 12px 12px 0;
+	background: linear-gradient(135deg, var(--ac-open-bg), var(--basalt-plane) 70%);
+}
+.ac-h-title {
+	margin: 0 0 0.5rem;
+	font-size: 1.35rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ac-h-text {
+	max-width: 42ch;
+	margin: 0 0 1.5rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.ac-h-facts {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& div {
+		display: flex;
+		gap: 0.25rem;
+		flex-direction: column-reverse;
+	}
+	& dt {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--ac-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.5rem;
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+:root[data-basalt-gradients="off"] .ac-h-inner {
+	background: var(--basalt-plane);
+}
+
+/* On a phone the row stacks into an ordinary accordion; the script drops
+   collapse-horizontal there so Bootstrap animates the height instead. */
+@media (max-width: 767.98px) {
+	.ac-h {
+		flex-direction: column;
+		min-height: 0;
+	}
+	.ac-h-item {
+		flex-direction: column;
+	}
+	.ac-h-btn {
+		flex-direction: row;
+		justify-content: flex-start;
+		width: 100%;
+		padding: 0.85rem 1rem;
+	}
+	.ac-h-btn:not(.collapsed) {
+		border-radius: 12px 12px 0 0;
+	}
+	.ac-h-label {
+		transform: none;
+		writing-mode: horizontal-tb;
+	}
+	.ac-h-inner {
+		width: auto;
+		padding: 1.25rem;
+		border-left: 1px solid var(--basalt-hue-border);
+		border-top: 0;
+		border-radius: 0 0 12px 12px;
+	}
+}
+
+/* The snippet at the foot of every card: a disclosure, a copy button in the
+   corner of the code block, and room above it whatever the demo ends with. */
+.ac-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.ac-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.ac-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+.ac-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+
+/* Reduced motion drops every transition and the shimmer; print hides the
+   controls and shows every card, filtered or not. */
+@media (prefers-reduced-motion: reduce) {
+	.ac-chip,
+	.ac-code summary .bi,
+	.ac-page .accordion-button,
+	.ac-icon,
+	.ac-separated .accordion-item,
+	.ac-h-btn {
+		transition: none;
+	}
+	.ac-skel span {
+		animation: none;
+	}
+}
+@media print {
+	.ac-filter,
+	.ac-code,
+	.ac-seg,
+	.ac-toolbar {
+		display: none;
+	}
+	.ac-card.is-hidden {
+		display: block;
+	}
+}

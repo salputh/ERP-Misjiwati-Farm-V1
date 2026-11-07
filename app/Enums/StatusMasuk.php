@@ -36,25 +36,25 @@ enum StatusMasuk: string
     }
 
     /**
-     * Kelas CSS lencana status dari template HexaDash.
+     * Kelas CSS lencana status dari template Basalt.
      */
     public function kelasLencana(): string
     {
         return match ($this) {
-            self::Online => 'bg-opacity-success color-success',
-            self::Diam => 'bg-opacity-warning color-warning',
-            self::Keluar => 'bg-opacity-light color-gray',
+            self::Online => 'bg-success-subtle text-success',
+            self::Diam => 'bg-warning-subtle text-warning',
+            self::Keluar => 'bg-body-secondary text-body-secondary',
         };
     }
 
     /**
-     * Kelas titik status di pojok avatar (HexaDash: chat-badge-dot); akun yang tidak masuk tidak diberi titik.
+     * Kelas titik status di pojok avatar; akun yang tidak masuk tidak diberi titik.
      */
     public function kelasTitik(): ?string
     {
         return match ($this) {
-            self::Online => 'avatar-online',
-            self::Diam => 'avatar-offline',
+            self::Online => 'bg-success',
+            self::Diam => 'bg-warning',
             self::Keluar => null,
         };
     }

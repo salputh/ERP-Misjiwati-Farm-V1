@@ -1,0 +1,1373 @@
+/* The maintenance screen (maintenance-windows.html), all under the .mm- prefix:
+   the open or closed card with its hanging sign, the quiet-hours chart,
+   booked closures, the notice shoppers get, who may still come in, the
+   pre-close checklist and the log of past closures. The close dialog and the
+   booking drawer sit in .mm-overlays; shared components do the rest. */
+
+/* Two shades the page reuses, plus the open and closed tones. The muted gray
+   leans toward the body color to keep 4.5:1 on light palettes and hovered
+   rows; accent text leans the same way, since the bare primary falls short
+   in a few light palettes. */
+:is(.mm-page, .mm-overlays) {
+	--mm-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--mm-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--mm-open: var(--basalt-success);
+	--mm-closed: var(--basalt-warning);
+}
+
+/* Cards stack one per row until 1200px, then pair up; wide cards keep the row. */
+.mm-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.mm-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	@media (min-width: 1200px) {
+		grid-column: span 6;
+	}
+}
+@media (min-width: 1200px) {
+	.mm-card-wide {
+		grid-column: span 12;
+	}
+}
+
+/* Every card body is a column, so footers can sink to the bottom edge. */
+.mm-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+.mm-card-head {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+}
+.mm-card-head-row {
+	gap: 1rem;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	& > .btn,
+	& > .basalt-status {
+		flex-shrink: 0;
+	}
+
+	@media (max-width: 575.98px) {
+		flex-direction: column;
+	}
+}
+.mm-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+}
+.mm-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--mm-quiet);
+}
+
+/* Inputs on the page and in its overlays share the plane, ink and edge. */
+:is(.mm-page, .mm-overlays) .form-control,
+.mm-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+:is(.mm-page, .mm-overlays) .form-control:focus {
+	border-color: var(--basalt-hue);
+}
+:is(.mm-page, .mm-overlays) .form-control::placeholder {
+	color: var(--mm-quiet);
+	opacity: 1;
+}
+:is(.mm-page, .mm-overlays) .form-check-label {
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+:is(.mm-page, .mm-overlays) .invalid-feedback {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+
+/* A fieldset that looks like a plain block, with a small bold label above. */
+.mm-field {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.mm-label {
+	display: block;
+	float: none;
+	width: auto;
+	margin-bottom: 0.4rem;
+	padding: 0;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.mm-label-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.mm-count {
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--mm-quiet);
+
+	&.is-near {
+		font-weight: 650;
+		color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	}
+}
+.mm-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85em;
+}
+.mm-hint {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--mm-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.mm-link-btn.btn-link {
+	--bs-btn-color: var(--mm-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	padding: 0;
+	font-size: 0.8rem;
+	font-weight: 650;
+	text-underline-offset: 0.2em;
+	vertical-align: baseline;
+}
+
+/* Segmented choices wrap their words instead of pushing the page sideways. */
+.mm-seg {
+	max-width: 100%;
+
+	& .basalt-segmented-option {
+		text-align: center;
+		white-space: normal;
+
+		@media (max-width: 575.98px) {
+			padding-inline: 0.5rem;
+			font-size: 0.8rem;
+		}
+	}
+}
+
+/* The open or closed card measures itself, not the window, so the sign moves
+   beside the words only when the card has room, open sidebar or not. */
+.mm-live {
+	container-type: inline-size;
+
+	&.basalt-box .card-body {
+		display: grid;
+		gap: 2rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "sign" "main";
+		padding: 2rem 1.75rem;
+
+		@container (min-width: 760px) {
+			gap: 3rem;
+			grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+			grid-template-areas: "main sign";
+			padding: 2.5rem;
+		}
+	}
+
+	& [hidden] {
+		display: none;
+	}
+}
+.mm-live-main {
+	grid-area: main;
+	min-width: 0;
+}
+.mm-live-title {
+	margin: 0 0 0.5rem;
+	font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.1rem);
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.mm-live-lede {
+	max-width: 56ch;
+	margin: 0 0 1.75rem;
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.mm-live-controls {
+	display: flex;
+	gap: 1.25rem 2rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.25rem;
+
+	& .mm-field:first-child {
+		flex: 1 1 18rem;
+		max-width: 26rem;
+	}
+}
+.mm-length {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.mm-length-unit {
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.mm-live-impact {
+	max-width: 44rem;
+	margin: 0 0 1.75rem;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.mm-live-actions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+
+	& .btn[hidden] {
+		display: none;
+	}
+}
+
+/* Only while closed: a ring for the time used, and a tally of the door beside it. */
+.mm-live-running {
+	display: flex;
+	gap: 1.5rem 2.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.75rem;
+}
+.mm-ring {
+	--size: 132px;
+	--thickness: 10px;
+	--ring-tone: var(--mm-closed);
+
+	&.is-over {
+		--ring-tone: var(--basalt-danger);
+	}
+	& .basalt-rings-value {
+		font-variant-numeric: tabular-nums;
+	}
+}
+.mm-tally {
+	display: grid;
+	gap: 0.25rem 2rem;
+	grid-template-columns: repeat(3, auto);
+	margin: 0;
+
+	& div {
+		min-width: 0;
+	}
+	& dt {
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--mm-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.6rem;
+		font-weight: 750;
+		letter-spacing: -0.02em;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+
+	@media (max-width: 575.98px) {
+		gap: 0.25rem 1.25rem;
+
+		& dd {
+			font-size: 1.3rem;
+		}
+	}
+}
+
+/* The hanging sign has an open face and a closed face on one card that turns
+   over. Its slow sway is the only thing on the page that moves by itself. */
+.mm-sign-wrap {
+	display: flex;
+	flex-direction: column;
+	grid-area: sign;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+}
+.mm-sign {
+	position: relative;
+	transform-origin: 50% 0;
+	perspective: 900px;
+	width: min(100%, 17.5rem);
+	padding-top: 3.25rem;
+	animation: mm-sway 6s ease-in-out infinite;
+}
+@keyframes mm-sway {
+	0%,
+	100% {
+		rotate: -1.2deg;
+	}
+	50% {
+		rotate: 1.2deg;
+	}
+}
+
+/* Two gradient lines meet at a nail to make the string. */
+.mm-sign-string {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	translate: -50% 0;
+	width: 62%;
+	height: 3.4rem;
+	background:
+		linear-gradient(
+				to top right,
+				transparent calc(50% - 1px),
+				var(--basalt-edge-strong) 50%,
+				transparent calc(50% + 1px)
+			)
+			left / 50% 100% no-repeat,
+		linear-gradient(
+				to top left,
+				transparent calc(50% - 1px),
+				var(--basalt-edge-strong) 50%,
+				transparent calc(50% + 1px)
+			)
+			right / 50% 100% no-repeat;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: -0.3rem;
+		left: 50%;
+		translate: -50% 0;
+		width: 0.7rem;
+		height: 0.7rem;
+		border-radius: 50%;
+		background: var(--basalt-copy-muted);
+		box-shadow: 0 1px 2px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	}
+}
+.mm-sign-card {
+	position: relative;
+	transform-style: preserve-3d;
+	display: grid;
+	transition: transform 900ms cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.mm-live[data-state="closed"] .mm-sign-card {
+	transform: rotateY(180deg);
+}
+.mm-sign-face {
+	--tone: var(--mm-open);
+	backface-visibility: hidden;
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	grid-area: 1 / 1;
+	align-items: center;
+	justify-content: center;
+	min-height: 11rem;
+	padding: 1.5rem 1.25rem;
+	border-radius: 18px;
+	border: 2px solid color-mix(in srgb, var(--tone) 55%, var(--basalt-plane));
+	text-align: center;
+	background: color-mix(in srgb, var(--tone) 12%, var(--basalt-plane));
+	box-shadow:
+		inset 0 0 0 6px var(--basalt-plane),
+		inset 0 0 0 7px color-mix(in srgb, var(--tone) 30%, var(--basalt-plane)),
+		0 18px 36px -22px color-mix(in srgb, var(--basalt-copy) 55%, transparent);
+}
+.mm-sign-face-closed {
+	--tone: var(--mm-closed);
+	transform: rotateY(180deg);
+}
+.mm-sign-big {
+	font-size: 2.6rem;
+	font-weight: 800;
+	line-height: 1.05;
+	letter-spacing: -0.03em;
+	color: color-mix(in srgb, var(--tone) 45%, var(--basalt-copy));
+}
+.mm-sign-face-closed .mm-sign-big {
+	font-size: 2.2rem;
+}
+.mm-sign-small {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--tone) 22%, var(--basalt-copy-body));
+}
+.mm-sign-wrap-note {
+	margin: 1.25rem 0 0;
+	font-size: 0.77rem;
+	text-align: center;
+	color: var(--mm-quiet);
+}
+
+/* On a narrow card the sign, its string and its lettering all shrink a step. */
+@container (max-width: 759.98px) {
+	.mm-sign {
+		width: min(100%, 15rem);
+		padding-top: 2.5rem;
+	}
+	.mm-sign-string {
+		height: 2.6rem;
+	}
+	.mm-sign-face {
+		min-height: 9rem;
+	}
+	.mm-sign-big {
+		font-size: 2.1rem;
+	}
+	.mm-sign-face-closed .mm-sign-big {
+		font-size: 1.8rem;
+	}
+}
+
+/* Quiet hours: day picker and hours stepper above a fixed-height chart, and
+   the verdict pinned to the bottom of the card. */
+.mm-quiet-controls {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.mm-quiet-need {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.mm-chart {
+	position: relative;
+	height: 240px;
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+}
+.mm-quiet-pick {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1.5rem;
+}
+.mm-quiet-text {
+	max-width: 44ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Booked closures: a date chip, the reason with its facts, then the tools. */
+.mm-plans {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mm-plan {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&.is-new {
+		border-color: color-mix(in srgb, var(--basalt-hue) 50%, var(--basalt-edge));
+	}
+}
+.mm-plan-date {
+	display: grid;
+	place-items: center;
+	width: 3.4rem;
+	padding: 0.4rem 0;
+	border-radius: 12px;
+	line-height: 1.1;
+	text-align: center;
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+}
+.mm-plan-dow {
+	font-size: 0.67rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--mm-link);
+}
+.mm-plan-day {
+	font-size: 1.3rem;
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+.mm-plan-mon {
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--mm-quiet);
+}
+.mm-plan-main {
+	min-width: 0;
+}
+.mm-plan-title {
+	margin: 0 0 0.3rem;
+	font-size: 0.9rem;
+	font-weight: 650;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* Times first, then the scope pill in a fixed track so pills line up from
+   row to row; any notes drop to the line below. */
+.mm-plan-meta {
+	display: grid;
+	gap: 0.3rem 0.75rem;
+	grid-template-columns: minmax(0, 1fr) 6.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--mm-quiet);
+
+	& > .basalt-status {
+		grid-column: 2;
+		grid-row: 1;
+		justify-self: start;
+	}
+	& > :not(.basalt-status):not(:first-child) {
+		grid-column: 1 / -1;
+	}
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: minmax(0, 1fr);
+
+		& > .basalt-status {
+			grid-column: 1;
+			grid-row: auto;
+		}
+	}
+}
+.mm-plan-acts {
+	display: flex;
+	gap: 0.25rem;
+}
+
+/* Square icon buttons, shared by booked closures and the access lists. */
+.mm-icon-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 9px;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.mm-icon-btn-danger:hover {
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+
+/* Below 480px the tools leave the row and sit at its bottom right. */
+@media (max-width: 479.98px) {
+	.mm-plan {
+		grid-template-columns: auto minmax(0, 1fr);
+		padding-inline: var(--basalt-pad-x-narrow);
+	}
+	.mm-plan-acts {
+		grid-column: 1 / -1;
+		justify-content: flex-end;
+		margin-top: -0.5rem;
+	}
+}
+
+/* The notice editor stacks over its preview, then sits beside it from 992px. */
+.mm-msg {
+	display: grid;
+	gap: 2rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 992px) {
+		gap: 2.5rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+	}
+}
+.mm-msg-form {
+	display: flex;
+	gap: 1.35rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.mm-starts {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	& .basalt-choice {
+		justify-content: center;
+		text-align: center;
+	}
+}
+.mm-switches {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+
+	& .form-check {
+		margin: 0;
+	}
+}
+.mm-msg-actions {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .mm-link-btn[hidden] {
+		display: none;
+	}
+}
+
+/* The preview is a small browser window that narrows into a phone. */
+.mm-preview {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.25rem;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+.mm-preview-bar {
+	display: flex;
+	justify-content: center;
+}
+.mm-preview-stage {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	min-height: 22rem;
+}
+.mm-frame {
+	width: 100%;
+	max-width: 34rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge-strong);
+	overflow: hidden;
+	background: var(--basalt-plane);
+	box-shadow: 0 16px 32px -24px color-mix(in srgb, var(--basalt-copy) 60%, transparent);
+	transition:
+		max-width 360ms cubic-bezier(0.3, 0.9, 0.3, 1),
+		border-radius 360ms ease;
+
+	&.is-phone {
+		max-width: 16.5rem;
+		border-radius: 26px;
+		border-width: 6px;
+		border-color: color-mix(in srgb, var(--basalt-copy) 82%, var(--basalt-plane));
+	}
+}
+.mm-frame-chrome {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.5rem 0.8rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+
+	& span {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--basalt-edge-strong);
+	}
+	& em {
+		margin-left: 0.6rem;
+		font-style: normal;
+		font-size: 0.71rem;
+		font-family: "Chivo Mono", monospace;
+		color: var(--mm-quiet);
+	}
+}
+
+/* As a phone the window drops its three dots and centers the address. */
+.mm-frame.is-phone .mm-frame-chrome {
+	justify-content: center;
+
+	& span {
+		display: none;
+	}
+	& em {
+		margin: 0;
+	}
+}
+.mm-frame-page {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 2.25rem 1.75rem 2.5rem;
+	text-align: center;
+	background-image: radial-gradient(
+		120% 70% at 50% 0%,
+		color-mix(in srgb, var(--mm-closed) 12%, transparent),
+		transparent 70%
+	);
+}
+:root[data-basalt-gradients="off"] .mm-frame-page {
+	background-image: none;
+}
+.mm-frame.is-phone .mm-frame-page {
+	padding: 1.75rem 1.1rem 2rem;
+}
+.mm-frame-brand {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	font-size: 0.77rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-body);
+}
+.mm-frame-headline {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.mm-frame.is-phone .mm-frame-headline {
+	font-size: 1.2rem;
+}
+.mm-frame-headline.is-empty {
+	font-weight: 500;
+	font-style: italic;
+	color: var(--mm-quiet);
+}
+.mm-frame-body {
+	max-width: 40ch;
+	margin: 0;
+	font-size: 0.88rem;
+	line-height: 1.6;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body);
+
+	&:empty {
+		display: none;
+	}
+}
+.mm-frame-time {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.25rem 0 0;
+	padding: 0.3rem 0.8rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: color-mix(in srgb, var(--mm-closed) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--mm-closed) 14%, var(--basalt-plane));
+}
+
+/* A drawn email box with its button: the left half rounds left, the right half right. */
+.mm-frame-email {
+	display: flex;
+	width: 100%;
+	max-width: 20rem;
+	margin-top: 0.5rem;
+}
+.mm-frame-input {
+	flex: 1;
+	min-width: 0;
+	padding: 0.4rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-right: 0;
+	border-radius: 8px 0 0 8px;
+	font-size: 0.8rem;
+	text-align: left;
+	color: var(--mm-quiet);
+	background: var(--basalt-plane);
+}
+.mm-frame-btn {
+	padding: 0.4rem 0.8rem;
+	border-radius: 0 8px 8px 0;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.mm-frame-social {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0.25rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.mm-frame [hidden] {
+	display: none;
+}
+
+/* Who may still come in: tabs, a one-line add form, then the list. */
+.mm-tabs {
+	margin-bottom: 1.25rem;
+
+	@media (max-width: 575.98px) {
+		& .basalt-tabs-list .nav-link {
+			padding-inline: 0.5rem;
+		}
+		&.basalt-tabs-pill .basalt-tabs-list .nav-link {
+			padding-inline: 0.5rem;
+		}
+	}
+}
+.mm-panes {
+	min-width: 0;
+}
+.mm-pane-text {
+	margin: 0 0 1rem;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.mm-add {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	margin-bottom: 1rem;
+
+	& > .form-control {
+		flex: 1 1 12rem;
+		min-width: 0;
+	}
+	& > .invalid-feedback {
+		flex-basis: 100%;
+		margin-top: -0.25rem;
+	}
+	&.was-checked > .invalid-feedback {
+		display: block;
+	}
+}
+.mm-add-field {
+	flex: 1 1 12rem;
+	min-width: 0;
+}
+.mm-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mm-person {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 1rem 0.25rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.mm-person-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+}
+.mm-person-main {
+	flex: 1;
+	min-width: 0;
+}
+.mm-person-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 650;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.mm-person-sub {
+	display: block;
+	font-size: 0.77rem;
+	overflow-wrap: anywhere;
+	color: var(--mm-quiet);
+}
+
+/* The private link: the field with its copy button, then expiry and renewal. */
+.mm-linkbox {
+	margin-bottom: 1rem;
+}
+.mm-link-row {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .btn-confirm {
+		margin-left: auto;
+	}
+}
+.mm-link-life {
+	width: auto;
+	min-width: 7rem;
+}
+
+/* The checklist bar is thinner here than the shared default. */
+.mm-page .basalt-checklist .progress {
+	height: 0.4rem;
+}
+
+/* The log's tabs and search share a row until the search needs a row of its own. */
+.mm-hist-tools {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& .mm-tabs {
+		margin-bottom: 0;
+	}
+}
+.mm-search {
+	position: relative;
+	flex: 0 1 18rem;
+	min-width: 11rem;
+
+	@media (max-width: 767.98px) {
+		flex-basis: 100%;
+	}
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--mm-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+/* The log table measures its own box, so it can fold into cards further down. */
+.mm-scroll {
+	position: relative;
+	container-type: inline-size;
+	margin: 0 -0.25rem;
+	padding: 0 0.25rem;
+}
+.mm-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	min-width: 46rem;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--mm-quiet);
+	}
+	& tbody tr.mm-row:hover > * {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.mm-col-exp {
+	width: 2.75rem;
+}
+.mm-when {
+	white-space: nowrap;
+}
+.mm-when-time {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--mm-quiet);
+}
+.mm-reason {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.mm-reason-by {
+	display: block;
+	font-weight: 400;
+	font-size: 0.77rem;
+	color: var(--mm-quiet);
+}
+.mm-num {
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+/* The row toggle: a small bordered square whose chevron turns down when open. */
+.mm-exp {
+	display: inline-grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	& .bi {
+		transition: transform 200ms ease;
+	}
+	&[aria-expanded="true"] .bi {
+		transform: rotate(90deg);
+	}
+}
+.mm-detail {
+	& > td {
+		background: var(--basalt-canvas);
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Each step of a closure is a filled dot on a rail, so it reads as a record
+   rather than a row of radio buttons. */
+.mm-story {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0.3rem 0 0.3rem 1rem;
+	border-left: 2px solid var(--basalt-edge-strong);
+	list-style: none;
+
+	& li {
+		position: relative;
+		font-size: 0.84rem;
+		line-height: 1.5;
+		color: var(--basalt-copy-body);
+	}
+	& li::before {
+		content: "";
+		position: absolute;
+		top: 0.4rem;
+		left: calc(-1rem - 6px);
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-canvas);
+		background: var(--basalt-copy-muted);
+	}
+	& time {
+		margin-right: 0.5rem;
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+.mm-skel-row > td {
+	padding-top: var(--basalt-pad-row-y);
+	padding-bottom: var(--basalt-pad-row-y);
+}
+
+/* Once the table cannot fit, each closure turns into a quiet card: reason and
+   outcome on the first line, then one muted line of facts (when, what closed,
+   how long, orders missed). The outcome pill keeps a fixed track, so the
+   pills start at the same x on every card. */
+@container (max-width: 46rem) {
+	.mm-table {
+		min-width: 0;
+	}
+	.mm-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.mm-table,
+	.mm-table tbody {
+		display: block;
+		width: 100%;
+	}
+	.mm-table tbody tr.mm-row,
+	.mm-table tbody tr.mm-skel-row {
+		display: flex;
+		gap: 0.4rem 0.75rem;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		padding: var(--basalt-pad-row-y) 0 var(--basalt-pad-row-y) 2.65rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.mm-table > :not(caption) > * > * {
+		display: block;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+
+	/* The toggle hangs in the left gutter, so wrapped facts keep the reason's edge. */
+	.mm-table tbody tr.mm-row > td:nth-child(1) {
+		flex: none;
+		order: 1;
+		margin-left: -2.65rem;
+	}
+	.mm-table tbody tr.mm-row > td:nth-child(3) {
+		flex: 0 0 calc(100% - 7.5rem - 0.75rem);
+		order: 2;
+		min-width: 0;
+	}
+	.mm-table tbody tr.mm-row > td:nth-child(7) {
+		flex: 0 0 7.5rem;
+		order: 3;
+	}
+
+	/* The date gets a fixed track too, so the scope pill after it lines up. */
+	.mm-table tbody tr.mm-row > td:nth-child(2) {
+		order: 4;
+		min-width: 8.75rem;
+	}
+	.mm-table tbody tr.mm-row > td:nth-child(4) {
+		order: 5;
+	}
+	.mm-table tbody tr.mm-row > td:nth-child(5) {
+		order: 6;
+	}
+	.mm-table tbody tr.mm-row > td:nth-child(6) {
+		order: 7;
+	}
+	.mm-table tbody tr.mm-row > td:nth-child(2),
+	.mm-table tbody tr.mm-row > td:nth-child(5),
+	.mm-table tbody tr.mm-row > td:nth-child(6) {
+		align-self: center;
+		font-size: 0.8rem;
+		color: var(--mm-quiet);
+	}
+	.mm-table tbody tr.mm-row > td:nth-child(6)::before {
+		content: "Missed orders ";
+	}
+	.mm-when-time {
+		display: inline;
+		margin-left: 0.3rem;
+		font-size: inherit;
+	}
+	.mm-table tbody tr.mm-skel-row > td {
+		flex: 1 1 6rem;
+	}
+	.mm-table tbody tr.mm-detail {
+		display: block;
+	}
+	.mm-table tbody tr.mm-detail > td:first-child {
+		display: none;
+	}
+	.mm-table tbody tr.mm-detail > td {
+		padding: var(--basalt-pad-row-y) 0.75rem var(--basalt-pad-row-y) 2.65rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.mm-table tbody tr.mm-detail[hidden] {
+		display: none;
+	}
+}
+/* On a phone a closure keeps its reason, its outcome and when it was;
+   who planned it, what closed, how long and the missed orders wait in the
+   row's details. */
+@media (max-width: 575.98px) {
+	.mm-table tbody tr.mm-row > td:nth-child(4),
+	.mm-table tbody tr.mm-row > td:nth-child(5),
+	.mm-table tbody tr.mm-row > td:nth-child(6),
+	.mm-table .mm-reason-by {
+		display: none;
+	}
+}
+.mm-pager {
+	margin-top: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The booking drawer puts its day and time side by side, under any clash warning. */
+.mm-plan-when {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.mm-drawer .basalt-alert {
+	margin-bottom: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The first time the planned windows, the people let in, the checklist and
+   the history come into view, their rows rise in one after another. The
+   script only sets these classes when motion is welcome. */
+[data-mm-plans],
+[data-mm-people],
+[data-mm-check-list],
+[data-mm-hist-body] {
+	&.is-waiting > :not(.mm-detail) {
+		opacity: 0;
+	}
+	&.is-drawing > :not(.mm-detail, .is-new) {
+		animation: mm-rise 450ms ease-out calc(var(--mm-at, 0) * 70ms) both;
+	}
+	&.is-drawing > :nth-child(2 of :not(.mm-detail)) {
+		--mm-at: 1;
+	}
+	&.is-drawing > :nth-child(3 of :not(.mm-detail)) {
+		--mm-at: 2;
+	}
+	&.is-drawing > :nth-child(4 of :not(.mm-detail)) {
+		--mm-at: 3;
+	}
+	&.is-drawing > :nth-child(5 of :not(.mm-detail)) {
+		--mm-at: 4;
+	}
+	&.is-drawing > :nth-child(6 of :not(.mm-detail)) {
+		--mm-at: 5;
+	}
+	&.is-drawing > :nth-child(7 of :not(.mm-detail)) {
+		--mm-at: 6;
+	}
+	&.is-drawing > :nth-child(n + 8 of :not(.mm-detail)) {
+		--mm-at: 7;
+	}
+}
+@keyframes mm-rise {
+	from {
+		opacity: 0;
+		transform: translateY(0.4rem);
+	}
+}
+
+/* Asked for less motion, or printing: the sign hangs still and nothing slides. */
+@media (prefers-reduced-motion: reduce), print {
+	.mm-sign {
+		animation: none;
+	}
+	.mm-sign-card,
+	.mm-frame {
+		transition: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.mm-exp .bi,
+	.mm-plan {
+		transition: none;
+	}
+}
+
+/* On paper the buttons and the pager have nothing to do. */
+@media print {
+	.mm-live-actions,
+	.mm-msg-actions,
+	.mm-pager {
+		display: none;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.mm-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

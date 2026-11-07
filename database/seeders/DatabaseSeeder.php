@@ -118,7 +118,6 @@ class DatabaseSeeder extends Seeder
         $periode = Periode::create([
             'farm_id' => $farm->id,
             'nama' => 'Periode Juli 2026',
-            'nomor_siklus' => 18,
             'inti' => 'PT. Indojaya Agrinusa',
             'ppl' => 'PPL Misjiwati',
             'strain' => 'Standar farm',
@@ -131,6 +130,7 @@ class DatabaseSeeder extends Seeder
             $periodeKandang = PeriodeKandang::create([
                 'periode_id' => $periode->id,
                 'kandang_id' => $kandang[$nama]->id,
+                'nomor_siklus' => 18,
                 'populasi_awal' => $data['populasi'],
                 'tanggal_chick_in' => $chickIn,
                 'berat_doc_gram' => 37,
@@ -174,7 +174,6 @@ class DatabaseSeeder extends Seeder
         $periode = Periode::create([
             'farm_id' => $farm->id,
             'nama' => 'Periode September 2026',
-            'nomor_siklus' => 19,
             'inti' => 'PT. Indojaya Agrinusa',
             'ppl' => 'PPL Misjiwati',
             'strain' => 'Standar farm',
@@ -187,6 +186,7 @@ class DatabaseSeeder extends Seeder
         $periodeKandang = PeriodeKandang::create([
             'periode_id' => $periode->id,
             'kandang_id' => $kandangDua->id,
+            'nomor_siklus' => 19,
             'populasi_awal' => 26000,
             'tanggal_chick_in' => $chickIn,
             'berat_doc_gram' => 37,

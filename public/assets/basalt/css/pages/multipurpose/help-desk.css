@@ -1,0 +1,1863 @@
+/* Styles for the help desk page (help-desk.html), all under .helpdesk-*.
+   Every color is a --basalt-* token and the only wash is the hero blend, so
+   palettes, dark mode and the no-gradients setting carry over untouched. */
+
+/* Small print mixes the muted token toward body copy so it keeps 4.5:1 on
+   the page and on every tinted panel. The page measures its own width,
+   which keeps the layout steady whatever the sidebar is doing. */
+:root {
+	--hd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+.helpdesk {
+	container: helpdesk / inline-size;
+}
+
+/* Each product area hands its series color to whatever sits inside it. */
+.helpdesk-area-all {
+	--hd-c: var(--basalt-copy-muted);
+}
+.helpdesk-area-onboarding {
+	--hd-c: var(--basalt-series-1);
+}
+.helpdesk-area-billing {
+	--hd-c: var(--basalt-series-4);
+}
+.helpdesk-area-access {
+	--hd-c: var(--basalt-series-6);
+}
+.helpdesk-area-data {
+	--hd-c: var(--basalt-series-3);
+}
+.helpdesk-area-alerts {
+	--hd-c: var(--basalt-series-8);
+}
+.helpdesk-area-exports {
+	--hd-c: var(--basalt-series-7);
+}
+.helpdesk-area-mobile {
+	--hd-c: var(--basalt-series-5);
+}
+.helpdesk-area-unsure {
+	--hd-c: var(--basalt-copy-muted);
+}
+
+/* Glyph boxes, avatars and numbered badges all center one thing. */
+.helpdesk-icon,
+.helpdesk-dialog-icon,
+.helpdesk-tile-icon,
+.helpdesk-answers-none-icon,
+.helpdesk-person-avatar,
+.helpdesk-route-avatar,
+.helpdesk-rung-num {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Area glyphs come in three sizes and share one tint recipe. */
+.helpdesk-icon,
+.helpdesk-dialog-icon,
+.helpdesk-tile-icon {
+	color: color-mix(in srgb, var(--hd-c, var(--basalt-hue)) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--hd-c, var(--basalt-hue)) 13%, transparent);
+}
+/* The fixed box keeps narrow and wide glyphs from shifting nearby text. */
+.helpdesk-icon {
+	flex-shrink: 0;
+	width: 38px;
+	height: 38px;
+	border-radius: 11px;
+	font-size: 1.05rem;
+}
+
+/* Lists on this page draw their own markers, or none at all. */
+.helpdesk-answers-list,
+.helpdesk-desk-people,
+.helpdesk-list,
+.helpdesk-videos-list,
+.helpdesk-ladder-steps,
+.helpdesk-chapters,
+.helpdesk-reader-steps,
+.helpdesk-reader-related ul,
+.helpdesk-suggest {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Anything marked hidden stays hidden, even where a rule sets display. */
+.helpdesk-list-foot .btn[hidden],
+.helpdesk-verdict[hidden],
+.helpdesk-fieldset[hidden],
+.helpdesk-contact-error[hidden],
+.helpdesk-context[hidden] {
+	display: none;
+}
+
+/* Small uppercase captions share their color, weight and case. */
+.helpdesk-answers-label,
+.helpdesk-desk-title,
+.helpdesk-desk-label,
+.helpdesk-rung-pace {
+	font-weight: 700;
+	text-transform: uppercase;
+	color: var(--hd-quiet);
+}
+
+/* Section headings put the title left and its controls right, wrapping
+   underneath when room runs out. */
+.helpdesk-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.helpdesk-head-title {
+	margin: 0 0 0.2rem;
+	font-size: 1.1rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+}
+.helpdesk-head-sub {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--hd-quiet);
+}
+
+/* The opening row pairs the question panel with the desk card, and
+   stacks them once the page is narrower than 900px. */
+.helpdesk-top {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr) 330px;
+	margin-bottom: 1.75rem;
+}
+@container helpdesk (max-width: 900px) {
+	.helpdesk-top {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The question panel wears the Tinted ledger wash from the Headers
+   component and falls back to a plain surface in flat mode. */
+.helpdesk-ask {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
+	padding: 2rem 2rem 1.5rem;
+	border-radius: 20px;
+	border: 1px solid var(--basalt-edge);
+	background-color: color-mix(in srgb, var(--basalt-hero-g1) 11%, var(--basalt-plane));
+	background-image: linear-gradient(
+		120deg,
+		color-mix(in srgb, var(--basalt-hero-g1) 13%, var(--basalt-plane)),
+		color-mix(in srgb, var(--basalt-hero-g2) 9%, var(--basalt-plane)) 60%,
+		color-mix(in srgb, var(--basalt-hero-g3) 10%, var(--basalt-plane))
+	);
+}
+:root[data-basalt-gradients="off"] .helpdesk-ask {
+	background-color: var(--basalt-plane);
+	background-image: none;
+}
+@container helpdesk (max-width: 560px) {
+	.helpdesk-ask {
+		padding: 1.35rem 1.1rem 1.1rem;
+	}
+}
+.helpdesk-eyebrow {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-self: flex-start;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--basalt-hue);
+	background: var(--basalt-plane);
+}
+.helpdesk-ask-title {
+	margin: 0.75rem 0 0.4rem;
+	font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.2rem);
+	font-weight: 800;
+	line-height: 1.15;
+	letter-spacing: -0.025em;
+	text-wrap: balance;
+}
+.helpdesk-ask-lead {
+	max-width: 600px;
+	margin: 0 0 1.25rem;
+	text-wrap: pretty;
+	color: var(--basalt-copy-body);
+}
+
+/* The search field rings itself in the hue while focused and hides its
+   slash hint, which touch screens never show at all. */
+.helpdesk-search {
+	position: relative;
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0 0.6rem 0 1.05rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue);
+		box-shadow: 0 0 0 4px var(--basalt-hue-border);
+	}
+	&:focus-within .helpdesk-search-key {
+		visibility: hidden;
+	}
+}
+.helpdesk-search-icon {
+	font-size: 1.05rem;
+	color: var(--hd-quiet);
+}
+.helpdesk-search-input {
+	flex: 1;
+	min-width: 0;
+	height: 54px;
+	border: 0;
+	outline: none;
+	font-size: 1rem;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&::placeholder {
+		color: var(--basalt-copy-faint);
+	}
+	&:focus-visible {
+		box-shadow: none;
+	}
+}
+.helpdesk-search-key {
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	border: 1px solid var(--basalt-edge);
+	font-family: inherit;
+	font-size: 0.75rem;
+	color: var(--hd-quiet);
+	background: var(--basalt-plane-alt);
+}
+@media (pointer: coarse) {
+	.helpdesk-search-key {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-search {
+		transition: none;
+	}
+}
+
+/* Quick matches open in the page flow below the field, pushing content
+   down rather than floating over it. */
+.helpdesk-answers {
+	display: none;
+}
+.helpdesk-answers.is-open {
+	display: block;
+	margin-top: 0.6rem;
+	padding: 0.5rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	animation: helpdesk-drop 180ms ease-out;
+}
+.helpdesk-answers-label {
+	margin: 0.25rem 0.6rem 0.3rem;
+	font-size: 0.7rem;
+	letter-spacing: 0.08em;
+}
+.helpdesk-answer {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.5rem 0.6rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover,
+	&:focus-visible {
+		outline: none;
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+}
+.helpdesk-answer-text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+}
+.helpdesk-answer-title {
+	font-weight: 600;
+	font-size: 0.92rem;
+	line-height: 1.35;
+}
+.helpdesk-answer-meta {
+	font-size: 0.75rem;
+	color: var(--hd-quiet);
+}
+/* The arrow nudges right and picks up the hue as a row is reached. */
+.helpdesk-answer-go {
+	color: var(--basalt-copy-faint);
+	transition:
+		transform 170ms ease,
+		color 170ms ease;
+}
+.helpdesk-answer:hover .helpdesk-answer-go,
+.helpdesk-answer:focus-visible .helpdesk-answer-go {
+	transform: translateX(3px);
+	color: var(--basalt-hue);
+}
+.helpdesk-answers-all {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0.3rem 0.6rem 0.3rem;
+	padding: 0;
+	border: 0;
+	font-size: 0.825rem;
+	font-weight: 600;
+	color: var(--basalt-hue);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+/* With nothing found, the panel offers to send the query to a person. */
+.helpdesk-answers-none {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.6rem;
+
+	& > div {
+		flex: 1 1 220px;
+		min-width: 0;
+	}
+}
+.helpdesk-answers-none-icon {
+	width: 38px;
+	height: 38px;
+	border-radius: 11px;
+	color: var(--basalt-hue);
+	background: var(--basalt-hue-soft);
+}
+.helpdesk-answers-none-title {
+	margin: 0;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+}
+.helpdesk-answers-none-text {
+	margin: 0;
+	font-size: 0.825rem;
+	color: var(--hd-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-answers.is-open {
+		animation: none;
+	}
+	.helpdesk-answer-go {
+		transition: none;
+	}
+}
+
+/* Matched words get a soft warning-colored wash, on the page and in dialogs. */
+.helpdesk mark,
+.helpdesk-dialog mark {
+	padding: 0 0.08em;
+	border-radius: 3px;
+	color: inherit;
+	background: color-mix(in srgb, var(--basalt-warning) 32%, transparent);
+}
+
+/* Suggested searches sit as pills under the field. */
+.helpdesk-try {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1rem;
+}
+.helpdesk-try-label {
+	margin-right: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--hd-quiet);
+}
+.helpdesk-try-chip {
+	padding: 0.25rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-hue);
+	}
+}
+
+/* On the tinted panel the eyebrow, key hint and chip caption step up one
+   shade so they still read in every palette. */
+.helpdesk-ask .helpdesk-eyebrow {
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+.helpdesk-ask .helpdesk-search-key,
+.helpdesk-ask .helpdesk-try-label {
+	color: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+}
+
+/* The desk card: open state, the people on shift and three live figures. */
+.helpdesk-desk {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.35rem;
+	border-radius: 20px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+.helpdesk-desk-head {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+}
+.helpdesk-desk-title,
+.helpdesk-desk-label {
+	font-size: 0.71rem;
+	letter-spacing: 0.08em;
+}
+.helpdesk-desk-title {
+	margin: 0;
+}
+.helpdesk-desk-label {
+	margin: 0.25rem 0 -0.25rem;
+}
+/* A pulsing dot marks an open desk; closed, the pill goes gray and still. */
+.helpdesk-desk-state {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	color: var(--bs-success-text-emphasis);
+	background: var(--basalt-success-soft);
+
+	& i {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--basalt-success);
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--basalt-success) 50%, transparent);
+		animation: helpdesk-pulse 2.4s ease-out infinite;
+	}
+}
+.helpdesk-desk.is-closed .helpdesk-desk-state {
+	color: var(--hd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.helpdesk-desk.is-closed .helpdesk-desk-state i {
+	background: var(--basalt-copy-faint);
+	animation: none;
+}
+.helpdesk-desk-hours {
+	margin: 0;
+	font-size: 0.825rem;
+	color: var(--hd-quiet);
+}
+.helpdesk-desk-people {
+	display: grid;
+	gap: 0.5rem;
+}
+
+/* Initials in a round badge; the route card in the request dialog uses
+   the same badge one size up and the same two-line name block. */
+.helpdesk-person-avatar,
+.helpdesk-route-avatar {
+	flex-shrink: 0;
+	border-radius: 50%;
+	font-weight: 800;
+	background: color-mix(in srgb, var(--hd-c) 15%, var(--basalt-plane));
+}
+.helpdesk-person {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	min-width: 0;
+}
+.helpdesk-person-avatar {
+	width: 34px;
+	height: 34px;
+	font-size: 0.71rem;
+	color: color-mix(in srgb, var(--hd-c) 40%, var(--basalt-copy));
+}
+.helpdesk-person-text,
+.helpdesk-route-who {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	line-height: 1.3;
+}
+.helpdesk-person-text strong,
+.helpdesk-route-who strong {
+	font-size: 0.875rem;
+}
+.helpdesk-person-text span,
+.helpdesk-route-who span {
+	font-size: 0.75rem;
+	color: var(--hd-quiet);
+}
+/* Off shift only the avatars lose their color; fading the whole row
+   would push names and areas under 4.5:1. */
+.helpdesk-desk.is-closed .helpdesk-person-avatar {
+	filter: grayscale(1);
+}
+
+/* Figures run one per row, label left and value right, so none wraps. */
+.helpdesk-desk-figures {
+	margin: 0.25rem 0;
+	padding: 0.2rem 0.85rem;
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+
+	& > div {
+		display: flex;
+		gap: 0.75rem;
+		align-items: baseline;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+	}
+	& > div + div {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--hd-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 800;
+		white-space: nowrap;
+	}
+	& dd.is-tick {
+		animation: helpdesk-tick 500ms ease-out;
+	}
+}
+
+/* Under the question panel there is room for two columns in the card. */
+@container helpdesk (min-width: 560px) and (max-width: 900px) {
+	.helpdesk-desk {
+		display: grid;
+		column-gap: 1.5rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: start;
+	}
+	.helpdesk-desk-head,
+	.helpdesk-desk-hours {
+		grid-column: 1 / -1;
+	}
+	.helpdesk-desk-label {
+		grid-column: 1;
+	}
+	.helpdesk-desk-people {
+		grid-column: 1;
+		grid-row: 4 / span 2;
+	}
+	.helpdesk-desk-figures {
+		grid-column: 2;
+		grid-row: 3 / span 2;
+		margin: 0;
+	}
+	.helpdesk-desk > .btn {
+		grid-column: 2;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-desk-state i,
+	.helpdesk-desk-figures dd.is-tick {
+		animation: none;
+	}
+}
+
+/* The guide library leaves room for the sticky top bar when scrolled to. */
+.helpdesk-library {
+	scroll-margin-top: calc(var(--basalt-header-h, 72px) + 1rem);
+	margin-bottom: 2rem;
+}
+
+/* A two-button switch; the pressed side lifts onto a card surface. The
+   video level filter reuses it. */
+.helpdesk-sort {
+	display: inline-flex;
+	padding: 3px;
+	border-radius: 10px;
+	background: var(--basalt-plane-alt);
+}
+.helpdesk-sort-btn {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--hd-quiet);
+	background: none;
+
+	&[aria-pressed="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: var(--basalt-card-shadow);
+	}
+}
+
+/* Areas run down a sticky rail beside the list. */
+.helpdesk-library-grid {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: 290px minmax(0, 1fr);
+	align-items: start;
+}
+.helpdesk-areas {
+	position: sticky;
+	top: calc(var(--basalt-header-h, 72px) + 1rem);
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding: 0.5rem;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+.helpdesk-areabtn {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border: 0;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	transition: background-color 170ms ease;
+
+	& .helpdesk-icon {
+		width: 30px;
+		height: 30px;
+		border-radius: 9px;
+		font-size: 0.9rem;
+	}
+}
+.helpdesk-areabtn-name {
+	flex: 1;
+	min-width: 0;
+}
+.helpdesk-areabtn-count {
+	min-width: 1.6rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	text-align: center;
+	color: var(--hd-quiet);
+	background: var(--basalt-plane-alt);
+}
+/* The chosen area tints in its own color; areas with no match fade. */
+.helpdesk-areabtn:hover {
+	background: var(--basalt-wash);
+}
+.helpdesk-areabtn[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--hd-c) 11%, var(--basalt-plane));
+}
+.helpdesk-areabtn[aria-pressed="true"] .helpdesk-areabtn-count {
+	color: var(--basalt-plane);
+	background: color-mix(in srgb, var(--hd-c) 45%, var(--basalt-copy));
+}
+.helpdesk-areabtn[data-empty]:not([aria-pressed="true"]) {
+	color: var(--basalt-copy-faint);
+}
+.helpdesk-areabtn[data-empty] .helpdesk-icon {
+	opacity: 0.5;
+}
+
+/* Below 760px the rail turns into a wrapping row of pills over the list. */
+@container helpdesk (max-width: 760px) {
+	.helpdesk-library-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.helpdesk-areas {
+		position: static;
+		gap: 0.3rem;
+		flex-direction: row;
+		flex-wrap: wrap;
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.helpdesk-areabtn {
+		gap: 0.4rem;
+		padding: 0.25rem 0.6rem 0.25rem 0.3rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 999px;
+		font-size: 0.8rem;
+		background: var(--basalt-plane);
+	}
+	.helpdesk-areabtn .helpdesk-icon {
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		font-size: 0.75rem;
+	}
+	.helpdesk-areabtn-name {
+		flex: none;
+	}
+	.helpdesk-areabtn[aria-pressed="true"] {
+		border-color: var(--hd-c);
+	}
+}
+
+/* Guide rows rise in one after another and split with hairlines. */
+.helpdesk-list {
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+
+	& > li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& > li {
+		animation: helpdesk-rise 260ms ease-out both;
+		animation-delay: calc(var(--i, 0) * 25ms);
+	}
+}
+.helpdesk-guide {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	width: 100%;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border: 0;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: none;
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+}
+.helpdesk-guide-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.helpdesk-guide-title {
+	font-weight: 700;
+	font-size: 0.95rem;
+	line-height: 1.35;
+}
+.helpdesk-guide-summary {
+	font-size: 0.84rem;
+	line-height: 1.45;
+	color: var(--hd-quiet);
+}
+.helpdesk-guide-meta {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: flex-end;
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--hd-quiet);
+
+	& i {
+		margin-right: 0.3rem;
+	}
+	& .is-fresh {
+		font-weight: 600;
+		color: var(--bs-success-text-emphasis);
+	}
+}
+/* Narrow rows drop the meta column under the text. */
+@container helpdesk (max-width: 620px) {
+	.helpdesk-guide {
+		gap: 0.3rem 0.8rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: start;
+		padding: 1rem var(--basalt-pad-x-narrow);
+	}
+	.helpdesk-guide-meta {
+		gap: 0.2rem 0.9rem;
+		flex-direction: row;
+		flex-wrap: wrap;
+		grid-column: 2;
+		align-items: center;
+		white-space: normal;
+	}
+}
+.helpdesk-list-empty {
+	padding: 0.5rem;
+}
+.helpdesk-list-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.85rem;
+}
+.helpdesk-list-elsewhere {
+	margin: 0 0 0 auto;
+	font-size: 0.825rem;
+	color: var(--hd-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-list > li {
+		animation: none;
+	}
+	.helpdesk-guide,
+	.helpdesk-areabtn {
+		transition: none;
+	}
+}
+
+/* Video walkthroughs: one featured card beside a stack of smaller ones. */
+.helpdesk-videos {
+	container: videos / inline-size;
+	margin-bottom: 2rem;
+}
+.helpdesk-videos-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+}
+@container videos (max-width: 760px) {
+	.helpdesk-videos-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.helpdesk-videos-list {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+}
+.helpdesk-video {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 140px minmax(0, 1fr);
+	align-items: center;
+	width: 100%;
+	padding: 0.5rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		transform 170ms ease;
+
+	&:hover {
+		transform: translateY(-1px);
+		border-color: color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+	}
+	&[data-level="Beginner"] {
+		--hd-v: var(--basalt-success);
+	}
+	&[data-level="Intermediate"] {
+		--hd-v: var(--basalt-hue);
+	}
+	&[data-level="Advanced"] {
+		--hd-v: var(--basalt-series-6, var(--basalt-hue));
+	}
+}
+.helpdesk-video-featured {
+	grid-template-columns: minmax(0, 1fr);
+	align-content: start;
+	padding: 0.75rem;
+}
+/* This narrow column rule has to follow the featured card's, which it
+   overrides inside a small container. */
+@container videos (max-width: 460px) {
+	.helpdesk-video {
+		grid-template-columns: 110px minmax(0, 1fr);
+	}
+}
+
+/* Thumbnails are a drawn frame of the product: a sidebar, a top bar and
+   a few tiles, tinted by the video's level. */
+.helpdesk-video-thumb {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	border-radius: 10px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--hd-v) 16%, var(--basalt-plane-alt));
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 14% 10% 14% 22%;
+		border-radius: 6px;
+		background:
+			linear-gradient(var(--basalt-plane), var(--basalt-plane)) 0 0 / 100% 16% no-repeat,
+			linear-gradient(
+					color-mix(in srgb, var(--hd-v) 55%, var(--basalt-plane)),
+					color-mix(in srgb, var(--hd-v) 55%, var(--basalt-plane))
+				)
+				8% 34% / 38% 26% no-repeat,
+			linear-gradient(var(--basalt-plane), var(--basalt-plane)) 90% 34% / 44% 26% no-repeat,
+			linear-gradient(var(--basalt-plane), var(--basalt-plane)) 50% 88% / 88% 28% no-repeat,
+			color-mix(in srgb, var(--hd-v) 10%, var(--basalt-plane-alt));
+		box-shadow: 0 6px 18px -8px rgba(25, 20, 48, 0.25);
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 14% auto 14% 8%;
+		width: 10%;
+		border-radius: 6px;
+		background: color-mix(in srgb, var(--hd-v) 30%, var(--basalt-plane));
+	}
+}
+.helpdesk-video-play {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	margin: -20px 0 0 -20px;
+	border-radius: 50%;
+	font-size: 1.2rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+	box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--basalt-hue) 60%, transparent);
+	transition: transform 170ms ease;
+}
+.helpdesk-video:hover .helpdesk-video-play {
+	transform: scale(1.1);
+}
+.helpdesk-video-featured .helpdesk-video-play {
+	width: 56px;
+	height: 56px;
+	margin: -28px 0 0 -28px;
+	font-size: 1.6rem;
+}
+.helpdesk-video-dur {
+	position: absolute;
+	right: 6px;
+	bottom: 6px;
+	z-index: 1;
+	padding: 0.05rem 0.4rem;
+	border-radius: 6px;
+	font-size: 0.67rem;
+	font-weight: 700;
+	color: #fff;
+	background: rgba(25, 20, 48, 0.75);
+}
+/* A thin bar along the bottom edge shows how much has been watched. */
+.helpdesk-video-seen {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1;
+	height: 3px;
+	background: rgba(25, 20, 48, 0.2);
+
+	& span {
+		display: block;
+		width: var(--seen, 0%);
+		height: 100%;
+		background: var(--basalt-danger);
+	}
+}
+.helpdesk-video-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.helpdesk-video-title {
+	font-size: 0.9rem;
+	font-weight: 700;
+	line-height: 1.3;
+}
+.helpdesk-video-featured .helpdesk-video-title {
+	margin-top: 0.3rem;
+	font-size: 1.1rem;
+}
+.helpdesk-video-meta {
+	display: flex;
+	gap: 0.2rem 0.5rem;
+	flex-wrap: wrap;
+	font-size: 0.75rem;
+	color: var(--hd-quiet);
+}
+.helpdesk-video-level {
+	font-weight: 700;
+	color: color-mix(in srgb, var(--hd-v) 50%, var(--basalt-copy));
+}
+.helpdesk-video-watched {
+	font-weight: 600;
+	color: var(--basalt-success);
+}
+.helpdesk-video-featured .helpdesk-video-desc {
+	margin: 0;
+	font-size: 0.84rem;
+	color: var(--hd-quiet);
+}
+
+/* Ways to reach a person, fastest first, as three cards in a row. */
+.helpdesk-bottom {
+	display: flex;
+	gap: 2rem;
+	flex-direction: column;
+}
+.helpdesk-ladder {
+	container: ladder / inline-size;
+	min-width: 0;
+}
+.helpdesk-ladder-steps {
+	position: relative;
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.helpdesk-rung {
+	position: relative;
+	display: flex;
+	min-width: 0;
+}
+.helpdesk-rung-body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	padding: 1.1rem;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+.helpdesk-rung-top {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-bottom: 0.75rem;
+}
+.helpdesk-rung-num {
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	font-weight: 800;
+	color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.helpdesk-rung-pace {
+	font-size: 0.7rem;
+	letter-spacing: 0.055em;
+}
+.helpdesk-rung-title {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: 1rem;
+	font-weight: 700;
+
+	& i {
+		color: var(--basalt-hue);
+	}
+}
+.helpdesk-rung-desc {
+	margin: 0 0 0.6rem;
+	font-size: 0.84rem;
+	color: var(--hd-quiet);
+}
+.helpdesk-rung-live {
+	margin: auto 0 0.85rem;
+	padding: 0.3rem 0.6rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-wrap: balance;
+	background: var(--basalt-plane-alt);
+}
+/* The fastest route glows in the hue and fills its step number. */
+.helpdesk-rung.is-fastest {
+	& .helpdesk-rung-body {
+		border-color: color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+		box-shadow: 0 10px 26px -14px color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+	}
+	& .helpdesk-rung-num {
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+	& .helpdesk-rung-pace {
+		color: var(--basalt-hue);
+	}
+}
+@container ladder (max-width: 620px) {
+	.helpdesk-ladder-steps {
+		gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Dialog frame shared by the player, the guide reader and the request form. */
+.helpdesk-dialog .modal-content {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 22px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.helpdesk-dialog-head {
+	display: flex;
+	gap: 0.875rem;
+	align-items: flex-start;
+	padding: 1.35rem 1.5rem 0.85rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& .btn-close {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+}
+.helpdesk-dialog-heading {
+	min-width: 0;
+}
+.helpdesk-dialog-icon {
+	flex-shrink: 0;
+	width: 44px;
+	height: 44px;
+	border-radius: 14px;
+	font-size: 1.2rem;
+}
+.helpdesk-dialog-icon-primary {
+	color: var(--basalt-hue);
+	background: var(--basalt-hue-soft);
+}
+.helpdesk-dialog-title {
+	margin: 0 0 0.1rem;
+	font-size: 1.1rem;
+	font-weight: 800;
+	line-height: 1.3;
+	text-wrap: balance;
+}
+.helpdesk-dialog-sub {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--hd-quiet);
+}
+.helpdesk-dialog-body {
+	padding: 1.25rem 1.5rem 1.5rem;
+}
+.helpdesk-dialog-label {
+	display: block;
+	margin-bottom: 0.75rem;
+	padding: 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.helpdesk-dialog-optional {
+	margin-left: 0.3rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	text-transform: none;
+}
+.helpdesk-dialog-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 1.1rem 1.5rem 1.35rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.helpdesk-dialog .form-control {
+	border-radius: 10px;
+}
+@media (max-width: 575.98px) {
+	.helpdesk-dialog-head {
+		padding: 1.1rem 1rem 0.75rem;
+	}
+	.helpdesk-dialog-body {
+		padding: 1rem 1rem 1.5rem;
+	}
+	.helpdesk-dialog-foot {
+		padding: 1.1rem 1rem 1.35rem;
+	}
+}
+
+/* The player: a drawn stage on the left, the chapter list on the right. */
+.helpdesk-player {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr) 260px;
+}
+@media (max-width: 991.98px) {
+	.helpdesk-player {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.helpdesk-stage {
+	position: relative;
+	display: grid;
+	gap: 3%;
+	grid-template-columns: 14% 1fr;
+	aspect-ratio: 16 / 9;
+	padding: 5%;
+	border-radius: 14px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane-alt));
+}
+.helpdesk-stage-side {
+	display: flex;
+	gap: 8%;
+	flex-direction: column;
+	padding: 12% 14%;
+	border-radius: 8px;
+	background: var(--basalt-plane);
+
+	& i {
+		height: 6%;
+		min-height: 6px;
+		border-radius: 4px;
+		background: var(--basalt-edge);
+		transition: background-color 300ms ease;
+	}
+}
+.helpdesk-stage-canvas {
+	display: flex;
+	gap: 5%;
+	flex-direction: column;
+}
+.helpdesk-stage-bar {
+	height: 12%;
+	border-radius: 8px;
+	background: var(--basalt-plane);
+	transition: box-shadow 300ms ease;
+}
+.helpdesk-stage-tiles {
+	display: grid;
+	gap: 5%;
+	flex: 1;
+	grid-template-columns: 1fr 1fr;
+
+	& span {
+		border-radius: 8px;
+		background: var(--basalt-plane);
+		transition:
+			background-color 300ms ease,
+			transform 300ms ease;
+	}
+}
+/* Each chapter lights the part of the screen it talks about. */
+.helpdesk-stage[data-step="0"] .helpdesk-stage-side i:nth-child(2),
+.helpdesk-stage[data-step="3"] .helpdesk-stage-side i:nth-child(4) {
+	background: var(--basalt-hue);
+}
+.helpdesk-stage[data-step="1"] .helpdesk-stage-bar {
+	box-shadow: 0 0 0 3px var(--basalt-hue);
+}
+.helpdesk-stage[data-step="2"] .helpdesk-stage-tiles span:first-child,
+.helpdesk-stage[data-step="4"] .helpdesk-stage-tiles span:last-child {
+	transform: scale(1.03);
+	background: color-mix(in srgb, var(--basalt-hue) 22%, var(--basalt-plane));
+}
+.helpdesk-stage-cursor {
+	position: absolute;
+	top: var(--cy, 50%);
+	left: var(--cx, 50%);
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--basalt-copy);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-copy) 20%, transparent);
+	pointer-events: none;
+	transition:
+		left 700ms cubic-bezier(0.32, 0.72, 0, 1),
+		top 700ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* The big play button fades away for as long as the clip runs. */
+.helpdesk-stage-play {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 68px;
+	height: 68px;
+	margin: -34px 0 0 -34px;
+	border: 0;
+	border-radius: 50%;
+	font-size: 2rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+	box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--basalt-hue) 60%, transparent);
+	transition:
+		opacity 200ms ease,
+		transform 200ms ease;
+}
+.helpdesk-stage.is-playing .helpdesk-stage-play {
+	transform: scale(0.8);
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* Transport row: play, the time, a seek track with chapter ticks, speed. */
+.helpdesk-player-controls {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+.helpdesk-player-btn,
+.helpdesk-player-speed {
+	flex-shrink: 0;
+	height: 34px;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.helpdesk-player-btn {
+	width: 34px;
+	font-size: 1.1rem;
+}
+.helpdesk-player-speed {
+	padding: 0 0.6rem;
+	font-size: 0.8rem;
+}
+.helpdesk-player-time {
+	flex-shrink: 0;
+	min-width: 84px;
+	font-size: 0.8rem;
+	color: var(--hd-quiet);
+}
+.helpdesk-player-track {
+	position: relative;
+	flex: 1;
+	height: 8px;
+	border-radius: 999px;
+	background: var(--basalt-plane-alt);
+	cursor: pointer;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.helpdesk-player-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--p, 0%);
+	border-radius: inherit;
+	background: var(--basalt-hue);
+}
+.helpdesk-player-marks span {
+	position: absolute;
+	top: -2px;
+	bottom: -2px;
+	left: var(--x);
+	width: 2px;
+	background: var(--basalt-plane);
+}
+.helpdesk-player-caption {
+	min-height: 2.8em;
+	margin: 0.75rem 0 0;
+	padding: 0.6rem 0.8rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	background: var(--basalt-plane-alt);
+}
+
+/* Chapters number themselves; the one playing is filled and bold. */
+.helpdesk-chapters {
+	counter-reset: ch;
+
+	& li {
+		counter-increment: ch;
+	}
+	& button {
+		display: grid;
+		gap: 0.5rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: baseline;
+		width: 100%;
+		padding: 0.5rem 0.6rem;
+		border: 0;
+		border-radius: 10px;
+		font-size: 0.84rem;
+		text-align: left;
+		color: var(--basalt-copy);
+		background: none;
+	}
+	& button:hover {
+		background: var(--basalt-wash);
+	}
+	& button::before {
+		content: counter(ch);
+		font-size: 0.71rem;
+		font-weight: 800;
+		color: var(--hd-quiet);
+	}
+	& time {
+		font-size: 0.75rem;
+		color: var(--hd-quiet);
+	}
+	& .is-current button {
+		font-weight: 700;
+		background: var(--basalt-hue-soft);
+	}
+	& .is-current button::before {
+		color: var(--basalt-hue);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-video,
+	.helpdesk-video-play,
+	.helpdesk-stage-cursor,
+	.helpdesk-stage-tiles span,
+	.helpdesk-stage-play {
+		transition: none;
+	}
+}
+
+/* The guide reader numbers its steps down a thin connecting line. */
+.helpdesk-reader-summary {
+	margin: 0 0 1.25rem;
+	font-size: 1rem;
+	color: var(--basalt-copy-body);
+}
+.helpdesk-reader-steps {
+	counter-reset: step;
+	margin: 0 0 1.5rem;
+
+	& li {
+		counter-increment: step;
+		position: relative;
+		padding: 0.1rem 0 0.9rem 2.6rem;
+	}
+	& li::before {
+		content: counter(step);
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		font-size: 0.8rem;
+		font-weight: 800;
+		color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+	}
+	& li:not(:last-child)::after {
+		content: "";
+		position: absolute;
+		top: 32px;
+		bottom: 4px;
+		left: 13px;
+		width: 2px;
+		background: var(--basalt-edge);
+	}
+}
+.helpdesk-reader-related {
+	padding: 1rem;
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+}
+.helpdesk-related {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	padding: 0.3rem 0;
+	border: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	& i {
+		color: var(--hd-quiet);
+	}
+	&:hover {
+		color: var(--basalt-hue);
+	}
+}
+/* The "did this help" footer spreads the question and its answers apart;
+   it has to follow the shared footer rule it overrides. */
+.helpdesk-verdict {
+	justify-content: space-between;
+}
+.helpdesk-verdict-ask {
+	margin: 0;
+	font-weight: 700;
+}
+.helpdesk-verdict-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.helpdesk-verdict-done .helpdesk-verdict-ask {
+	display: flex;
+	gap: 0.5rem;
+	flex: 1 1 240px;
+	font-weight: 600;
+	font-size: 0.9rem;
+
+	& i {
+		color: var(--basalt-success);
+	}
+}
+
+/* The request dialog: form fields on the left, suggestions and the route
+   on the right, one column below 992px. */
+.helpdesk-contact {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	max-height: 100%;
+}
+.helpdesk-contact-body {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) 290px;
+	padding: 1.25rem 1.5rem;
+}
+@media (max-width: 991.98px) {
+	.helpdesk-contact-body {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+@media (max-width: 575.98px) {
+	.helpdesk-contact-body {
+		gap: 1.25rem;
+		padding: 1rem;
+	}
+}
+.helpdesk-fieldset {
+	min-width: 0;
+	margin: 0 0 var(--basalt-pad-head);
+	padding: 0;
+	border: 0;
+}
+
+/* Choice tiles are the shared .basalt-choice laid out in fixed columns;
+   an area tile borrows its area's color for the selected state. */
+.helpdesk-tiles-3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.helpdesk-tiles-4 {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 575.98px) {
+	.helpdesk-tiles-4 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.helpdesk-tiles .basalt-choice {
+	--basalt-choice-tone: var(--hd-c, var(--basalt-hue));
+	padding: 0.7rem 0.4rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+}
+.helpdesk-tile-icon {
+	width: 30px;
+	height: 30px;
+	border-radius: 9px;
+	font-size: 0.95rem;
+}
+.helpdesk-tile-icon-danger {
+	--hd-c: var(--basalt-danger);
+}
+.helpdesk-tile-icon-warning {
+	--hd-c: var(--basalt-warning);
+}
+.helpdesk-tile-icon-info {
+	--hd-c: var(--basalt-info);
+}
+.helpdesk-tiles .helpdesk-slot {
+	padding: 0.6rem 0.4rem;
+}
+.helpdesk-slot .basalt-choice-hint {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.helpdesk-tiles-3 .basalt-choice-hint {
+		display: none;
+	}
+	.helpdesk-tiles .basalt-choice {
+		font-size: 0.75rem;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-tiles .basalt-choice {
+		transition: none;
+	}
+}
+.helpdesk-contact-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-danger);
+}
+
+/* A guide already read rides along with the request as a removable note. */
+.helpdesk-context {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-bottom: 1rem;
+	padding: 0.5rem 0.75rem;
+	border-radius: 10px;
+	font-size: 0.84rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+
+	& > i {
+		color: var(--basalt-hue);
+	}
+	& > span {
+		flex: 1;
+		min-width: 0;
+	}
+	& .btn-close {
+		font-size: 0.65rem;
+	}
+}
+
+.helpdesk-contact-side {
+	align-self: start;
+	min-width: 0;
+	padding: 1rem;
+	border-radius: 16px;
+	background: var(--basalt-plane-alt);
+}
+.helpdesk-suggest {
+	margin: 0 0 1.1rem;
+
+	& .helpdesk-answer {
+		padding: 0.4rem 0.4rem;
+	}
+	& > li {
+		animation: helpdesk-rise 210ms ease-out both;
+	}
+}
+.helpdesk-answer-compact .helpdesk-icon {
+	width: 30px;
+	height: 30px;
+	border-radius: 9px;
+	font-size: 0.85rem;
+}
+.helpdesk-answer-compact .helpdesk-answer-title {
+	font-size: 0.84rem;
+}
+.helpdesk-suggest-hint {
+	font-size: 0.825rem;
+	color: var(--hd-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-suggest > li {
+		animation: none;
+	}
+}
+
+/* The route card names who receives the request and when to expect them. */
+.helpdesk-route {
+	padding: 0.85rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+.helpdesk-route-row {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+}
+.helpdesk-route-avatar {
+	width: 36px;
+	height: 36px;
+	font-size: 0.75rem;
+	color: color-mix(in srgb, var(--hd-c) 50%, var(--basalt-copy));
+}
+.helpdesk-route-avatar-desk {
+	--hd-c: var(--basalt-hue);
+}
+.helpdesk-route-when {
+	display: flex;
+	gap: 0.4rem;
+	margin: 0.75rem 0 0;
+	padding-top: 0.7rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	font-weight: 600;
+
+	& i {
+		color: var(--basalt-hue);
+	}
+}
+
+/* Toasts stack in the bottom corner, each with a colored edge on the left. */
+.helpdesk-toast-region {
+	position: fixed;
+	right: 1.25rem;
+	bottom: 1.25rem;
+	left: auto;
+	z-index: 1090;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	max-width: min(360px, calc(100vw - 2rem));
+}
+.helpdesk-toast {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	padding: 0.7rem 0.85rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	animation: helpdesk-toast-in 0.25s ease-out;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: -1px;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-hue);
+	}
+	&.is-out {
+		animation: helpdesk-toast-out 0.2s ease-in forwards;
+	}
+	& i {
+		margin-top: 1px;
+		font-size: 1.05rem;
+		color: var(--basalt-hue);
+	}
+}
+.helpdesk-toast-done::before {
+	background: var(--basalt-success);
+}
+.helpdesk-toast-done i {
+	color: var(--basalt-success);
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-toast,
+	.helpdesk-toast.is-out {
+		animation: none;
+	}
+	.helpdesk-toast.is-out {
+		opacity: 0;
+	}
+}
+
+/* The typed placeholder, run from the script, is the page's one moving
+   idea; everything below is an entrance or a reply to a click. */
+.helpdesk-rise {
+	animation: helpdesk-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes helpdesk-rise {
+	from {
+		transform: translateY(10px);
+		opacity: 0;
+	}
+}
+@keyframes helpdesk-drop {
+	from {
+		transform: translateY(-6px);
+		opacity: 0;
+	}
+}
+@keyframes helpdesk-pulse {
+	0% {
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--basalt-success) 50%, transparent);
+	}
+	70%,
+	100% {
+		box-shadow: 0 0 0 7px color-mix(in srgb, var(--basalt-success) 0%, transparent);
+	}
+}
+@keyframes helpdesk-tick {
+	from {
+		transform: translateY(-3px);
+		color: var(--basalt-hue);
+	}
+}
+@keyframes helpdesk-toast-in {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+@keyframes helpdesk-toast-out {
+	to {
+		transform: translateX(20px);
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.helpdesk-rise {
+		animation: none;
+	}
+}

@@ -1,0 +1,29 @@
+/* The tone and title size every empty state shares, including the plain
+   "nothing found" panel that basalt.js writes into any filtered list; the
+   variants in _empty-types.scss load only where a page uses them. */
+
+/* Each variant reads one tone, set by a modifier class, for its picture and
+   badge; the quiet text color is mixed once here for all of them. */
+$basalt-empty-tones: (
+	success: success,
+	warning: warning,
+	danger: danger,
+	muted: copy-muted,
+);
+
+.basalt-empty {
+	--basalt-tone: var(--basalt-hue);
+	--basalt-empty-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+	/* A title is the same size whichever heading level carries it. */
+	&-title {
+		font-size: 1rem;
+		line-height: 1.4;
+	}
+
+	@each $name, $token in $basalt-empty-tones {
+		&-#{$name} {
+			--basalt-tone: var(--basalt-#{$token});
+		}
+	}
+}

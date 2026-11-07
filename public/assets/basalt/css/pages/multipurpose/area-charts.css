@@ -1,0 +1,347 @@
+/*
+ * Area chart gallery (area-charts.html). Every class here starts with
+ * .areas-. Legends and swatches take their colors from the same
+ * --basalt-* tokens area-charts.js reads, so the HTML keys always match
+ * the canvases in every palette.
+ */
+
+/* Quiet text is the muted token nudged toward body text, enough to
+   reach 4.5:1 on the paler palettes. */
+.areas-page {
+	--areas-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The filter row: style chips on the left, the visible count on the right. */
+.areas-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+}
+.areas-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* A chip is an outlined pill; the pressed one fills with the text color. */
+.areas-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.areas-chips .areas-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.areas-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--areas-quiet);
+}
+
+/* Cards fill the row below 1200px and pair up from there; filtering
+   down to one style gives each remaining card the full row. */
+.areas-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.areas-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	/* An undrawn canvas keeps the browser's 300px default width; cap it
+     so it never pushes a narrow card, or the page, past the screen. */
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.areas-card {
+		grid-column: span 6;
+	}
+	.areas-card-full {
+		grid-column: span 12;
+	}
+	.areas-card-wide {
+		grid-column: span 8;
+	}
+	.areas-card-narrow {
+		grid-column: span 4;
+	}
+}
+.areas-grid.is-filtered .areas-card {
+	grid-column: span 12;
+}
+
+/* Card bodies are columns so the chart can settle at the bottom. */
+.areas-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+
+/* The style tag follows the title in the markup, so the title is read
+   first, but column-reverse shows the tag above it on its own line. */
+.areas-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.areas-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.areas-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--areas-quiet);
+}
+.areas-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--areas-quiet);
+}
+
+/* Legends are HTML lists so long ones wrap rather than overlap. */
+.areas-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--areas-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.areas-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--areas-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.areas-key-line-dashed {
+	border-top-style: dashed;
+	border-top-width: 2px;
+}
+.areas-key-line-faint {
+	border-top-color: color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	border-top-width: 1.5px;
+}
+
+/* The fill swatch is a tiny area: a tint capped by its edge line. */
+.areas-key-fill {
+	width: 16px;
+	height: 11px;
+	border-radius: 2px 2px 1px 1px;
+	border-top: 2px solid var(--areas-c, var(--basalt-series-1));
+	background: color-mix(in srgb, var(--areas-c, var(--basalt-series-1)) 55%, transparent);
+}
+.areas-key-band {
+	width: 16px;
+	height: 11px;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--areas-c, var(--basalt-series-1)) 24%, transparent);
+}
+
+/* Swatch color helpers: series slots, the quiet gray, and the gain and
+   loss colors. */
+.areas-c1 {
+	--areas-c: var(--basalt-series-1);
+}
+.areas-c2 {
+	--areas-c: var(--basalt-series-2);
+}
+.areas-c3 {
+	--areas-c: var(--basalt-series-3);
+}
+.areas-c4 {
+	--areas-c: var(--basalt-series-4);
+}
+.areas-c5 {
+	--areas-c: var(--basalt-series-5);
+}
+.areas-c6 {
+	--areas-c: var(--basalt-series-6);
+}
+.areas-c8 {
+	--areas-c: var(--basalt-series-8);
+}
+.areas-cq {
+	--areas-c: var(--areas-quiet);
+}
+.areas-cok {
+	--areas-c: var(--basalt-success);
+}
+.areas-cbad {
+	--areas-c: var(--basalt-danger);
+}
+
+/* Chart boxes have a fixed height and sink to the card's bottom edge. */
+.areas-chart {
+	position: relative;
+	height: 260px;
+	margin-top: auto;
+}
+.areas-chart-tall {
+	height: 300px;
+}
+@media (max-width: 575.98px) {
+	.areas-chart,
+	.areas-chart-tall {
+		height: 230px;
+	}
+}
+
+/* Sparkline tiles go two across, then four with hairline dividers on
+   large screens. */
+.areas-sparks {
+	display: grid;
+	gap: 1.5rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 992px) {
+	.areas-sparks {
+		gap: 1.25rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+	.areas-spark + .areas-spark {
+		padding-left: 1.25rem;
+		border-left: 1px solid var(--basalt-edge);
+	}
+}
+.areas-spark-label {
+	margin: 0 0 0.2rem;
+	font-size: 0.8rem;
+	color: var(--areas-quiet);
+}
+.areas-spark-value {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.areas-spark-note {
+	margin: 0.1rem 0 0.6rem;
+	font-size: 0.75rem;
+	color: var(--areas-quiet);
+}
+.areas-spark-chart {
+	position: relative;
+	height: 52px;
+}
+
+/* Each card can fold out its Chart.js config under a ruled toggle. */
+.areas-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:hover {
+		color: var(--basalt-copy);
+	}
+	& summary:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* On paper the controls drop out and every chart prints. */
+@media print {
+	.areas-filter,
+	.areas-code {
+		display: none;
+	}
+	.areas-card.is-hidden {
+		display: block;
+	}
+}

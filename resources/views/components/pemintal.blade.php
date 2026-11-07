@@ -1,9 +1,6 @@
 @props(['ukuran' => 'sm'])
 
-{{-- Spinner bawaan template (HexaDash: dm-spin-dots). Ukuran: sm, md, atau lg. --}}
-<div {{ $attributes->class(['dm-spin-dots', 'spin-'.$ukuran]) }}>
-    <span class="spin-dot badge-dot dot-primary"></span>
-    <span class="spin-dot badge-dot dot-primary"></span>
-    <span class="spin-dot badge-dot dot-primary"></span>
-    <span class="spin-dot badge-dot dot-primary"></span>
+{{-- Pemintal Basalt (spinner-border Bootstrap). Ukuran: sm, md, atau lg. --}}
+<div {{ $attributes->class(['spinner-border text-primary', 'spinner-border-sm' => $ukuran === 'sm', 'pemintal-lg' => $ukuran === 'lg']) }} role="status">
+    <span class="visually-hidden">Memuat…</span>
 </div>

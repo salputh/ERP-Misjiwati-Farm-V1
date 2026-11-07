@@ -1,0 +1,1330 @@
+/*
+ * Revenue dashboard (revenue-insights.html). Every class here starts
+ * with rv-, and every color is a --basalt-* token, so the HTML keys,
+ * swatches and tags change palette together with the canvases, which
+ * revenue-insights.js paints from the same tokens. Cards, keys and chart
+ * boxes share their look with the Charts pages; the ledger shares its
+ * look with the data tables.
+ */
+
+.rv-page {
+	/* Small gray text is the muted token pulled toward the body color, which
+     keeps it at 4.5:1 or better on light palettes and hovered rows. */
+	--rv-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links are mixed the same way; the bare primary dips below 4.5:1 on a
+     few light palettes. */
+	--rv-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+}
+
+/* Anything the script hides stays hidden, whatever display it normally has. */
+.rv-field[hidden],
+.rv-applied[hidden],
+.rv-state[hidden],
+.rv-board[hidden],
+.rv-foot nav[hidden] {
+	display: none;
+}
+
+/* Swatch hooks: --rv-c is a chart series or a status color, --rv-tone an
+   outcome color. The script picks the class; the token picks the color. */
+.rv-c1 {
+	--rv-c: var(--basalt-series-1);
+}
+.rv-c2 {
+	--rv-c: var(--basalt-series-2);
+}
+.rv-c3 {
+	--rv-c: var(--basalt-series-3);
+}
+.rv-c4 {
+	--rv-c: var(--basalt-series-4);
+}
+.rv-c5 {
+	--rv-c: var(--basalt-series-5);
+}
+.rv-c6 {
+	--rv-c: var(--basalt-series-6);
+}
+.rv-c7 {
+	--rv-c: var(--basalt-series-7);
+}
+.rv-c8 {
+	--rv-c: var(--basalt-series-8);
+}
+.rv-c-success {
+	--rv-c: var(--basalt-success);
+}
+.rv-c-danger {
+	--rv-c: var(--basalt-danger);
+}
+.rv-c-warning {
+	--rv-c: var(--basalt-warning);
+}
+/* rv-cr matches the faint comparison line on the canvases; rv-ct is ink. */
+.rv-cr {
+	--rv-c: color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+}
+.rv-ct {
+	--rv-c: var(--basalt-copy);
+}
+.rv-tone-success {
+	--rv-tone: var(--basalt-success);
+}
+.rv-tone-info {
+	--rv-tone: var(--basalt-info);
+}
+.rv-tone-warning {
+	--rv-tone: var(--basalt-warning);
+}
+.rv-tone-danger {
+	--rv-tone: var(--basalt-danger);
+}
+
+/* The control bar: range and comparison on the first row, filters and
+   saved views on the second, applied filter chips underneath. */
+.rv-controls.basalt-box .card-body {
+	padding: 1rem 1.25rem;
+}
+.rv-controls-row {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& + .rv-controls-row {
+		margin-top: 0.85rem;
+		padding-top: 0.85rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.rv-field {
+	display: inline-flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-width: 0;
+}
+.rv-field-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.rv-field .form-select {
+	width: auto;
+	min-width: 9.5rem;
+}
+.rv-field-custom .form-select {
+	min-width: 8.5rem;
+}
+.rv-controls-span {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--rv-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.rv-controls-end {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-left: auto;
+}
+.rv-reset.btn-link {
+	--bs-btn-color: var(--rv-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	font-weight: 600;
+	text-decoration: none;
+}
+.rv-applied {
+	margin-top: 0.85rem;
+}
+.rv-page .basalt-command-menu {
+	min-width: min(22rem, calc(100vw - 2rem));
+}
+@media (max-width: 575.98px) {
+	.rv-controls-span {
+		flex-basis: 100%;
+		margin-left: 0;
+	}
+	.rv-controls-end {
+		margin-left: 0;
+	}
+	.rv-field .form-select {
+		min-width: 0;
+	}
+}
+
+/* The error and empty panels stand in for the board. */
+.rv-state {
+	margin-bottom: 1.5rem;
+}
+
+/* Headline cards reuse .basalt-trend-card: one column, two from small
+   screens, four from extra large ones. */
+.rv-kpis {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 576px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	@media (min-width: 1200px) {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.rv-kpi .basalt-trendline {
+	position: relative;
+
+	& .basalt-trend-card-label {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+	}
+	& .basalt-trend-card-delta {
+		gap: 0.3rem;
+		min-height: 1.3rem;
+	}
+}
+.rv-tone-1 {
+	--basalt-tone: var(--basalt-series-1);
+}
+.rv-tone-3 {
+	--basalt-tone: var(--basalt-series-3);
+}
+.rv-tone-5 {
+	--basalt-tone: var(--basalt-series-5);
+}
+.rv-tone-7 {
+	--basalt-tone: var(--basalt-series-7);
+}
+.rv-kpi-sub {
+	flex-basis: 100%;
+	font-size: 0.76rem;
+	font-weight: 500;
+	color: var(--rv-quiet);
+}
+/* While a request is out, a skeleton covers each card. */
+.rv-kpi-ghost {
+	position: absolute;
+	inset: 0;
+	display: none;
+	gap: 0.6rem;
+	flex-direction: column;
+	justify-content: center;
+	padding: 1.1rem 1.1rem;
+	background: var(--basalt-plane);
+
+	& .basalt-skeleton-block {
+		height: 2.5rem;
+	}
+}
+.rv-board.is-loading .rv-kpi-ghost {
+	display: flex;
+}
+/* The round "i" next to a label opens a tooltip. */
+.rv-info {
+	display: inline-grid;
+	place-items: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	line-height: 1;
+	color: var(--rv-quiet);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Twelve tracks; from extra large screens cards sit full, wide, half or
+   narrow, and below that every card takes the whole row. */
+.rv-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.rv-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	/* An undrawn chart keeps the browser's 300px canvas width, which must
+     never push a narrow card, or the page, past the screen edge. */
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+	&:focus {
+		outline: none;
+	}
+}
+@media (min-width: 1200px) {
+	.rv-card {
+		grid-column: span 6;
+	}
+	.rv-card-full {
+		grid-column: span 12;
+	}
+	.rv-card-wide {
+		grid-column: span 8;
+	}
+	.rv-card-narrow {
+		grid-column: span 4;
+	}
+}
+.rv-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+
+	@media (max-width: 575.98px) {
+		padding: var(--basalt-pad-x-narrow);
+	}
+}
+.rv-card-head {
+	margin-bottom: 1.25rem;
+}
+.rv-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rv-card-desc {
+	max-width: 70ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rv-quiet);
+}
+
+/* Figures above a chart sit in a grid, each with a rule on its left; the
+   first rule takes the lead series color. */
+.rv-stats {
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 1.35rem;
+
+	@media (min-width: 768px) {
+		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+	}
+
+	& > div {
+		min-width: 0;
+		padding-left: 0.85rem;
+		border-left: 2px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		border-left-color: var(--basalt-series-1);
+	}
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--rv-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.3rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	& dd.rv-stats-note {
+		font-size: 0.875rem;
+		font-weight: 500;
+		letter-spacing: 0;
+		color: var(--rv-quiet);
+	}
+}
+/* Lifetime values stack on phones and color each rule by plan. */
+.rv-stats-ltv {
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 576px) {
+		grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+	}
+}
+.rv-stats-ltv > div,
+.rv-stats-ltv > div:first-child {
+	border-left-color: var(--rv-c, var(--basalt-edge));
+}
+.rv-stats dd.rv-stats-sub {
+	margin-top: 0.1rem;
+	font-size: 0.76rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	color: var(--rv-quiet);
+}
+
+/* Chart boxes give the absolutely placed canvas its height, a little
+   shorter on phones. */
+.rv-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 260px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+}
+.rv-chart-tall {
+	min-height: 320px;
+}
+.rv-chart-hero {
+	min-height: 340px;
+}
+.rv-chart-mini {
+	flex: 0 0 auto;
+	min-height: 92px;
+	margin: 0.5rem -0.25rem 0;
+}
+@media (max-width: 575.98px) {
+	.rv-chart {
+		min-height: 240px;
+	}
+	.rv-chart-tall {
+		min-height: 300px;
+	}
+	.rv-chart-hero {
+		min-height: 290px;
+	}
+	.rv-chart-mini {
+		min-height: 84px;
+	}
+}
+.rv-chart-ghost {
+	display: none;
+}
+.rv-board.is-loading {
+	& .rv-chart > canvas {
+		visibility: hidden;
+	}
+	& .rv-chart-ghost {
+		position: absolute;
+		inset: 0;
+		display: block;
+		height: auto;
+	}
+}
+/* The previous answer's figures stay in place, faded, until the next
+   answer replaces them. */
+.rv-board.is-loading .rv-stats,
+.rv-board.is-loading .rv-flow,
+.rv-board.is-loading .rv-multiple p,
+.rv-board.is-loading .rv-outcome,
+.rv-board.is-loading .rv-key,
+.rv-board.is-loading .rv-table tbody {
+	opacity: 0.4;
+}
+
+/* Keys are HTML lists, so a long one wraps rather than overlapping. */
+.rv-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--rv-quiet);
+	list-style: none;
+
+	&:empty {
+		display: none;
+	}
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.rv-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--rv-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.rv-key-line-dashed {
+	border-top-style: dashed;
+}
+.rv-key-line-dotted {
+	border-top-style: dotted;
+	border-top-width: 3px;
+}
+.rv-key-band {
+	width: 18px;
+	height: 10px;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--rv-c, var(--basalt-series-1)) 20%, transparent);
+}
+.rv-key-bar {
+	width: 10px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--rv-c, var(--basalt-series-1));
+}
+.rv-key-bar-soft {
+	background: color-mix(in srgb, var(--rv-c, var(--basalt-series-1)) 45%, transparent);
+}
+.rv-key-bar-pale {
+	background: color-mix(in srgb, var(--rv-c) 22%, transparent);
+}
+.rv-key-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--rv-c, var(--basalt-series-1)) 55%, transparent);
+	box-shadow: inset 0 0 0 1.5px var(--rv-c, var(--basalt-series-1));
+}
+
+/* The movement strip runs opening, five movements, closing: two to a row,
+   then four, then all seven in one line. */
+.rv-flow {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+
+	@media (min-width: 768px) {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+	@media (min-width: 1200px) {
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+	}
+}
+.rv-flow-item {
+	--rv-c: var(--basalt-edge-strong);
+	position: relative;
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 0.65rem 0.8rem 0.7rem;
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--rv-c) 7%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.6rem;
+		bottom: 0.6rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--rv-c);
+	}
+}
+.rv-flow-item-gain {
+	--rv-c: var(--basalt-success);
+}
+.rv-flow-item-loss {
+	--rv-c: var(--basalt-danger);
+}
+.rv-flow-item-total {
+	--rv-c: var(--basalt-copy);
+	background: var(--basalt-plane-alt, var(--basalt-plane));
+}
+.rv-flow-label {
+	font-size: 0.76rem;
+	font-weight: 600;
+	color: var(--rv-quiet);
+}
+.rv-flow-value {
+	font-size: 1.1rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.rv-flow-sub {
+	font-size: 0.71rem;
+	color: var(--rv-quiet);
+}
+
+/* One bordered figure per plan, topped by a stripe in the plan's color. */
+.rv-multiples {
+	display: grid;
+	gap: 1rem;
+	flex: 1 1 auto;
+	grid-template-columns: minmax(0, 1fr);
+	margin-bottom: 0.25rem;
+
+	@media (min-width: 768px) {
+		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+	}
+}
+.rv-multiple {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	margin: 0;
+	padding: 1rem 1rem 0.75rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	box-shadow: inset 0 3px 0 var(--rv-c);
+}
+.rv-multiple-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.3rem;
+}
+.rv-multiple-name {
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rv-multiple-share {
+	font-size: 0.76rem;
+	white-space: nowrap;
+	color: var(--rv-quiet);
+}
+.rv-multiple-value {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: 1.35rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.rv-multiple-meta {
+	margin: 0.2rem 0 0;
+	font-size: 0.77rem;
+	color: var(--rv-quiet);
+}
+
+/* Under the collections chart: a split bar of failed payment outcomes and
+   a button per outcome that opens it in the ledger. */
+.rv-outcome {
+	margin-top: 1.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.rv-outcome-title {
+	margin: 0 0 0.65rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.rv-outcome-none {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--rv-quiet);
+}
+.rv-outcome-bar {
+	display: flex;
+	gap: 2px;
+	height: 10px;
+	margin-bottom: 0.75rem;
+	border-radius: 999px;
+	overflow: hidden;
+}
+.rv-outcome-seg {
+	flex: 0 1 0;
+	min-width: 0;
+	background: var(--rv-tone);
+}
+.rv-outcome-list {
+	display: grid;
+	gap: 0.25rem 1rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	@media (min-width: 576px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.rv-outcome-pick {
+	display: grid;
+	column-gap: 0.5rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	width: 100%;
+	padding: 0.3rem 0.5rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.rv-outcome-dot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--rv-tone);
+}
+.rv-outcome-amt {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.rv-outcome-n {
+	grid-column: 2 / 4;
+	font-size: 0.74rem;
+	color: var(--rv-quiet);
+}
+
+/* "Show the numbers" folds a plain table under each chart; its chevron
+   turns when it opens, and holds still for reduced motion. */
+.rv-data {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:hover {
+		color: var(--basalt-copy);
+	}
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& .table-responsive {
+		margin-top: 0.75rem;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		& summary .bi {
+			transition: none;
+		}
+	}
+}
+
+/* Ledger toolbar: search, two filters and the export button. On narrow
+   screens the search gets its own row and the filters share the next. */
+.rv-tabs {
+	margin-bottom: 1.25rem;
+}
+.rv-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.rv-toolbar-end {
+	margin-left: auto;
+}
+.rv-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 11rem;
+	max-width: 20rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--rv-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.rv-select {
+	width: auto;
+	min-width: 9rem;
+}
+@media (max-width: 767.98px) {
+	.rv-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.rv-toolbar {
+		gap: 0.75rem;
+	}
+	.rv-toolbar > .rv-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.rv-toolbar-end {
+		flex: 1 1 100%;
+		margin-left: 0;
+	}
+}
+/* Inputs and selects across the page sit on the card surface. */
+.rv-page .form-control,
+.rv-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.rv-page .form-control:focus,
+.rv-page .form-select:focus-visible {
+	border-color: var(--basalt-hue);
+}
+.rv-page .form-control::placeholder {
+	color: var(--rv-quiet);
+	opacity: 1;
+}
+
+/* The ledger runs to the card edges, and its outer cells take back the
+   card's inset so the first column lines up with the title and toolbar.
+   It is also the container the card layout below measures. */
+.rv-scroll {
+	--rv-inset: var(--basalt-pad-x);
+	position: relative;
+	container-type: inline-size;
+	margin: 0 calc(-1 * var(--rv-inset));
+	padding: 0;
+
+	@media (max-width: 575.98px) {
+		--rv-inset: var(--basalt-pad-x-narrow);
+	}
+}
+.rv-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.75rem;
+	}
+	&.table-sm > :not(caption) > * > * {
+		padding: 0.4rem 0.6rem;
+	}
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--rv-quiet);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& td {
+		white-space: nowrap;
+	}
+}
+/* Inside the scroller the rows take the shared row height and the outer
+   cells take the card inset. */
+.rv-scroll .rv-table {
+	& > tbody > tr > * {
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: var(--basalt-pad-row-y);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--rv-inset);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--rv-inset);
+	}
+}
+.rv-table-data > tbody > tr > th {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rv-table-data {
+	font-size: 0.8rem;
+}
+
+/* Cell helpers the row markup uses. */
+.rv-num {
+	font-variant-numeric: tabular-nums;
+}
+.rv-strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rv-quiet {
+	font-size: 0.77rem;
+	color: var(--rv-quiet);
+}
+.rv-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+}
+.rv-link {
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	text-align: left;
+	color: var(--rv-link);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+/* Account names lead to the account's own page. */
+.rv-account {
+	border-radius: 3px;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+}
+.rv-table-empty {
+	white-space: normal;
+}
+.rv-table td.rv-table-empty {
+	padding: 2rem 1rem;
+}
+
+/* Once the ledger is narrower than its columns, each row turns into a
+   quiet card. Its first line carries the row's name, the status tag in a
+   fixed track and the amount; below it, the other facts share one muted
+   line. */
+@container (max-width: 52rem) {
+	.rv-scroll .rv-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.rv-scroll .rv-table,
+	.rv-scroll .rv-table tbody {
+		display: block;
+		width: 100%;
+	}
+	.rv-scroll .rv-table tbody tr {
+		display: flex;
+		gap: 0.3rem 0.5rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--rv-inset);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.rv-scroll .rv-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.rv-scroll .rv-table > :not(caption) > * > *,
+	.rv-scroll .rv-table > tbody > tr > *,
+	.rv-scroll .rv-table > :not(caption) > * > :first-child,
+	.rv-scroll .rv-table > :not(caption) > * > :last-child {
+		display: block;
+		padding: 0;
+		border: 0;
+		white-space: normal;
+	}
+	.rv-scroll .rv-table td.rv-table-empty {
+		flex: 1 1 100%;
+		padding: 1rem 0;
+	}
+	/* First line of a movement: month, then the movement tag. */
+	[data-rv-table="moves"] .rv-table tbody td:nth-child(1) {
+		flex: 0 0 calc(100% - 7.5rem - 6rem - 1rem);
+		order: 1;
+		min-width: 0;
+	}
+	[data-rv-table="moves"] .rv-table tbody td:nth-child(5) {
+		flex: 0 0 7.5rem;
+		order: 2;
+	}
+	/* Payment outcomes have long names, so the outcome drops to the second
+     line and the remaining facts to the third. */
+	[data-rv-table="failed"] .rv-table tbody td:nth-child(2) {
+		flex: 0 0 calc(100% - 6rem - 0.5rem);
+		order: 1;
+		min-width: 0;
+	}
+	[data-rv-table="failed"] .rv-table tbody td:nth-child(6) {
+		flex: 0 0 100%;
+		order: 4;
+	}
+	.rv-scroll .rv-table tbody td:nth-child(7) {
+		flex: 0 0 6rem;
+		order: 3;
+		font-size: 0.875rem;
+		font-weight: 700;
+		text-align: right;
+		color: var(--basalt-copy);
+	}
+	/* Every other cell is a muted fact, with a middle dot between facts. */
+	.rv-scroll .rv-table tbody td {
+		order: 4;
+		font-size: 0.8rem;
+		color: var(--rv-quiet);
+	}
+	[data-rv-table="moves"] .rv-table tbody td:nth-child(n + 3):nth-child(-n + 4)::before,
+	[data-rv-table="moves"] .rv-table tbody td:nth-child(6)::before,
+	[data-rv-table="failed"] .rv-table tbody td:nth-child(n + 3):nth-child(-n + 5)::before {
+		content: "\00B7";
+		margin-right: 0.5rem;
+	}
+	[data-rv-table="moves"] .rv-table tbody td:nth-child(6)::after {
+		content: " accounts";
+	}
+	[data-rv-table="failed"] .rv-table tbody td:nth-child(5)::after {
+		content: " tries";
+	}
+	[data-rv-table="moves"] .rv-table tbody td:nth-child(1),
+	[data-rv-table="failed"] .rv-table tbody td:nth-child(2) {
+		font-size: 0.875rem;
+	}
+	[data-rv-table="failed"] .rv-table tbody td:nth-child(1) {
+		order: 5;
+	}
+	[data-rv-table="failed"] .rv-table tbody td:nth-child(n + 3):nth-child(-n + 5) {
+		order: 6;
+	}
+}
+
+/* Sortable headers hold a bare button that inherits the header's type;
+   the arrow is faint until its column is the one sorting. */
+.rv-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	& .bi {
+		font-size: 0.7rem;
+		opacity: 0.5;
+	}
+}
+th[aria-sort] .rv-sort {
+	color: var(--basalt-copy);
+
+	& .bi {
+		opacity: 1;
+	}
+}
+.text-end > .rv-sort {
+	flex-direction: row-reverse;
+}
+
+/* Status tags are a soft tint of their tone with a dot in front. The text
+   is the tone pulled toward ink, which keeps it readable on the tint in
+   every palette. */
+.rv-page .basalt-status {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--stp-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--stp-tone);
+	}
+}
+
+/* Under each table: the row count and total on one side, pages on the other. */
+.rv-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+}
+.rv-foot-label {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--rv-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.rv-page .pagination {
+	--bs-pagination-color: var(--basalt-copy-body);
+	--bs-pagination-bg: var(--basalt-plane);
+	--bs-pagination-border-color: var(--basalt-edge-strong);
+	--bs-pagination-hover-color: var(--basalt-copy);
+	--bs-pagination-hover-bg: var(--basalt-wash);
+	--bs-pagination-hover-border-color: var(--basalt-edge-strong);
+	--bs-pagination-focus-color: var(--basalt-copy);
+	--bs-pagination-focus-bg: var(--basalt-wash);
+	--bs-pagination-focus-box-shadow: 0 0 0 0.2rem var(--basalt-hue-border);
+	--bs-pagination-active-color: var(--basalt-plane);
+	--bs-pagination-active-bg: var(--basalt-copy);
+	--bs-pagination-active-border-color: var(--basalt-copy);
+	--bs-pagination-disabled-color: var(--rv-quiet);
+	--bs-pagination-disabled-bg: var(--basalt-plane);
+	--bs-pagination-disabled-border-color: var(--basalt-edge);
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& .page-link {
+		min-width: 2rem;
+		margin-left: 0;
+		border-radius: 8px;
+		font-weight: 600;
+		text-align: center;
+		color: var(--bs-pagination-color);
+	}
+	& .page-link:hover {
+		color: var(--bs-pagination-hover-color);
+	}
+	& .active > .page-link {
+		border-color: var(--bs-pagination-active-border-color);
+		color: var(--bs-pagination-active-color);
+		background-color: var(--bs-pagination-active-bg);
+	}
+	& .disabled > .page-link {
+		color: var(--bs-pagination-disabled-color);
+	}
+	& .is-gap > .page-link {
+		border-color: transparent;
+		background: transparent;
+	}
+}
+
+/* The record drawer: a tone badge in the header, a grid of facts, then
+   either the accounts behind a movement or a payment's retry timeline. */
+.rv-drawer-badge {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--rv-tone, var(--basalt-hue)) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rv-tone, var(--basalt-hue)) 14%, var(--basalt-plane));
+}
+.rv-facts {
+	display: grid;
+	gap: 0.9rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 1rem 0 var(--basalt-pad-head);
+
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--rv-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+.rv-drawer-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rv-accounts {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+		justify-content: space-between;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& li:last-child {
+		border-bottom: 0;
+	}
+}
+.rv-accounts-who {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.rv-accounts-name {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rv-accounts-detail {
+	font-size: 0.77rem;
+	color: var(--rv-quiet);
+}
+.rv-accounts-amt {
+	font-size: 0.875rem;
+	font-weight: 700;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.rv-drawer-more {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.rv-drawer-hint {
+	margin: 1.5rem 0 0;
+	font-size: 0.77rem;
+	color: var(--rv-quiet);
+}
+.rv-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+/* Each retry step hangs from a thin rail that stops at the last one. */
+.rv-steps-item {
+	position: relative;
+	display: grid;
+	column-gap: 0.6rem;
+	grid-template-columns: 1rem minmax(0, 1fr);
+	padding: 0 0 0.9rem;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1rem;
+		bottom: 0;
+		left: calc(0.5rem - 1px);
+		width: 2px;
+		background: var(--basalt-edge);
+	}
+	&:last-child::before {
+		display: none;
+	}
+}
+.rv-steps-dot {
+	grid-row: span 2;
+	width: 0.75rem;
+	height: 0.75rem;
+	margin: 0.2rem 0 0 0.125rem;
+	border-radius: 50%;
+	background: var(--rv-tone);
+}
+.rv-steps-when {
+	font-size: 0.76rem;
+	color: var(--rv-quiet);
+}
+.rv-steps-what {
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+}
+
+/* Keyboard focus draws the same hue ring everywhere on the page; only the
+   gap between ring and control changes with the control's size. */
+.rv-info:focus-visible,
+.rv-outcome-pick:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.rv-card:focus-visible,
+.rv-account:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.rv-link:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.rv-data summary:focus-visible,
+.rv-sort:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+/* On paper the controls, tables and pagers drop out and cards keep whole. */
+@media print {
+	.rv-controls,
+	.rv-data,
+	.rv-toolbar,
+	.rv-foot {
+		display: none;
+	}
+	.rv-card {
+		break-inside: avoid;
+	}
+}
+
+/* Each figure's line takes the same tone as its icon, so the row reads in
+   several colors rather than one. */
+.rv-kpi .basalt-trendline {
+	--basalt-trendline-tone: var(--basalt-tone);
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.rv-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

@@ -1,0 +1,1024 @@
+/**
+ * Invoices page (invoices.html), namespaced under .ivs-*.
+ * The page head, cards, tabs, status pills, choice cards, segmented control,
+ * empty state and dialogs come from basalt.css; this sheet places them and
+ * draws the "Money owed" columns, the invoice list and what sits inside the
+ * dialogs. Colors are --basalt-* tokens mixed with color-mix(), so each
+ * palette and mode keeps its hues. The dialogs live outside the page
+ * container, which is why they are given the page's mixes as well.
+ */
+
+.ivs-page,
+.ivs-modal {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--ivs-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	/* Danger as text; the token on its own is too light for small type. */
+	--ivs-late: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--ivs-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+
+/* Each band has one hue, shared by its column and the lines beside it: a
+   warm ramp while late, the palette's own ramp while still to come. */
+.ivs-band-late3 {
+	--ivs-tone: var(--basalt-danger);
+}
+.ivs-band-late2 {
+	--ivs-tone: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-warning));
+}
+.ivs-band-late1 {
+	--ivs-tone: var(--basalt-warning);
+}
+.ivs-band-due1 {
+	--ivs-tone: var(--basalt-series-1);
+}
+.ivs-band-due2 {
+	--ivs-tone: var(--basalt-series-2);
+}
+.ivs-band-due3 {
+	--ivs-tone: var(--basalt-series-3);
+}
+
+/* Buttons never wrap their label, and fields sit on the card color in the
+   page and in its dialogs alike. */
+.ivs-page .btn,
+.ivs-modal .btn {
+	white-space: nowrap;
+}
+.ivs-page .btn-outline-secondary {
+	background-color: var(--basalt-plane);
+}
+.ivs-page .form-control,
+.ivs-page .form-select,
+.ivs-modal .form-control,
+.ivs-modal .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.ivs-page .form-control::placeholder,
+.ivs-modal .form-control::placeholder {
+	color: var(--ivs-quiet);
+	opacity: 1;
+}
+
+/* Two cards stacked with a gap; the title block and its action share the
+   head row and wrap when the card narrows. */
+.ivs-card {
+	& + .ivs-card {
+		margin-top: 1.5rem;
+	}
+	&.basalt-box > .card-body {
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+		@media (max-width: 575.98px) {
+			padding: 1.25rem var(--basalt-pad-x-narrow);
+		}
+	}
+}
+.ivs-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.ivs-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ivs-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ivs-quiet);
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Money owed: the total and three colored lines on the left, a rule, then
+   one column per band, late ones left of "Today" and the rest right of it.
+   Under 1200px the totals move above the columns as a row of three, and on
+   phones they stack. */
+.ivs-owed-body {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: end;
+	@media (max-width: 1199.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.ivs-owed-sum {
+	margin: 0;
+	@media (min-width: 1200px) {
+		align-self: stretch;
+		padding-right: 2.5rem;
+		border-right: 1px solid var(--basalt-edge);
+	}
+	@media (max-width: 1199.98px) {
+		display: grid;
+		column-gap: 1.5rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	@media (max-width: 575.98px) {
+		display: block;
+	}
+	& dt {
+		font-weight: 400;
+	}
+	& dd {
+		margin: 0;
+	}
+}
+.ivs-owed-total {
+	margin-bottom: 1.5rem;
+	@media (max-width: 1199.98px) {
+		grid-column: 1 / -1;
+		margin-bottom: 1rem;
+	}
+	& dt {
+		font-size: 0.875rem;
+		color: var(--ivs-quiet);
+	}
+	& dd {
+		margin-top: 0.25rem;
+		font-size: 2.4rem;
+		font-weight: 750;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+		color: var(--basalt-copy);
+	}
+}
+.ivs-owed-line {
+	position: relative;
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.8rem 0 0.8rem 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+	@media (max-width: 1199.98px) {
+		gap: 0.2rem;
+		flex-direction: column;
+	}
+	@media (max-width: 575.98px) {
+		flex-direction: row;
+	}
+	/* A dot in the line's own tone marks each total. */
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.05rem;
+		left: 0;
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 50%;
+		background: var(--ivs-tone);
+	}
+	& dt {
+		font-size: 0.875rem;
+		white-space: nowrap;
+		color: var(--basalt-copy-body);
+	}
+	& dd {
+		display: flex;
+		gap: 0.6rem;
+		flex: none;
+		align-items: baseline;
+	}
+}
+.ivs-owed-line-late {
+	--ivs-tone: var(--basalt-danger);
+}
+.ivs-owed-line-due {
+	--ivs-tone: var(--basalt-series-1);
+}
+.ivs-owed-line-paid {
+	--ivs-tone: var(--basalt-success);
+}
+.ivs-owed-amt {
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ivs-owed-line-late .ivs-owed-amt {
+	color: var(--ivs-late);
+}
+.ivs-owed-n {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--ivs-quiet);
+}
+
+/* The band columns: each is a button whose bar grows up from the floor on
+   the first draw; a pressed column takes a wash of its own tone. */
+.ivs-aging-wrap {
+	container: ivs-aging / inline-size;
+	min-width: 0;
+}
+.ivs-aging {
+	display: flex;
+	gap: 0.5rem;
+	align-items: stretch;
+	padding-top: 1.25rem;
+	&.is-settled .ivs-aging-bar {
+		animation: none;
+	}
+}
+.ivs-aging-col {
+	display: flex;
+	gap: 0.4rem;
+	flex: 1 1 0;
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+	padding: 0.6rem 0.3rem 0.7rem;
+	border: 0;
+	border-radius: 12px;
+	font: inherit;
+	text-align: center;
+	color: inherit;
+	background: transparent;
+	cursor: pointer;
+	transition: background-color 170ms ease;
+	&:hover:not(:disabled) {
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible:not([aria-pressed="true"]) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-pressed="true"] {
+		background: color-mix(in srgb, var(--ivs-tone) 14%, var(--basalt-plane));
+	}
+	&:disabled {
+		cursor: default;
+	}
+	&:disabled .ivs-aging-bar {
+		background: var(--basalt-edge-strong);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.ivs-aging-amt {
+	font-size: 0.95rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ivs-aging-track {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	width: 100%;
+	height: 11rem;
+}
+.ivs-aging-bar {
+	transform-origin: bottom;
+	display: block;
+	width: min(100%, 4.5rem);
+	height: max(4px, calc(var(--ivs-h) * 9rem));
+	border-radius: 8px 8px 3px 3px;
+	background: var(--ivs-tone);
+	animation: ivs-grow 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+	@media print, (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+/* The bars grow from scale 0 on the axis the layout runs along; the narrow
+   layout swaps the axis through the custom properties, so a resize never
+   restarts the growth. */
+@keyframes ivs-grow {
+	from {
+		transform: scale(var(--ivs-from-x, 1), var(--ivs-from-y, 0));
+	}
+}
+.ivs-aging-label {
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--basalt-copy-body);
+}
+.ivs-aging-n {
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--ivs-quiet);
+}
+/* A dashed upright with a "Today" tag splits the late columns from the
+   ones still to come. */
+.ivs-aging-today {
+	position: relative;
+	flex: none;
+	width: 0;
+	margin: 0 0.3rem;
+	border-left: 2px dashed var(--basalt-edge-strong);
+	& > span {
+		position: absolute;
+		top: -1.25rem;
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 0.1rem 0.5rem;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--ivs-quiet);
+		background: var(--basalt-plane-alt);
+	}
+}
+/* In a narrow card each column turns into a row: band and amount, then its
+   bar, then the count; "Today" becomes a dashed rule between the groups. */
+@container ivs-aging (max-width: 620px) {
+	.ivs-aging {
+		gap: 0.25rem;
+		flex-direction: column;
+		padding-top: 0;
+	}
+	.ivs-aging-col {
+		display: grid;
+		gap: 0.3rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "label amt" "bar bar" "n n";
+		padding: 0.6rem 0.5rem;
+		text-align: left;
+	}
+	.ivs-aging-label {
+		grid-area: label;
+		margin: 0;
+	}
+	.ivs-aging-amt {
+		grid-area: amt;
+	}
+	.ivs-aging-n {
+		grid-area: n;
+	}
+	.ivs-aging-track {
+		display: contents;
+	}
+	.ivs-aging-bar {
+		--ivs-from-x: 0;
+		--ivs-from-y: 1;
+		transform-origin: left;
+		grid-area: bar;
+		width: max(4px, calc(var(--ivs-h) * 100%));
+		height: 0.6rem;
+		border-radius: 3px 8px 8px 3px;
+	}
+	.ivs-aging-today {
+		width: auto;
+		height: 0;
+		margin: 1rem 0;
+		border-left: 0;
+		border-top: 2px dashed var(--basalt-edge-strong);
+	}
+	.ivs-aging-today > span {
+		top: 50%;
+		left: 0.5rem;
+		transform: translateY(-50%);
+	}
+}
+
+/* Tabs, then one toolbar row: search, order, the band chip and the count.
+   Below 768px the search takes a row of its own. */
+.ivs-tabs {
+	margin-bottom: 1.25rem;
+}
+.ivs-count-late {
+	color: var(--ivs-late);
+}
+.ivs-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.5rem;
+}
+.ivs-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 12rem;
+	max-width: 28rem;
+	@media (max-width: 767.98px) {
+		flex: 1 1 100%;
+	}
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--ivs-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.ivs-sort.form-select {
+	flex: 0 0 auto;
+	width: auto;
+}
+/* The band picked in "Money owed"; pressing the chip shows every band again. */
+.ivs-chip {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 2.375rem;
+	padding: 0.3rem 0.85rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-hue) 35%, var(--basalt-edge));
+	border-radius: 999px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		font-size: 0.7rem;
+		color: var(--ivs-quiet);
+	}
+	&:hover > .bi {
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.ivs-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--ivs-quiet);
+}
+
+/* The invoice list. The wrap is pulled out by the cells' side padding, so
+   the first column lines up with the card title and the search box. */
+.ivs-table-wrap {
+	position: relative;
+	container: ivs-list / inline-size;
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+	&[hidden] {
+		display: none;
+	}
+}
+.ivs-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--ivs-quiet);
+	}
+}
+.ivs-col-who {
+	min-width: 17rem;
+}
+.ivs-col-issued {
+	width: 6.5rem;
+}
+.ivs-col-due {
+	width: 8rem;
+}
+.ivs-col-status {
+	width: 10rem;
+}
+.ivs-col-amt {
+	width: 8.5rem;
+	text-align: right;
+}
+.ivs-col-act {
+	width: 9rem;
+}
+
+/* Rows wash on hover, flash once when just changed, and an overdue row
+   carries a straight red bar in the gutter so it stands out in any order. */
+.ivs-row {
+	cursor: pointer;
+	@media print, (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+	&:hover {
+		background: var(--ivs-row-hover);
+	}
+	&.is-fresh {
+		animation: ivs-fresh 1.8s ease;
+		@media print, (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+	& > .ivs-col-who {
+		position: relative;
+	}
+}
+@keyframes ivs-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+.ivs-row-overdue > .ivs-col-who::before {
+	content: "";
+	position: absolute;
+	top: 1.1rem;
+	bottom: 1.1rem;
+	left: 0.1rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--basalt-danger);
+}
+
+.ivs-who {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	min-width: 0;
+}
+.ivs-who-text {
+	min-width: 0;
+}
+.ivs-who-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.ivs-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--ivs-quiet);
+}
+.ivs-sub-late {
+	font-weight: 600;
+	color: var(--ivs-late);
+}
+.basalt-avatar.ivs-mark {
+	flex: none;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 0.8rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+}
+.ivs-date {
+	display: block;
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.ivs-date-none {
+	color: var(--ivs-quiet);
+}
+.ivs-col-status .ivs-sub {
+	margin-top: 0.3rem;
+}
+.ivs-amt {
+	font-size: 0.95rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ivs-amt-void {
+	text-decoration: line-through;
+	color: var(--ivs-quiet);
+}
+
+/* The action cell: the row's one button, then its menu. */
+.ivs-actions {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	justify-content: flex-end;
+}
+.ivs-more-btn {
+	color: var(--ivs-quiet);
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.ivs-menu .dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	& > .bi {
+		width: 1rem;
+		text-align: center;
+	}
+}
+.ivs-menu .ivs-danger-item,
+.ivs-menu .ivs-danger-item:hover,
+.ivs-menu .ivs-danger-item:focus {
+	color: var(--ivs-late);
+}
+
+/* "Show more" reaches the table's edges, so its rule is as long as a row
+   line; the empty state takes the table's place when nothing matches. */
+.ivs-more {
+	display: flex;
+	justify-content: center;
+	margin: 0 -0.6rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+	&[hidden] {
+		display: none;
+	}
+}
+.ivs-empty {
+	margin: 1.5rem 0 0.5rem;
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The list answers to the room its card has, not the window: with the menu
+   open, a 1024px window leaves the card about as narrow as a tablet. The
+   issue date then moves under the customer name. */
+.ivs-row-issued {
+	display: none;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--ivs-quiet);
+}
+@container ivs-list (max-width: 1000px) {
+	.ivs-table > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	/* The outer cells keep the wrap's inset, so the first column still lines
+     up with the card's left edge. */
+	.ivs-table > :not(caption) > * > :first-child {
+		padding-left: 0.6rem;
+	}
+	.ivs-table > :not(caption) > * > :last-child {
+		padding-right: 0.6rem;
+	}
+	.ivs-col-who {
+		min-width: 14rem;
+	}
+	.ivs-table .ivs-col-issued {
+		display: none;
+	}
+	.ivs-row-issued {
+		display: block;
+	}
+}
+/* Narrower still, the letter tile and the issue date step back so the
+   columns keep their room; the invoice itself still says when it went out. */
+@container ivs-list (max-width: 800px) {
+	.ivs-who > .ivs-mark,
+	.ivs-row-issued {
+		display: none;
+	}
+	.ivs-col-who {
+		min-width: 10rem;
+	}
+	.ivs-col-who .ivs-sub {
+		white-space: normal;
+	}
+	.ivs-col-due {
+		width: 6.5rem;
+	}
+	.ivs-col-status {
+		width: 8rem;
+	}
+	.ivs-col-amt {
+		width: 6.5rem;
+	}
+	.ivs-col-act {
+		width: 7.5rem;
+	}
+}
+/* Narrowest: each invoice is a small stacked record, with who, the amount
+   and the menu on top, the due date and status under them, then the one
+   action the row needs, if any. */
+@container ivs-list (max-width: 620px) {
+	.ivs-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.ivs-table,
+	.ivs-table tbody {
+		display: block;
+	}
+	.ivs-table tr {
+		display: grid;
+		gap: 1rem 0.5rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"who    amt    menu"
+			"due    status status";
+		align-items: start;
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.ivs-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.ivs-table > :not(caption) > * > *,
+	.ivs-table > :not(caption) > * > :first-child,
+	.ivs-table > :not(caption) > * > :last-child {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.ivs-table .ivs-col-who {
+		grid-area: who;
+	}
+	.ivs-table .ivs-col-amt {
+		grid-area: amt;
+		text-align: right;
+	}
+	.ivs-table .ivs-col-due {
+		grid-area: due;
+	}
+	.ivs-table .ivs-col-status {
+		grid-area: status;
+		text-align: right;
+	}
+	/* The action cell steps aside so its button and menu take their own places. */
+	.ivs-table .ivs-col-act,
+	.ivs-table .ivs-actions {
+		display: contents;
+	}
+	.ivs-table .ivs-menu {
+		grid-area: menu;
+		margin: -0.45rem -0.4rem 0 0;
+	}
+	.ivs-table .ivs-act {
+		grid-column: 1 / -1;
+		grid-row: 3;
+		justify-self: start;
+	}
+	.ivs-row-overdue > .ivs-col-who::before {
+		top: 0.1rem;
+		bottom: 0.1rem;
+		left: -0.5rem;
+	}
+	.ivs-sub {
+		white-space: normal;
+	}
+}
+
+/* On a phone the latest event under the status pill steps aside, and the
+   due date and its note share one line. */
+@media (max-width: 575.98px) {
+	.ivs-table .ivs-col-status .ivs-sub {
+		display: none;
+	}
+	.ivs-table td.ivs-col-due {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		align-items: baseline;
+	}
+}
+
+/* Dialog rows: fieldsets lose their frame, a row with an invalid field
+   shows its message, and help text under a field hides while empty. */
+.ivs-form-row {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+	&:last-child {
+		margin-bottom: 0;
+	}
+	&:has(.is-invalid) > .invalid-feedback {
+		display: block;
+	}
+}
+.ivs-modal legend.form-label {
+	float: none;
+	margin-bottom: 0.5rem;
+	font-size: inherit;
+	line-height: inherit;
+}
+.ivs-help {
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--ivs-quiet);
+	&:empty {
+		display: none;
+	}
+}
+.ivs-help-block {
+	margin: 0;
+}
+/* The reminder's opening line: the amount in bold, the lateness in red. */
+.ivs-r-lead {
+	margin: 0 0 1.5rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.ivs-lead-late {
+	font-weight: 600;
+	color: var(--ivs-late);
+}
+.ivs-email.form-control {
+	max-width: 28rem;
+}
+.ivs-modal textarea.form-control {
+	line-height: 1.55;
+}
+
+/* Tone tiles: three across, centered; on phones they turn into slim rows
+   with the icon beside the label. */
+.ivs-tiles {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	@media (max-width: 575.98px) {
+		gap: 0.6rem;
+		grid-template-columns: 1fr;
+	}
+}
+.ivs-tile {
+	&.basalt-choice-card {
+		align-items: center;
+		padding: 1rem 0.5rem;
+		text-align: center;
+		@media (max-width: 575.98px) {
+			gap: 0.85rem;
+			flex-direction: row;
+			justify-content: flex-start;
+			padding: 0.7rem 1rem;
+			text-align: left;
+		}
+	}
+	& .basalt-choice-card-icon {
+		margin-bottom: 0.3rem;
+		@media (max-width: 575.98px) {
+			flex: none;
+			width: 2.25rem;
+			height: 2.25rem;
+			margin: 0;
+		}
+	}
+	& .basalt-choice-card-title {
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+}
+
+.ivs-switches {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	& .form-check {
+		margin: 0;
+	}
+}
+
+.ivs-customer-select.form-select,
+.ivs-item-select.form-select {
+	width: auto;
+	min-width: 16rem;
+	max-width: 100%;
+}
+
+/* An amount shows one focus ring: the group lights up, not the input in it. */
+.ivs-amount {
+	max-width: 14rem;
+	&:focus-within {
+		border-radius: var(--bs-border-radius);
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 25%, transparent);
+	}
+	&:focus-within .input-group-text,
+	&:focus-within .form-control {
+		border-color: var(--basalt-hue);
+	}
+	& .form-control:focus {
+		box-shadow: none;
+	}
+	& .input-group-text {
+		border-color: var(--basalt-edge-strong);
+		color: var(--ivs-quiet);
+		background: var(--basalt-plane-alt);
+	}
+	&:has(.is-invalid) + .invalid-feedback {
+		display: block;
+	}
+}
+
+/* Remind overdue: one ruled row per invoice, checked unless it was
+   reminded today. */
+.ivs-picks {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ivs-pick {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	&:first-child {
+		padding-top: 0.25rem;
+		border-top: 0;
+	}
+	& .form-check-input {
+		margin: 0;
+	}
+}
+.ivs-pick-text {
+	min-width: 0;
+	cursor: pointer;
+	& .ivs-sub {
+		white-space: normal;
+	}
+}
+.ivs-pick-name {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ivs-pick-amt {
+	font-size: 0.9rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ivs-picks-error {
+	margin-top: 0.5rem;
+}
+.is-picking-none .ivs-picks-error {
+	display: block;
+}
+
+/* Print keeps the figures and the rows, without the controls around them. */
+@media print {
+	.ivs-toolbar,
+	.ivs-tabs,
+	.ivs-more,
+	.ivs-col-act,
+	.ivs-chip,
+	.basalt-pagehead-actions,
+	.ivs-card-head .btn {
+		display: none;
+	}
+}

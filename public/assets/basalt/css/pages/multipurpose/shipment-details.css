@@ -1,0 +1,706 @@
+/* Basalt - Shipment Details (shipment-details.html)
+   One parcel. Namespaced under .sd-*; the header, cards, status pills,
+   choices, segmented switch, date picker, dialogs and toasts are the
+   shared components from basalt.css. Every color is a --basalt-*
+   token, so palettes and dark mode carry through.
+   One type scale: card titles, body text (.875rem) and one small size
+   (.77rem). */
+
+.sd-page,
+.sd-modal {
+	--sd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--sd-line: var(--basalt-edge);
+	--sd-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--sd-warn: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+	--sd-ok: color-mix(in srgb, var(--basalt-success) 58%, var(--basalt-copy));
+	--sd-fs-body: 0.875rem;
+	--sd-fs-small: 0.77rem;
+}
+.sd-mono {
+	font-family: "Chivo Mono", ui-monospace, monospace;
+	font-size: var(--sd-fs-small);
+}
+
+/* Carrier tiles, in the carrier's chart color as on Shipping. */
+.sd-tone-1 {
+	--sd-tone: var(--basalt-series-1);
+}
+.sd-tone-2 {
+	--sd-tone: var(--basalt-series-2);
+}
+.sd-tone-3 {
+	--sd-tone: var(--basalt-series-3);
+}
+.sd-tone-5 {
+	--sd-tone: var(--basalt-series-5);
+}
+.sd-tone-6 {
+	--sd-tone: var(--basalt-series-6);
+}
+
+/* Header */
+.basalt-hero-detail.sd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.sd-head .basalt-hero-actions {
+	flex-wrap: wrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.sd-head .basalt-hero-actions .btn {
+	white-space: nowrap;
+}
+.sd-head .basalt-hero-actions .btn[hidden] {
+	display: none;
+}
+.sd-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.sd-who-text {
+	min-width: 0;
+}
+.sd-mark {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 4rem;
+	height: 4rem;
+	border-radius: 16px;
+	font-size: 1.25rem;
+	font-weight: 800;
+	color: color-mix(in srgb, var(--sd-tone, var(--basalt-hue)) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--sd-tone, var(--basalt-hue)) 16%, var(--basalt-plane));
+}
+.sd-tags {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+.sd-tags .basalt-status {
+	padding: 0.25rem 0.7rem;
+	font-size: var(--sd-fs-small);
+}
+.sd-tag {
+	font-size: var(--sd-fs-small);
+	color: var(--basalt-copy-body);
+}
+.sd-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.5rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+@media (max-width: 1199.98px) {
+	.basalt-hero-detail.sd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.sd-pager {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.sd-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.sd-mark {
+		width: 3.25rem;
+		height: 3.25rem;
+		border-radius: 14px;
+		font-size: 1.05rem;
+	}
+}
+
+/* The delay: one slim line */
+.sd-notice {
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem 0.7rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: var(--sd-fs-body);
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.sd-notice[hidden] {
+	display: none;
+}
+.sd-notice::before {
+	content: "";
+	position: absolute;
+	top: 0.5rem;
+	bottom: 0.5rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--basalt-warning);
+}
+.sd-notice > .bi {
+	flex: none;
+	color: var(--sd-warn);
+}
+
+/* Cards */
+.sd-card {
+	container-type: inline-size;
+	min-width: 0;
+}
+.sd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.sd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.sd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.sd-card-head > div {
+	min-width: 0;
+}
+.sd-card-head > .sd-link {
+	flex: none;
+	margin-top: 0.2rem;
+	font-size: var(--sd-fs-body);
+	white-space: nowrap;
+}
+.sd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--sd-fs-body);
+	line-height: 1.55;
+	color: var(--sd-quiet);
+}
+.sd-card-desc:empty {
+	display: none;
+}
+.sd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--sd-link);
+}
+.sd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.sd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+.sd-link-plain {
+	font-weight: 500;
+}
+
+/* Rows whose cards end level: pairs from 1200px, one column below. */
+.sd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.sd-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: stretch;
+	}
+}
+
+/* Route: three stops joined by two legs
+   A done leg is solid, the leg the parcel is on carries a truck, a
+   late leg is the warning color, and legs still to come are dashed. */
+.sd-route {
+	--sd-dot: 2.5rem;
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-stop {
+	--sd-at: 0;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+}
+.sd-stop-dot {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: var(--sd-dot);
+	height: var(--sd-dot);
+	margin-bottom: 0.85rem;
+	border: 2px solid var(--basalt-edge-strong);
+	border-radius: 50%;
+	font-size: 1rem;
+	color: var(--sd-quiet);
+	background: var(--basalt-plane);
+}
+.sd-stop-done .sd-stop-dot {
+	border-color: var(--basalt-success);
+	color: var(--basalt-plane);
+	background: var(--basalt-success);
+}
+.sd-stop-here .sd-stop-dot {
+	border-color: var(--basalt-hue);
+	color: var(--basalt-plane);
+	background: var(--basalt-hue);
+	box-shadow: 0 0 0 5px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+}
+.sd-stop-late .sd-stop-dot {
+	border-color: var(--basalt-warning);
+	color: var(--basalt-copy);
+	background: var(--basalt-warning);
+	box-shadow: 0 0 0 5px color-mix(in srgb, var(--basalt-warning) 22%, transparent);
+}
+[data-bs-theme="dark"] .sd-stop-late .sd-stop-dot {
+	color: var(--basalt-plane);
+}
+.sd-stop:nth-child(2) {
+	--sd-at: 1;
+}
+.sd-stop:nth-child(3) {
+	--sd-at: 2;
+}
+.sd-leg {
+	--sd-leg-from: inset(-1.5rem 100% -1.5rem 0);
+	--sd-leg-to: inset(-1.5rem 0 -1.5rem 0);
+	position: absolute;
+	top: calc(var(--sd-dot) / 2 - 1.5px);
+	left: calc(var(--sd-dot) + 0.5rem);
+	width: calc(100% + 1.5rem - var(--sd-dot) - 1rem);
+	height: 3px;
+	border-radius: 3px;
+	background: repeating-linear-gradient(90deg, var(--basalt-edge-strong) 0 8px, transparent 8px 14px);
+}
+.sd-leg-done {
+	background: var(--basalt-success);
+}
+.sd-leg-moving {
+	background:
+		linear-gradient(90deg, var(--basalt-hue) 0 50%, transparent 50%),
+		repeating-linear-gradient(90deg, var(--basalt-edge-strong) 0 8px, transparent 8px 14px);
+}
+.sd-leg .bi {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	display: grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	border: 2px solid var(--basalt-hue);
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--sd-link);
+	background: var(--basalt-plane);
+}
+.sd-stop-name {
+	font-size: var(--sd-fs-body);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sd-stop-place {
+	margin-top: 0.1rem;
+	font-size: var(--sd-fs-body);
+	color: var(--basalt-copy-body);
+}
+.sd-stop-when {
+	margin-top: 0.3rem;
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+.sd-stop-late .sd-stop-when {
+	font-weight: 600;
+	color: var(--sd-warn);
+}
+
+/* The first time the route is on screen it fills in from the first stop:
+   each stop colors in as the leg before it arrives, and the truck rides
+   in with its leg. Until then the stops wait uncolored. */
+@media (prefers-reduced-motion: no-preference) {
+	.sd-route.is-waiting {
+		& .sd-leg {
+			clip-path: var(--sd-leg-from);
+		}
+		& .sd-stop-dot {
+			opacity: 0.6;
+			filter: grayscale(1);
+		}
+	}
+	.sd-route.is-drawing {
+		& .sd-leg {
+			animation: sd-leg-in 300ms ease-in-out calc(var(--sd-at) * 340ms + 100ms) both;
+		}
+		& .sd-stop-dot {
+			animation: sd-dot-in 280ms ease-out calc(var(--sd-at) * 340ms) both;
+		}
+	}
+}
+@keyframes sd-leg-in {
+	from {
+		clip-path: var(--sd-leg-from);
+	}
+	to {
+		clip-path: var(--sd-leg-to);
+	}
+}
+@keyframes sd-dot-in {
+	from {
+		opacity: 0.6;
+		filter: grayscale(1);
+		transform: scale(0.8);
+	}
+}
+
+/* The four facts under the route. */
+.sd-facts-row {
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 1.75rem 0 0;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--sd-line);
+}
+.sd-facts-row dt {
+	font-size: var(--sd-fs-small);
+	font-weight: 500;
+	color: var(--sd-quiet);
+}
+.sd-facts-row dd {
+	margin: 0.25rem 0 0;
+	font-size: var(--sd-fs-body);
+	color: var(--basalt-copy);
+}
+
+/* A narrow card runs the route down the left. */
+@container (max-width: 640px) {
+	.sd-route {
+		gap: 1.5rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.sd-stop {
+		min-height: var(--sd-dot);
+		padding-left: calc(var(--sd-dot) + 1rem);
+	}
+	.sd-stop-dot {
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin: 0;
+	}
+	.sd-stop-name {
+		margin-top: 0.2rem;
+	}
+	.sd-leg {
+		--sd-leg-from: inset(0 -1.5rem 100% -1.5rem);
+		--sd-leg-to: inset(0 -1.5rem 0 -1.5rem);
+		top: calc(var(--sd-dot) + 0.4rem);
+		left: calc(var(--sd-dot) / 2 - 1.5px);
+		width: 3px;
+		height: calc(100% - var(--sd-dot) + 1.5rem - 0.8rem);
+		background: repeating-linear-gradient(180deg, var(--basalt-edge-strong) 0 8px, transparent 8px 14px);
+	}
+	.sd-leg-done {
+		background: var(--basalt-success);
+	}
+	.sd-leg-moving {
+		background:
+			linear-gradient(180deg, var(--basalt-hue) 0 50%, transparent 50%),
+			repeating-linear-gradient(180deg, var(--basalt-edge-strong) 0 8px, transparent 8px 14px);
+	}
+	.sd-facts-row {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Tracking scans */
+.sd-scans {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-scan {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 2rem;
+	padding: 0.2rem 0 1.1rem 2.85rem;
+}
+.sd-scan:last-child {
+	padding-bottom: 0;
+}
+.sd-scan:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.2rem;
+	bottom: 0.2rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	border-radius: 1px;
+	background: var(--basalt-edge);
+}
+.sd-scan-icon {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.sd-scan.is-latest .sd-scan-icon {
+	color: var(--sd-link);
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+.sd-scan-delivered .sd-scan-icon {
+	color: var(--sd-ok);
+	background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+}
+.sd-scan-delay .sd-scan-icon {
+	color: var(--sd-warn);
+	background: color-mix(in srgb, var(--basalt-warning) 20%, var(--basalt-plane));
+}
+.sd-scan-text {
+	font-size: var(--sd-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sd-scan-meta {
+	margin-top: 0.1rem;
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+
+/* Contents */
+.sd-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-item {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	padding: 0.75rem 0;
+}
+.sd-item:first-child {
+	padding-top: 0;
+}
+.sd-item + .sd-item {
+	border-top: 1px solid var(--sd-line);
+}
+.sd-item-img {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 10px;
+	object-fit: cover;
+	color: var(--sd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.sd-item-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+.sd-item-name {
+	font-size: var(--sd-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sd-item-meta {
+	margin-top: 0.1rem;
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+.sd-item-qty {
+	flex: none;
+	font-size: var(--sd-fs-body);
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+/* Address */
+.sd-facts {
+	display: grid;
+	margin: 0;
+}
+.sd-facts > div {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.75rem 0;
+	border-bottom: 1px solid var(--sd-line);
+}
+.sd-facts > div:first-child {
+	padding-top: 0;
+}
+.sd-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.sd-facts dt {
+	font-size: var(--sd-fs-small);
+	font-weight: 500;
+	color: var(--sd-quiet);
+}
+.sd-facts dd {
+	margin: 0;
+	font-size: var(--sd-fs-body);
+	line-height: 1.55;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* Shopper updates */
+.sd-mails {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-mail {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 2rem;
+	padding: 0.2rem 0 1rem 2.85rem;
+}
+.sd-mail:last-child {
+	padding-bottom: 0;
+}
+.sd-mail-icon {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.sd-mail-text {
+	font-size: var(--sd-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sd-mail-meta {
+	margin-top: 0.1rem;
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+.sd-mail-none .sd-mail-text {
+	font-weight: 500;
+}
+.sd-mail.is-fresh {
+	animation: sd-in 400ms ease both;
+}
+.sd-mail.is-fresh .sd-mail-icon {
+	color: var(--sd-link);
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+@keyframes sd-in {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.sd-mail.is-fresh {
+		animation: none;
+	}
+}
+
+/* Dialogs */
+.sd-field {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+/* A legend reads like the form labels beside it, not like a heading. */
+.sd-field > legend {
+	float: none;
+	width: 100%;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 1rem;
+	font-weight: 500;
+	line-height: 1.5;
+}
+.sd-checks {
+	display: grid;
+	gap: 0.4rem;
+}
+.sd-checks .form-check-label {
+	font-size: var(--sd-fs-body);
+}
+.sd-fit {
+	max-width: 16rem;
+}
+.sd-hint {
+	margin: 0.75rem 0 0;
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+.sd-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.sd-error[hidden],
+[data-sd-r="pickup"][hidden] {
+	display: none;
+}

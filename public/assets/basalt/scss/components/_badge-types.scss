@@ -1,0 +1,476 @@
+/*
+ * Corrections to Bootstrap's stock badges, followed by the badge family the
+ * template adds: dot labels, trends, corner counters, toggles, a status pill
+ * with its own menu, removable filters and soft count pills. badges.html
+ * shows them in that order. basalt.js powers [data-basalt-removables],
+ * [data-basalt-status-menu] and Basalt.count; --basalt-shade, the dark
+ * end that solid fills mix toward, comes from the palette bridge.
+ */
+
+@use "sass:map";
+
+/* Secondary text leans toward the body color so it keeps 4.5:1. */
+$quiet-copy: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+/* Pills that change tone on hover or press fade fill, text and edge together. */
+$tint-fade:
+	background-color 170ms ease,
+	color 170ms ease,
+	border-color 170ms ease;
+
+/* The semantic tones a --tone driven badge can take; with none it stays neutral. */
+// The values are property names, wrapped in var() where they are used.
+// stylelint-disable custom-property-no-missing-var-function
+$tones: (
+	primary: --basalt-hue,
+	success: --basalt-success,
+	warning: --basalt-warning,
+	danger: --basalt-danger,
+	info: --basalt-info,
+);
+// stylelint-enable custom-property-no-missing-var-function
+
+/* Every pressable badge part answers focus with the same hue outline. */
+@mixin hue-outline($gap: 2px) {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: $gap;
+}
+
+/* Visitors who asked for less motion get the end state straight away. */
+@mixin still($property: transition) {
+	@media (prefers-reduced-motion: reduce) {
+		#{$property}: none;
+	}
+}
+
+/* Bootstrap's .text-bg-* fix the text at white, so the fill is darkened
+   instead: toward the text color in light mode, the page color in dark. */
+.text-bg-primary {
+	--basalt-hue: color-mix(in srgb, var(--bs-primary) 80%, var(--basalt-copy));
+
+	[data-bs-theme="dark"] & {
+		--basalt-hue: var(--bs-primary);
+	}
+}
+.text-bg-success {
+	--basalt-success: color-mix(in srgb, var(--bs-success) 58%, var(--basalt-shade));
+
+	[data-bs-theme="dark"] & {
+		--basalt-success: color-mix(in srgb, var(--bs-success) 50%, var(--basalt-shade));
+	}
+}
+.text-bg-danger {
+	--basalt-danger: color-mix(in srgb, var(--bs-danger) 70%, var(--basalt-shade));
+}
+.text-bg-warning {
+	--basalt-warning: color-mix(in srgb, var(--bs-warning) 88%, var(--basalt-plane));
+}
+.text-bg-info {
+	--basalt-flare: color-mix(in srgb, var(--bs-info) 88%, var(--basalt-plane));
+}
+
+/* Inside a heading a badge or count pill grows with the text, as Bootstrap
+   means it to, even though .badge is pinned small for tables. Middle
+   alignment lands it on the x-height and the em-based lift moves it up to
+   the middle of the capitals, so every heading level lines up the same. */
+:is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .basalt-hero-title, .card-title)
+	> :is(.badge, .basalt-count-pill) {
+	translate: 0 -0.14em;
+	font-size: 0.62em;
+	vertical-align: middle;
+}
+.btn > .badge {
+	margin-left: 0.3rem;
+	font-size: 0.72em;
+	vertical-align: 0.08em;
+}
+
+/* A dot label is an outlined neutral badge whose colored dot is only a hint
+   of category; the numbered tones follow the chart series. */
+.badge.basalt-badge-as-dot {
+	--dot: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3em 0.65em;
+	border: 1px solid var(--basalt-edge-strong);
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--dot);
+	}
+}
+@for $series from 1 through 8 {
+	.basalt-badge-tone-#{$series} {
+		--dot: var(--basalt-series-#{$series});
+	}
+}
+.badge.basalt-badge-as-dot.basalt-badge-lg {
+	font-size: 0.8rem;
+}
+
+/* A trend reports change since the last period. The direction picks the
+   arrow tone, and --invert flips it for figures where lower is better. */
+.basalt-trend {
+	--tone: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.2rem;
+	align-items: center;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	font-weight: 700;
+	font-size: 0.74rem;
+	line-height: 1.35;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--tone) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 13%, transparent);
+
+	.bi {
+		font-size: 0.9em;
+	}
+}
+.basalt-trend-up,
+.basalt-trend-down.basalt-trend-invert {
+	--tone: var(--basalt-success);
+}
+.basalt-trend-down,
+.basalt-trend-up.basalt-trend-invert {
+	--tone: var(--basalt-danger);
+}
+.basalt-trend-flat {
+	--tone: var(--basalt-copy-muted);
+}
+[data-bs-theme="dark"] .basalt-trend {
+	color: color-mix(in srgb, var(--tone) 60%, var(--basalt-copy));
+}
+
+/* A counter pins to the corner of whatever .basalt-count-host wraps. It
+   tops out at 99+, shrinks to a bare dot for "something new", and
+   Basalt.count(el, n) updates it with a short bump. */
+.basalt-count-host {
+	position: relative;
+	display: inline-flex;
+}
+.basalt-count {
+	--tone: var(--basalt-danger);
+	position: absolute;
+	top: 0;
+	right: 0;
+	transform: translate(40%, -40%);
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.25rem;
+	height: 1.25rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-weight: 700;
+	font-size: 0.67rem;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-plane);
+	background: color-mix(in srgb, var(--tone) 72%, var(--basalt-shade));
+	box-shadow: 0 0 0 2px var(--basalt-plane);
+	pointer-events: none;
+
+	[data-bs-theme="dark"] & {
+		color: var(--basalt-canvas);
+		background: var(--tone);
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+.basalt-count-dot {
+	transform: translate(25%, -25%);
+	width: 0.7rem;
+	min-width: 0;
+	height: 0.7rem;
+	padding: 0;
+}
+.basalt-count-primary {
+	--tone: var(--basalt-hue);
+}
+.basalt-count.is-bumping {
+	animation: basalt-count-bump 420ms cubic-bezier(0.3, 1.6, 0.5, 1);
+	@include still(animation);
+}
+@keyframes basalt-count-bump {
+	0% {
+		transform: translate(40%, -40%) scale(1);
+	}
+	35% {
+		transform: translate(40%, -40%) scale(1.35);
+	}
+	100% {
+		transform: translate(40%, -40%) scale(1);
+	}
+}
+
+/* A toggle badge is a pressable filter that carries its own count; pressed,
+   it takes the hue and shows a check. */
+.basalt-badge-toggle {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.3rem 0.3rem 0.75rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-weight: 650;
+	font-size: 0.8rem;
+	line-height: 1.3;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition: $tint-fade;
+	@include still;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		@include hue-outline;
+	}
+}
+.basalt-badge-toggle-count {
+	min-width: 1.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.basalt-badge-toggle[aria-pressed="true"] {
+	border-color: color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+
+	.basalt-badge-toggle-count {
+		color: var(--basalt-plane);
+		background: color-mix(in srgb, var(--basalt-hue) 78%, var(--basalt-shade));
+
+		[data-bs-theme="dark"] & {
+			color: var(--basalt-canvas);
+			background: var(--basalt-hue);
+		}
+	}
+}
+.basalt-badge-toggle-check {
+	display: none;
+	margin-left: -0.2rem;
+	font-size: 0.85em;
+}
+.basalt-badge-toggle[aria-pressed="true"] .basalt-badge-toggle-check {
+	display: inline;
+}
+
+/* The status menu turns a .basalt-status pill into a dropdown trigger
+   (script: [data-basalt-status-menu]); the pill pops when its value changes. */
+.basalt-status-menu {
+	.basalt-status {
+		border: 1px solid transparent;
+		cursor: pointer;
+		transition: $tint-fade;
+		@include still;
+
+		&:hover,
+		&[aria-expanded="true"] {
+			border-color: color-mix(in srgb, var(--stp-tone) 45%, transparent);
+		}
+		&:focus-visible {
+			@include hue-outline;
+		}
+	}
+}
+.basalt-status-menu-caret {
+	font-size: 0.7em;
+	transition: transform 170ms ease;
+	@include still;
+
+	.basalt-status-menu .basalt-status[aria-expanded="true"] & {
+		transform: rotate(180deg);
+	}
+}
+.basalt-status-menu .dropdown-menu {
+	--bs-dropdown-padding-y: 0.3rem;
+	--bs-dropdown-min-width: 12rem;
+	--bs-dropdown-header-color: #{$quiet-copy};
+	--bs-dropdown-link-color: var(--basalt-copy);
+	--bs-dropdown-link-hover-bg: var(--basalt-wash);
+	--bs-dropdown-link-hover-color: var(--basalt-copy);
+	--bs-dropdown-link-active-bg: var(--basalt-wash);
+	--bs-dropdown-link-active-color: var(--basalt-copy);
+	font-size: 0.84rem;
+	box-shadow: 0 12px 32px -12px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+}
+.basalt-status-menu .dropdown-item {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	&:focus-visible {
+		background: var(--basalt-wash);
+		@include hue-outline(-2px);
+	}
+}
+.basalt-status-menu-dot {
+	flex-shrink: 0;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--stp-tone, var(--basalt-copy-muted));
+}
+.basalt-status-menu-check {
+	visibility: hidden;
+	margin-left: auto;
+}
+.basalt-status-menu .dropdown-item.active {
+	font-weight: 650;
+
+	.basalt-status-menu-check {
+		visibility: visible;
+	}
+}
+.basalt-status.is-changed {
+	animation: basalt-status-pop 420ms ease;
+	@include still(animation);
+}
+@keyframes basalt-status-pop {
+	40% {
+		transform: scale(1.08);
+	}
+}
+
+/* Removable badges sit in a .basalt-removables row, each with its own close
+   button; the optional key part reads like "Fabric: Linen". The row hides
+   itself once empty (script: [data-basalt-removables]). */
+.basalt-removables {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	> li {
+		display: inline-flex;
+	}
+	&:empty {
+		display: none;
+	}
+}
+.basalt-removables-empty {
+	margin: 0;
+	font-size: 0.84rem;
+	color: $quiet-copy;
+}
+.basalt-removable {
+	--tone: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.22rem 0.25rem 0.22rem 0.65rem;
+	border: 1px solid color-mix(in srgb, var(--tone) 28%, transparent);
+	border-radius: 999px;
+	font-weight: 650;
+	font-size: 0.8rem;
+	line-height: 1.3;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 12%, var(--basalt-plane));
+}
+.basalt-removable-key {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+
+	&::after {
+		content: ":";
+	}
+}
+.basalt-removable.is-entering {
+	animation: basalt-removable-in 210ms ease-out;
+	@include still(animation);
+}
+.basalt-removable.is-leaving {
+	animation: basalt-removable-out 170ms ease-in forwards;
+	@include still(animation);
+}
+.basalt-removable-remove {
+	display: inline-grid;
+	place-items: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	padding: 0;
+	border-radius: 50%;
+	border: 0;
+	font-size: 0.95rem;
+	line-height: 1;
+	color: inherit;
+	background: transparent;
+	cursor: pointer;
+	transition: background-color 130ms ease;
+	@include still;
+
+	&:hover {
+		background: color-mix(in srgb, var(--tone) 22%, transparent);
+	}
+	&:focus-visible {
+		@include hue-outline(1px);
+	}
+}
+@keyframes basalt-removable-in {
+	from {
+		transform: scale(0.7);
+		opacity: 0;
+	}
+}
+@keyframes basalt-removable-out {
+	to {
+		transform: scale(0.7);
+		opacity: 0;
+	}
+}
+
+/* A soft count pill tints its fill and pulls its text toward the body
+   color, which keeps 4.5:1 in the lighter palettes where text-primary alone
+   falls short. In an active list row it turns into an outline. */
+.basalt-count-pill {
+	--basalt-count-pill-tone: var(--basalt-hue);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.6rem;
+	padding: 0.12rem 0.5rem;
+	border-radius: 999px;
+	font-weight: 700;
+	font-size: 0.71rem;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, var(--basalt-count-pill-tone) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-count-pill-tone) 15%, var(--basalt-plane));
+}
+@each $name in (success, warning, danger) {
+	.basalt-count-pill-#{$name} {
+		--basalt-count-pill-tone: var(#{map.get($tones, $name)});
+	}
+}
+.list-group-item.active .basalt-count-pill {
+	color: var(--basalt-on-hue);
+	background: transparent;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-on-hue) 55%, transparent);
+}
+
+/* The shared tones come last so they override each type's neutral --tone. */
+@each $name, $source in $tones {
+	.basalt-tone-#{$name} {
+		--tone: var(#{$source});
+	}
+}

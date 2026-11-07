@@ -1,0 +1,267 @@
+/*
+ * Hands Bootstrap's own classes over to the Basalt palette. The stock build
+ * colors .text-info, .bg-success-subtle, checkboxes, cards and the rest from
+ * --bs-* variables, so without this file they would stay stock blue under
+ * every palette. Each page that loads basalt.css relies on it.
+ *
+ * Bootstrap's tinted and emphasis variables take any color, so they are
+ * simply re-pointed here. Its solid color utilities (.text-*, .bg-*,
+ * .border-*) are built with the tokens in assets/basalt/scss/bootstrap.scss.
+ */
+
+@use "sass:list";
+
+/* A palette token pulled toward the text color, which is how colored text
+   and emphasis keep 4.5:1 against the page. */
+@function toward-copy($token, $share) {
+	@return color-mix(in srgb, var(--basalt-#{$token}) $share, var(--basalt-copy));
+}
+
+/* Bootstrap color name, the palette token behind it, and three strengths:
+   emphasis text in the light scheme, emphasis text in the dark scheme, and
+   the tinted border. Each strength was tuned until its text passed contrast. */
+$tone-tokens: (
+	primary: (
+		hue,
+		60%,
+		55%,
+		30%,
+	),
+	success: (
+		success,
+		48%,
+		55%,
+		30%,
+	),
+	danger: (
+		danger,
+		62%,
+		45%,
+		30%,
+	),
+	warning: (
+		warning,
+		42%,
+		55%,
+		36%,
+	),
+	info: (
+		flare,
+		44%,
+		55%,
+		30%,
+	),
+);
+
+$quiet-edge: color-mix(in srgb, var(--basalt-copy-muted) 60%, transparent);
+$checked-fill: toward-copy(hue, 86%);
+
+/* Keyboard focus on any form control draws the same primary ring. */
+@mixin hue-ring {
+	border-color: var(--basalt-hue);
+	box-shadow: 0 0 0 0.25rem var(--basalt-hue-border);
+}
+
+/* Bootstrap's variable set, written for one scheme. $column picks the light
+   or dark emphasis strength; $shade is what solid fills darken toward so
+   text laid on them still reads (the copy color by day, the page by night). */
+@mixin bootstrap-tokens($column, $shade) {
+	--bs-link-color: var(--basalt-hue);
+	--bs-link-hover-color: var(--basalt-hue-deep);
+	--bs-border-color: var(--basalt-edge);
+	--bs-border-color-translucent: var(--basalt-edge);
+
+	@each $name, $spec in $tone-tokens {
+		$token: list.nth($spec, 1);
+		--bs-#{$name}: var(--basalt-#{$token});
+		--bs-#{$name}-bg-subtle: var(--basalt-#{$token}-soft);
+		--bs-#{$name}-text-emphasis: #{toward-copy($token, list.nth($spec, $column))};
+		--bs-#{$name}-border-subtle: color-mix(in srgb, var(--basalt-#{$token}) #{list.nth($spec, 4)}, transparent);
+	}
+
+	--bs-secondary-bg-subtle: var(--basalt-wash);
+	--bs-secondary-text-emphasis: var(--basalt-copy-body);
+	--bs-secondary-border-subtle: var(--basalt-edge-strong);
+	--basalt-shade: var(--basalt-#{$shade});
+}
+
+:root {
+	@include bootstrap-tokens(2, copy);
+
+	/* Bootstrap leaves these outside its theme colors: inline code is fixed
+     pink and validation brings its own green and red. Messages lean toward
+     the copy, as the fill tokens alone drop below 4.5:1 as text. */
+	--bs-code-color: var(--basalt-hue);
+	--bs-highlight-bg: var(--basalt-warning-soft);
+	--bs-form-valid-color: #{toward-copy(success, 52%)};
+	--bs-form-valid-border-color: var(--basalt-success);
+	--bs-form-invalid-color: #{toward-copy(danger, 58%)};
+	--bs-form-invalid-border-color: var(--basalt-danger);
+
+	/* Spacing every data surface shares (card heads, list rows, table cells,
+     toolbars) and the two title sizes above body text, so density and
+     hierarchy are tuned here once for the whole template. */
+	--basalt-pad-head: 1.5rem;
+	--basalt-pad-row-y: 1.2rem;
+	--basalt-pad-x: 1.5rem;
+	--basalt-pad-x-narrow: 1rem;
+	--basalt-fs-card-title: 1.2rem;
+	--basalt-fs-section: 1.05rem;
+}
+
+/* Bootstrap sets its dark values on [data-bs-theme="dark"], which outweighs
+   plain :root, so the dark scheme repeats the set at that weight. */
+:root[data-bs-theme="dark"],
+[data-bs-theme="dark"] {
+	@include bootstrap-tokens(3, canvas);
+}
+
+/* Checkboxes and radios fill with a primary that leans to the copy color,
+   so the white tick survives light palettes, and an empty box keeps an edge
+   the page can show. A mouse click leaves no ring; the keyboard gets one. */
+.form-check-input {
+	border-color: $quiet-edge;
+
+	&:checked,
+	&[type="checkbox"]:indeterminate {
+		border-color: $checked-fill;
+		background-color: $checked-fill;
+	}
+	&:focus-visible {
+		@include hue-ring;
+	}
+	&:focus:not(:focus-visible) {
+		border-color: $quiet-edge;
+		box-shadow: none;
+	}
+	&:checked:focus:not(:focus-visible),
+	&[type="checkbox"]:indeterminate:focus:not(:focus-visible) {
+		border-color: $checked-fill;
+	}
+}
+
+/* Text inputs and selects ring the same way. A select drawn as a button only
+   keeps it while its list is open or the keyboard put it there. */
+.form-control:focus,
+.form-select:focus {
+	@include hue-ring;
+}
+button.form-select:focus:not(:focus-visible):not([aria-expanded="true"]) {
+	border-color: var(--bs-border-color);
+	box-shadow: none;
+}
+
+.form-range {
+	&::-webkit-slider-thumb {
+		background-color: var(--basalt-hue);
+	}
+	&::-moz-range-thumb {
+		background-color: var(--basalt-hue);
+	}
+}
+
+/* Progress bars and spinners run in the primary; nav, pagination, list
+   groups and buttons are recolored by their own partials. */
+.progress-bar {
+	background-color: var(--basalt-hue);
+}
+.spinner-border,
+.spinner-grow {
+	color: var(--basalt-hue);
+}
+
+/* Validation edges follow the focus ring so a field marked wrong stays red
+   while someone corrects it. */
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+	border-color: var(--basalt-danger);
+}
+.was-validated .form-control:valid,
+.form-control.is-valid {
+	border-color: var(--basalt-success);
+}
+.invalid-feedback {
+	color: var(--bs-form-invalid-color);
+}
+.valid-feedback {
+	color: var(--bs-form-valid-color);
+}
+
+/* Switches are scoped under .form-switch by Bootstrap, so they need that
+   extra class to take the plain primary. */
+.form-switch .form-check-input {
+	&:checked {
+		border-color: var(--basalt-hue);
+		background-color: var(--basalt-hue);
+	}
+	&:focus-visible {
+		@include hue-ring;
+	}
+}
+
+.table {
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-color: var(--basalt-copy-body);
+}
+
+/* Cards pad from the shared spacing and pull their sides in on a phone. */
+.card {
+	--bs-card-border-color: var(--basalt-edge);
+	--bs-card-bg: var(--basalt-plane);
+	--bs-card-spacer-y: var(--basalt-pad-x);
+	--bs-card-spacer-x: var(--basalt-pad-x);
+	--bs-card-cap-padding-y: 1.1rem;
+	--bs-card-cap-padding-x: var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		--bs-card-spacer-x: var(--basalt-pad-x-narrow);
+		--bs-card-cap-padding-x: var(--basalt-pad-x-narrow);
+	}
+}
+
+.modal-content {
+	border-color: var(--basalt-edge);
+	background-color: var(--basalt-plane);
+}
+
+/* Between 576 and 991px Bootstrap shrinks large dialogs to 500px, too narrow
+   for two columns, so on a tablet they spread to the width available. */
+@media (min-width: 576px) and (max-width: 991.98px) {
+	.modal-lg,
+	.modal-xl {
+		--bs-modal-width: calc(100vw - 3rem);
+		max-width: 720px;
+	}
+}
+
+.offcanvas {
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+
+.accordion {
+	--bs-accordion-bg: var(--basalt-plane);
+	--bs-accordion-border-color: var(--basalt-edge);
+	--bs-accordion-active-bg: var(--basalt-hue-soft);
+	--bs-accordion-active-color: var(--basalt-hue);
+}
+
+/* The chosen menu entry is tinted instead of filled solid, so its label
+   reads under every palette. */
+.dropdown-menu {
+	--bs-dropdown-bg: var(--basalt-plane);
+	--bs-dropdown-border-color: var(--basalt-edge);
+	--bs-dropdown-link-active-bg: var(--basalt-hue-soft);
+	--bs-dropdown-link-active-color: #{toward-copy(hue, 62%)};
+}
+
+/* Bootstrap rings these on :focus, which a click also sets off; only
+   keyboard focus keeps the ring. */
+.accordion-button,
+.page-link,
+.btn-close,
+.navbar-toggler {
+	&:focus:not(:focus-visible) {
+		box-shadow: none;
+	}
+}

@@ -1,0 +1,554 @@
+/* Styles for scatter-charts.html, all under the .scatters- prefix. Colors
+   come only from the --basalt-* tokens, which scatter-charts.js also reads,
+   so keys, sliders and lists change palette together with the canvases. */
+
+.scatters-page {
+	/* Small gray text: muted copy pulled 18% toward the body color, which keeps
+     it at 4.5:1 or better on the lightest palettes. */
+	--scatters-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The filter row: chart-type chips on the left, the live count on the right. */
+.scatters-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+}
+.scatters-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.scatters-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.scatters-chips .scatters-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.scatters-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--scatters-quiet);
+}
+
+/* Cards fill a twelve-column grid. Every chart has the full row until 1200px;
+   from there they pair up or split eight and four. */
+.scatters-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.scatters-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	/* An undrawn canvas still has the browser's 300px default width, and must
+     not stretch a narrow card or the page past the screen. */
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.scatters-card {
+		grid-column: span 6;
+	}
+	.scatters-card-full {
+		grid-column: span 12;
+	}
+	.scatters-card-wide {
+		grid-column: span 8;
+	}
+	.scatters-card-narrow {
+		grid-column: span 4;
+	}
+	/* Once filtered, the eight-and-four split gives way to even halves, and a
+     card left without a partner takes the whole row. */
+	.scatters-grid.is-filtered .scatters-card-wide,
+	.scatters-grid.is-filtered .scatters-card-narrow,
+	.scatters-grid.is-filtered .scatters-card-full-in-all {
+		grid-column: span 6;
+	}
+	.scatters-grid.is-filtered .scatters-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Inside a card the chart drops to the bottom, so cards in one row line up. */
+.scatters-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+/* The kind badge follows the title in the markup, so the title is read first,
+   but shows above it and never squeezes it. */
+.scatters-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.scatters-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.scatters-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--scatters-quiet);
+}
+.scatters-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--scatters-quiet);
+}
+
+/* The month player sits above the bubbles over time: play button and slider
+   on one side, the month and its MRR on the other. */
+.scatters-player {
+	display: flex;
+	gap: 1rem 2.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.scatters-player-controls {
+	display: flex;
+	gap: 1rem;
+	flex: 1 1 420px;
+	align-items: flex-start;
+	min-width: 0;
+	max-width: 720px;
+}
+.scatters-player-play {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	min-width: 5.5rem;
+
+	& .bi {
+		font-size: 1rem;
+		line-height: 1;
+	}
+}
+.scatters-player-track {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding-top: 0.2rem;
+
+	& .form-range {
+		display: block;
+	}
+}
+.scatters-player-ticks {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.25rem;
+	/* Inset by half a thumb, so each month name sits where the thumb stops
+     rather than at the ends of the track. */
+	padding: 0 0.5rem;
+	font-size: 0.7rem;
+	color: var(--scatters-quiet);
+
+	& span {
+		display: flex;
+		justify-content: center;
+		width: 0;
+		white-space: nowrap;
+	}
+}
+/* The month reads right-aligned only while it shares a row with the slider. */
+.scatters-player-side {
+	text-align: left;
+}
+@media (min-width: 1200px) {
+	.scatters-player-side {
+		text-align: right;
+	}
+}
+.scatters-player-month {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.scatters-player-total {
+	margin: 0.2rem 0 0;
+	font-size: 0.8rem;
+	color: var(--scatters-quiet);
+}
+.scatters-player-row {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+
+	& .scatters-key {
+		margin: 0;
+	}
+}
+.scatters-follow {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+
+	& .form-select {
+		width: auto;
+		min-width: 11rem;
+	}
+}
+.scatters-follow-label {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--scatters-quiet);
+}
+@media (max-width: 575.98px) {
+	/* Phones keep every third month plus December, which is all that fits. */
+	.scatters-player-ticks span:not(:nth-child(3n + 1)):not(:last-child) {
+		visibility: hidden;
+	}
+}
+
+/* Keys are HTML rather than canvas legends, so a long one wraps instead of
+   running into the plot. */
+.scatters-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--scatters-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.scatters-key-dot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--scatters-c, var(--basalt-series-1));
+}
+/* In the clusters key each entry is a button that lights its group. */
+.scatters-key-toggles {
+	gap: 0.3rem 0.5rem;
+	margin-left: -0.5rem;
+}
+.scatters-key-toggle {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.5rem;
+	border: 1px solid transparent;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	line-height: 1.2;
+	color: var(--scatters-quiet);
+	background: none;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-edge-strong);
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.scatters-chip:hover,
+.scatters-key-toggle:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+@media (prefers-reduced-motion: reduce) {
+	.scatters-chip,
+	.scatters-key-toggle {
+		transition: none;
+	}
+}
+.scatters-c1 {
+	--scatters-c: var(--basalt-series-1);
+}
+.scatters-c2 {
+	--scatters-c: var(--basalt-series-2);
+}
+.scatters-c3 {
+	--scatters-c: var(--basalt-series-3);
+}
+.scatters-c4 {
+	--scatters-c: var(--basalt-series-4);
+}
+.scatters-c5 {
+	--scatters-c: var(--basalt-series-5);
+}
+.scatters-c6 {
+	--scatters-c: var(--basalt-series-6);
+}
+.scatters-c8 {
+	--scatters-c: var(--basalt-series-8);
+}
+
+/* The city chips above the highlight chart run a size smaller. */
+.scatters-picker {
+	margin-bottom: 1rem;
+
+	& .scatters-chip {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.77rem;
+	}
+}
+
+/* Chart boxes set the canvas height; tall and hero boxes give busier charts
+   more room, and phones get a little less of each. */
+.scatters-chart {
+	position: relative;
+	height: 280px;
+	margin-top: auto;
+}
+.scatters-chart-tall {
+	height: 320px;
+}
+.scatters-chart-hero {
+	height: 440px;
+}
+@media (max-width: 575.98px) {
+	.scatters-chart,
+	.scatters-chart-tall {
+		height: 250px;
+	}
+	.scatters-chart-hero {
+		height: 320px;
+	}
+}
+
+/* Range select: the plot and its sliders, then a summary column that moves
+   beside the plot from 992px. */
+.scatters-brush {
+	display: grid;
+	gap: 1.75rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 992px) {
+	.scatters-brush {
+		gap: 2.5rem;
+		grid-template-columns: minmax(0, 1fr) 300px;
+	}
+	.scatters-brush-list {
+		padding-left: 2rem;
+		border-left: 1px solid var(--basalt-edge);
+	}
+}
+.scatters-chart-brush {
+	cursor: crosshair;
+	touch-action: pan-y;
+}
+.scatters-brush-sliders {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-top: 1rem;
+}
+.scatters-brush-label {
+	display: block;
+	margin-bottom: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--scatters-quiet);
+
+	& span {
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+.scatters-brush-sum {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.scatters-brush-band {
+	margin: 0.2rem 0 0;
+	font-size: 0.8rem;
+	color: var(--scatters-quiet);
+}
+.scatters-brush-stats {
+	display: grid;
+	gap: 0.3rem 1rem;
+	grid-template-columns: auto 1fr;
+	margin: 0.75rem 0 1.25rem;
+	font-size: 0.8rem;
+
+	& dt {
+		font-weight: 400;
+		color: var(--scatters-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-weight: 600;
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+/* Numbers line up on the right; the order column keeps to the left. */
+.scatters-brush-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+
+	& th {
+		padding: 0 0 0.4rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		text-align: right;
+		color: var(--scatters-quiet);
+	}
+	& td {
+		padding: 0.4rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		text-align: right;
+		color: var(--basalt-copy-body);
+	}
+	& th:first-child,
+	& td:first-child {
+		text-align: left;
+	}
+	& td:first-child {
+		color: var(--basalt-copy);
+	}
+}
+.scatters-brush-id {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+
+/* Each card ends with a folded config sample; the chevron turns as it opens. */
+.scatters-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.scatters-code summary .bi {
+		transition: none;
+	}
+}
+
+/* On paper every chart prints, and the controls that only work on screen
+   are left out. */
+@media print {
+	.scatters-filter,
+	.scatters-code,
+	.scatters-follow,
+	.scatters-player-controls,
+	.scatters-brush-sliders {
+		display: none;
+	}
+	.scatters-card.is-hidden {
+		display: block;
+	}
+}

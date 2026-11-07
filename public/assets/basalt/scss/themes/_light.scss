@@ -1,0 +1,46 @@
+@use "sass:list";
+@use "sass:map";
+@use "tokens";
+
+/* Basalt stylesheet, built from assets/basalt/scss/basalt.scss. This first layer
+   holds the color tokens; every later rule reads them and none repeats a hex. */
+
+/**
+ * Writes one palette's map out as `--basalt-*` custom properties. A `series`
+ * entry is a list and becomes the numbered chart slots, series-1 upward.
+ * Values that carry an alpha or a comma list are kept as quoted strings in the
+ * maps, so they reach the stylesheet exactly as written.
+ */
+@mixin tokens($set) {
+	@each $token, $value in $set {
+		@if $token == series {
+			@for $slot from 1 through list.length($value) {
+				--#{tokens.$prefix}-series-#{$slot}: #{list.nth($value, $slot)};
+			}
+		} @else {
+			--#{tokens.$prefix}-#{$token}: #{$value};
+		}
+	}
+}
+
+/* Dusk is Basalt's own palette and what the page wears before any palette
+   attribute is set, so its light set sits on the root itself. */
+:root,
+[data-bs-theme="light"] {
+	@include tokens(map.get(tokens.$core, tokens.$base, light));
+}
+
+/* Every core palette is also keyed by the value `data-basalt-palette` takes,
+   Dusk included, so an element can wear any palette whatever the page is set
+   to. Only their light sets are written here; themes/_dark.scss follows with
+   the dark ones, and that later position is what lets dark win the equal
+   tie. A named palette answers both to its bare attribute and to an explicit
+   light scheme, which keeps it ahead of the root set above. */
+@each $palette, $sets in tokens.$core {
+	[data-basalt-palette="#{$palette}"] {
+		&,
+		&[data-bs-theme="light"] {
+			@include tokens(map.get($sets, light));
+		}
+	}
+}

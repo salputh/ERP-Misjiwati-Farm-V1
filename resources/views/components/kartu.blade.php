@@ -5,29 +5,33 @@
     'badan' => null,
 ])
 
-{{-- Kartu bergaya katalog template (HexaDash: card card-default card-md).
-     Kepala berisi judul h6 dan subjudul seperti halaman Settings template; aksi di kanan lewat slot "ekstra".
-     "badan" menambah kelas pada card-body, misalnya "p-0" untuk tabel yang menempel ke tepi kartu. --}}
-<div {{ $attributes->class(['card card-default card-md']) }}>
-    @if ($judul || $ekstra)
-        <div class="card-header">
-            <div>
-                @if ($judul)
-                    <h6>{{ $judul }}</h6>
-                @endif
-                @if ($subjudul)
-                    <span class="d-block fs-13 color-light fw-400 tanpa-kapital">{{ $subjudul }}</span>
-                @endif
-            </div>
-            @if ($ekstra)
-                <div {{ $ekstra->attributes->class(['card-extra']) }}>
-                    {{ $ekstra }}
+{{-- Kartu Basalt: kerangka kartu dashboard (card basalt-box db-card). Kepala berisi judul (db-card-title) dan keterangan
+     (db-card-desc); aksi di kanan lewat slot "ekstra". "badan" menambah kelas pada db-card-body; "p-0" berarti tabel
+     menempel ke tepi kartu (db-card-body-table), kepala tetap diberi bantalan sisi. --}}
+@php
+    $tabelPenuh = str_contains((string) $badan, 'p-0');
+    $kelasBadan = trim(str_replace('p-0', '', (string) $badan));
+@endphp
+<section {{ $attributes->class(['card basalt-box db-card mb-4']) }}>
+    <div @class(['db-card-body', 'db-card-body-table' => $tabelPenuh, $kelasBadan])>
+        @if ($judul || $ekstra)
+            <header class="db-card-head">
+                <div>
+                    @if ($judul)
+                        <h2 class="db-card-title">{{ $judul }}</h2>
+                    @endif
+                    @if ($subjudul)
+                        <p class="db-card-desc">{{ $subjudul }}</p>
+                    @endif
                 </div>
-            @endif
-        </div>
-    @endif
+                @if ($ekstra)
+                    <div {{ $ekstra->attributes->class(['d-flex flex-wrap align-items-center gap-2']) }}>
+                        {{ $ekstra }}
+                    </div>
+                @endif
+            </header>
+        @endif
 
-    <div @class(['card-body', $badan])>
         {{ $slot }}
     </div>
-</div>
+</section>

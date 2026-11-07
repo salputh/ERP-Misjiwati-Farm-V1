@@ -1,0 +1,997 @@
+/**
+ * Error Details (error-details.html).
+ * Lays out one error group: the header, the four figures, the chart, the
+ * stack trace, the status card, the sample events, the ranking and the
+ * activity feed. Everything lives under .ed-* and takes its colors from
+ * the --basalt-* tokens, so each palette and dark mode come for free.
+ */
+
+/* The page sets its two series colors once; a warning group swaps them
+   for calmer ones. */
+.ed-page {
+	--ed-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--ed-mono: "Chivo Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	--ed-a: var(--basalt-warning);
+	--ed-b: var(--basalt-danger);
+	--ed-b-text: color-mix(in srgb, var(--basalt-danger) 52%, var(--basalt-copy));
+
+	&.ed-page-warn {
+		--ed-a: var(--basalt-series-1);
+		--ed-b: var(--basalt-warning);
+		--ed-b-text: color-mix(in srgb, var(--basalt-warning) 40%, var(--basalt-copy));
+	}
+}
+
+/* The header puts the back link, title and tags on the left and the
+   actions on the right; on phones the actions drop under the title. */
+.basalt-hero-detail.ed-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+
+	& .basalt-hero-actions {
+		flex-wrap: nowrap;
+		align-self: end;
+		margin: 0;
+	}
+}
+.ed-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		min-height: 1.6rem;
+	}
+}
+.ed-tags-owner {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-left: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--ed-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.ed-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* One line under the header explains a muted or resolved group. */
+.ed-notice {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		flex: none;
+		color: var(--ed-quiet);
+	}
+}
+.ed-notice-success {
+	border-color: color-mix(in srgb, var(--basalt-success) 40%, var(--basalt-edge));
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-success) 9%, var(--basalt-plane));
+
+	& > .bi {
+		color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	}
+}
+
+/* At a glance: four tinted figures in a row, two on tablets, one on the
+   narrowest phones. */
+.ed-figs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+}
+.ed-fig {
+	--ed-tone: var(--basalt-series-1);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.25rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background-color: var(--basalt-plane);
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--ed-tone) 10%, transparent), transparent 62%);
+}
+:root[data-basalt-gradients="off"] .ed-fig {
+	background-image: none;
+}
+.ed-fig-2 {
+	--ed-tone: var(--basalt-series-2);
+}
+.ed-fig-3 {
+	--ed-tone: var(--ed-b);
+}
+.ed-fig-4 {
+	--ed-tone: var(--basalt-series-5);
+}
+.ed-fig-label {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--ed-quiet);
+
+	& .bi {
+		display: inline-grid;
+		place-items: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 8px;
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--ed-tone) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--ed-tone) 16%, var(--basalt-plane));
+	}
+}
+.ed-fig-value {
+	margin: 0.65rem 0 0.25rem;
+	font-size: 1.3rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ed-fig-note {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--ed-quiet);
+}
+/* A pulsing dot marks a group still firing in the last five minutes. */
+.ed-fig-live {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-weight: 600;
+	color: var(--ed-b-text);
+
+	&::before {
+		content: "";
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--ed-b);
+		animation: ed-pulse 1.8s ease-in-out infinite;
+	}
+}
+@keyframes ed-pulse {
+	50% {
+		opacity: 0.35;
+	}
+}
+@media (max-width: 1199.98px) {
+	.ed-figs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 575.98px) {
+	.ed-figs {
+		gap: 0.75rem;
+	}
+	.ed-fig {
+		padding: 1rem;
+	}
+	.ed-fig-label {
+		align-items: flex-start;
+		white-space: normal;
+	}
+	.ed-fig-label .bi {
+		flex: none;
+	}
+	.ed-fig-value {
+		font-size: 1.1rem;
+	}
+}
+@media (max-width: 389.98px) {
+	.ed-figs {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ed-fig-live::before {
+		animation: none;
+	}
+}
+@media print {
+	.ed-fig-live::before {
+		animation: none;
+	}
+}
+
+/* The cards sit in a 7:5 grid on wide screens; the chart and the activity
+   feed span both columns, and rows stretch so neighbors end level. */
+.ed-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.ed-grid {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		align-items: stretch;
+	}
+	.ed-card-wide {
+		grid-column: 1 / -1;
+	}
+}
+
+/* A card: its head holds the title, a short description and at most one
+   button; its foot holds the "show all" button and a link. */
+.ed-card {
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	}
+}
+@media (max-width: 575.98px) {
+	.ed-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.ed-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+	}
+}
+.ed-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ed-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ed-quiet);
+}
+.ed-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+
+	& .ed-link {
+		margin-left: auto;
+	}
+}
+.ed-card-head .btn[hidden],
+.ed-card-foot .btn[hidden] {
+	display: none;
+}
+.ed-small {
+	font-size: 0.8rem;
+}
+
+/* Two kinds of inline link: the accent one for records, the plain one for
+   names. Both underline on hover and ring on keyboard focus. */
+.ed-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+.ed-name {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.ed-link:hover,
+.ed-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.ed-link:focus-visible,
+.ed-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* How often: a legend of the two colors above a fixed-height canvas. */
+.ed-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.ed-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+}
+.ed-tone-a {
+	background: var(--ed-a);
+}
+.ed-tone-b {
+	background: var(--ed-b);
+}
+.ed-chart {
+	position: relative;
+	height: 240px;
+}
+@media (max-width: 575.98px) {
+	.ed-chart {
+		height: 200px;
+	}
+}
+
+/* The exception: a tinted block with a colored rule down its left edge. */
+.ed-exc {
+	position: relative;
+	margin: 0 0 1.25rem;
+	padding: 0.9rem 1rem 0.9rem 1.25rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--ed-b) 8%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.7rem;
+		bottom: 0.7rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--ed-b);
+	}
+}
+.ed-exc-type {
+	margin: 0;
+	font-family: var(--ed-mono);
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--ed-b-text);
+}
+.ed-exc-msg {
+	margin: 0.3rem 0 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+
+/* Stack frames stack inside one bordered box. A frame from our own code
+   carries a tag; a frame from a library is grayed. */
+.ed-frames {
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	list-style: none;
+}
+.ed-frame + .ed-frame {
+	border-top: 1px solid var(--basalt-edge);
+}
+.ed-frame-line {
+	display: flex;
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	padding: 0.8rem 1rem;
+	font-size: 0.8rem;
+}
+.ed-frame-fn {
+	font-family: var(--ed-mono);
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ed-frame-file {
+	font-family: var(--ed-mono);
+	font-size: 0.77rem;
+	overflow-wrap: anywhere;
+	color: var(--ed-quiet);
+}
+.ed-frame-tag {
+	margin-left: auto;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+}
+.ed-frame:not(.is-app) .ed-frame-fn {
+	font-weight: 400;
+	color: var(--ed-quiet);
+}
+
+/* The source excerpt scrolls sideways rather than wrapping; the failing
+   line is marked with a tint and a bar. */
+.ed-code {
+	margin: 0;
+	padding: 0.6rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	overflow-x: auto;
+	overflow-y: hidden;
+	font-family: var(--ed-mono);
+	font-size: 0.76rem;
+	line-height: 1.75;
+	white-space: pre;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+
+	& code {
+		display: block;
+		min-width: max-content;
+		font-size: inherit;
+		color: inherit;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.ed-code-row {
+	display: block;
+	padding-right: 1rem;
+}
+.ed-code-ln {
+	display: inline-block;
+	width: 2.5rem;
+	margin-left: 1rem;
+	padding-right: 0.75rem;
+	text-align: right;
+	color: var(--ed-quiet);
+	user-select: none;
+}
+.ed-code-hit {
+	padding: 0 1rem 0 0;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--ed-b) 13%, transparent);
+	box-shadow: inset 3px 0 0 var(--ed-b);
+}
+.ed-trace-foot {
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--ed-quiet);
+}
+.ed-trace-foot code,
+.ed-req {
+	font-family: var(--ed-mono);
+	font-size: 0.77rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Facts read as a two-column list: label on the left, value on the right.
+   The same list shows a warning's latest event with narrower labels. */
+.ed-facts {
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.25rem 1rem;
+		grid-template-columns: 8rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.85rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--ed-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+.ed-facts-event > div {
+	grid-template-columns: 7rem minmax(0, 1fr);
+}
+.ed-facts-event dd {
+	overflow-wrap: anywhere;
+}
+.ed-facts-stack {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.ed-facts-note {
+	font-size: 0.8rem;
+	color: var(--ed-quiet);
+}
+.ed-facts-empty {
+	color: var(--ed-quiet);
+}
+.ed-person {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	& .basalt-avatar {
+		width: 28px;
+		height: 28px;
+		font-size: 0.67rem;
+	}
+}
+.ed-prio {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-weight: 600;
+
+	& .bi {
+		color: var(--ed-prio, var(--ed-quiet));
+	}
+}
+.ed-prio-high {
+	--ed-prio: var(--basalt-danger);
+}
+.ed-prio-medium {
+	--ed-prio: var(--basalt-warning);
+}
+.ed-prio-low {
+	--ed-prio: var(--basalt-info);
+}
+
+/* The edit form takes the facts' place: three stacked rows and a footer
+   with the buttons on the right. */
+.ed-form[hidden],
+.ed-facts[hidden] {
+	display: none;
+}
+.ed-form-row {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: flex-start;
+
+	& + .ed-form-row {
+		margin-top: 1.25rem;
+	}
+}
+.ed-form-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ed-form-select {
+	width: auto;
+	min-width: 13rem;
+	max-width: 100%;
+}
+.ed-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* A second block inside a card is set off by a rule and its own heading. */
+.ed-sub-block {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.ed-section {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ed-section.ed-logged {
+	margin-top: 1.5rem;
+}
+
+/* The two small tables (sample events, releases) run edge to edge inside
+   the card and keep each row on one line. */
+.ed-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.75rem;
+		border-bottom-color: var(--basalt-edge);
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		color: var(--ed-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& td.ed-cell-wrap {
+		white-space: normal;
+	}
+}
+.ed-sub,
+.ed-meta {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--ed-quiet);
+}
+.ed-time {
+	color: var(--basalt-copy-body);
+}
+/* A value from one of the two halves carries a dot in its color. */
+.ed-try {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--ed-a);
+	}
+}
+.ed-try-b {
+	font-weight: 600;
+	color: var(--ed-b-text);
+
+	&::before {
+		background: var(--ed-b);
+	}
+}
+
+/* Sample events lose columns as the screen narrows: first the 'md'
+   column moves under the name, then the 'sm' one goes, then the time
+   column moves under the name too. */
+.ed-table-events .ed-sub {
+	display: none;
+}
+.ed-sub-time {
+	display: none;
+}
+@media (max-width: 767.98px) {
+	.ed-table-events .ed-col-md {
+		display: none;
+	}
+	.ed-table-events .ed-sub {
+		display: block;
+	}
+}
+@media (max-width: 459.98px) {
+	.ed-table-events .ed-col-sm {
+		display: none;
+	}
+}
+@media (max-width: 389.98px) {
+	.ed-table-events .ed-col-time {
+		display: none;
+	}
+	.ed-sub-time {
+		display: inline;
+	}
+}
+
+/* Releases: on phones the deploy date tucks under the release name and
+   the pill goes. */
+.ed-table-rel .ed-sub {
+	display: none;
+}
+.ed-rel-name {
+	font-weight: 600;
+}
+.ed-rel-pill {
+	margin-left: 0.5rem;
+	white-space: nowrap;
+}
+@media (max-width: 459.98px) {
+	.ed-table-rel .ed-col-by {
+		display: none;
+	}
+	.ed-table-rel .ed-rel-pill {
+		display: none;
+	}
+	.ed-table-rel .ed-sub {
+		display: block;
+	}
+}
+
+/* Who it hit: each target is a name, a count and a two-color bar under
+   both, with the bar's segments sized by the script. */
+.ed-rank {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ed-rank-item {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: baseline;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.ed-rank-name {
+	min-width: 0;
+	overflow: hidden;
+	font-size: 0.875rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ed-rank-count {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.ed-rank-bar {
+	display: flex;
+	gap: 2px;
+	grid-column: 1 / -1;
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 6%, transparent);
+}
+.ed-rank-seg {
+	height: 100%;
+	border-radius: 999px;
+}
+.ed-rank-seg-b {
+	background: var(--ed-b);
+}
+.ed-rank-seg-a {
+	background: var(--ed-a);
+}
+
+/* Activity: the note box above the feed, beside it on wide screens. */
+.ed-note {
+	margin-bottom: 1.5rem;
+
+	& textarea {
+		min-height: 4.5rem;
+		resize: vertical;
+	}
+}
+.ed-note-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.6rem;
+}
+@media (min-width: 1200px) {
+	.ed-act {
+		display: grid;
+		gap: 2.5rem;
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		align-items: start;
+	}
+	.ed-act .ed-note {
+		margin-bottom: 0;
+	}
+}
+
+/* The feed is a column of icons joined by a thin line, each with its text,
+   an optional quote and a time. */
+.ed-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ed-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.ed-feed-icon {
+	--ed-tone: var(--basalt-copy-muted);
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: color-mix(in srgb, var(--ed-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ed-tone) 14%, var(--basalt-plane));
+}
+.ed-feed-icon-note {
+	--ed-tone: var(--basalt-series-1);
+}
+.ed-feed-icon-alert {
+	--ed-tone: var(--basalt-danger);
+}
+.ed-feed-icon-done {
+	--ed-tone: var(--basalt-success);
+}
+.ed-feed-icon-owner {
+	--ed-tone: var(--basalt-series-2);
+}
+.ed-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+}
+.ed-feed-quote {
+	color: var(--basalt-copy-body);
+}
+.ed-feed-time {
+	font-size: 0.77rem;
+	color: var(--ed-quiet);
+}
+
+/* The first time each block is on screen, its rows rise in one after
+   another: the trace frames, both tables, the ranking with its bars growing
+   from the left, and the feed with its rail drawing down. The failing line
+   flashes its tint once the trace is in. The script only sets these classes
+   when motion is welcome. */
+[data-ed].is-waiting {
+	& :is(.ed-exc, .ed-frame, tr, .ed-rank-item, .ed-feed-item) {
+		opacity: 0;
+	}
+}
+[data-ed].is-drawing {
+	& :is(.ed-exc, .ed-frame, tr, .ed-rank-item, .ed-feed-item) {
+		animation: ed-in-rise 450ms ease-out calc(var(--ed-at, 0) * 70ms) both;
+	}
+	& :is(.ed-frame, tr, .ed-rank-item, .ed-feed-item):nth-child(2) {
+		--ed-at: 1;
+	}
+	& :is(.ed-frame, tr, .ed-rank-item, .ed-feed-item):nth-child(3) {
+		--ed-at: 2;
+	}
+	& :is(.ed-frame, tr, .ed-rank-item, .ed-feed-item):nth-child(4) {
+		--ed-at: 3;
+	}
+	& :is(.ed-frame, tr, .ed-rank-item, .ed-feed-item):nth-child(5) {
+		--ed-at: 4;
+	}
+	& :is(.ed-frame, tr, .ed-rank-item, .ed-feed-item):nth-child(6) {
+		--ed-at: 5;
+	}
+	& :is(.ed-frame, tr, .ed-rank-item, .ed-feed-item):nth-child(n + 7) {
+		--ed-at: 6;
+	}
+	& .ed-frame {
+		animation-delay: calc((var(--ed-at, 0) + 1) * 70ms);
+	}
+	& .ed-rank-bar {
+		transform-origin: left;
+		animation: ed-in-bar 600ms ease-out calc(var(--ed-at, 0) * 70ms + 150ms) both;
+	}
+	& .ed-feed-item:not(:last-child)::before {
+		transform-origin: top;
+		animation: ed-in-rail 400ms ease-out calc(var(--ed-at, 0) * 70ms + 250ms) both;
+	}
+	& .ed-code-hit {
+		animation: ed-in-hit 900ms ease-out 600ms both;
+	}
+}
+@keyframes ed-in-rise {
+	from {
+		opacity: 0;
+		transform: translateY(0.4rem);
+	}
+}
+@keyframes ed-in-bar {
+	from {
+		transform: scaleX(0);
+	}
+}
+@keyframes ed-in-rail {
+	from {
+		transform: scaleY(0);
+	}
+}
+@keyframes ed-in-hit {
+	from {
+		background-color: color-mix(in srgb, var(--ed-b) 40%, transparent);
+	}
+}
+
+/* On paper the controls and the note box have nothing to do. */
+@media print {
+	.ed-head .basalt-hero-actions,
+	.ed-card-head .btn,
+	.ed-card-foot,
+	.ed-note {
+		display: none;
+	}
+}

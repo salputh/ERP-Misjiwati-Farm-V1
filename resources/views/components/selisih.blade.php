@@ -1,7 +1,7 @@
 @props(['nilai', 'desimal' => 1])
 
 {{-- Selisih persen bertanda: panah naik hijau atau turun merah --}}
-<span {{ $attributes->class(['color-success' => $nilai >= 0, 'color-danger' => $nilai < 0]) }}>
-    <i @class(['las', 'la-arrow-up' => $nilai >= 0, 'la-arrow-down' => $nilai < 0])></i>
+<span {{ $attributes->class(['text-success' => $nilai >= 0, 'text-danger' => $nilai < 0]) }}>
+    <i @class(['bi', 'bi-arrow-up' => $nilai >= 0, 'bi-arrow-down' => $nilai < 0])></i>
     <strong>@angka(abs($nilai), $desimal)%</strong>
 </span>

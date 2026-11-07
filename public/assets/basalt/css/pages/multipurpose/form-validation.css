@@ -1,0 +1,930 @@
+/*
+ * Styles for form-validation.html, every class prefixed .val-*. Colors only
+ * come from the --basalt-* tokens; the message tones mix each status color
+ * toward body text so they hold 4.5:1 in every palette, light or dark.
+ */
+
+/* The page wrapper owns the message tones and tunes a few shared controls. */
+.val-page {
+	--val-quiet: color-mix(in srgb, var(--basalt-copy-muted) 80%, var(--basalt-copy));
+	--val-err: color-mix(in srgb, var(--basalt-danger) 68%, var(--basalt-copy));
+	--val-ok: color-mix(in srgb, var(--basalt-success) 58%, var(--basalt-copy));
+	--val-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--val-line: color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+	margin-top: 2rem;
+
+	/* Placeholder and helper text are lifted to 4.5:1 against the field. */
+	& .form-control::placeholder,
+	& .basalt-tags-input::placeholder {
+		color: var(--val-quiet);
+		opacity: 1;
+	}
+	& .basalt-tags-meta,
+	& .basalt-choice-hint {
+		color: var(--val-quiet);
+	}
+	& .form-control:disabled {
+		color: var(--basalt-copy-body);
+	}
+
+	/* Primary buttons get a fill a step deeper than the raw hue, with the
+     on-hue label, since basalt.css leaves that label at Bootstrap's white. */
+	& .btn-primary {
+		--val-fill: color-mix(in srgb, var(--basalt-hue) 84%, var(--basalt-copy));
+		--val-fill-deep: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+		--bs-btn-color: var(--basalt-on-hue);
+		--bs-btn-bg: var(--val-fill);
+		--bs-btn-border-color: var(--val-fill);
+		--bs-btn-hover-color: var(--basalt-on-hue);
+		--bs-btn-hover-bg: var(--val-fill-deep);
+		--bs-btn-hover-border-color: var(--val-fill-deep);
+		--bs-btn-active-color: var(--basalt-on-hue);
+		--bs-btn-active-bg: var(--val-fill-deep);
+		--bs-btn-active-border-color: var(--val-fill-deep);
+		--bs-btn-disabled-color: var(--basalt-on-hue);
+		--bs-btn-disabled-bg: var(--val-fill);
+		--bs-btn-disabled-border-color: var(--val-fill);
+	}
+
+	/* Buttons are disabled only while the server answers, and their label
+     says so, so the label stays at full strength. */
+	& .btn:disabled {
+		--bs-btn-disabled-opacity: 1;
+		cursor: progress;
+	}
+
+	& .form-check-input.is-invalid ~ .form-check-label {
+		color: var(--val-err);
+	}
+	& .form-check-input.is-valid ~ .form-check-label {
+		color: var(--val-ok);
+	}
+}
+
+.val-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.9em;
+}
+
+/* The filter row sits above the grid: kind chips on the left, a count on the right. */
+.val-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+
+	@media print {
+		display: none;
+	}
+}
+
+.val-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.val-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.val-chips .val-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+
+.val-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--val-quiet);
+}
+
+/* Keyboard focus on chips and link-style buttons draws the same hue ring. */
+.val-chip:focus-visible,
+.val-linkish:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Cards fill a twelve-column grid; filtered-out cards drop away. */
+.val-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.val-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+
+		@media print {
+			display: block;
+		}
+	}
+}
+
+/* Cards pair up only from 1200px; narrower, and while filtered, each takes the row. */
+@media (min-width: 1200px) {
+	.val-card {
+		grid-column: span 6;
+	}
+	.val-card-full {
+		grid-column: span 12;
+	}
+	.val-grid.is-filtered .val-card {
+		grid-column: span 12;
+	}
+}
+
+/* A card body stacks its parts so the form stretches and the actions land at the foot. */
+.val-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+
+.val-card .card-body > form,
+.val-card .card-body > .val-states {
+	flex: 1 1 auto;
+}
+
+/* The kind badge reads first on screen though it comes after the title in the markup. */
+.val-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+
+.val-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.val-card-desc {
+	max-width: 64ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--val-quiet);
+}
+
+.val-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--val-quiet);
+}
+
+/* Every line under a field shares one size; the tone class sets its color. */
+.val-help,
+.val-error,
+.val-ok,
+.val-warn,
+.val-status {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.45;
+}
+
+.val-help {
+	color: var(--val-quiet);
+}
+
+.val-error,
+.val-ok,
+.val-warn {
+	display: flex;
+	gap: 0.4rem;
+	align-items: flex-start;
+	font-weight: 500;
+}
+
+.val-error {
+	color: var(--val-err);
+
+	&:empty {
+		display: none;
+	}
+
+	/* bi-exclamation-circle, drawn from the icon font so the markup stays bare. */
+	&::before {
+		content: "\F333";
+		flex-shrink: 0;
+		font-family: bootstrap-icons;
+		font-weight: normal;
+		line-height: 1.45;
+	}
+}
+
+/* A block error wraps its fix buttons onto a row indented past the icon. */
+.val-error-block {
+	row-gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& > span {
+		flex: 1 0 calc(100% - 1.5rem);
+	}
+	& > .btn:first-of-type {
+		margin-left: 1.4rem;
+	}
+}
+
+.val-ok {
+	color: var(--val-ok);
+}
+.val-warn {
+	color: var(--val-warn);
+}
+.val-ok .bi,
+.val-warn .bi {
+	line-height: 1.45;
+}
+
+.val-status {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-height: 1.2em;
+	color: var(--val-quiet);
+
+	&:empty {
+		display: none;
+	}
+	&[data-tone="ok"] {
+		font-weight: 500;
+		color: var(--val-ok);
+	}
+	&[data-tone="error"] {
+		font-weight: 500;
+		color: var(--val-err);
+	}
+}
+
+.val-optional {
+	margin-left: 0.25rem;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--val-quiet);
+}
+
+/* A warning leaves the field usable and only tints its edge. */
+.val-is-warning .form-control,
+.val-is-warning .input-group-text {
+	border-color: var(--basalt-warning);
+}
+
+/* Link-looking text that acts in place, so it is built as a button. */
+.val-linkish {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--basalt-copy) 35%, transparent);
+	text-underline-offset: 2px;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration-color: currentColor;
+	}
+	&:focus-visible {
+		border-radius: 3px;
+	}
+}
+
+/* Submit row and its result line, pushed to the bottom of the card. */
+.val-actions {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: auto;
+	padding-top: 0.5rem;
+}
+
+.val-note {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--val-ok);
+
+	&:empty {
+		display: none;
+	}
+	&[data-tone="error"] {
+		color: var(--val-err);
+	}
+}
+
+/* The error summary is a tinted panel with a heavy left edge; it takes focus quietly. */
+.val-summary {
+	margin-bottom: 1.5rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 45%, var(--basalt-plane));
+	border-left-width: 4px;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-danger) 6%, var(--basalt-plane));
+
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--val-err);
+		outline-offset: 2px;
+	}
+}
+
+.val-summary-title {
+	margin: 0 0 0.5rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.val-summary-list {
+	margin: 0;
+	padding-left: 1.1rem;
+	font-size: 0.875rem;
+
+	& li + li {
+		margin-top: 0.25rem;
+	}
+
+	& a {
+		font-weight: 500;
+		text-underline-offset: 2px;
+		color: var(--val-err);
+
+		&:focus-visible {
+			border-radius: 3px;
+			outline: 2px solid var(--val-err);
+			outline-offset: 2px;
+		}
+	}
+}
+
+/* The card network badge sits inside the number field, so the field and its
+   validation icon leave room for it on the right. */
+.val-card-input {
+	position: relative;
+
+	& .form-control {
+		padding-right: 6.5rem;
+	}
+	& .form-control.is-invalid,
+	& .form-control.is-valid {
+		padding-right: 6.5rem;
+		background-position: right 5rem center;
+	}
+}
+
+.val-card-input-brand {
+	position: absolute;
+	top: 50%;
+	right: 0.6rem;
+	transform: translateY(-50%);
+	padding: 0.1rem 0.4rem;
+	border: 1px solid var(--val-line);
+	border-radius: 6px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+	pointer-events: none;
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* Password: the reveal button, a four-step meter, then the rule checklist. */
+.val-pw-toggle-text {
+	margin-left: 0.3rem;
+}
+[data-val-pw-toggle] {
+	display: inline-flex;
+	align-items: center;
+}
+
+.val-meter {
+	display: grid;
+	gap: 4px;
+	grid-template-columns: repeat(4, 1fr);
+	margin-top: 0.75rem;
+
+	& span {
+		height: 5px;
+		border-radius: 999px;
+		background: var(--val-line);
+		transition: background-color 200ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+
+	&[data-level="1"] span:nth-child(-n + 1) {
+		background: var(--basalt-danger);
+	}
+	&[data-level="2"] span:nth-child(-n + 2) {
+		background: var(--basalt-warning);
+	}
+	&[data-level="3"] span:nth-child(-n + 3) {
+		background: var(--basalt-info);
+	}
+	&[data-level="4"] span {
+		background: var(--basalt-success);
+	}
+}
+
+.val-meter-label {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--val-quiet);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Rule icons swap glyphs by state: bi-circle, bi-check-circle-fill once met,
+   and bi-x-circle for a rule still missing after a submit. */
+.val-rules {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+	margin: 0.9rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--val-quiet);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.4rem;
+		align-items: flex-start;
+	}
+	& .bi {
+		line-height: 1.4;
+	}
+	& .bi::before {
+		content: "\F28A";
+	}
+	& li.is-met {
+		font-weight: 500;
+		color: var(--val-ok);
+	}
+	& li.is-met .bi::before {
+		content: "\F26A";
+	}
+
+	&.is-checked li:not(.is-met) {
+		color: var(--val-err);
+
+		& .bi::before {
+			content: "\F623";
+		}
+	}
+}
+
+/* Shop address: the state badge beside the field replaces Bootstrap's inline icon. */
+.val-handle-state {
+	justify-content: center;
+	min-width: 2.75rem;
+	color: var(--val-quiet);
+
+	&.is-ok {
+		color: var(--val-ok);
+	}
+	&.is-bad {
+		color: var(--val-err);
+	}
+	& .spinner-border {
+		width: 1rem;
+		height: 1rem;
+		border-width: 0.15em;
+	}
+}
+
+.val-page [data-val-handle-input].is-invalid,
+.val-page [data-val-handle-input].is-valid {
+	padding-right: 0.75rem;
+	background-image: none;
+}
+
+.val-suggest {
+	margin-top: 0.75rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.val-suggest-label {
+	margin: 0 0 0.4rem;
+	font-size: 0.8rem;
+	color: var(--val-quiet);
+}
+
+.val-suggest-list {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+
+	& .btn {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.77rem;
+	}
+}
+
+.val-preview {
+	display: flex;
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 1.5rem 0;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	border: 1px dashed var(--val-line);
+	background: var(--basalt-plane-alt);
+}
+
+.val-preview-label {
+	font-size: 0.77rem;
+	color: var(--val-quiet);
+}
+.val-preview-url {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.9rem;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* The "did you mean" hint is an info-tinted strip that only shows with content. */
+.val-hint {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.6rem;
+	padding: 0.6rem 0.85rem;
+	border-radius: 10px;
+	border: 1px solid color-mix(in srgb, var(--basalt-info) 30%, var(--basalt-plane));
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-info) 9%, var(--basalt-plane));
+
+	&:empty {
+		display: none;
+	}
+	& .bi {
+		color: var(--basalt-copy-body);
+	}
+	& strong {
+		font-weight: 650;
+	}
+	& .btn {
+		margin-left: auto;
+	}
+}
+
+/* Tag box and stepper take the danger edge from their wrapper, not the input. */
+.val-page .basalt-tags.is-invalid,
+.val-page .basalt-stepper.is-invalid {
+	border-color: var(--basalt-danger);
+}
+
+.val-tags-meta {
+	color: var(--val-quiet);
+}
+.val-page .basalt-choices > legend {
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+/* Promo code: field and button share a row; an applied code becomes a green strip. */
+.val-promo {
+	display: flex;
+	gap: 0.5rem;
+
+	& .form-control {
+		flex: 1 1 auto;
+		min-width: 0;
+		text-transform: uppercase;
+	}
+	& .form-control::placeholder {
+		text-transform: none;
+	}
+	& .btn {
+		display: inline-flex;
+		gap: 0.4rem;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		min-width: 5.5rem;
+	}
+}
+
+.val-applied {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.75rem 0 0;
+	padding: 0.5rem 0.85rem;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-success) 9%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& .bi {
+		color: var(--val-ok);
+	}
+	& .val-linkish {
+		margin-left: auto;
+		font-size: 0.8rem;
+	}
+}
+
+/* Order lines under the promo field, closed by a ruled total. */
+.val-lines {
+	margin: 1.5rem 0 0;
+	padding: 1rem 0 0;
+	border-top: 1px solid var(--val-line);
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.3rem 0;
+	}
+	& li[hidden] {
+		display: none;
+	}
+}
+
+.val-lines-discount {
+	font-weight: 600;
+	color: var(--val-ok);
+}
+
+.val-lines-total {
+	display: flex;
+	justify-content: space-between;
+	margin: 0.5rem 0 0;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--val-line);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* ValidityState flags are pills; a raised flag turns red, and "valid" turns green. */
+.val-flags {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		padding: 0.3rem 0.65rem;
+		border-radius: 999px;
+		border: 1px solid var(--val-line);
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.74rem;
+		color: var(--val-quiet);
+		transition:
+			background-color 170ms ease,
+			color 170ms ease,
+			border-color 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+
+	& li.is-on {
+		border-color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-plane));
+		font-weight: 600;
+		color: var(--val-err);
+		background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+	}
+
+	& li.val-flags-valid.is-on {
+		border-color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-plane));
+		color: var(--val-ok);
+		background: color-mix(in srgb, var(--basalt-success) 10%, var(--basalt-plane));
+	}
+}
+
+.val-browser {
+	margin-top: 1.25rem;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--val-line);
+	background: var(--basalt-canvas);
+}
+
+.val-browser-label {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.71rem;
+	color: var(--val-quiet);
+}
+.val-browser-msg {
+	min-height: 1.3em;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+
+/* The character counter is a thin track and a readout; near and over the limit recolor both. */
+.val-counter {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-top: 0.5rem;
+
+	&[data-state="near"] {
+		& .val-counter-bar {
+			background: var(--basalt-warning);
+		}
+		& .val-counter-text {
+			font-weight: 600;
+			color: var(--val-warn);
+		}
+	}
+
+	&[data-state="over"] {
+		& .val-counter-bar {
+			background: var(--basalt-danger);
+		}
+		& .val-counter-text {
+			font-weight: 600;
+			color: var(--val-err);
+		}
+	}
+}
+
+.val-counter-track {
+	flex: 1 1 auto;
+	height: 4px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--val-line);
+}
+
+.val-counter-bar {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-hue);
+	transition: width 170ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.val-counter-text {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--val-quiet);
+}
+
+/* The states gallery lays sample fields out in auto-filling columns under small caps names. */
+.val-states {
+	display: grid;
+	gap: 1.75rem 1.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+}
+
+.val-state {
+	min-width: 0;
+}
+
+.val-state-name {
+	margin: 0 0 0.75rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--val-line);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--val-quiet);
+}
+
+/* "Show code" is a disclosure under a rule; its chevron turns as it opens. */
+.val-code {
+	margin-top: 1.5rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	@media print {
+		display: none;
+	}
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}

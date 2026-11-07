@@ -1,0 +1,37 @@
+/* A row whose record also has a page of its own ends in two small icon
+   buttons: bi-layout-sidebar-inset-reverse peeks at it in the drawer, and
+   bi-arrows-angle-expand opens the page. Their tooltips use
+   data-bs-trigger="hover" so a click never leaves one hanging. A click
+   anywhere else on the row opens the drawer, while the record's name links
+   to the page. Inside the drawer, .basalt-drawer-full is the solid
+   "Open full page" button under the title. */
+.basalt-row-actions {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	white-space: nowrap;
+
+	.btn-icon {
+		width: 34px;
+		height: 34px;
+		padding: 0;
+	}
+}
+/* On a phone the row keeps one way to each place: the record's name opens
+   its page, so the expand button steps aside and the row gets the room. */
+@media (max-width: 575.98px) {
+	.basalt-row-actions > a.btn-icon[aria-label^="Open full page"] {
+		display: none;
+	}
+}
+.basalt-drawer-full {
+	align-self: flex-start;
+	margin-top: 0.9rem;
+	white-space: nowrap;
+}
+/* With the button under it, the head lines up from the top: the avatar
+   sits level with the title and the line under it, and the close button
+   level with the title. */
+.offcanvas-header:has(.basalt-drawer-full) {
+	align-items: flex-start;
+}

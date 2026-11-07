@@ -1,0 +1,1030 @@
+/*
+ * Editable tables page (edit-in-place.html), every class prefixed edit-.
+ * The tables are Bootstrap's .table with every color drawn from the
+ * --basalt-* tokens, so each demo follows the palette, the mode and the
+ * surfaces setting. The sheet reads the way the page does: page tokens and
+ * the shared controls tuned for it, the filter chips, the card grid, then
+ * the parts of a card from the toolbar down through the table to the
+ * footer, and the keyboard card and code snippets last.
+ */
+
+/* Page tokens. The quiet text leans the muted token toward the body color
+   so small type clears 4.5:1 on the lighter palettes. The row tints mark
+   edited, selected and dragged rows. The fill pair is the primary and its
+   deeper shade; light mode nudges both toward the text color below. */
+.edit-page {
+	--edit-quiet: color-mix(in srgb, var(--basalt-copy-muted) 78%, var(--basalt-copy));
+	--edit-dirty: color-mix(in srgb, var(--basalt-warning) 9%, var(--basalt-plane));
+	--edit-picked: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	--edit-danger-ink: color-mix(in srgb, var(--basalt-danger) 58%, var(--basalt-copy));
+	--edit-fill: var(--basalt-hue);
+	--edit-fill-deep: var(--basalt-hue-deep);
+}
+
+/* A few light palettes (Verdant, Pastel Pop) have a primary that sits just
+   under 4.5:1 against its own white label, so in light mode the fill leans
+   toward the text color and labels on it stay readable. */
+[data-bs-theme="light"] .edit-page,
+:root:not([data-bs-theme="dark"]) .edit-page {
+	--edit-fill: color-mix(in srgb, var(--basalt-hue) 84%, var(--basalt-copy));
+	--edit-fill-deep: color-mix(in srgb, var(--basalt-hue-deep) 84%, var(--basalt-copy));
+}
+
+/* Filled primary buttons take the palette's own on-primary text color; in
+   several dark palettes the primary is light, so white would disappear. */
+.edit-page .btn-primary {
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-active-color: var(--basalt-on-hue);
+	--bs-btn-disabled-color: var(--basalt-on-hue);
+	--bs-btn-bg: var(--edit-fill);
+	--bs-btn-border-color: var(--edit-fill);
+	--bs-btn-hover-bg: var(--edit-fill-deep);
+	--bs-btn-hover-border-color: var(--edit-fill-deep);
+	--bs-btn-active-bg: var(--edit-fill-deep);
+	--bs-btn-active-border-color: var(--edit-fill-deep);
+	--bs-btn-disabled-bg: var(--edit-fill);
+	--bs-btn-disabled-border-color: var(--edit-fill);
+}
+
+/* Bootstrap fades a disabled button and, on outline buttons, uses a fixed
+   gray; both drop the label under 4.5:1. A muted but readable label on a
+   faint fill says "not now" in every palette. The same rule sits on every
+   table page. */
+:root .edit-page .btn:disabled,
+:root .edit-page .btn.disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--bs-btn-disabled-bg: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	--bs-btn-disabled-border-color: var(--basalt-edge);
+	opacity: 1;
+}
+
+.edit-page .invalid-feedback {
+	color: var(--edit-danger-ink);
+}
+
+/* Checkbox edges need 3:1 against the card to read as a control, and a
+   checked or half-checked box follows the palette. */
+.edit-page .form-check-input {
+	border-color: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+
+	&:checked,
+	&:indeterminate {
+		border-color: var(--basalt-hue);
+		background-color: var(--basalt-hue);
+	}
+}
+
+/* Text boxes and selects sit on the card surface with the page's edge
+   color, and placeholders use the readable gray. */
+.edit-page .form-control,
+.edit-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+
+.edit-page .form-control:focus,
+.edit-page .form-select:focus {
+	border-color: var(--basalt-hue);
+}
+
+.edit-page .form-control::placeholder {
+	color: var(--edit-quiet);
+	opacity: 1;
+}
+
+.edit-page .form-control.is-invalid {
+	border-color: var(--basalt-danger);
+}
+
+/* Number inputs lose their spin arrows; the shared stepper has its own. */
+.edit-page input[type="number"] {
+	appearance: textfield;
+
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		margin: 0;
+		-webkit-appearance: none;
+	}
+}
+
+/* Key caps in the keyboard card and the footer hint. */
+.edit-page kbd {
+	display: inline-block;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	border: 1px solid var(--basalt-edge-strong);
+	border-bottom-width: 2px;
+	font-size: 0.71rem;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+
+/* The chips only hide cards; the count sits on its own line under them. */
+.edit-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+
+.edit-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .edit-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+
+.edit-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.edit-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--edit-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.edit-chip {
+		transition: none;
+	}
+}
+
+@media print {
+	.edit-filter {
+		display: none;
+	}
+}
+
+/* Twelve columns, so a card can take the row, half of it, or the eight
+   and four of the invoice and keyboard pair. Pairs start at desktop
+   width; below 1200px every table has a row to itself. A filtered view
+   drops the wide and narrow rhythm for plain halves, and a half left
+   alone at the end spans the row. A hidden card comes back for print. */
+.edit-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.edit-card {
+	--edit-pad: 1.75rem;
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+
+@media (min-width: 1200px) {
+	.edit-card {
+		grid-column: span 6;
+	}
+	.edit-card-full {
+		grid-column: span 12;
+	}
+	.edit-card-wide {
+		grid-column: span 8;
+	}
+	.edit-card-narrow {
+		grid-column: span 4;
+	}
+	.edit-grid.is-filtered .edit-card-wide {
+		grid-column: span 6;
+	}
+	.edit-grid.is-filtered .edit-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.edit-card {
+		--edit-pad: 1.25rem;
+	}
+}
+
+@media print {
+	.edit-card.is-hidden {
+		display: block;
+	}
+}
+
+/* A card body is a column, so the code snippet can sink to the foot. */
+.edit-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--edit-pad);
+}
+
+/* The kind pill comes after the title in the markup, so the title is read
+   first; the reversed column puts it above the title on screen, where it
+   never competes with the title for width. */
+.edit-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+
+.edit-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.edit-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--edit-quiet);
+}
+
+.edit-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--edit-quiet);
+}
+
+/* The toolbar above a table: a search box on the left that grows to a
+   limit, buttons or the bulk bar on the right, wrapping on a phone where
+   the search takes the full width. */
+.edit-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--basalt-pad-head);
+}
+
+.edit-toolbar-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.edit-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--edit-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.edit-search {
+		flex: 1 1 100%;
+		max-width: none;
+	}
+}
+
+@media print {
+	.edit-toolbar {
+		display: none;
+	}
+}
+
+/* The bulk bar shows once an order is picked: a count, a status select
+   and Apply and Clear, on a faint tint of the primary. */
+.edit-bulk {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.3rem 0.3rem 0.3rem 0.85rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& .form-select {
+		width: auto;
+	}
+}
+
+.edit-bulk-count {
+	margin-right: 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* The table runs to the card's edges; the outer cells carry the card's
+   inset so the first column lines up with the title and the search above.
+   The scroll box is positioned, so hidden header labels stay inside it
+   instead of widening the page on a phone. */
+.edit-scroll {
+	position: relative;
+	margin: 0 calc(-1 * var(--edit-pad));
+	padding: 0;
+}
+
+.edit-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	--bs-table-border-color: var(--basalt-edge);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--edit-pad);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--edit-pad);
+	}
+
+	/* Header cells: small uppercase labels, muted, over a firm rule. */
+	& thead th {
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--edit-quiet);
+	}
+
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+
+	& .edit-strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	& .edit-sub {
+		display: block;
+		font-size: 0.77rem;
+		overflow-wrap: anywhere;
+		color: var(--edit-quiet);
+	}
+
+	& td.text-end,
+	& .edit-money {
+		white-space: nowrap;
+	}
+
+	& .edit-nowrap {
+		white-space: nowrap;
+	}
+}
+
+/* Sort buttons read as header text, with an arrow for the active column.
+   In a right-aligned column the arrow leads, so the label lines up with
+   the figures. */
+.edit-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+
+	& .bi {
+		font-size: 0.7rem;
+		opacity: 0.5;
+	}
+}
+
+th[aria-sort="ascending"] .edit-sort,
+th[aria-sort="descending"] .edit-sort {
+	color: var(--basalt-copy);
+}
+
+th[aria-sort="ascending"] .edit-sort .bi,
+th[aria-sort="descending"] .edit-sort .bi {
+	opacity: 1;
+}
+
+.text-end > .edit-sort {
+	flex-direction: row-reverse;
+}
+
+/* Cell contents: the stock label under an item, SKUs and order numbers
+   in the mono face, figures that never wrap, and the narrow columns for
+   a position number or a checkbox. */
+.edit-level {
+	display: block;
+	margin-top: 0.4rem;
+}
+
+.edit-mono,
+.edit-cell.edit-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.edit-num {
+	width: 1%;
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* On a phone the table scrolls sideways anyway, so the name column keeps
+   a readable width instead of folding to one word a line. */
+@media (max-width: 767.98px) {
+	.edit-table .edit-wide {
+		min-width: 11.5rem;
+	}
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.edit-table .edit-wide {
+		min-width: 9rem;
+	}
+}
+
+.edit-pos {
+	width: 2.5rem;
+}
+.edit-check {
+	width: 2.5rem;
+}
+
+.edit-empty td {
+	padding: 2rem 0.75rem;
+	text-align: center;
+	color: var(--edit-quiet);
+}
+
+/* Money fields: text boxes with a $ in front, so no spin arrows; figures
+   line up on the right like the rest of the column. */
+.edit-money-field {
+	flex-wrap: nowrap;
+	width: 7.25rem;
+	margin-left: auto;
+
+	& .input-group-text {
+		padding-left: 0.5rem;
+		padding-right: 0.4rem;
+		color: var(--edit-quiet);
+	}
+
+	& .form-control {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+}
+
+/* An editable cell is a button that looks like text until it is hovered
+   or focused, when it gets a border and shows its pencil. */
+.edit-cell {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	max-width: 100%;
+	margin: -0.3rem -0.5rem;
+	padding: 0.3rem 0.5rem;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	font: inherit;
+	text-align: inherit;
+	color: inherit;
+	background: none;
+	cursor: text;
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+
+	& .bi {
+		font-size: 0.71rem;
+		color: var(--edit-quiet);
+		opacity: 0;
+		transition: opacity 130ms ease;
+	}
+
+	&:hover,
+	&:focus-visible {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-plane);
+	}
+
+	&:hover .bi,
+	&:focus-visible .bi {
+		opacity: 1;
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+.text-end .edit-cell {
+	flex-direction: row-reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.edit-cell,
+	.edit-cell .bi {
+		transition: none;
+	}
+}
+
+/* The open editor takes the cell: a control wide enough to type in, with
+   the error under it allowed to wrap. */
+.edit-editor {
+	position: relative;
+	min-width: 8rem;
+
+	& .form-control,
+	& .form-select {
+		min-width: 8rem;
+	}
+
+	& .edit-money-field {
+		flex-wrap: nowrap;
+		min-width: 8rem;
+	}
+
+	& .edit-money-field .form-control {
+		min-width: 0;
+	}
+
+	& .invalid-feedback {
+		display: block;
+		max-width: 22rem;
+		margin-top: 0.3rem;
+		font-size: 0.75rem;
+		white-space: normal;
+	}
+
+	& .invalid-feedback[hidden] {
+		display: none;
+	}
+}
+
+/* Row states: edited and selected rows are tinted, a dragged row fades,
+   the row under it shows a drop line, and a changed row flashes once. */
+.edit-table tbody tr.is-dirty > * {
+	--bs-table-bg-state: var(--edit-dirty);
+}
+.edit-table tbody tr.is-picked > * {
+	--bs-table-bg-state: var(--edit-picked);
+}
+.edit-table tbody tr.is-dragging {
+	opacity: 0.45;
+}
+.edit-table tbody tr.is-drop-target > * {
+	box-shadow: inset 0 2px 0 var(--basalt-hue);
+}
+.edit-table tbody tr.is-flash > * {
+	animation: edit-flash 900ms ease;
+}
+
+@keyframes edit-flash {
+	from {
+		background-color: var(--edit-picked);
+	}
+	to {
+		background-color: transparent;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.edit-table tbody tr.is-flash > * {
+		animation: none;
+	}
+}
+
+/* Status pills: a soft tint of the tone with a dot. The text is the tone
+   pulled toward the body text, so it reads on the tint in every palette. */
+.edit-badge {
+	--edit-tone: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--edit-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--edit-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--edit-tone);
+	}
+}
+
+.edit-tone-primary {
+	--edit-tone: var(--basalt-hue);
+}
+.edit-tone-info {
+	--edit-tone: var(--basalt-flare);
+}
+.edit-tone-success {
+	--edit-tone: var(--basalt-success);
+}
+.edit-tone-warning {
+	--edit-tone: var(--basalt-warning);
+}
+.edit-tone-danger {
+	--edit-tone: var(--basalt-danger);
+}
+.edit-tone-muted {
+	--edit-tone: var(--basalt-copy-muted);
+}
+
+/* The row form: fields stacked in each cell, and Save and Cancel stacked
+   too, so the form fits a half-width card. */
+.edit-row-form {
+	display: grid;
+	gap: 0.4rem;
+	min-width: 12rem;
+}
+
+.edit-row-form-narrow {
+	min-width: 9.5rem;
+}
+
+.edit-plan {
+	display: block;
+	margin-bottom: 0.3rem;
+	white-space: nowrap;
+}
+
+.edit-actions {
+	display: inline-flex;
+	gap: 0.3rem;
+	justify-content: flex-end;
+}
+
+tr.is-picked .edit-actions {
+	flex-direction: column;
+	align-items: stretch;
+}
+
+.edit-icon-btn {
+	--bs-btn-padding-x: 0.5rem;
+	--bs-btn-padding-y: 0.25rem;
+}
+
+/* The switch in the supplies table; the stepper beside it is the shared
+   .basalt-stepper from basalt.css, slimmed on a phone where counts run
+   to three digits at most. */
+.edit-table .form-switch {
+	display: inline-flex;
+	justify-content: flex-end;
+	min-height: 0;
+	margin: 0;
+	padding-left: 2.5em;
+
+	& .form-check-input {
+		margin-top: 0;
+		cursor: pointer;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.edit-page td .basalt-stepper {
+		gap: 0;
+	}
+	.edit-page td .basalt-stepper-input {
+		width: 2rem;
+	}
+}
+
+/* Invoice lines hold inputs that already give the row its height, and
+   the totals in the foot line up under the amount column. */
+.edit-table-lines {
+	& > tbody > tr > * {
+		padding-top: 0.85rem;
+		padding-bottom: 0.85rem;
+	}
+
+	& .form-control {
+		min-width: 0;
+	}
+	& td:first-child .form-control {
+		min-width: 8rem;
+	}
+
+	& tfoot th {
+		border-bottom: 0;
+		font-weight: 500;
+		text-align: right;
+		color: var(--edit-quiet);
+	}
+
+	& tfoot td {
+		border-bottom: 0;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+
+	& tfoot > tr > * {
+		padding-top: 0.4rem;
+		padding-bottom: 0.4rem;
+	}
+
+	& tfoot tr:first-child > * {
+		padding-top: 1rem;
+		border-top: 1px solid var(--basalt-edge-strong);
+	}
+
+	& tfoot .edit-total > * {
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The drag handle on the front page table: a grip and the position. */
+.edit-handle {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--edit-quiet);
+	cursor: grab;
+	user-select: none;
+
+	&:active {
+		cursor: grabbing;
+	}
+}
+
+/* A struck-out old price, for a price review that shows both figures. */
+.edit-was {
+	margin-right: 0.3rem;
+	font-size: 0.77rem;
+	text-decoration: line-through;
+	color: var(--edit-quiet);
+}
+
+/* The card footer: a status line on the left and buttons or the pager on
+   the right. Bold figures in the status take the full text color. */
+.edit-foot,
+.edit-pager {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+}
+
+.edit-foot-status,
+.edit-foot-hint {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--edit-quiet);
+}
+
+.edit-foot-status strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.edit-pager .edit-foot-status {
+	white-space: nowrap;
+}
+
+@media print {
+	.edit-pager nav {
+		display: none;
+	}
+}
+
+/* The pager: bordered squares with chevrons at the ends, the current
+   page filled with the text color like a pressed chip. */
+.edit-page .pagination {
+	--bs-pagination-color: var(--basalt-copy-body);
+	--bs-pagination-bg: var(--basalt-plane);
+	--bs-pagination-border-color: var(--basalt-edge-strong);
+	--bs-pagination-hover-color: var(--basalt-copy);
+	--bs-pagination-hover-bg: var(--basalt-wash);
+	--bs-pagination-hover-border-color: var(--basalt-edge-strong);
+	--bs-pagination-focus-color: var(--basalt-copy);
+	--bs-pagination-focus-bg: var(--basalt-wash);
+	--bs-pagination-focus-box-shadow: 0 0 0 0.2rem var(--basalt-hue-border);
+	--bs-pagination-active-color: var(--basalt-plane);
+	--bs-pagination-active-bg: var(--basalt-copy);
+	--bs-pagination-active-border-color: var(--basalt-copy);
+	--bs-pagination-disabled-color: var(--edit-quiet);
+	--bs-pagination-disabled-bg: var(--basalt-plane);
+	--bs-pagination-disabled-border-color: var(--basalt-edge);
+	--bs-pagination-border-radius: 8px;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& .page-link {
+		min-width: 2rem;
+		margin-left: 0;
+		border-radius: 8px;
+		font-weight: 600;
+		text-align: center;
+		color: var(--bs-pagination-color);
+	}
+
+	& .page-link:hover {
+		color: var(--bs-pagination-hover-color);
+	}
+
+	& .active > .page-link {
+		border-color: var(--bs-pagination-active-border-color);
+		color: var(--bs-pagination-active-color);
+		background-color: var(--bs-pagination-active-bg);
+	}
+
+	& .disabled > .page-link {
+		color: var(--bs-pagination-disabled-color);
+	}
+}
+
+/* The keyboard card: one row per shortcut, keys on the left. */
+.edit-keys {
+	display: grid;
+	gap: 0.9rem;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 6.5rem 1fr;
+		align-items: baseline;
+		padding-bottom: 0.9rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+
+	& dt {
+		margin: 0;
+		font-weight: 400;
+	}
+
+	& dd {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* The code snippet at the foot of a card. The block before it takes the
+   spare height, so the snippets of paired cards line up, and the snippet
+   keeps its own gap above the rule. */
+.edit-code {
+	margin-top: 1.5rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+.edit-card .card-body > :has(+ .edit-code) {
+	margin-bottom: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.edit-code summary .bi {
+		transition: none;
+	}
+}
+
+@media print {
+	.edit-code {
+		display: none;
+	}
+}

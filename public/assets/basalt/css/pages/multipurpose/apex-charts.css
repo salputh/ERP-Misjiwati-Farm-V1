@@ -1,0 +1,627 @@
+/* Styles for the advanced charts page (apex-charts.html), all under the
+   .advanced-* prefix. Legends, scales and table tints take their colors from
+   the same --basalt-* tokens apex-charts.js reads for the canvases, so the
+   HTML parts and the charts change palette together. */
+
+/* Small gray text is the muted token nudged toward the body color, which
+   keeps it at 4.5:1 or better on the lighter palettes too. */
+.advanced-page {
+	--advanced-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The filter row puts the chips on the left and the chart count on the
+   right, wrapping under each other on narrow screens. */
+.advanced-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+
+	@media print {
+		display: none;
+	}
+}
+.advanced-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.advanced-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+/* The pressed chip turns solid, in the text color. */
+.advanced-chips .advanced-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.advanced-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--advanced-quiet);
+}
+
+/* Cards sit on a twelve-column grid and fill the row until desktop width,
+   where they pair up; filtered views fall back to plain halves. */
+.advanced-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.advanced-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	/* An undrawn canvas keeps the browser's 300px default width, which would
+     otherwise stretch a narrow card past the screen edge. */
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.advanced-card {
+		grid-column: span 6;
+	}
+	.advanced-card-full {
+		grid-column: span 12;
+	}
+	.advanced-card-wide {
+		grid-column: span 8;
+	}
+	.advanced-card-narrow {
+		grid-column: span 4;
+	}
+	.advanced-grid.is-filtered .advanced-card-wide,
+	.advanced-grid.is-filtered .advanced-card-narrow {
+		grid-column: span 6;
+	}
+	/* A filtered set that ends on an odd card lets that card span the row. */
+	.advanced-grid.is-filtered .advanced-card.is-alone {
+		grid-column: span 12;
+	}
+}
+/* Print shows every chart, whatever the chips had hidden. */
+@media print {
+	.advanced-card.is-hidden {
+		display: block;
+	}
+}
+
+/* Inside a card the body is a column, so the chart can drop to the bottom. */
+.advanced-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+/* The kind badge shows above the title but follows it in the markup, so a
+   screen reader hears the title first; it never shares the title's width. */
+.advanced-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.advanced-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.advanced-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--advanced-quiet);
+}
+.advanced-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--advanced-quiet);
+}
+
+/* The chart pickers and tool rows sit between the card head and its chart;
+   none of them belong on paper. */
+.advanced-picker {
+	margin-bottom: 1rem;
+
+	& .advanced-chip {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.77rem;
+	}
+}
+.advanced-tools {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+@media print {
+	.advanced-tools,
+	.advanced-picker {
+		display: none;
+	}
+}
+.advanced-status {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--advanced-quiet);
+}
+.advanced-status-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--basalt-success);
+}
+.advanced-status.is-paused .advanced-status-dot {
+	background: var(--advanced-quiet);
+}
+
+/* HTML legends and the numbered event list wrap onto new lines instead of
+   running into each other the way canvas legends would. */
+.advanced-key,
+.advanced-events {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--advanced-quiet);
+	list-style: none;
+}
+.advanced-key {
+	gap: 0.4rem 1.1rem;
+}
+.advanced-events {
+	gap: 0.5rem 1.25rem;
+}
+.advanced-key li,
+.advanced-events li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.advanced-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--advanced-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.advanced-key-box {
+	width: 12px;
+	height: 12px;
+	border-radius: 3px;
+	background: var(--advanced-c, var(--basalt-series-1));
+}
+.advanced-c1 {
+	--advanced-c: var(--basalt-series-1);
+}
+.advanced-c2 {
+	--advanced-c: var(--basalt-series-2);
+}
+.advanced-c3 {
+	--advanced-c: var(--basalt-series-3);
+}
+.advanced-cq {
+	--advanced-c: var(--advanced-quiet);
+}
+.advanced-cok {
+	--advanced-c: var(--basalt-success);
+}
+.advanced-cbad {
+	--advanced-c: var(--basalt-danger);
+}
+.advanced-events-num {
+	display: inline-grid;
+	place-items: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	border: 1.5px solid var(--advanced-quiet);
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+/* The fewer-to-more key under the hour grid and the calendar uses the same
+   mixes apex-charts.js paints onto those canvases. */
+.advanced-scale {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 1rem;
+	font-size: 0.8rem;
+	color: var(--advanced-quiet);
+
+	& span:first-child {
+		margin-right: 0.25rem;
+	}
+	& span:last-child {
+		margin-left: 0.25rem;
+	}
+}
+.advanced-scale-cell {
+	width: 14px;
+	height: 14px;
+	border-radius: 3px;
+}
+.advanced-scale-c3 {
+	--advanced-scale-c: var(--basalt-series-3);
+}
+.advanced-s1 {
+	background: color-mix(in srgb, var(--advanced-scale-c, var(--basalt-series-1)) 12%, var(--basalt-plane));
+}
+.advanced-s2 {
+	background: color-mix(in srgb, var(--advanced-scale-c, var(--basalt-series-1)) 32%, var(--basalt-plane));
+}
+.advanced-s3 {
+	background: color-mix(in srgb, var(--advanced-scale-c, var(--basalt-series-1)) 54%, var(--basalt-plane));
+}
+.advanced-s4 {
+	background: color-mix(in srgb, var(--advanced-scale-c, var(--basalt-series-1)) 76%, var(--basalt-plane));
+}
+.advanced-s5 {
+	background: var(--advanced-scale-c, var(--basalt-series-1));
+}
+
+/* Chart boxes fix the canvas height; Chart.js fills whatever box it gets. */
+.advanced-chart {
+	position: relative;
+	height: 260px;
+	margin-top: auto;
+}
+.advanced-chart-tall {
+	height: 300px;
+}
+.advanced-chart-short {
+	height: 220px;
+	margin-top: 0;
+}
+.advanced-chart-calendar {
+	height: 210px;
+}
+/* A sideways drag pans the chart while an up-and-down swipe still scrolls. */
+.advanced-chart-pan canvas {
+	cursor: grab;
+	touch-action: pan-y;
+
+	&.is-dragging {
+		cursor: grabbing;
+	}
+}
+@media (max-width: 575.98px) {
+	.advanced-chart,
+	.advanced-chart-tall {
+		height: 230px;
+	}
+	.advanced-chart-short {
+		height: 200px;
+	}
+	.advanced-chart-calendar {
+		height: 190px;
+	}
+}
+
+/* Goal tiles run two across, one across on the smallest phones and four
+   across with dividers from desktop width up. */
+.advanced-bullets {
+	display: grid;
+	gap: 1.75rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (max-width: 459.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	@media (min-width: 1200px) {
+		gap: 1.25rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+@media (min-width: 1200px) {
+	.advanced-bullet + .advanced-bullet {
+		padding-left: 1.25rem;
+		border-left: 1px solid var(--basalt-edge);
+	}
+}
+.advanced-bullet-top {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.3rem;
+}
+.advanced-bullet-label {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--advanced-quiet);
+}
+/* The progress pill stays amber until the goal is reached, then goes green. */
+.advanced-bullet-status {
+	flex: none;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 16%, var(--basalt-plane));
+
+	&.is-met {
+		color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+	}
+}
+.advanced-bullet-value {
+	margin: 0 0 0.75rem;
+	font-size: 1.6rem;
+	font-weight: 800;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+/* The three bands are a single rounded track painted here; the canvas on
+   top of it draws only the bar and the target tick. */
+.advanced-bullet-chart {
+	position: relative;
+	height: 22px;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 50%;
+		right: 0;
+		left: 0;
+		transform: translateY(-50%);
+		height: 12px;
+		border-radius: 999px;
+		background: linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--basalt-copy) 14%, var(--basalt-plane)) 0 var(--advanced-band-1, 60%),
+			color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane)) var(--advanced-band-1, 60%)
+				var(--advanced-band-2, 80%),
+			color-mix(in srgb, var(--basalt-copy) 5%, var(--basalt-plane)) var(--advanced-band-2, 80%) 100%
+		);
+	}
+	& canvas {
+		position: relative;
+	}
+}
+.advanced-bullet-note {
+	margin: 0.4rem 0 0;
+	font-size: 0.75rem;
+	color: var(--advanced-quiet);
+}
+
+/* The region chart and its account table stack, then share a row from
+   992px with the table lined up on the chart's baseline. */
+.advanced-split {
+	display: grid;
+	gap: 0 2.5rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 992px) {
+		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+		align-items: end;
+	}
+}
+.advanced-drill {
+	margin-top: 1rem;
+	font-size: 0.8rem;
+
+	& .table {
+		--bs-table-bg: transparent;
+	}
+	& th {
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--advanced-quiet);
+	}
+	& td {
+		color: var(--basalt-copy);
+	}
+	& td:nth-child(2) {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		white-space: nowrap;
+		color: var(--advanced-quiet);
+	}
+	& td:last-child {
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+}
+
+/* Retention cells fade in along the diagonal once the table scrolls into
+   view; the script sets each cell's tint and its --advanced-i step. */
+.advanced-cohort {
+	margin-top: auto;
+}
+.advanced-cohort-table {
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: separate;
+	border-spacing: 3px;
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+
+	& th {
+		padding: 0 0 0.3rem;
+		font-size: 0.71rem;
+		font-weight: 600;
+		text-align: center;
+		color: var(--advanced-quiet);
+	}
+	& thead th {
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+	}
+}
+.advanced-cohort-table th:first-child,
+.advanced-cohort-table tbody th {
+	width: 26%;
+	text-align: left;
+}
+.advanced-cohort-table tbody th {
+	padding: 0 0.25rem 0 0;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.advanced-cohort-count {
+	display: block;
+	font-weight: 400;
+	font-size: 0.7rem;
+	color: var(--advanced-quiet);
+}
+.advanced-cohort-table td {
+	height: 36px;
+	border-radius: 6px;
+	font-weight: 600;
+	text-align: center;
+	opacity: 0;
+	transition: opacity 420ms ease;
+	transition-delay: calc(var(--advanced-i, 0) * 40ms);
+
+	&:empty {
+		background: transparent;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.advanced-cohort.is-drawn td {
+	opacity: 1;
+}
+@media (max-width: 459.98px) {
+	.advanced-cohort-table {
+		border-spacing: 2px;
+		font-size: 0.71rem;
+	}
+	.advanced-cohort-table th:first-child,
+	.advanced-cohort-table tbody th {
+		width: 24%;
+	}
+}
+@media print {
+	.advanced-cohort-table td {
+		opacity: 1;
+	}
+}
+
+/* The two synced charts stack, then sit side by side from 992px. */
+.advanced-pair {
+	display: grid;
+	gap: 1.75rem 2rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 992px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Each card can fold out the Chart.js config behind it; the arrow turns a
+   quarter when it opens, and print leaves the snippet out. */
+.advanced-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	@media print {
+		display: none;
+	}
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}

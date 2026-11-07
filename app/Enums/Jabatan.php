@@ -19,13 +19,13 @@ enum Jabatan: string
     }
 
     /**
-     * Kelas CSS tag template HexaDash (dm-tag).
+     * Kelas CSS tag template Basalt (badge).
      */
     public function kelasTag(): string
     {
         return match ($this) {
-            self::Abk => 'tag-primary',
-            self::Joker => 'tag-info',
+            self::Abk => 'bg-primary-subtle text-primary',
+            self::Joker => 'bg-info-subtle text-info',
         };
     }
 }

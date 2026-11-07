@@ -1,0 +1,41 @@
+/* The keyboard shortcuts sheet: keys on the left, what they do beside
+   them, in two columns from tablet width. */
+.basalt-keys {
+	display: grid;
+	gap: 1.5rem;
+
+	@media (min-width: 768px) {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+.basalt-keys-title {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.basalt-keys-list {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+	}
+	& dt {
+		flex: 0 0 6.5rem;
+		font-weight: 400;
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.basalt-keys-none {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-muted);
+}

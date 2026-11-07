@@ -1,0 +1,465 @@
+/* Compiles to assets/basalt/css/components/loaders.css, linked after basalt.css by
+   the pages that use it. */
+/* Everything that says "still working" lives here except the busy and
+   refresh buttons, which stay with the button styles: a progress line on
+   the top edge, placeholder shapes and the blocks that trade them for real
+   content, a veil for a refreshing panel, a checklist of job steps, a
+   search field with a spinner, waiting dots and a typing bubble. You can
+   see them on loaders.html and cards.html. */
+/* The progress line runs along the top of its container, or of the window
+   with -fixed. is-active lets it creep ahead; is-done tops it up and lets
+   it fade. */
+.basalt-loadbar {
+	--loadbar-value: 0;
+	position: absolute;
+	inset: 0 0 auto 0;
+	z-index: 3;
+	height: 3px;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 300ms ease 250ms;
+}
+.basalt-loadbar::before {
+	content: "";
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: calc(var(--loadbar-value) * 1%);
+	border-radius: 0 3px 3px 0;
+	background: var(--basalt-grad, var(--basalt-hue));
+	box-shadow: 0 0 8px color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	transition: width 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.basalt-loadbar.is-active {
+	opacity: 1;
+	transition: none;
+}
+.basalt-loadbar.is-done {
+	opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-loadbar,
+	.basalt-loadbar::before {
+		transition: none;
+	}
+}
+@media print {
+	.basalt-loadbar {
+		display: none;
+	}
+}
+
+.basalt-loadbar-fixed {
+	position: fixed;
+	z-index: 1090;
+}
+
+/* Placeholder shapes hold the space of content that has not arrived. The
+   shapes are -text, -title, -line (shorter with -sm), -circle, -block and
+   -btn; a shimmer runs by default, -pulse breathes and -still holds. Size
+   them inline or with utility classes. */
+.basalt-skeleton {
+	--skeleton-base: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+	--skeleton-shine: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+	display: block;
+	height: 1rem;
+	border-radius: 6px;
+	background: linear-gradient(
+			90deg,
+			var(--skeleton-base) 0%,
+			var(--skeleton-base) 35%,
+			var(--skeleton-shine) 50%,
+			var(--skeleton-base) 65%,
+			var(--skeleton-base) 100%
+		)
+		0 0/300% 100%;
+	animation: basalt-shimmer 1.6s linear infinite;
+	/* In a right-to-left page the light sweeps the opposite way. */
+}
+[dir="rtl"] .basalt-skeleton {
+	animation-direction: reverse;
+}
+
+.basalt-skeleton-text {
+	height: 0.7rem;
+	margin: 0.4rem 0;
+}
+
+.basalt-skeleton-title {
+	width: 60%;
+	height: 1rem;
+	margin-bottom: 0.75rem;
+}
+
+.basalt-skeleton-circle {
+	flex-shrink: 0;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+}
+
+.basalt-skeleton-block {
+	height: 8rem;
+	border-radius: 12px;
+}
+
+.basalt-skeleton-btn {
+	width: 7rem;
+	height: 2.1rem;
+	border-radius: 8px;
+}
+
+.basalt-skeleton-line {
+	max-width: 100%;
+	height: 0.8rem;
+	border-radius: 999px;
+}
+
+.basalt-skeleton-sm {
+	height: 0.6rem;
+}
+
+.basalt-skeleton-pulse,
+.basalt-skeleton-still {
+	background: var(--skeleton-base);
+}
+
+.basalt-skeleton-pulse {
+	animation: basalt-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.basalt-skeleton-still {
+	animation: none;
+}
+
+/* Reduced motion trades the sweep for a slow breath; -still stays put. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-skeleton {
+		background: var(--skeleton-base);
+		animation: basalt-skeleton-pulse 2.4s ease-in-out infinite;
+	}
+	.basalt-skeleton-still {
+		animation: none;
+	}
+}
+@media print {
+	.basalt-skeleton {
+		animation: none;
+	}
+}
+@keyframes basalt-shimmer {
+	from {
+		background-position: 100% 0;
+	}
+	to {
+		background-position: 0 0;
+	}
+}
+@keyframes basalt-skeleton-pulse {
+	50% {
+		opacity: 0.45;
+	}
+}
+/* A loadable block carries a placeholder (-ghost) and the content (-real).
+   With is-loading and aria-busy="true" only the placeholder shows. Once the
+   class is gone the content rises, each child of -real waiting --i beats
+   (0, 1, 2 and on) before it starts. */
+.basalt-loadable.is-loading .basalt-loadable-real,
+.basalt-loadable:not(.is-loading) .basalt-loadable-ghost {
+	display: none;
+}
+.basalt-loadable:not(.is-loading) .basalt-loadable-real > * {
+	animation: basalt-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	animation-delay: calc(var(--i, 0) * 90ms);
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-loadable:not(.is-loading) .basalt-loadable-real > * {
+		animation: none;
+	}
+}
+
+@keyframes basalt-rise {
+	from {
+		transform: translateY(6px);
+		opacity: 0;
+	}
+}
+/* The veil covers a panel marked .basalt-loading-host; is-busy (with
+   aria-busy) brings it up. The panel underneath does not move, so the
+   layout never jumps. */
+.basalt-loading-host {
+	position: relative;
+}
+
+.basalt-loading-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: grid;
+	visibility: hidden;
+	gap: 0.75rem;
+	place-content: center;
+	justify-items: center;
+	padding: 1rem;
+	border-radius: inherit;
+	text-align: center;
+	background: color-mix(in srgb, var(--basalt-plane) 82%, transparent);
+	opacity: 0;
+	backdrop-filter: blur(3px);
+	transition:
+		opacity 200ms ease,
+		visibility 0s linear 200ms;
+}
+.basalt-loading-host.is-busy > .basalt-loading-overlay {
+	visibility: visible;
+	opacity: 1;
+	transition: opacity 200ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-loading-overlay {
+		transition: none;
+	}
+}
+@media print {
+	.basalt-loading-overlay {
+		display: none;
+	}
+}
+
+.basalt-loading-overlay-text {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* A long job reads as a checklist. A step that waits shows a ring, the
+   one at work (is-active) a spinner, a finished one (is-done) a check. */
+.basalt-stages {
+	display: grid;
+	gap: 0.2rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.basalt-stages-item {
+	display: grid;
+	gap: 0.8rem;
+	grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.6rem 0.75rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	transition:
+		background-color 200ms ease,
+		color 200ms ease;
+}
+.basalt-stages-item .spinner-border {
+	--bs-spinner-height: 1.1rem;
+	--bs-spinner-width: 1.1rem;
+	--bs-spinner-border-width: 0.16em;
+}
+.basalt-stages-item {
+	/* Exactly one mark shows, picked by the step's state. */
+}
+.basalt-stages-item:not(.is-active):not(.is-done) .basalt-stages-wait,
+.basalt-stages-item.is-active .spinner-border,
+.basalt-stages-item.is-done .bi {
+	display: block;
+}
+.basalt-stages-item.is-active {
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.basalt-stages-item.is-active .basalt-stages-time {
+	color: var(--basalt-copy-body);
+}
+.basalt-stages-item.is-done {
+	color: var(--basalt-copy-body);
+}
+.basalt-stages-item.is-done .bi {
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-stages-item {
+		transition: none;
+	}
+}
+
+/* The icon slot hides all three marks until a state rule picks one. */
+.basalt-stages-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 1.5rem;
+	height: 1.5rem;
+}
+.basalt-stages-icon > * {
+	display: none;
+}
+
+.basalt-stages-wait {
+	width: 0.9rem;
+	height: 0.9rem;
+	border: 2px solid var(--basalt-edge-strong);
+	border-radius: 50%;
+}
+
+.basalt-stages-time {
+	font-weight: 400;
+	font-size: 0.76rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* A search field shows a spinner at its far end while results are on the
+   way; put is-loading on the wrapper. */
+.basalt-search-loading {
+	position: relative;
+}
+.basalt-search-loading > .bi,
+.basalt-search-loading > .spinner-border {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+}
+.basalt-search-loading > .bi {
+	left: 0.85rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-search-loading > .form-control {
+	padding-right: 2.4rem;
+	padding-left: 2.4rem;
+}
+.basalt-search-loading > .spinner-border {
+	--bs-spinner-height: 1rem;
+	--bs-spinner-width: 1rem;
+	--bs-spinner-border-width: 0.15em;
+	right: 0.85rem;
+	transform: none;
+	margin-top: -0.5rem;
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+.basalt-search-loading.is-loading > .spinner-border {
+	opacity: 1;
+}
+.basalt-search-loading.is-loading {
+	/* The browser's own clear button would sit under the spinner. */
+}
+.basalt-search-loading.is-loading > .form-control::-webkit-search-cancel-button {
+	display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-search-loading > .spinner-border {
+		transition: none;
+	}
+}
+
+/* Three dots fill a short wait, inline with text or alone. -pulse fades
+   them rather than bouncing, -sm and -lg resize them, -muted and -success
+   recolor them. */
+.basalt-loading-dots {
+	--loading-dots-size: 0.5rem;
+	display: inline-flex;
+	gap: calc(var(--loading-dots-size) * 0.6);
+	align-items: center;
+	height: calc(var(--loading-dots-size) * 2);
+	color: var(--basalt-hue);
+}
+.basalt-loading-dots > span:not(.visually-hidden) {
+	width: var(--loading-dots-size);
+	height: var(--loading-dots-size);
+	border-radius: 50%;
+	background: currentColor;
+	animation: basalt-loading-dots-bounce 1.1s ease-in-out infinite;
+}
+.basalt-loading-dots > .visually-hidden {
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.basalt-loading-dots > span:nth-child(2) {
+	animation-delay: 170ms;
+}
+.basalt-loading-dots > span:nth-child(3) {
+	animation-delay: 0.3s;
+}
+
+.basalt-loading-dots-sm {
+	--loading-dots-size: 0.3rem;
+}
+
+.basalt-loading-dots-lg {
+	--loading-dots-size: 0.75rem;
+}
+
+.basalt-loading-dots-pulse > span:not(.visually-hidden) {
+	animation-name: basalt-loading-dots-pulse;
+}
+
+.basalt-loading-dots-muted {
+	color: var(--basalt-copy-muted);
+}
+
+.basalt-loading-dots-success {
+	color: var(--basalt-success);
+}
+
+/* Without motion the dots still read as busy: they fade where they are. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-loading-dots > span:not(.visually-hidden) {
+		animation: basalt-loading-dots-calm 2s ease-in-out infinite;
+	}
+}
+@media print {
+	.basalt-loading-dots > span:not(.visually-hidden) {
+		animation: none;
+	}
+}
+@keyframes basalt-loading-dots-bounce {
+	0%,
+	60%,
+	100% {
+		transform: translateY(0);
+		opacity: 0.45;
+	}
+	30% {
+		transform: translateY(-45%);
+		opacity: 1;
+	}
+}
+@keyframes basalt-loading-dots-pulse {
+	0%,
+	100% {
+		transform: scale(0.8);
+		opacity: 0.3;
+	}
+	50% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+@keyframes basalt-loading-dots-calm {
+	0%,
+	100% {
+		opacity: 0.35;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+/* The typing bubble is a chat message with smaller, quieter dots in it. */
+.basalt-typing {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.7rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px 16px 16px 4px;
+	background: var(--basalt-plane-alt);
+}
+.basalt-typing .basalt-loading-dots {
+	--loading-dots-size: 0.4rem;
+	color: var(--basalt-copy-muted);
+}

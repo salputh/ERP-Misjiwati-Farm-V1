@@ -1,0 +1,1195 @@
+/* Styles for company-details.html, one company on one screen. Every class
+   starts with .cd- and every color is a --basalt-* token, so the palettes
+   and dark mode reach this page without extra rules. */
+
+.cd-page {
+	/* Small labels use the muted token pulled toward the body color, which
+     keeps their contrast in every palette; links get the same mix. */
+	--cd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--cd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+}
+
+/* Ramp tones for icon tiles and timeline dots: a soft fill behind a
+   strong glyph. */
+.cd-tone-1 {
+	--cd-tone: var(--basalt-series-1);
+}
+.cd-tone-2 {
+	--cd-tone: var(--basalt-series-2);
+}
+.cd-tone-3 {
+	--cd-tone: var(--basalt-series-3);
+}
+.cd-tone-4 {
+	--cd-tone: var(--basalt-series-4);
+}
+.cd-tone-5 {
+	--cd-tone: var(--basalt-series-5);
+}
+
+/* The header puts the company on the left and its actions on the right;
+   on a phone the actions drop below. */
+.basalt-hero-detail.cd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+
+	@media (max-width: 575.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+
+.cd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.cd-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+
+	@media (max-width: 575.98px) {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+}
+
+.cd-who-text {
+	min-width: 0;
+}
+
+.cd-who-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 72px;
+	height: 72px;
+	border-radius: 20px;
+	font-size: 1.4rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+	box-shadow:
+		0 10px 24px -12px var(--basalt-hue),
+		inset 0 1px 0 color-mix(in srgb, var(--basalt-on-hue) 22%, transparent);
+
+	@media (max-width: 575.98px) {
+		width: 56px;
+		height: 56px;
+		border-radius: 16px;
+		font-size: 1.1rem;
+	}
+}
+
+.cd-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+
+/* The actions menu: icons spaced from their labels, the destructive item
+   in a red that still reads, and a dimmed state once it has been used. */
+.cd-page .dropdown-item {
+	& .bi {
+		margin-right: 0.6rem;
+	}
+
+	&.cd-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+
+	&.cd-danger-item:hover,
+	&.cd-danger-item:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+
+	&:disabled {
+		opacity: 0.5;
+	}
+}
+
+/* The band of four figures: one framed strip, four across on a desk, two
+   by two under 1200px. */
+.cd-band {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 18px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+
+	@media (max-width: 1199.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.cd-band-item {
+	--cd-tone: var(--basalt-series-1);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.35rem 1.5rem 1.25rem;
+	background-image: linear-gradient(160deg, color-mix(in srgb, var(--cd-tone) 8%, transparent), transparent 65%);
+
+	& + & {
+		border-left: 1px solid var(--basalt-edge);
+	}
+
+	@media (max-width: 1199.98px) {
+		&:nth-child(3) {
+			border-left: 0;
+		}
+		&:nth-child(n + 3) {
+			border-top: 1px solid var(--basalt-edge);
+		}
+	}
+
+	@media (max-width: 575.98px) {
+		padding: 1.1rem 1rem 1rem;
+	}
+}
+
+:root[data-basalt-gradients="off"] .cd-band-item {
+	background-image: none;
+}
+
+.cd-band-item-2 {
+	--cd-tone: var(--basalt-series-2);
+}
+.cd-band-item-3 {
+	--cd-tone: var(--basalt-series-3);
+}
+.cd-band-item-4 {
+	--cd-tone: var(--basalt-success);
+}
+
+.cd-band-label {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--cd-quiet);
+
+	& .bi {
+		display: inline-grid;
+		flex: none;
+		place-items: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 9px;
+		font-size: 0.85rem;
+		color: color-mix(in srgb, var(--cd-tone) 58%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--cd-tone) 16%, var(--basalt-plane));
+	}
+
+	@media (max-width: 575.98px) {
+		gap: 0.4rem;
+		font-size: 0.76rem;
+	}
+}
+
+.cd-band-value {
+	margin: 0.75rem 0 0.25rem;
+	font-size: 1.45rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	@media (max-width: 575.98px) {
+		font-size: 1.2rem;
+	}
+}
+
+.cd-band-unit {
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0;
+	color: var(--cd-quiet);
+}
+
+.cd-band-note {
+	margin: 0;
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cd-quiet);
+
+	@media (max-width: 575.98px) {
+		white-space: normal;
+	}
+}
+
+/* Every figure has a small picture of one shared height, which keeps the
+   notes under them on a single line across the band. */
+.cd-band-pic {
+	display: flex;
+	align-items: flex-end;
+	height: 1.75rem;
+	margin: 0.3rem 0 0.7rem;
+}
+
+.cd-seats,
+.cd-spark,
+.cd-term,
+.cd-line-box,
+.cd-line {
+	display: flex;
+	width: 100%;
+	max-width: 12rem;
+	height: 100%;
+}
+
+/* Seats: a segment per seat, or per few seats, lit while in use. */
+.cd-seats {
+	gap: 2px;
+	align-items: flex-end;
+
+	& > span {
+		flex: 1;
+		height: 60%;
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--cd-tone) 20%, var(--basalt-plane));
+		transform-origin: bottom;
+		animation: cd-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation-delay: calc(var(--i) * 14ms);
+	}
+
+	& > span.is-on {
+		height: 100%;
+		background: color-mix(in srgb, var(--cd-tone) 80%, var(--basalt-plane));
+	}
+}
+
+/* Add-on spend: one bar for each of the last twelve months. */
+.cd-spark {
+	gap: 4px;
+	align-items: flex-end;
+
+	& > span {
+		flex: 1;
+		height: var(--cd-h);
+		border-radius: 3px 3px 1px 1px;
+		background: color-mix(in srgb, var(--cd-tone) 38%, var(--basalt-plane));
+		transform-origin: bottom;
+		transition: opacity 170ms ease;
+		animation: cd-rise 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation-delay: calc(var(--i) * 45ms);
+	}
+
+	& > span:nth-last-child(2) {
+		background: var(--cd-tone);
+	}
+}
+
+/* Renewal: a track filled to how far through the year the account is,
+   with a knob at the point it has reached. */
+.cd-term {
+	position: relative;
+	align-self: center;
+	height: 0.5rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--cd-tone) 16%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		width: var(--cd-fill);
+		border-radius: inherit;
+		animation: cd-fill 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		background: linear-gradient(90deg, color-mix(in srgb, var(--cd-tone) 45%, var(--basalt-plane)), var(--cd-tone));
+	}
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: var(--cd-fill);
+		transform: translate(-50%, -50%);
+		width: 0.9rem;
+		height: 0.9rem;
+		border: 3px solid var(--basalt-plane);
+		border-radius: 50%;
+		background: var(--cd-tone);
+		box-shadow: 0 0 0 1px color-mix(in srgb, var(--cd-tone) 40%, transparent);
+		animation: cd-knob 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		transition: box-shadow 170ms ease;
+	}
+
+	&.is-pointed::after {
+		box-shadow: 0 0 0 5px color-mix(in srgb, var(--cd-tone) 25%, transparent);
+	}
+}
+
+:root[data-basalt-gradients="off"] .cd-term::before {
+	background: var(--cd-tone);
+}
+
+/* Health: the weekly score drawn as a line. */
+.cd-line {
+	overflow: visible;
+
+	& polyline {
+		fill: none;
+		stroke: var(--cd-tone);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		vector-effect: non-scaling-stroke;
+	}
+}
+/* The line draws itself from left to right when the page opens. */
+.cd-line {
+	animation: cd-draw 0.5s ease-out both;
+}
+/* Ten stops along the line, one a week; the pointed one shows a dot on
+   the line at that week's score. */
+.cd-line-box {
+	position: relative;
+}
+.cd-line-stop {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--x);
+	width: 11%;
+	transform: translateX(-50%);
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: var(--y);
+		left: 50%;
+		width: 0.6rem;
+		height: 0.6rem;
+		border: 2px solid var(--basalt-plane);
+		border-radius: 50%;
+		background: var(--cd-tone);
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.4);
+		transition:
+			opacity 170ms ease,
+			transform 170ms ease;
+	}
+
+	&.is-pointed::after {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+/* Pointing at a seat or a month lifts it and quiets the rest. */
+.cd-band-item.is-pointing .cd-spark > span:not(.is-pointed),
+.cd-band-item.is-pointing .cd-seats > span:not(.is-pointed) {
+	opacity: 0.45;
+}
+.cd-spark > span.is-pointed {
+	background: var(--cd-tone);
+}
+
+@keyframes cd-rise {
+	from {
+		transform: scaleY(0);
+	}
+}
+@keyframes cd-fill {
+	from {
+		width: 0;
+	}
+}
+@keyframes cd-knob {
+	from {
+		left: 0;
+	}
+}
+@keyframes cd-draw {
+	from {
+		clip-path: inset(-20% 100% -20% 0);
+	}
+	to {
+		clip-path: inset(-20% 0 -20% 0);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.cd-seats > span,
+	.cd-spark > span,
+	.cd-term::before,
+	.cd-term::after,
+	.cd-line {
+		animation: none;
+	}
+}
+
+/* From 1200px a wide card (7 of 12 columns, 8 from 1400px) sits beside a
+   narrow one and both stretch to the taller; below that each card takes
+   its own row. */
+.cd-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 1200px) {
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+}
+
+@media (min-width: 1200px) {
+	.cd-card-wide {
+		grid-column: span 7;
+	}
+	.cd-card-narrow {
+		grid-column: span 5;
+	}
+}
+
+@media (min-width: 1400px) {
+	.cd-card-wide {
+		grid-column: span 8;
+	}
+	.cd-card-narrow {
+		grid-column: span 4;
+	}
+}
+
+/* Card chrome shared by every section: a head with a title and a line of
+   description, and a foot pinned to the bottom so stretched cards still
+   end the same way. */
+.cd-card {
+	min-width: 0;
+}
+
+.cd-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.cd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+
+.cd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.cd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cd-quiet);
+}
+
+.cd-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1.25rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.cd-more-line {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cd-quiet);
+}
+
+.cd-sub {
+	margin: 0 0 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--cd-quiet);
+}
+
+.cd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--cd-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+/* A soft square tile holding an icon, tinted from the chart ramp. */
+.cd-tile {
+	--cd-tone: var(--basalt-series-1);
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--cd-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cd-tone) 15%, var(--basalt-plane));
+}
+
+.cd-tile-sm {
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+}
+
+.cd-icon-btn {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	color: var(--cd-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* The open items and purchases tables. Each card is a size container, so
+   the table folds by the card's width rather than the window's. */
+.cd-card-open,
+.cd-card-orders {
+	container-type: inline-size;
+}
+
+.cd-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+		border-bottom-color: var(--basalt-edge);
+		color: var(--basalt-copy);
+	}
+
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+
+	& tbody tr:last-child > * {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+
+	& thead th {
+		padding-top: 0;
+		padding-bottom: 0.8rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--cd-quiet);
+	}
+
+	& tbody td {
+		white-space: nowrap;
+	}
+
+	& tbody td:first-child {
+		width: 100%;
+		white-space: normal;
+	}
+
+	& .cd-col-num {
+		text-align: right;
+	}
+	& td.cd-col-num {
+		font-weight: 650;
+	}
+
+	& .cd-col-due,
+	& .cd-col-date {
+		color: var(--basalt-copy-body);
+	}
+
+	/* An empty table says so in one quiet line. */
+	& .cd-none-row {
+		padding: 1.2rem 0;
+		font-size: 0.875rem;
+		color: var(--cd-quiet);
+	}
+}
+
+.cd-none {
+	font-weight: 400;
+	color: var(--cd-quiet);
+}
+
+.cd-item {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+
+.cd-item-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.cd-item-title {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+
+a.cd-item-title {
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--cd-link);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+.cd-item-meta {
+	font-size: 0.77rem;
+	line-height: 1.45;
+	color: var(--cd-quiet);
+}
+
+.cd-fold {
+	display: none;
+	font-size: 0.77rem;
+	color: var(--basalt-copy-body);
+}
+
+.cd-fold-status {
+	display: none;
+}
+
+/* In a narrow card the date and amount fold under the item's name. */
+@container (max-width: 600px) {
+	.cd-table .cd-col-due,
+	.cd-table .cd-col-num,
+	.cd-table .cd-col-date {
+		display: none;
+	}
+	.cd-fold {
+		display: block;
+	}
+}
+
+/* Narrower still, the status folds under too and each row reads as one
+   stacked record, which needs no column labels on screen. */
+@container (max-width: 460px) {
+	.cd-table .cd-col-status {
+		display: none;
+	}
+	.cd-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.cd-fold {
+		display: flex;
+		gap: 0.3rem 0.6rem;
+		flex-wrap: wrap;
+		align-items: center;
+		margin-top: 0.4rem;
+	}
+	.cd-fold-status {
+		display: inline-flex;
+	}
+	.cd-item {
+		align-items: flex-start;
+	}
+}
+
+/* Account facts: label and value side by side, ruled between rows. Under
+   1200px the narrow card spans the row, so the rows pair up in two
+   columns. */
+.cd-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 6.75rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+
+	& > div:first-child {
+		padding-top: 0;
+	}
+
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--cd-quiet);
+	}
+
+	& dd {
+		display: flex;
+		gap: 0.2rem;
+		flex-direction: column;
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+
+	& .cd-link {
+		align-self: flex-start;
+	}
+
+	@media (min-width: 768px) and (max-width: 1199.98px) {
+		column-gap: 2rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+
+		& > div:nth-child(2) {
+			padding-top: 0;
+		}
+
+		& > div:nth-last-child(2):nth-child(odd) {
+			padding-bottom: 0;
+			border-bottom: 0;
+		}
+	}
+}
+
+.cd-facts-note {
+	font-size: 0.77rem;
+	color: var(--cd-quiet);
+}
+
+/* The files list, which pairs up in two columns between 768 and 1199px. */
+.cd-files {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cd-file {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+
+	& .cd-item-text {
+		flex: 1;
+	}
+}
+
+.cd-file-name {
+	font-size: 0.875rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.cd-files {
+		display: grid;
+		column-gap: 2rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.cd-file:nth-last-child(2):nth-child(odd) {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	.cd-file:nth-child(2) {
+		padding-top: 0;
+	}
+}
+
+/* Activity: filter chips over a timeline of icons joined by a rule. */
+.cd-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.5rem;
+}
+
+.cd-chip {
+	padding: 0.3rem 0.85rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+	}
+
+	&[aria-pressed="true"] {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-edge));
+		color: color-mix(in srgb, var(--basalt-hue) 52%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-hue) 11%, var(--basalt-plane));
+	}
+
+	&:focus {
+		outline: 0;
+		box-shadow: none;
+	}
+
+	&:focus-visible:not([aria-pressed="true"]) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.cd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr);
+	padding-bottom: 1.4rem;
+	border-radius: 10px;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:focus {
+		outline: 0;
+	}
+
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.6rem;
+		bottom: 0.3rem;
+		left: calc(1.125rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+
+	/* An entry just logged flashes once; reduced motion and print skip it. */
+	&.is-fresh {
+		animation: cd-fresh 1.6s ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+
+		@media print {
+			animation: none;
+		}
+	}
+}
+
+@keyframes cd-fresh {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+	}
+	to {
+		background: transparent;
+	}
+}
+
+.cd-feed-icon {
+	--cd-tone: var(--basalt-series-1);
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--cd-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cd-tone) 15%, var(--basalt-plane));
+}
+
+.cd-feed-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+
+.cd-feed-title {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.cd-feed-body {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+.cd-feed-meta {
+	font-size: 0.77rem;
+	color: var(--cd-quiet);
+}
+
+.cd-feed-more {
+	align-self: flex-start;
+	margin-top: 1.5rem;
+	white-space: nowrap;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* People: their contacts and our team, each a list of avatar rows that
+   pair up in two columns between 768 and 1199px. */
+.cd-people-block + .cd-people-block {
+	margin-top: 1.5rem;
+}
+
+.cd-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cd-person {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+
+	& .cd-item-text {
+		flex: 1;
+	}
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.cd-people {
+		display: grid;
+		column-gap: 2rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.cd-person:nth-last-child(2):nth-child(odd) {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	.cd-person:first-child,
+	.cd-person:nth-child(2) {
+		padding-top: 0;
+	}
+}
+
+.cd-person-name {
+	display: flex;
+	gap: 0.2rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	& .basalt-status {
+		padding: 0.1rem 0.5rem;
+		font-size: 0.7rem;
+	}
+
+	&.cd-link {
+		align-self: flex-start;
+		color: var(--basalt-copy);
+	}
+
+	&.cd-link:hover,
+	& > .cd-link:hover {
+		color: var(--cd-link);
+	}
+
+	& > .cd-link {
+		color: var(--basalt-copy);
+	}
+}
+
+.cd-person-acts {
+	display: flex;
+	gap: 0.1rem;
+	flex: none;
+}
+
+/* A person's role: the roles that sign in carry a hue, while Contact,
+   who does not, stays gray. */
+.cd-role {
+	--r: var(--basalt-hue);
+	display: inline-flex;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--r) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--r) 13%, var(--basalt-plane));
+}
+
+.cd-role-billing {
+	--r: var(--basalt-info);
+}
+.cd-role-admin {
+	--r: var(--basalt-success);
+}
+.cd-role-member {
+	--r: var(--basalt-series-2);
+}
+
+.cd-role-contact {
+	color: var(--cd-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* The two drawers and the archive dialog. */
+.cd-drawer {
+	--bs-offcanvas-width: 440px;
+
+	& [data-cd-with-wrap][hidden] {
+		display: none;
+	}
+}
+
+.cd-kinds.basalt-choices {
+	--basalt-choice-min: 84px;
+}
+.cd-terms.basalt-choices {
+	--basalt-choice-min: 80px;
+}
+
+.cd-select {
+	width: auto;
+	min-width: 14rem;
+	max-width: 100%;
+}
+
+.cd-date {
+	max-width: 12rem;
+}
+.cd-money {
+	max-width: 14rem;
+}
+
+.cd-modal-text {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+
+/* Printing keeps the record and drops the controls. */
+@media print {
+	.cd-head .basalt-hero-actions,
+	.cd-card-head .btn,
+	.cd-card-foot .btn,
+	.cd-chips,
+	.cd-feed-more,
+	.cd-icon-btn {
+		display: none;
+	}
+}

@@ -1,0 +1,1263 @@
+/*
+ * Layout and page-only pieces for the shop settings screen (settings.html).
+ * Every class here starts with .cfg-. Tabs, drawers, dialogs, toasts,
+ * steppers, tag inputs, rings and empty states come styled from basalt.css;
+ * this sheet arranges them and draws what only this page has: the section
+ * list, card rows, the email preview, usage, the save bar and the danger zone.
+ */
+
+/* Muted text mixes the muted token toward body copy so it keeps 4.5:1 on light palettes and hovered rows; dialogs sit outside <main> and need it too. */
+.cfg-page,
+.cfg-dialog {
+	--cfg-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.cfg-page {
+	--cfg-gap: 1.5rem;
+}
+
+/* Codes, keys and amounts read in the mono face, a touch smaller than the line around them. */
+.cfg-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85em;
+}
+.cfg-strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cfg-sub {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--cfg-quiet);
+}
+
+/* The shortcut key inside the Find button is outlined in the button's own text color. */
+.cfg-kbd {
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+	font:
+		600 0.71rem/1.3 "Chivo Mono",
+		monospace;
+	color: inherit;
+	background: transparent;
+	box-shadow: none;
+}
+
+/* The section list stacks above the panels until 992px, then becomes a sticky column. */
+.cfg-layout {
+	display: grid;
+	gap: 1.5rem;
+	align-items: start;
+	@media (min-width: 992px) {
+		gap: 2rem;
+		grid-template-columns: 15.5rem minmax(0, 1fr);
+	}
+	@media print {
+		display: block;
+	}
+}
+.cfg-side {
+	min-width: 0;
+	@media (min-width: 992px) {
+		position: sticky;
+		top: calc(var(--basalt-header-h, 72px) + 1.25rem);
+	}
+	@media print {
+		display: none;
+	}
+}
+
+/* Both filter boxes, this one and the one over the people table, keep the icon inside the field. */
+.cfg-side-search {
+	position: relative;
+	margin-bottom: 0.4rem;
+}
+.cfg-side-search .bi,
+.cfg-search .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--cfg-quiet);
+	pointer-events: none;
+}
+.cfg-side-search .form-control,
+.cfg-search .form-control {
+	padding-left: 2.4rem;
+}
+.cfg-side-count {
+	margin: 0 0 0.75rem 0.2rem;
+	font-size: 0.75rem;
+	color: var(--cfg-quiet);
+}
+.cfg-side-none {
+	padding: 0.5rem 0.2rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Narrow screens choose a section from a menu; the tab list takes over from 992px. */
+.cfg-side-jump {
+	margin-bottom: 0.25rem;
+	@media (min-width: 992px) {
+		display: none;
+	}
+}
+.cfg-tabs {
+	display: none;
+	@media (min-width: 992px) {
+		display: block;
+	}
+
+	& .nav-link {
+		gap: 0.65rem;
+		padding: 0.6rem 0.8rem;
+	}
+	/* Groups (shop, people and money, apps, safety) are set apart by a little air. */
+	& .nav-link.cfg-tabs-group {
+		margin-top: 0.6rem;
+	}
+	& .nav-link[hidden] {
+		display: none;
+	}
+	& .basalt-tabs-text > span:first-child {
+		font-size: 0.88rem;
+	}
+	& .basalt-tabs-dot {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+}
+
+/* Each panel opens with a title, a short line and sometimes one action on the right. */
+.cfg-panels {
+	min-width: 0;
+}
+.cfg-pane:focus-visible {
+	border-radius: 12px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 6px;
+}
+.cfg-pane-head {
+	margin-bottom: 1.5rem;
+}
+.cfg-pane-head-row {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	& > div {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+}
+.cfg-pane-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.3rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.cfg-pane-desc {
+	max-width: 72ch;
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--cfg-quiet);
+}
+
+/* Cards fill the row below 1200px and pair up from there; wide cards always span both. */
+.cfg-grid {
+	display: grid;
+	gap: var(--cfg-gap);
+	grid-template-columns: minmax(0, 1fr);
+	@media (min-width: 1200px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.cfg-card-wide {
+	@media (min-width: 1200px) {
+		grid-column: 1 / -1;
+	}
+}
+.cfg-card {
+	min-width: 0;
+}
+.cfg-card.basalt-box .card-body {
+	padding: 1.75rem;
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+.cfg-card-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+}
+.cfg-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cfg-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cfg-quiet);
+}
+
+/* Stacked rows of every kind share one rhythm: row padding and a hairline between them. */
+.cfg-switch,
+.cfg-row,
+.cfg-lang,
+.cfg-danger-row {
+	padding: var(--basalt-pad-row-y) 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.cfg-switches .cfg-switch:first-child,
+.cfg-row:first-child,
+.cfg-keys .cfg-row:first-child,
+.cfg-hooks .cfg-row:first-child,
+.cfg-lang:first-child,
+.cfg-danger-row:first-child {
+	padding-top: 0;
+}
+.cfg-switches .cfg-switch:last-child,
+.cfg-row:last-child,
+.cfg-danger-row:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+
+/* A label on one edge and its control on the other, wrapping when space runs out. */
+.cfg-inline-field,
+.cfg-danger-row {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.cfg-inline-field {
+	margin-top: 1.25rem;
+}
+.cfg-inline-field-select {
+	width: auto;
+	min-width: 7.5rem;
+}
+
+/* Labels and controls take the page surface and the stronger edge in cards and dialogs alike. */
+.cfg-page .form-label,
+.cfg-dialog .form-label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cfg-page fieldset legend.form-label {
+	float: none;
+	width: auto;
+	margin-bottom: 0.5rem;
+	padding: 0;
+}
+/* Drawer section headings read one step above body text. */
+.cfg-dialog .basalt-drawer-legend {
+	margin-bottom: 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--basalt-copy);
+}
+.cfg-page .form-control,
+.cfg-page .form-select,
+.cfg-dialog .form-control,
+.cfg-dialog .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.cfg-page .form-control::placeholder,
+.cfg-dialog .form-control::placeholder {
+	color: var(--cfg-quiet);
+	opacity: 1;
+}
+.cfg-page .form-control[readonly] {
+	background-color: var(--basalt-plane-alt);
+}
+.cfg-page input[type="number"] {
+	appearance: textfield;
+}
+.cfg-page input[type="number"]::-webkit-outer-spin-button,
+.cfg-page input[type="number"]::-webkit-inner-spin-button {
+	margin: 0;
+	-webkit-appearance: none;
+}
+
+.cfg-fields,
+.cfg-fields-pair {
+	display: grid;
+	gap: 1.1rem;
+}
+.cfg-fields-pair {
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+.cfg-optional {
+	margin-left: 0.25rem;
+	font-weight: 500;
+	color: var(--cfg-quiet);
+}
+.cfg-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cfg-quiet);
+}
+
+/* Live notes hold their line while they have text and collapse when empty. */
+.cfg-note {
+	min-height: 1.2em;
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	&:empty {
+		min-height: 0;
+		margin: 0;
+	}
+}
+
+/* Errors mix the danger hue toward body copy so they stay readable on every palette. */
+.cfg-field-error,
+.cfg-page .invalid-feedback,
+.cfg-dialog .invalid-feedback {
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+.cfg-field-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	&:empty {
+		display: none;
+	}
+}
+
+/* A switch row puts the words on the left and the switch on the right. */
+.cfg-switches {
+	display: grid;
+}
+.cfg-switch {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	& .form-switch .form-check-input {
+		width: 2.4em;
+		height: 1.3em;
+		margin: 0.1rem 0 0;
+		cursor: pointer;
+	}
+}
+.cfg-card .cfg-switch:only-child {
+	border-bottom: 0;
+}
+.cfg-switch-title {
+	display: inline-flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+.cfg-switch-desc {
+	margin: 0.2rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--cfg-quiet);
+}
+
+/* Whatever the finder jumps to glows briefly so the eye can find it. */
+.cfg-flash {
+	border-radius: 10px;
+	animation: cfg-flash 1600ms ease;
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+@keyframes cfg-flash {
+	0%,
+	60% {
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+	}
+	100% {
+		box-shadow: 0 0 0 4px transparent;
+	}
+}
+
+/* Tables sit flush with the card title: no outer cell padding and no rule under the last row. */
+.cfg-table-wrap {
+	position: relative;
+	margin: 0 -0.25rem;
+	padding: 0 0.25rem;
+}
+.cfg-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--cfg-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& td:last-child {
+		text-align: right;
+		white-space: nowrap;
+	}
+	& .form-select-sm {
+		min-width: 7.5rem;
+	}
+}
+
+/* A long record value is clipped to one line next to its copy button. */
+.cfg-value {
+	max-width: 22rem;
+}
+.cfg-value-row {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.cfg-value code {
+	display: inline-block;
+	max-width: 100%;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	overflow: hidden;
+	font-size: 0.77rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.cfg-icon-btn {
+	--bs-btn-padding-x: 0.4rem;
+	--bs-btn-padding-y: 0.2rem;
+}
+.cfg-dns-alert {
+	margin-bottom: 1.25rem;
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Permission and alert grids center their checkboxes and keep each column as narrow as it can be. */
+.cfg-matrix th:not(:first-child),
+.cfg-matrix td:not(:first-child) {
+	width: 1%;
+	text-align: center;
+	white-space: nowrap;
+}
+.cfg-matrix {
+	& td:last-child {
+		text-align: center;
+	}
+	& .form-check-input {
+		float: none;
+		margin: 0;
+		cursor: pointer;
+	}
+	& tbody th {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& tbody th .cfg-sub {
+		font-weight: 400;
+	}
+}
+
+/* Search and role filter share one wrapping toolbar; on phones the search takes the full row. */
+.cfg-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.25rem;
+}
+.cfg-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 0;
+	max-width: 28rem;
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+		max-width: none;
+	}
+}
+.cfg-toolbar-select {
+	width: auto;
+	min-width: 9rem;
+	@media (max-width: 575.98px) {
+		flex: 1 1 auto;
+	}
+}
+.cfg-pager {
+	margin-top: 1.25rem;
+	&[hidden] {
+		display: none;
+	}
+}
+.cfg-empty {
+	margin-top: 0.5rem;
+}
+
+/* Each person gets a tinted initials badge in one of six series colors. */
+.cfg-person {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 12rem;
+}
+.cfg-person-av {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 50%;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--cfg-av, var(--basalt-series-1)) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cfg-av, var(--basalt-series-1)) 18%, var(--basalt-plane));
+}
+.cfg-av-1 {
+	--cfg-av: var(--basalt-series-1);
+}
+.cfg-av-2 {
+	--cfg-av: var(--basalt-series-2);
+}
+.cfg-av-3 {
+	--cfg-av: var(--basalt-series-3);
+}
+.cfg-av-4 {
+	--cfg-av: var(--basalt-series-4);
+}
+.cfg-av-5 {
+	--cfg-av: var(--basalt-series-5);
+}
+.cfg-av-6 {
+	--cfg-av: var(--basalt-series-6);
+}
+.cfg-person-name {
+	margin: 0;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cfg-person-mail {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--cfg-quiet);
+}
+.cfg-people tr.is-leaving {
+	opacity: 0.4;
+	transition: opacity 200ms ease;
+}
+
+/* Invites, keys, webhook addresses, devices and sends are plain lists with actions at the end of each row. */
+.cfg-invites,
+.cfg-devices,
+.cfg-keys,
+.cfg-hooks,
+.cfg-sends {
+	display: grid;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cfg-row {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.cfg-row-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.cfg-row-main {
+	flex: 1 1 12rem;
+	min-width: 0;
+}
+.cfg-row-title {
+	display: flex;
+	gap: 0.4rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cfg-row-sub {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	overflow-wrap: anywhere;
+	color: var(--cfg-quiet);
+}
+.cfg-row-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+/* Keys and webhook addresses carry more lines, so their rows get more room. */
+.cfg-keys .cfg-row,
+.cfg-hooks .cfg-row {
+	padding: 1.35rem 0;
+}
+
+.cfg-chips {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin-top: 0.5rem;
+}
+.cfg-chip {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+
+/* A webhook's answer rate is a green fill over a faint red track. */
+.cfg-hook-rate {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cfg-quiet);
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.cfg-hook-meter {
+	max-width: 18rem;
+	height: 5px;
+	margin-top: 0.4rem;
+	border-radius: 99px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-danger) 22%, var(--basalt-plane));
+}
+.cfg-hook-alert {
+	flex-basis: 100%;
+	margin: 0.25rem 0 0;
+}
+.cfg-hook-switch {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	& .form-check-input {
+		margin: 0;
+		cursor: pointer;
+	}
+}
+
+/* Progress bars start empty and grow to their share once the script sets a width. */
+.cfg-lang-bar > span,
+.cfg-hook-meter > span {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.cfg-hook-meter > span {
+	background: var(--basalt-success);
+}
+
+/* In the sends drawer each delivery folds open to show the body that was sent. */
+.cfg-send {
+	margin-bottom: 0.6rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+
+	& summary {
+		display: grid;
+		gap: 0.6rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.7rem 0.85rem;
+		font-size: 0.85rem;
+		color: var(--basalt-copy);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:focus-visible {
+		border-radius: 10px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	& summary .bi-chevron-right {
+		color: var(--cfg-quiet);
+		transition: transform 170ms ease;
+	}
+	&[open] summary .bi-chevron-right {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0 0 0.75rem;
+		padding: 0.75rem;
+		border-radius: 8px;
+		font:
+			0.75rem/1.55 "Chivo Mono",
+			monospace;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+}
+.cfg-send-event {
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.cfg-send-meta {
+	display: block;
+	font-size: 0.75rem;
+	font-weight: 400;
+	color: var(--cfg-quiet);
+}
+.cfg-send-body {
+	padding: 0 0.85rem 0.85rem;
+}
+
+/* The format example under the region fields reads as one line of mono text. */
+.cfg-preview {
+	margin-top: 1.5rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.cfg-preview-label {
+	margin: 0 0 0.25rem;
+	font-size: 0.75rem;
+	color: var(--cfg-quiet);
+}
+.cfg-preview-line {
+	margin: 0;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85rem;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* A language row holds its name, a translated-share bar, the percentage and a switch. */
+.cfg-langs {
+	display: grid;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+.cfg-lang {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) minmax(4rem, 7rem) 2.75rem auto;
+	align-items: center;
+	& .form-check-input {
+		margin: 0;
+		cursor: pointer;
+	}
+}
+.cfg-lang.is-new {
+	animation: cfg-in 360ms ease;
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+@keyframes cfg-in {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+}
+.cfg-lang-name {
+	margin: 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	& .cfg-sub {
+		font-weight: 400;
+	}
+}
+.cfg-lang-bar {
+	height: 6px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.cfg-lang-bar > span {
+	background: var(--basalt-series-3);
+}
+.cfg-lang-pct {
+	font:
+		600 0.75rem "Chivo Mono",
+		monospace;
+	text-align: right;
+	color: var(--basalt-copy-body);
+}
+.cfg-add-lang-row {
+	display: flex;
+	gap: 0.5rem;
+	& > input {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+
+/* The logo drop zone is roomier than a stock empty state. */
+.cfg-drop {
+	padding: 1.5rem 1rem;
+}
+
+/* Accent swatches are round radios; the checked one gets a ring in the text color. */
+.cfg-swatches {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.5rem;
+}
+.cfg-swatch {
+	--cfg-accent: var(--basalt-series-1);
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 50%;
+	border: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	& input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+	&:hover {
+		border-color: var(--basalt-copy-muted);
+	}
+	&:has(input:checked) {
+		border-color: var(--basalt-copy);
+		box-shadow: 0 0 0 2px var(--basalt-copy);
+	}
+	&:has(input:focus-visible:not(:checked)) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.cfg-swatch-dot {
+	display: grid;
+	place-items: center;
+	width: 1.8rem;
+	height: 1.8rem;
+	border-radius: 50%;
+	background: var(--cfg-accent);
+}
+.cfg-swatch-name {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	white-space: nowrap;
+	clip-path: inset(50%);
+}
+.cfg-swatch-1,
+.cfg-accent-1 {
+	--cfg-accent: var(--basalt-series-1);
+}
+.cfg-swatch-2,
+.cfg-accent-2 {
+	--cfg-accent: var(--basalt-series-2);
+}
+.cfg-swatch-3,
+.cfg-accent-3 {
+	--cfg-accent: var(--basalt-series-3);
+}
+.cfg-swatch-4,
+.cfg-accent-4 {
+	--cfg-accent: var(--basalt-series-4);
+}
+.cfg-swatch-5,
+.cfg-accent-5 {
+	--cfg-accent: var(--basalt-series-5);
+}
+.cfg-swatch-6,
+.cfg-accent-6 {
+	--cfg-accent: var(--basalt-series-6);
+}
+
+/* The order email preview borrows the chosen accent for its top bar, logo tile and button. */
+.cfg-mail {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.cfg-mail-bar {
+	height: 6px;
+	background: var(--cfg-accent);
+	transition: background-color 240ms ease;
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.cfg-mail-body {
+	padding: 1.25rem 1.35rem 1.4rem;
+}
+.cfg-mail-head {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-bottom: 1rem;
+	& .cfg-logo-mark {
+		color: var(--basalt-plane);
+		background: var(--cfg-accent);
+		transition: background-color 240ms ease;
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+}
+.cfg-mail-shop {
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cfg-mail-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cfg-mail-text {
+	margin: 0 0 1rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.cfg-mail-btn {
+	display: inline-block;
+	padding: 0.4rem 0.9rem;
+	border-radius: 8px;
+	border: 2px solid var(--cfg-accent);
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: color-mix(in srgb, var(--cfg-accent) 45%, var(--basalt-copy));
+	transition:
+		border-color 240ms ease,
+		color 240ms ease;
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* Usage rings sit beside their legend from 576px; each ring and swatch shares a series tone. */
+.cfg-usage {
+	display: grid;
+	gap: 1.75rem;
+	align-items: center;
+	@media (min-width: 576px) {
+		gap: 2.5rem;
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+}
+.cfg-usage-rings {
+	--size: 176px;
+	justify-self: center;
+}
+.cfg-tone-1 {
+	--tone: var(--basalt-series-1);
+}
+.cfg-tone-2 {
+	--tone: var(--basalt-series-3);
+}
+.cfg-tone-3 {
+	--tone: var(--basalt-series-5);
+}
+.cfg-usage-list {
+	display: grid;
+	gap: 0.25rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cfg-usage-item {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 0.75rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.65rem 0.75rem;
+	border-radius: 10px;
+	&:hover {
+		background: var(--basalt-wash);
+	}
+}
+.cfg-usage-swatch {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 50%;
+	background: var(--tone);
+}
+.cfg-usage-name {
+	margin: 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cfg-usage-of {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--cfg-quiet);
+}
+.cfg-usage-pct {
+	font:
+		600 0.85rem "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+}
+
+/* The card on file is a bordered strip: brand glyph, number and expiry, then its status. */
+.cfg-paycard {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+}
+.cfg-paycard-brand {
+	font-size: 1.6rem;
+	line-height: 1;
+	color: var(--basalt-copy-body);
+}
+.cfg-paycard-text {
+	flex: 1 1 8rem;
+}
+.cfg-paycard-num {
+	margin: 0;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cfg-paycard-exp {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cfg-quiet);
+}
+.cfg-inv-loading {
+	display: grid;
+	gap: 0.9rem;
+	padding: 0.25rem 0 0.5rem;
+	&[hidden] {
+		display: none;
+	}
+}
+.cfg-plan-period {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 1.25rem;
+}
+.cfg-plan-choices {
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+	& .basalt-choice {
+		text-align: center;
+	}
+}
+
+/* A read-only value and its Copy button share one row. */
+.cfg-copy-field {
+	display: flex;
+	gap: 0.5rem;
+	& .form-control {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+.cfg-key-done {
+	padding-top: 0.5rem;
+}
+.cfg-key-done-inner {
+	padding: 1rem 0 1.25rem;
+}
+
+/* The danger zone card carries a red-tinted edge. */
+.cfg-danger.basalt-box {
+	border-color: color-mix(in srgb, var(--basalt-danger) 35%, var(--basalt-edge));
+}
+.cfg-danger-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cfg-danger-row > div {
+	flex: 1 1 14rem;
+}
+.cfg-danger-name {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cfg-danger-desc {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cfg-quiet);
+}
+
+.cfg-export-choices {
+	margin-bottom: 1rem;
+}
+.cfg-export-row {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+
+/* The save bar sticks to the bottom of the window for as long as anything is unsaved. */
+.cfg-savebar {
+	position: sticky;
+	bottom: 1rem;
+	z-index: 20;
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 2rem;
+	padding: 0.75rem 0.75rem 0.75rem 1.1rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+	box-shadow: 0 12px 32px -12px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	animation: cfg-rise 240ms ease;
+	&[hidden] {
+		display: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+	@media print {
+		display: none;
+	}
+}
+@keyframes cfg-rise {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+.cfg-savebar-text {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	& .bi {
+		color: var(--basalt-copy-body);
+	}
+}
+.cfg-savebar-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Kept for the checkup tick, which pops once when a check passes. */
+@keyframes cfg-pop {
+	40% {
+		transform: scale(1.25);
+	}
+}
+
+/*
+ * Bootstrap fades disabled buttons, which drops the label below 4.5:1.
+ * Here a disabled button keeps a readable muted label on a faint fill,
+ * which still says "not yet" in every palette.
+ */
+:root .cfg-page .btn:disabled,
+:root .cfg-page .btn.disabled,
+:root .cfg-dialog .btn:disabled,
+:root .cfg-dialog .btn.disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--bs-btn-disabled-bg: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	--bs-btn-disabled-border-color: var(--basalt-edge);
+	opacity: 1;
+}
+
+/* Print stills every animation and transition; this stays last so it outranks the component rules above. */
+@media print {
+	.cfg-page * {
+		transition: none;
+		animation: none;
+	}
+}

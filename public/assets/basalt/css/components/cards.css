@@ -1,0 +1,1278 @@
+/* Compiles to assets/basalt/css/components/cards.css, linked after basalt.css by
+   the pages that use it. */
+/*
+ * Every card variant from cards.html, in the order that page shows them:
+ * accent strip, product tile, dismissible notice, trend figure, link tile,
+ * toolbar widget, flip card, drag-to-order list and the selectable option
+ * card that forms across the app reuse. Pictures are illustration classes;
+ * the moving parts are driven by Basalt.cards and its [data-basalt-*]
+ * hooks in assets/basalt/js/components/cards.js, so this file only describes how each state looks.
+ */
+/* Secondary text everywhere here is the muted copy pulled toward full ink. */
+/* Prices, counts and ranks are set in the mono face so digits line up. */
+/* Icon tiles take a light wash of their tone and a deeper ink of the same tone. */
+/* Glyphs and small tiles are centered on both axes by a one-cell grid. */
+/* A keyboard focus mark drawn as a two pixel outline just off the edge. */
+/* Rules that only apply when the visitor asked for less motion. */
+/* The dashed slip a removed card leaves behind, with its restore action at the far end. */
+/* A soft ring in the given tone that marks the card itself as focused. */
+/* Accent card: a plain panel topped by a three pixel band; each tone class only recolors that band. */
+.basalt-card-accent {
+	--basalt-flare-edge: var(--basalt-hue);
+	position: relative;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.basalt-card-accent::before {
+	content: "";
+	position: absolute;
+	inset: 0 0 auto 0;
+	height: 3px;
+	background: var(--basalt-flare-edge);
+}
+.basalt-card-accent-success {
+	--basalt-flare-edge: var(--basalt-success);
+}
+.basalt-card-accent-warning {
+	--basalt-flare-edge: var(--basalt-warning);
+}
+.basalt-card-accent-danger {
+	--basalt-flare-edge: var(--basalt-danger);
+}
+.basalt-card-accent .card-body {
+	padding: 1.1rem 1.2rem;
+}
+.basalt-card-accent-icon {
+	color: color-mix(in srgb, var(--basalt-flare-edge) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-flare-edge) 14%, var(--basalt-plane));
+	width: 2.1rem;
+	height: 2.1rem;
+	margin-bottom: 0.75rem;
+	border-radius: 10px;
+	display: grid;
+	place-items: center;
+}
+.basalt-card-accent-label {
+	margin: 0;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-card-accent-value {
+	margin: 0 0 0.1rem;
+	font-size: 1.3rem;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.basalt-card-accent-note {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Media card: artwork over a short product body. The title link stretches over the whole card, which rises while it is pointed at or focused. */
+.basalt-media-card {
+	--basalt-media-tone: var(--basalt-tone, var(--basalt-hue));
+	position: relative;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+	transition:
+		transform 210ms cubic-bezier(0.2, 0.8, 0.2, 1),
+		box-shadow 210ms ease,
+		border-color 210ms ease;
+}
+.basalt-media-card:hover,
+.basalt-media-card:focus-within {
+	transform: translateY(-4px);
+	border-color: var(--basalt-edge-strong);
+	box-shadow: var(--basalt-card-shadow);
+}
+.basalt-media-card:has(.stretched-link:focus-visible) {
+	box-shadow:
+		0 0 0 0.22rem color-mix(in srgb, var(--basalt-hue) 40%, transparent),
+		var(--basalt-card-shadow);
+}
+
+.basalt-media-card-media {
+	aspect-ratio: 4/3;
+	background:
+		radial-gradient(
+			circle at 30% 20%,
+			color-mix(in srgb, var(--basalt-media-tone) 26%, transparent),
+			transparent 60%
+		),
+		color-mix(in srgb, var(--basalt-media-tone) 12%, var(--basalt-plane));
+	display: grid;
+	place-items: center;
+	position: relative;
+	overflow: hidden;
+}
+:root[data-basalt-gradients="off"] .basalt-media-card-media {
+	background-image: none;
+}
+.basalt-media-card-media {
+	/* Drawings sit inset in the panel; photographs fill it and crop. */
+}
+.basalt-media-card-media > svg,
+.basalt-media-card-media > img {
+	width: 64%;
+	transition: transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.basalt-media-card-media > img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.basalt-media-card:hover .basalt-media-card-media > :is(svg, img) {
+	transform: scale(1.06) rotate(-2deg);
+}
+
+.basalt-media-card-badge {
+	position: absolute;
+	top: 0.85rem;
+	left: 0.85rem;
+	padding: 0.3rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+}
+
+/* The favorite toggle stays hidden until the card is in play or the item is already saved; touch screens always show it. */
+.basalt-media-card-fav {
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	border: 1px solid var(--basalt-edge);
+	font-size: 1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	opacity: 0;
+	display: grid;
+	place-items: center;
+	position: absolute;
+	top: 0.7rem;
+	right: 0.7rem;
+	z-index: 2;
+	transform: scale(0.85);
+	cursor: pointer;
+	transition:
+		opacity 180ms ease,
+		transform 210ms cubic-bezier(0.3, 1.6, 0.5, 1),
+		color 170ms ease;
+}
+
+.basalt-media-card:hover .basalt-media-card-fav,
+.basalt-media-card:focus-within .basalt-media-card-fav,
+.basalt-media-card-fav[aria-pressed="true"] {
+	transform: none;
+	opacity: 1;
+}
+
+@media (hover: none) {
+	.basalt-media-card-fav {
+		transform: none;
+		opacity: 1;
+	}
+}
+.basalt-media-card-fav:hover {
+	color: var(--basalt-copy);
+}
+.basalt-media-card-fav:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.basalt-media-card-fav[aria-pressed="true"] {
+	color: color-mix(in srgb, var(--basalt-danger) 78%, var(--basalt-copy));
+}
+.basalt-media-card-fav.is-pop {
+	animation: basalt-fav-pop 360ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes basalt-fav-pop {
+	40% {
+		transform: scale(1.25);
+	}
+}
+.basalt-media-card-body {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	padding: 1.1rem 1.1rem 1.2rem;
+}
+
+.basalt-media-card-meta {
+	margin: 0;
+	font-size: 0.74rem;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+.basalt-media-card-title {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 700;
+}
+.basalt-media-card-title a {
+	text-decoration: none;
+	color: var(--basalt-copy);
+	/* The ring belongs to the card, so the link itself draws none. */
+}
+.basalt-media-card-title a:focus-visible {
+	outline: 0;
+}
+
+.basalt-media-card-notes {
+	margin: 0 0 0.6rem;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+}
+
+.basalt-media-card-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.85rem;
+}
+
+.basalt-media-card-price {
+	font-family: "Chivo Mono", monospace;
+	font-weight: 600;
+	font-size: 1rem;
+	color: var(--basalt-copy);
+}
+
+.basalt-media-card-rating {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.basalt-media-card-rating .bi {
+	color: color-mix(in srgb, var(--basalt-warning) 80%, var(--basalt-copy));
+}
+
+.basalt-media-card-count {
+	font-weight: 500;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* The add button sits above the stretched link, and once used it turns green and stays green under the pointer. */
+.basalt-media-card-add {
+	position: relative;
+	z-index: 2;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	justify-content: center;
+}
+.basalt-media-card-add.is-done,
+.basalt-media-card-add.is-done:hover {
+	--bs-btn-color: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	--bs-btn-hover-color: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-success) 60%, transparent);
+	--bs-btn-hover-border-color: color-mix(in srgb, var(--basalt-success) 60%, transparent);
+	--bs-btn-bg: var(--basalt-success-soft);
+	--bs-btn-hover-bg: var(--basalt-success-soft);
+}
+
+/* Without motion the card, its artwork and the favorite toggle change state in place. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-media-card,
+	.basalt-media-card-media > *,
+	.basalt-media-card-fav {
+		transition: none;
+	}
+	.basalt-media-card:hover,
+	.basalt-media-card:focus-within,
+	.basalt-media-card:hover .basalt-media-card-media > :is(svg, img) {
+		transform: none;
+	}
+	.basalt-media-card-fav.is-pop {
+		animation: none;
+	}
+}
+/* Dismissible card: a notice with a close button that slides out sideways, followed by a dark undo bar that drains while the choice can still be reversed. */
+.basalt-dismiss-stack {
+	display: grid;
+	gap: 0.7rem;
+}
+
+.basalt-dismiss-card {
+	display: flex;
+	gap: 0.9rem;
+	flex-direction: row;
+	align-items: flex-start;
+	padding: 1rem 1rem 1rem 1.1rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+	transition:
+		opacity 210ms ease,
+		transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.basalt-dismiss-card.is-leaving {
+	transform: translateX(2rem);
+	opacity: 0;
+}
+.basalt-dismiss-card-icon {
+	color: color-mix(in srgb, var(--basalt-tone, var(--basalt-hue)) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-tone, var(--basalt-hue)) 14%, var(--basalt-plane));
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+}
+.basalt-dismiss-card-body {
+	flex: 1;
+	min-width: 0;
+}
+.basalt-dismiss-card-title {
+	margin: 0.1rem 0 0.1rem;
+	font-size: 0.92rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.basalt-dismiss-card-text {
+	margin: 0;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+}
+.basalt-dismiss-card .btn-close {
+	flex-shrink: 0;
+	padding: 0.5rem;
+	border-radius: 8px;
+	font-size: 0.7rem;
+}
+.basalt-dismiss-card .btn-close:focus-visible {
+	opacity: 1;
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+}
+
+.basalt-undo-bar {
+	position: relative;
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 0.9rem 0.75rem 1.1rem;
+	border-radius: 14px;
+	overflow: hidden;
+	font-size: 0.86rem;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+	animation: basalt-zoom-in 200ms ease;
+}
+.basalt-undo-bar-text {
+	min-width: 0;
+}
+.basalt-undo-bar {
+	/* The undo button is drawn in reverse: light outline on the dark bar, filled light when pressed or hovered. */
+}
+.basalt-undo-bar .btn {
+	--bs-btn-color: var(--basalt-plane);
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-plane) 45%, transparent);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-plane);
+	--bs-btn-hover-border-color: var(--basalt-plane);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-plane);
+	flex-shrink: 0;
+}
+.basalt-undo-bar .btn:focus-visible {
+	outline: 2px solid var(--basalt-plane);
+	outline-offset: 2px;
+}
+.basalt-undo-bar {
+	/* A hairline along the bottom shrinks to nothing over the undo window. */
+}
+.basalt-undo-bar-time {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	transform-origin: left;
+	width: 100%;
+	height: 3px;
+	background: var(--basalt-plane);
+	opacity: 0.5;
+	animation: basalt-drain var(--basalt-undo-ms, 6000ms) linear forwards;
+}
+
+@keyframes basalt-drain {
+	to {
+		transform: scaleX(0);
+	}
+}
+.basalt-dismiss-empty {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.7rem;
+	padding: 0.9rem 1.1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 14px;
+	font-size: 0.88rem;
+	color: var(--basalt-copy-body);
+}
+.basalt-dismiss-empty[hidden] {
+	display: none;
+}
+
+/* Without motion a dismissed card simply goes, and the undo timer rests half full. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-dismiss-card {
+		transition: none;
+	}
+	.basalt-undo-bar {
+		animation: none;
+	}
+	.basalt-undo-bar-time {
+		transform: scaleX(0.5);
+		animation: none;
+	}
+}
+/* Trend card: one headline figure with its change, over a sparkline that runs to both edges of the card. */
+.basalt-trend-card {
+	--basalt-trend-tone: var(--basalt-tone, var(--basalt-hue));
+	--basalt-foot-x: 1.1rem;
+	position: relative;
+	min-width: 0;
+	padding: 1.1rem var(--basalt-foot-x) 0;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.basalt-trend-card-top {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+.basalt-trend-card-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-trend-card-icon {
+	color: color-mix(in srgb, var(--basalt-trend-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-trend-tone) 14%, var(--basalt-plane));
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.95rem;
+	display: grid;
+	place-items: center;
+}
+.basalt-trend-card-value {
+	margin: 0 0 0.3rem;
+	font-size: 1.65rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.basalt-trend-card-delta {
+	display: flex;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	font-size: 0.77rem;
+	font-weight: 700;
+}
+.basalt-trend-card-delta.is-up {
+	color: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+}
+.basalt-trend-card-delta.is-down {
+	color: color-mix(in srgb, var(--basalt-danger) 58%, var(--basalt-copy));
+}
+.basalt-trend-card-vs {
+	font-weight: 500;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-trend-card {
+	/* Negative side margins undo the card padding so the line touches both edges. */
+}
+.basalt-trend-card-spark {
+	height: 3.5rem;
+	margin: 0.25rem calc(-1 * var(--basalt-foot-x)) 0;
+}
+.basalt-trend-card-spark svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.basalt-trend-card-line {
+	fill: none;
+	stroke: var(--basalt-trend-tone);
+	stroke-width: 2;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	vector-effect: non-scaling-stroke;
+}
+.basalt-trend-card-area {
+	fill: color-mix(in srgb, var(--basalt-trend-tone) 16%, transparent);
+	stroke: none;
+}
+
+/* Link card: an icon, a title whose link covers the card, and a call to action whose arrow steps forward on hover or focus. */
+.basalt-card-link {
+	position: relative;
+	padding: 1.3rem 1.3rem 1.2rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	transition:
+		transform 210ms cubic-bezier(0.2, 0.8, 0.2, 1),
+		box-shadow 210ms ease,
+		border-color 210ms ease;
+}
+.basalt-card-link:hover {
+	transform: translateY(-3px);
+	border-color: var(--basalt-edge-strong);
+	box-shadow: var(--basalt-card-shadow);
+}
+.basalt-card-link:has(.stretched-link:focus-visible) {
+	border-color: var(--basalt-hue);
+	box-shadow: 0 0 0 0.22rem color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+}
+.basalt-card-link-icon {
+	color: color-mix(in srgb, var(--basalt-tone, var(--basalt-hue)) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-tone, var(--basalt-hue)) 14%, var(--basalt-plane));
+	width: 2.6rem;
+	height: 2.6rem;
+	margin-bottom: 1rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	display: grid;
+	place-items: center;
+}
+.basalt-card-link-title {
+	margin: 0 0 0.3rem;
+	font-size: 1rem;
+	font-weight: 700;
+}
+.basalt-card-link-title a {
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.basalt-card-link-title a:focus-visible {
+	outline: 0;
+}
+.basalt-card-link-text {
+	margin: 0 0 1rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.basalt-card-link-go {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+}
+.basalt-card-link-go .bi {
+	transition: transform 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.basalt-card-link:hover .basalt-card-link-go .bi,
+.basalt-card-link:focus-within .basalt-card-link-go .bi {
+	transform: translateX(4px);
+}
+
+/* Without motion the link card neither lifts nor nudges its arrow. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-card-link,
+	.basalt-card-link-go .bi {
+		transition: none;
+	}
+	.basalt-card-link:hover {
+		transform: none;
+	}
+}
+/* Widget: a titled panel with its own toolbar. It can collapse, refresh behind a sliding progress bar, open full screen over a scrim, or be removed and leave a restore note. */
+.basalt-widget {
+	position: relative;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.basalt-widget-head {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: 1.1rem 1.1rem 1rem 1.3rem;
+}
+.basalt-widget-heading {
+	min-width: 0;
+}
+.basalt-widget-title {
+	margin: 0 0 0.1rem;
+	font-size: 0.98rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.basalt-widget-sub {
+	margin: 0;
+	font-size: 0.77rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-widget-tools {
+	display: flex;
+	gap: 0.1rem;
+	flex-shrink: 0;
+	align-items: center;
+}
+.basalt-widget-body {
+	padding: 0.25rem 1.3rem 1.3rem;
+}
+
+.basalt-widget-tool {
+	width: 2rem;
+	height: 2rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.95rem;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+	/* An open menu keeps its button lit the same way hover does. */
+}
+.basalt-widget-tool:hover,
+.basalt-widget-tool[aria-expanded="true"][data-bs-toggle="dropdown"] {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.basalt-widget-tool:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.basalt-widget-tool .bi {
+	transition: transform 240ms ease;
+}
+.basalt-widget-tool {
+	/* The collapse chevron turns over while the body is folded away. */
+}
+.basalt-widget-tool[aria-expanded="false"][data-bs-toggle="collapse"] .bi {
+	transform: rotate(180deg);
+}
+
+/* A refresh spins its own icon and runs a short bar across the top edge. */
+.basalt-widget.is-busy [data-basalt-widget-action="refresh"] .bi {
+	animation: basalt-turn 800ms linear infinite;
+}
+
+.basalt-widget-progress {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	height: 3px;
+	overflow: hidden;
+	opacity: 0;
+	transition: opacity 170ms ease;
+}
+.basalt-widget-progress::before {
+	content: "";
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: 40%;
+	border-radius: 0 3px 3px 0;
+	background: var(--basalt-grad);
+}
+.basalt-widget.is-busy .basalt-widget-progress {
+	opacity: 1;
+}
+.basalt-widget.is-busy .basalt-widget-progress::before {
+	animation: basalt-slide 900ms ease-in-out infinite;
+}
+
+@keyframes basalt-slide {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(260%);
+	}
+}
+/* Full screen pins the widget inside the viewport with a margin, above a blurred scrim, and stops the page behind from scrolling. */
+.basalt-widget.is-full {
+	position: fixed;
+	inset: clamp(0.75rem, 4vw, 2.5rem);
+	z-index: 1070;
+	overflow: auto;
+	box-shadow: 0 30px 80px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	animation: basalt-zoom-in 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.basalt-widget.is-full .basalt-widget-body {
+	padding: 0.5rem 2rem 2rem;
+	font-size: 1rem;
+}
+
+@keyframes basalt-zoom-in {
+	from {
+		transform: scale(0.97);
+		opacity: 0;
+	}
+}
+.basalt-widget-scrim {
+	position: fixed;
+	inset: 0;
+	z-index: 1065;
+	background: var(--basalt-scrim);
+	backdrop-filter: blur(2px);
+}
+
+html.basalt-widget-lock {
+	overflow: hidden;
+}
+
+.basalt-widget-removed {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.9rem 1.1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 14px;
+	font-size: 0.88rem;
+	color: var(--basalt-copy-body);
+}
+.basalt-widget-removed[hidden] {
+	display: none;
+}
+.basalt-widget-removed .bi {
+	margin-right: 0.5rem;
+}
+
+/* Without motion the toolbar icons, the refresh and the full screen entrance all stay still. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-widget-tool .bi {
+		transition: none;
+	}
+	.basalt-widget.is-full,
+	.basalt-widget.is-busy .basalt-widget-progress::before,
+	.basalt-widget.is-busy [data-basalt-widget-action="refresh"] .bi {
+		animation: none;
+	}
+}
+/* Flip card: both faces share one grid cell, and turning the inner layer half a revolution shows the back. */
+.basalt-flip-card {
+	perspective: 1200px;
+	width: 100%;
+	max-width: 20rem;
+}
+.basalt-flip-card-inner {
+	transform-style: preserve-3d;
+	display: grid;
+	transition: transform 700ms cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.basalt-flip-card.is-flipped .basalt-flip-card-inner {
+	transform: rotateY(180deg);
+}
+.basalt-flip-card-face {
+	backface-visibility: hidden;
+	grid-area: 1/1;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.basalt-flip-card-back {
+	transform: rotateY(180deg);
+}
+.basalt-flip-card-art {
+	aspect-ratio: 16/10;
+	background: color-mix(in srgb, var(--basalt-tone, var(--basalt-hue)) 14%, var(--basalt-plane));
+	display: grid;
+	place-items: center;
+}
+.basalt-flip-card-art .basalt-illo {
+	width: 58%;
+}
+.basalt-flip-card {
+	/* The action button is pushed to the foot of whichever face holds it. */
+}
+.basalt-flip-card-body {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.1rem 1.2rem 1.25rem;
+}
+.basalt-flip-card-body .btn {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-self: flex-start;
+	align-items: center;
+	margin-top: auto;
+}
+.basalt-flip-card-meta {
+	margin: 0;
+	font-size: 0.74rem;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-flip-card-title {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.basalt-flip-card-text {
+	margin: 0 0 0.75rem;
+	font-size: 0.86rem;
+	color: var(--basalt-copy-body);
+}
+.basalt-flip-card {
+	/* Each rating row reads label on the left, a run of dots on the right. */
+}
+.basalt-flip-card-scale {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.3rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+}
+.basalt-flip-card-dots {
+	display: inline-flex;
+	gap: 0.3rem;
+}
+.basalt-flip-card-dots span {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	border: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane-alt);
+}
+.basalt-flip-card-dots span.is-on {
+	border-color: transparent;
+	background: var(--basalt-tone, var(--basalt-hue));
+}
+.basalt-flip-card {
+	/* Facts are three small tiles; the markup lists the term first, the layout shows the figure first. */
+}
+.basalt-flip-card-facts {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(3, 1fr);
+	margin: 0.75rem 0 1rem;
+}
+.basalt-flip-card-facts div {
+	display: flex;
+	flex-direction: column-reverse;
+	padding: 0.5rem 0.6rem;
+	border-radius: 10px;
+	background: var(--basalt-canvas);
+}
+.basalt-flip-card-facts dt {
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-flip-card-facts dd {
+	margin: 0;
+	font:
+		600 0.95rem/1.2 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+}
+
+/* Without motion the faces cross-fade in place instead of turning over. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-flip-card-inner {
+		transition: none;
+	}
+	.basalt-flip-card.is-flipped .basalt-flip-card-inner {
+		transform: none;
+	}
+	.basalt-flip-card-face {
+		backface-visibility: visible;
+		transition:
+			opacity 200ms ease,
+			visibility 200ms;
+	}
+	.basalt-flip-card-back {
+		transform: none;
+		visibility: hidden;
+		opacity: 0;
+	}
+	.basalt-flip-card.is-flipped .basalt-flip-card-back {
+		visibility: visible;
+		opacity: 1;
+	}
+	.basalt-flip-card.is-flipped .basalt-flip-card-front {
+		visibility: hidden;
+		opacity: 0;
+	}
+}
+/* Sortable cards: a short list reordered by dragging the grip or with the arrow keys; [data-basalt-sortable-cards] supplies the behavior. */
+.basalt-sortable-cards {
+	position: relative;
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.basalt-sortable-cards-item {
+	position: relative;
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	padding: 0.7rem 0.9rem 0.7rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		box-shadow 170ms ease,
+		border-color 170ms ease;
+	/* A card in hand, by pointer or by keyboard, floats above its neighbors with a hue edge. */
+}
+.basalt-sortable-cards-item.is-dragging,
+.basalt-sortable-cards-item.is-lifted {
+	z-index: 2;
+	border-color: var(--basalt-hue);
+	box-shadow: 0 14px 30px color-mix(in srgb, var(--basalt-copy) 18%, transparent);
+}
+.basalt-sortable-cards-item.is-dragging {
+	cursor: grabbing;
+	transition: box-shadow 170ms ease;
+}
+.basalt-sortable-cards-item.is-lifted {
+	transform: scale(1.015);
+}
+
+.basalt-sortable-cards-handle {
+	width: 2rem;
+	height: 2.5rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	background: transparent;
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+	cursor: grab;
+	touch-action: none;
+}
+.basalt-sortable-cards-handle:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.basalt-sortable-cards-handle:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+.basalt-sortable-cards-icon {
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+}
+
+.basalt-sortable-cards-body {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+
+.basalt-sortable-cards-title {
+	font-weight: 650;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+
+.basalt-sortable-cards-meta {
+	font-size: 0.77rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* The current rank, in a round mono badge at the end of the row. */
+.basalt-sortable-cards-pos {
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	border: 1px solid var(--basalt-edge);
+	font:
+		600 0.76rem/1 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+}
+
+/* Without motion a lifted card stays its own size and moves without easing. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-sortable-cards-item {
+		transition: none;
+	}
+	.basalt-sortable-cards-item.is-lifted {
+		transform: none;
+	}
+}
+/* Selectable card: a label around a real radio or checkbox. The input is only hidden from sight, so focus, arrow keys and form posting all still work. */
+.basalt-choice-set {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.basalt-choice-set-legend {
+	float: none;
+	width: auto;
+	margin-bottom: 0.75rem;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.basalt-choice-set-hint {
+	margin-left: 0.3rem;
+	font-weight: 500;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* Cards share a row while each can stay at least 12.5rem wide; the row layout asks for a wider minimum. */
+.basalt-choice-grid {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr));
+}
+.basalt-choice-grid-rows {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.basalt-choice-card {
+	--basalt-choice-on: var(--basalt-hue);
+	position: relative;
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	padding: 1.1rem 1.1rem 1.1rem;
+	border: 1.5px solid var(--basalt-edge-strong);
+	border-radius: 14px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease,
+		box-shadow 170ms ease,
+		transform 170ms ease;
+}
+.basalt-choice-card:hover {
+	border-color: color-mix(in srgb, var(--basalt-choice-on) 55%, var(--basalt-edge-strong));
+}
+.basalt-choice-card {
+	/* Card states follow the hidden input: a ring for keyboard focus, a tinted fill once chosen, a dashed outline while unavailable. */
+}
+.basalt-choice-card:has(.basalt-choice-card-input:focus-visible:not(:checked)) {
+	box-shadow: 0 0 0 0.22rem color-mix(in srgb, var(--basalt-choice-on) 40%, transparent);
+}
+.basalt-choice-card:has(.basalt-choice-card-input:checked) {
+	border-color: var(--basalt-choice-on);
+	background: color-mix(in srgb, var(--basalt-hue-soft) 70%, var(--basalt-plane));
+	box-shadow: 0 6px 18px color-mix(in srgb, var(--basalt-choice-on) 16%, transparent);
+}
+.basalt-choice-card:has(.basalt-choice-card-input:disabled) {
+	border-style: dashed;
+	background: transparent;
+	cursor: not-allowed;
+}
+.basalt-choice-card:has(.basalt-choice-card-input:disabled):hover {
+	border-color: var(--basalt-edge-strong);
+}
+
+.basalt-choice-card-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* The mark is a ring in the top corner (rounded square for checkboxes) that fills and pops a little when chosen. */
+.basalt-choice-card-mark {
+	width: 1.35rem;
+	height: 1.35rem;
+	border-radius: 50%;
+	border: 1.5px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	color: transparent;
+	background: var(--basalt-plane);
+	display: grid;
+	place-items: center;
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		color 170ms ease,
+		transform 200ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.basalt-choice-card-input[type="checkbox"] ~ .basalt-choice-card-mark {
+	border-radius: 6px;
+}
+.basalt-choice-card-input:checked ~ .basalt-choice-card-mark {
+	transform: scale(1.08);
+	border-color: var(--basalt-choice-on);
+	color: var(--basalt-on-hue);
+	background: var(--basalt-choice-on);
+}
+
+.basalt-choice-card-icon {
+	width: 2.5rem;
+	height: 2.5rem;
+	margin-bottom: 0.5rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 1.1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+	display: grid;
+	place-items: center;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.basalt-choice-card-input:checked ~ .basalt-choice-card-icon {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: var(--basalt-plane);
+}
+
+/* A small dark pill that rides the top border, such as a recommended pick. */
+.basalt-choice-card-tag {
+	position: absolute;
+	top: -0.7rem;
+	left: 1rem;
+	align-self: flex-start;
+	order: -1;
+	padding: 0.2rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.67rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+
+/* The title leaves room on the right for the mark; a card without a mark gives that room back. */
+.basalt-choice-card-title {
+	padding-right: 1.75rem;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.basalt-choice-card:not(:has(.basalt-choice-card-mark)) .basalt-choice-card-title {
+	padding-right: 0;
+}
+
+.basalt-choice-card-text {
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+.basalt-choice-card-price {
+	display: block;
+	margin-top: 0.75rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* An unavailable option grays its words and strikes out its price. */
+.basalt-choice-card:has(.basalt-choice-card-input:disabled)
+	:is(.basalt-choice-card-title, .basalt-choice-card-price, .basalt-choice-card-icon) {
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-choice-card:has(.basalt-choice-card-input:disabled) .basalt-choice-card-price {
+	text-decoration: line-through;
+}
+
+/* Row variant: a compact card with the mark in its own column on the left and the text stacked beside it. */
+.basalt-choice-card-row {
+	display: grid;
+	row-gap: 0.1rem;
+	column-gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	padding: 0.9rem 1rem;
+	border-radius: 12px;
+}
+.basalt-choice-card-row .basalt-choice-card-mark {
+	position: static;
+	grid-row: span 2;
+	margin-top: 0.05rem;
+}
+.basalt-choice-card-row .basalt-choice-card-title {
+	padding-right: 0;
+	font-size: 0.92rem;
+}
+.basalt-choice-card-row .basalt-choice-card-text {
+	grid-column: 2;
+}
+
+/* Without motion the card and its mark switch state instantly. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-choice-card,
+	.basalt-choice-card-mark {
+		transition: none;
+	}
+}
+/* On paper, cards that lift or turn are printed flat and at rest. */
+@media print {
+	.basalt-media-card,
+	.basalt-card-link,
+	.basalt-flip-card-inner {
+		transform: none;
+		transition: none;
+	}
+}

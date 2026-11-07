@@ -1,0 +1,254 @@
+/* Compiles to assets/basalt/css/components/lightbox.css, linked after basalt.css by
+   the pages that use it. */
+/* The image and video viewer lives here. Basalt.lightbox in assets/basalt/js/components/lightbox.js
+   reads [data-basalt-lightbox] and builds the .basalt-viewer dialog, so the
+   arrows and the left and right keys move through a set while a counter and
+   a caption keep pace; lightbox.html shows it in use. Its stage is the
+   same quiet surface as the Media page viewer, and it is a separate thing
+   from .basalt-lightbox on the Modals page, a dialog with a thumbnail strip
+   that the page writes out by hand. */
+/* Shared by the thumbnail and the arrows. */
+/* A thumbnail is any link or button carrying [data-basalt-lightbox]; it
+   shows a zoom cursor, lifts on hover and wears a play badge for video. */
+.basalt-viewer-thumb {
+	position: relative;
+	display: block;
+	padding: 0;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+	cursor: zoom-in;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+}
+.basalt-viewer-thumb > img,
+.basalt-viewer-thumb > video {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.basalt-viewer-thumb:hover {
+	border-color: var(--basalt-edge-strong);
+	box-shadow: 0 12px 28px -20px var(--basalt-scrim);
+}
+.basalt-viewer-thumb:hover > img,
+.basalt-viewer-thumb:hover > video {
+	transform: scale(1.03);
+}
+.basalt-viewer-thumb:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.basalt-viewer-thumb {
+	/* Without motion the thumbnail neither eases nor grows. */
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-viewer-thumb,
+	.basalt-viewer-thumb > img,
+	.basalt-viewer-thumb > video {
+		transition: none;
+	}
+	.basalt-viewer-thumb:hover > img,
+	.basalt-viewer-thumb:hover > video {
+		transform: none;
+	}
+}
+
+.basalt-viewer-thumb-play {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: grid;
+	place-items: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	margin: -1.625rem 0 0 -1.625rem;
+	border-radius: 50%;
+	font-size: 1.5rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 8px 24px -10px var(--basalt-scrim);
+	pointer-events: none;
+	/* The play triangle sits a touch right so it looks centered. */
+}
+.basalt-viewer-thumb-play .bi {
+	margin-left: 0.1rem;
+}
+
+/* The dialog stacks a bar with the counter and close button, then the stage
+   and its arrows, then the caption; below 768px it fills the screen. */
+.basalt-viewer .modal-dialog {
+	max-width: min(1200px, 100vw - 3rem);
+}
+.basalt-viewer .modal-content {
+	display: flex;
+	flex-direction: column;
+	height: min(860px, 100vh - 3.5rem);
+	border-radius: 18px;
+	overflow: hidden;
+}
+@media (max-width: 767.98px) {
+	.basalt-viewer .modal-dialog {
+		max-width: none;
+		height: 100%;
+		margin: 0;
+	}
+	.basalt-viewer .modal-content {
+		height: 100%;
+		border-radius: 0;
+		border: 0;
+	}
+}
+
+.basalt-viewer-bar {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.85rem 1rem 0.85rem 1.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+
+.basalt-viewer-count {
+	margin: 0;
+	font:
+		400 0.8rem/1.4 "Chivo Mono",
+		monospace;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+.basalt-viewer-stage {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 0;
+	background: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-canvas));
+}
+
+/* The frame is a size container, so whatever it holds keeps its own
+   proportions and still fits inside the stage. */
+.basalt-viewer-media {
+	position: absolute;
+	inset: 1.75rem 4.75rem;
+	display: grid;
+	place-items: center;
+	container-type: size;
+	margin: 0;
+	/* Phones leave a strip under the picture for the arrows. */
+}
+@media (max-width: 575.98px) {
+	.basalt-viewer-media {
+		inset: 1rem 1rem 4.5rem;
+	}
+}
+.basalt-viewer-media > img,
+.basalt-viewer-media > video {
+	display: block;
+	width: auto;
+	max-width: 100cqw;
+	height: auto;
+	max-height: 100cqh;
+	border-radius: 6px;
+	box-shadow: 0 18px 40px -24px var(--basalt-scrim);
+}
+.basalt-viewer-media > video {
+	background: var(--basalt-copy);
+}
+.basalt-viewer-media > iframe {
+	width: min(100cqw, 177.7777777778cqh);
+	aspect-ratio: 16/9;
+	border-radius: 6px;
+	border: 0;
+}
+.basalt-viewer-media.is-stepping {
+	animation: basalt-slide-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.basalt-viewer-media.is-back {
+	animation-name: basalt-slide-back;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-viewer-media.is-stepping {
+		animation: none;
+	}
+}
+
+/* Round arrows ride the middle of the stage; on phones they drop to the
+   bottom corners, clear of the picture. */
+.basalt-viewer-nav {
+	position: absolute;
+	top: 50%;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin-top: -1.375rem;
+	padding: 0;
+	border-radius: 50%;
+	border: 1px solid var(--basalt-edge);
+	font-size: 1.1rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+}
+.basalt-viewer-nav:hover {
+	border-color: var(--basalt-edge-strong);
+	background: var(--basalt-wash);
+}
+.basalt-viewer-nav:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.basalt-viewer-nav:focus:not(:focus-visible) {
+	outline: 0;
+}
+.basalt-viewer-nav[hidden],
+.basalt-viewer-nav:disabled {
+	visibility: hidden;
+}
+.basalt-viewer-nav-prev {
+	left: 1rem;
+}
+.basalt-viewer-nav-next {
+	right: 1rem;
+}
+
+@media (max-width: 575.98px) {
+	.basalt-viewer-nav {
+		top: auto;
+		bottom: 1rem;
+		margin-top: 0;
+	}
+}
+/* The caption pairs a title with an optional line of text; each one
+   disappears when it has nothing to say. */
+.basalt-viewer-caption {
+	padding: 1rem 1.5rem 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.basalt-viewer-caption[hidden] {
+	display: none;
+}
+
+.basalt-viewer-title {
+	margin: 0;
+	font-weight: 650;
+	font-size: 1rem;
+	color: var(--basalt-copy);
+}
+
+.basalt-viewer-text {
+	margin: 0.2rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.basalt-viewer-text:empty {
+	display: none;
+}

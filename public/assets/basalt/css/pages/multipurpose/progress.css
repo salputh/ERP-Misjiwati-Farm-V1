@@ -1,0 +1,708 @@
+/**
+ * Styles for progress.html, all under .pg-*: the filter row, the card
+ * grid, each card's shell and snippet, and the layouts the demos need.
+ * The indicators themselves (.basalt-ring, .basalt-steps and the rest)
+ * are shared and live in basalt.css. Colors come from --basalt-* tokens;
+ * the mixes hold small text at 4.5:1 in every palette, light and dark.
+ */
+
+/* The page root defines the muted gray its small text uses, and gives
+   inline code a chip look inside the card descriptions. */
+.pg-page {
+	--pg-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The filter row stacks the chips over the live count. A pressed chip
+   inverts to the text color. */
+.pg-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+
+	@media print {
+		display: none;
+	}
+}
+.pg-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.pg-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	.pg-chips &[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.pg-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--pg-quiet);
+}
+
+/* Twelve columns. Under 1200px each card takes the row; from there the
+   half-width cards pair up and a full-width or lone card spans both. */
+.pg-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.pg-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+
+		@media print {
+			display: block;
+		}
+	}
+}
+@media (min-width: 1200px) {
+	.pg-card {
+		grid-column: span 6;
+	}
+	.pg-card-full,
+	.pg-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A card is a column: head, demo, then the snippet pinned to the bottom.
+   The kind pill follows the title in the markup, so the title is read
+   first, and the column reverses to put the pill on top. */
+.pg-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+.pg-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.pg-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pg-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pg-quiet);
+}
+.pg-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--pg-quiet);
+}
+
+/* Parts the demos share: a name and value over a bar, a stack of them,
+   a caps label, the segmented picker, and a toolbar with a status line
+   that wraps under the buttons on a phone. */
+.pg-label {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.4rem;
+	font-size: 0.85rem;
+}
+.pg-label-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pg-label-value {
+	white-space: nowrap;
+	color: var(--pg-quiet);
+}
+.pg-stack {
+	display: grid;
+	gap: 1.25rem;
+}
+.pg-sub {
+	margin: 0 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--pg-quiet);
+}
+.pg-seg {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.5rem;
+
+	& .btn {
+		border-radius: 999px;
+		font-weight: 600;
+		font-size: 0.77rem;
+	}
+
+	/* The chosen option keeps the brand fill, nudged toward the text color
+     so the lighter palettes still clear 4.5:1. */
+	& .btn-check:checked + .btn {
+		--pg-seg-on: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+		border-color: var(--pg-seg-on);
+		color: var(--basalt-on-hue);
+		background-color: var(--pg-seg-on);
+	}
+	@media print {
+		display: none;
+	}
+}
+.pg-toolbar {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+
+	@media print {
+		display: none;
+	}
+}
+.pg-toolbar-status {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--pg-quiet);
+
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+		margin-left: 0;
+	}
+}
+.pg-page .form-range {
+	max-width: 22rem;
+}
+.pg-page .form-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+:where(.pg-page) .form-check-label {
+	color: var(--basalt-copy-body);
+}
+
+/* Bootstrap's bar in Basalt colors. Every .progress on the page reads
+   these variables, so stock markup picks up the palette. */
+:where(.pg-page) .progress,
+:where(.pg-page) .progress-stacked {
+	--bs-progress-height: 0.625rem;
+	--bs-progress-bg: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+	--bs-progress-border-radius: 999px;
+	--bs-progress-font-size: 0.71rem;
+	--bs-progress-bar-color: var(--basalt-on-hue);
+	--bs-progress-bar-bg: var(--basalt-hue);
+	--bs-progress-bar-transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+	.pg-page .progress,
+	.pg-page .progress-stacked {
+		--bs-progress-bar-transition: none;
+	}
+}
+.pg-page .progress-bar {
+	font-weight: 700;
+}
+
+/* Text written inside a bar sits on the brand color deepened toward the
+   text color, in the on-brand tone. */
+.pg-page .progress-bar.pg-bar-text {
+	justify-content: center;
+	padding: 0 0.6rem;
+	white-space: nowrap;
+	background-color: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+}
+.pg-page .progress-stacked > .progress {
+	overflow: visible;
+}
+.pg-page .progress-stacked > .progress + .progress > .progress-bar {
+	box-shadow: -2px 0 0 var(--basalt-plane);
+}
+
+/* Chart ramp fills for the multi-part bar and its legend. */
+.pg-page .pg-fill-1 {
+	--bs-progress-bar-bg: var(--basalt-series-1);
+	--pg-dot: var(--basalt-series-1);
+}
+.pg-page .pg-fill-2 {
+	--bs-progress-bar-bg: var(--basalt-series-2);
+	--pg-dot: var(--basalt-series-2);
+}
+.pg-page .pg-fill-3 {
+	--bs-progress-bar-bg: var(--basalt-series-3);
+	--pg-dot: var(--basalt-series-3);
+}
+.pg-page .pg-fill-4 {
+	--bs-progress-bar-bg: var(--basalt-series-4);
+	--pg-dot: var(--basalt-series-4);
+}
+.pg-page .progress-bar[class*="pg-fill-"] {
+	background-color: var(--bs-progress-bar-bg);
+}
+
+/* The height demo; .625rem is what the page uses everywhere else. */
+.pg-page .pg-height-xs {
+	--bs-progress-height: 0.25rem;
+}
+.pg-page .pg-height-md {
+	--bs-progress-height: 1rem;
+}
+.pg-page .pg-height-label {
+	--bs-progress-height: 1.35rem;
+}
+.pg-page .pg-height-lg {
+	--bs-progress-height: 1.5rem;
+}
+.pg-page .pg-stacked-tall {
+	height: 1rem;
+}
+
+/* The legend under the stacked bar: a square swatch in each part's fill. */
+.pg-legend {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 1rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& li::before {
+		content: "";
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 3px;
+		background: var(--pg-dot, var(--basalt-hue));
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The nested rings sit beside a legend of buttons; a pressed button
+   stays tinted while its ring is brought forward. */
+.pg-rings-demo {
+	display: flex;
+	gap: 1.75rem 2.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.pg-rings-legend {
+	display: grid;
+	gap: 0.5rem;
+	flex: 1 1 13rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& button {
+		display: grid;
+		gap: 0.7rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		width: 100%;
+		padding: 0.6rem 0.75rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		font-size: 0.85rem;
+		text-align: left;
+		color: var(--basalt-copy-body);
+		background: var(--basalt-plane);
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease;
+
+		&:hover,
+		&[aria-pressed="true"] {
+			border-color: var(--basalt-edge-strong);
+			background: var(--basalt-wash);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 2px;
+		}
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+}
+.pg-rings-legend-swatch {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 50%;
+	background: var(--tone);
+}
+.pg-rings-legend-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pg-rings-legend-of {
+	display: block;
+	font-size: 0.76rem;
+	font-weight: 400;
+	color: var(--pg-quiet);
+}
+.pg-rings-legend-pct {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pg-tone-1 {
+	--tone: var(--basalt-series-1);
+}
+.pg-tone-2 {
+	--tone: var(--basalt-series-2);
+}
+.pg-tone-3 {
+	--tone: var(--basalt-series-3);
+}
+
+/* The ring slider: one large ring next to its slider, and a dashed-off
+   row of small rings in the tone classes underneath. */
+.pg-ring-demo {
+	display: flex;
+	gap: 1.5rem 2.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .basalt-ring:not(.basalt-ring-sm) {
+		--size: 148px;
+		--thickness: 12px;
+	}
+}
+.pg-ring-demo-side {
+	flex: 1 1 14rem;
+}
+.pg-ring-row {
+	display: flex;
+	gap: 1.25rem;
+	flex-wrap: wrap;
+	margin-top: 1.75rem;
+	padding-top: 1.5rem;
+	border-top: 1px dashed var(--basalt-edge);
+
+	& figure {
+		display: grid;
+		gap: 0.4rem;
+		justify-items: center;
+		margin: 0;
+	}
+	& figcaption {
+		font-size: 0.76rem;
+		color: var(--pg-quiet);
+	}
+}
+.pg-page .basalt-ring-caption {
+	color: var(--pg-quiet);
+}
+
+/* Under the checkout steps, the same progress as a compact bar beside a
+   short caption. */
+.pg-compact {
+	margin-top: 2rem;
+	padding-top: 1.5rem;
+	border-top: 1px dashed var(--basalt-edge);
+}
+.pg-compact-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+}
+.pg-compact-text {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The loyalty card's big count, and the reward line that appears when
+   the card is full. */
+.pg-stamps-count {
+	font-size: 1.6rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+
+	& small {
+		font-size: 0.85rem;
+		font-weight: 600;
+		letter-spacing: 0;
+		color: var(--pg-quiet);
+	}
+}
+.pg-reward {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The line over the busy bar, with a green check once the job is done. */
+.pg-busy-note {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.6rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	}
+}
+
+/* A button with nothing to do goes dashed and quiet rather than faded. */
+.pg-page .btn-primary:disabled,
+.pg-page .btn-outline-secondary:disabled {
+	--bs-btn-disabled-color: var(--pg-quiet);
+	--bs-btn-disabled-bg: transparent;
+	--bs-btn-disabled-border-color: var(--basalt-edge-strong);
+	border-style: dashed;
+}
+
+/* The snippet closes every card: a disclosure line ruled off from the
+   demo, and the code on a canvas panel with the copy button in its
+   corner. Whatever the demo ends with keeps clear of the rule. */
+.pg-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.pg-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+	@media print {
+		display: none;
+	}
+}
+.pg-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.pg-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* The first time a card is on screen its demo assembles itself: bars
+   grow and their figures count up, step dots fill one by one with the
+   line drawing out between them, ticked boxes pop in, target marks rise
+   after their bars, gauge zones and legend rows fade up in turn.
+   progress.js holds a card in is-waiting until it is seen, numbers
+   each staggered piece with --pg-at, and drops is-drawing once the run
+   is over. Reduced motion skips all of it. */
+.pg-card .basalt-steps-list {
+	--pg-trail-from: scaleX(0);
+}
+@container (max-width: 34rem) {
+	.pg-card .basalt-steps-list {
+		--pg-trail-from: scaleY(0);
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	.pg-card.is-waiting {
+		& .basalt-steps-item.is-done .basalt-steps-dot,
+		& .basalt-checklist-item .form-check-input:checked,
+		& .basalt-gauge-zone,
+		& .pg-legend li,
+		& .pg-rings-legend li {
+			opacity: 0;
+		}
+		& .basalt-steps-item.is-done:not(:last-child)::after {
+			transform: var(--pg-trail-from);
+		}
+		& .basalt-progress-goal-mark {
+			transform: scaleY(0);
+		}
+		& [data-pg-grow] {
+			transform: scaleX(0);
+		}
+		& [data-pg-grow].pg-bar-text {
+			transform: none;
+			clip-path: inset(0 100% 0 0);
+		}
+	}
+	.pg-card.is-drawing {
+		& .basalt-steps-item.is-done .basalt-steps-dot,
+		& .basalt-checklist-item .form-check-input:checked {
+			animation: pg-look-pop 420ms cubic-bezier(0.34, 1.4, 0.64, 1) calc(var(--pg-at, 0) * 300ms) both;
+		}
+		& .basalt-checklist-item .form-check-input:checked {
+			animation-delay: calc(150ms + var(--pg-at, 0) * 110ms);
+		}
+		& .basalt-steps-item.is-done:not(:last-child)::after {
+			transform-origin: left center;
+			animation: pg-look-trail 240ms ease-out calc(90ms + var(--pg-at, 0) * 300ms) both;
+		}
+		& .basalt-steps-item.is-current .basalt-steps-dot {
+			animation: pg-look-halo 500ms ease-out calc(var(--pg-at, 0) * 300ms) both;
+		}
+		& .basalt-progress-goal-mark {
+			transform-origin: center;
+			animation: pg-look-rise 360ms ease-out calc(550ms + var(--pg-at, 0) * 90ms) both;
+		}
+		& .basalt-gauge-zone {
+			animation: pg-look-fade 360ms ease-out calc(var(--pg-at, 0) * 130ms) both;
+		}
+		& .pg-legend li,
+		& .pg-rings-legend li {
+			animation: pg-look-in 420ms ease-out calc(200ms + var(--pg-at, 0) * 80ms) both;
+		}
+	}
+	@container (max-width: 34rem) {
+		.pg-card.is-drawing .basalt-steps-item.is-done:not(:last-child)::after {
+			transform-origin: center top;
+		}
+	}
+	@keyframes pg-look-pop {
+		from {
+			opacity: 0;
+			transform: scale(0.4);
+		}
+	}
+	@keyframes pg-look-trail {
+		from {
+			transform: var(--pg-trail-from);
+		}
+	}
+	@keyframes pg-look-halo {
+		from {
+			box-shadow: 0 0 0 0 transparent;
+		}
+	}
+	@keyframes pg-look-rise {
+		from {
+			transform: scaleY(0);
+		}
+	}
+	@keyframes pg-look-fade {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes pg-look-in {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+}

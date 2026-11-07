@@ -3,30 +3,30 @@
 {{-- Ringkasan sampling seluruh kandangs dalam periode, memakai sesi terbaru tiap kandangs:
      jumlah titik, ekor, ABW tertimbang, dan pakan standar terhadap aktual. --}}
 <div class="table-responsive">
-<table class="table mb-0">
+<table class="table mb-0 db-table">
     <thead>
-        <tr class="userDatatable-header">
-            <th><span class="userDatatable-title">Kandang</span></th>
-            <th class="text-end"><span class="userDatatable-title">Sesi terakhir</span></th>
-            <th class="text-end"><span class="userDatatable-title">Usia</span></th>
-            <th class="text-end"><span class="userDatatable-title">Titik</span></th>
-            <th class="text-end"><span class="userDatatable-title">Ekor</span></th>
-            <th class="text-end"><span class="userDatatable-title">ABW</span></th>
-            <th class="text-end"><span class="userDatatable-title">Standar (zak)</span></th>
-            <th class="text-end"><span class="userDatatable-title">Aktual (zak)</span></th>
+        <tr>
+            <th>Kandang</th>
+            <th class="text-end">Sesi terakhir</th>
+            <th class="text-end">Usia</th>
+            <th class="text-end">Titik</th>
+            <th class="text-end">Ekor</th>
+            <th class="text-end">ABW</th>
+            <th class="text-end">Standar (zak)</th>
+            <th class="text-end">Aktual (zak)</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach ($gabungan['kandang'] as $baris)
             <tr wire:key="ringkasan-kandang-{{ $baris['periode_kandang_id'] }}">
-                <td class="fw-500 color-dark">
+                <td class="fw-medium text-body">
                     {{ $baris['kandang'] }}
                     @if ($baris['terpilih'])
-                        <span class="dm-tag tag-transparented tag-primary my-0 ms-1">dipilih</span>
+                        <span class="badge bg-primary-subtle text-primary my-0 ms-1">dipilih</span>
                     @endif
                     @unless ($baris['ada_sesi'])
-                        <span class="d-block fs-12 color-light">belum ada sampling</span>
+                        <span class="d-block small text-body-secondary">belum ada sampling</span>
                     @endunless
                 </td>
                 <td class="text-end">

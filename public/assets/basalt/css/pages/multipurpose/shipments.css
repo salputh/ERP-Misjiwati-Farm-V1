@@ -1,0 +1,762 @@
+/* Basalt - Shipments (shipments.html)
+   Namespaced under .shp-*
+   Built from shared parts: the page header, status pills, avatars,
+   empty states, the side panel and toasts. This file lays out the four
+   figures, the parcel list and the parcel panel.
+   One type scale: card titles, body text (--shp-fs-body) and one small
+   size (--shp-fs-small); the figures are the only larger numbers. */
+
+.shp-page,
+.shp-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 in the lighter palettes and on hovered rows. */
+	--shp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary as text: on its own it is under 4.5:1 in a few light palettes. */
+	--shp-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--shp-warn: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+	--shp-line: var(--basalt-edge);
+	--shp-fs-body: 0.875rem;
+	--shp-fs-small: 0.77rem;
+}
+.shp-page .basalt-status,
+.shp-drawer .basalt-status {
+	font-size: var(--shp-fs-small);
+	white-space: nowrap;
+}
+
+/* Carrier tiles: two letters in the carrier's chart color, as on Shipping. */
+.shp-tone-1 {
+	--shp-tone: var(--basalt-series-1);
+}
+.shp-tone-2 {
+	--shp-tone: var(--basalt-series-2);
+}
+.shp-tone-3 {
+	--shp-tone: var(--basalt-series-3);
+}
+.shp-tone-5 {
+	--shp-tone: var(--basalt-series-5);
+}
+.shp-tone-6 {
+	--shp-tone: var(--basalt-series-6);
+}
+.shp-mark {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 8px;
+	font-size: 0.71rem;
+	font-weight: 800;
+	letter-spacing: 0.01em;
+	color: color-mix(in srgb, var(--shp-tone, var(--basalt-hue)) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--shp-tone, var(--basalt-hue)) 16%, var(--basalt-plane));
+}
+.shp-mark-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.95rem;
+}
+
+/* The four figures
+   Plain tiles with a colored icon. Four across on wide screens, two by
+   two on tablets and phones. */
+.shp-figs {
+	container: shp-figs / inline-size;
+	margin-bottom: 1.5rem;
+}
+.shp-figs-list {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+}
+@container shp-figs (min-width: 900px) {
+	.shp-figs-list {
+		gap: 1.25rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.shp-fig {
+	--shp-tone: var(--basalt-warning);
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.25rem;
+	border: 1px solid var(--shp-line);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+}
+.shp-fig-way {
+	--shp-tone: var(--basalt-series-1);
+}
+.shp-fig-wait {
+	--shp-tone: var(--basalt-series-5);
+}
+.shp-fig-done {
+	--shp-tone: var(--basalt-success);
+}
+.shp-fig-label {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--shp-quiet);
+}
+.shp-fig-label .bi {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 1.65rem;
+	height: 1.65rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--shp-tone) 58%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--shp-tone) 16%, var(--basalt-plane));
+}
+.shp-fig-value {
+	margin: 0.65rem 0 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.15;
+	color: var(--basalt-copy);
+}
+.shp-fig-note {
+	margin: 0.3rem 0 0;
+	overflow: hidden;
+	font-size: var(--shp-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--shp-quiet);
+}
+@container shp-figs (max-width: 420px) {
+	.shp-fig {
+		padding: 1rem;
+	}
+	.shp-fig-value {
+		font-size: 1.3rem;
+	}
+	.shp-fig-note {
+		white-space: normal;
+	}
+}
+
+/* The list card */
+.shp-card.card {
+	container-type: inline-size;
+	margin-bottom: 1.5rem;
+	overflow: hidden;
+}
+.shp-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--shp-line);
+}
+.shp-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.shp-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--shp-fs-body);
+	color: var(--shp-quiet);
+}
+
+/* Search, then the two filters at their natural width; they wrap
+   below the search when the card is narrow. */
+.shp-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-head);
+}
+.shp-search {
+	position: relative;
+	flex: 0 1 22rem;
+	min-width: 12rem;
+}
+.shp-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--shp-quiet);
+	pointer-events: none;
+}
+.shp-search .form-control {
+	padding-left: 2.4rem;
+	font-size: var(--shp-fs-body);
+}
+.shp-filters {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.shp-select {
+	flex: none;
+}
+.shp-select .form-select {
+	width: auto;
+	font-size: var(--shp-fs-body);
+}
+
+/* The table
+   Fixed tracks for the short columns; Shopper and Tracking share the rest. */
+.shp-table-wrap {
+	overflow: hidden;
+}
+.shp-table {
+	--bs-table-bg: transparent;
+	table-layout: fixed;
+}
+.shp-table .shp-col-order {
+	width: 8.25rem;
+}
+.shp-table .shp-col-carrier {
+	width: 10.5rem;
+}
+.shp-table .shp-col-track {
+	width: 14rem;
+}
+.shp-table .shp-col-status {
+	width: 10.5rem;
+}
+.shp-table .shp-col-when {
+	width: 9.5rem;
+}
+.shp-table .shp-col-open {
+	width: 6rem;
+}
+.shp-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.85rem;
+	border-color: var(--shp-line);
+	font-size: var(--shp-fs-body);
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.shp-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.shp-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+	text-align: right;
+}
+.shp-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--shp-quiet);
+}
+.shp-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+
+.shp-row[data-shp-id] {
+	cursor: pointer;
+}
+.shp-row[data-shp-id]:hover > * {
+	background: var(--basalt-wash);
+}
+.shp-row.is-open > * {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+.shp-who {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.shp-who .basalt-avatar {
+	flex: none;
+}
+.shp-who-name {
+	min-width: 0;
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+}
+.shp-flag {
+	flex: none;
+	padding: 0.05rem 0.5rem;
+	border: 1px solid var(--shp-line);
+	border-radius: 999px;
+	font-size: var(--shp-fs-small);
+	font-weight: 600;
+	color: var(--shp-quiet);
+}
+.shp-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--shp-link);
+}
+.shp-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.shp-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+.shp-carrier {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	min-width: 0;
+}
+.shp-carrier > span:last-child {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.shp-track {
+	display: block;
+	overflow: hidden;
+	font-family: "Chivo Mono", ui-monospace, monospace;
+	font-size: var(--shp-fs-small);
+	text-overflow: ellipsis;
+	color: var(--basalt-copy-body);
+}
+.shp-when {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.shp-when.is-late {
+	font-weight: 600;
+	color: var(--shp-warn);
+}
+
+/* A quiet footer opens the rest. */
+.shp-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--shp-line);
+}
+.shp-card-note {
+	margin: 0;
+	font-size: var(--shp-fs-small);
+	color: var(--shp-quiet);
+}
+.shp-card-foot .btn {
+	white-space: nowrap;
+}
+
+/* Empty and no results */
+.shp-empty {
+	max-width: 30rem;
+	margin: 1.5rem auto;
+	padding: 0 1rem;
+	text-align: center;
+}
+.shp-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.6rem;
+	border-radius: 14px;
+	font-size: var(--basalt-fs-card-title);
+	color: var(--shp-link);
+	background: var(--basalt-hue-soft);
+}
+.shp-empty .basalt-empty-title {
+	font-size: var(--basalt-fs-section);
+}
+.shp-empty .basalt-empty-text {
+	font-size: var(--shp-fs-body);
+	color: var(--shp-quiet);
+}
+.shp-empty .basalt-empty-actions {
+	justify-content: center;
+}
+
+/* Narrower cards give up, in order: the avatar, the tracking number
+   (it is in the panel and the search), the carrier tile, then the
+   carrier. Names are never cut short. */
+@container (max-width: 1130px) {
+	.shp-table .shp-col-order {
+		width: 7.5rem;
+	}
+	.shp-table .shp-col-carrier {
+		width: 10rem;
+	}
+	.shp-table .shp-col-track {
+		width: 10.25rem;
+	}
+	.shp-table .shp-col-status {
+		width: 9.75rem;
+	}
+	.shp-who .basalt-avatar {
+		display: none;
+	}
+}
+@container (max-width: 1080px) {
+	.shp-table .shp-col-track,
+	.shp-row-track {
+		display: none;
+	}
+	.shp-table > :not(caption) > * > * {
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
+	}
+	.shp-table .shp-col-carrier {
+		width: 8.25rem;
+	}
+	.shp-row-carrier .shp-mark {
+		display: none;
+	}
+	.shp-table .shp-col-order {
+		width: 7.25rem;
+	}
+	.shp-table .shp-col-status {
+		width: 9.5rem;
+	}
+	.shp-table .shp-col-when {
+		width: 9rem;
+	}
+	.shp-table .shp-col-open {
+		width: 5.5rem;
+	}
+}
+@container (max-width: 860px) {
+	.shp-table .shp-col-carrier,
+	.shp-row-carrier {
+		display: none;
+	}
+}
+
+/* Narrow cards: each parcel becomes a small record. The shopper and
+   the status on top, then the order and date beside the icons. */
+@container (max-width: 720px) {
+	.shp-card-head,
+	.shp-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.shp-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+
+	.shp-table {
+		table-layout: auto;
+	}
+	.shp-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.shp-table,
+	.shp-table tbody,
+	.shp-table td {
+		display: block;
+		width: 100%;
+	}
+	.shp-table tbody tr {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas: "who who status" "order when open";
+		align-items: center;
+		padding: 1.1rem var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--shp-line);
+	}
+	.shp-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.shp-table > :not(caption) > * > *,
+	.shp-table > :not(caption) > * > :first-child,
+	.shp-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: transparent;
+	}
+	.shp-row[data-shp-id]:hover {
+		background: var(--basalt-wash);
+	}
+	.shp-row[data-shp-id]:hover > * {
+		background: transparent;
+	}
+	.shp-row.is-open {
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	}
+	.shp-row.is-open > * {
+		background: transparent;
+	}
+	.shp-row-who {
+		grid-area: who;
+		min-width: 0;
+	}
+	.shp-who .basalt-avatar {
+		display: inline-flex;
+	}
+	.shp-row-status {
+		grid-area: status;
+		width: auto;
+	}
+	.shp-row-order {
+		grid-area: order;
+		width: auto;
+		padding-left: 2.75rem;
+	}
+	.shp-row-when {
+		grid-area: when;
+		min-width: 0;
+		color: var(--shp-quiet);
+	}
+	.shp-row-open {
+		grid-area: open;
+		width: auto;
+	}
+	.shp-table td.shp-row-carrier,
+	.shp-table td.shp-row-track {
+		display: none;
+	}
+}
+@container (max-width: 380px) {
+	.shp-row-order {
+		padding-left: 0;
+	}
+}
+/* Phones: the Return tag gives way to the name; the date says it. */
+@container (max-width: 440px) {
+	.shp-flag {
+		display: none;
+	}
+}
+
+/* The parcel panel */
+.shp-drawer.offcanvas {
+	--bs-offcanvas-width: min(480px, 100vw);
+}
+.shp-drawer .offcanvas-header {
+	gap: 0.85rem;
+	align-items: flex-start;
+	border-bottom: 1px solid var(--shp-line);
+}
+.shp-drawer .offcanvas-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.shp-drawer .offcanvas-title:focus {
+	outline: none;
+}
+.shp-drawer .offcanvas-title:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.shp-drawer .basalt-drawer-sub {
+	margin-top: 0.3rem;
+	font-size: var(--shp-fs-small);
+	color: var(--shp-quiet);
+}
+.shp-drawer .offcanvas-body {
+	padding-top: var(--basalt-pad-head);
+	padding-bottom: var(--basalt-pad-head);
+}
+.shp-drawer .basalt-drawer-foot {
+	flex-wrap: wrap;
+}
+.shp-drawer .basalt-drawer-foot .btn {
+	white-space: nowrap;
+}
+
+.shp-d-state {
+	margin-bottom: 1rem;
+}
+.shp-d-alert {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0 0 1.25rem;
+	padding: 0.65rem 0.9rem 0.65rem 1.1rem;
+	border: 1px solid var(--shp-line);
+	border-radius: 10px;
+	font-size: var(--shp-fs-body);
+	color: var(--basalt-copy);
+}
+.shp-d-alert::before {
+	content: "";
+	position: absolute;
+	top: 0.5rem;
+	bottom: 0.5rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--basalt-warning);
+}
+.shp-d-alert .bi {
+	flex: none;
+	color: var(--shp-warn);
+}
+
+.shp-facts {
+	display: grid;
+	margin: 0;
+}
+.shp-facts > div {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--shp-line);
+}
+.shp-facts > div:first-child {
+	padding-top: 0;
+}
+.shp-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.shp-facts dt {
+	font-size: var(--shp-fs-small);
+	font-weight: 500;
+	color: var(--shp-quiet);
+}
+.shp-facts dd {
+	margin: 0;
+	font-size: var(--shp-fs-body);
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.shp-facts .shp-track {
+	display: inline;
+	color: var(--basalt-copy);
+}
+
+.shp-d-section {
+	margin-top: var(--basalt-pad-head);
+	padding-top: var(--basalt-pad-head);
+	border-top: 1px solid var(--shp-line);
+}
+.shp-d-h {
+	margin: 0 0 1rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.shp-d-note {
+	margin: 0.75rem 0 0;
+	font-size: var(--shp-fs-small);
+	color: var(--shp-quiet);
+}
+
+/* Scans on a thin line, newest first. */
+.shp-scans {
+	position: relative;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.shp-scan {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	padding: 0 0 1rem 1.6rem;
+}
+.shp-scan:last-child {
+	padding-bottom: 0;
+}
+.shp-scan:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 1rem;
+	bottom: -0.1rem;
+	left: 0.3rem;
+	width: 2px;
+	background: var(--shp-line);
+}
+.shp-scan-dot {
+	position: absolute;
+	top: 0.3rem;
+	left: 0;
+	width: 0.75rem;
+	height: 0.75rem;
+	border: 2px solid var(--basalt-edge-strong);
+	border-radius: 50%;
+	background: var(--basalt-plane);
+}
+.shp-scan.is-latest .shp-scan-dot {
+	border-color: var(--basalt-hue);
+	background: var(--basalt-hue);
+}
+.shp-scan.is-late .shp-scan-dot {
+	border-color: var(--basalt-warning);
+	background: var(--basalt-warning);
+}
+.shp-scan-text {
+	font-size: var(--shp-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.shp-scan-meta {
+	margin-top: 0.1rem;
+	font-size: var(--shp-fs-small);
+	color: var(--shp-quiet);
+}
+
+.shp-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.shp-item {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	padding: 0.5rem 0;
+}
+.shp-item + .shp-item {
+	border-top: 1px solid var(--shp-line);
+}
+.shp-item-img {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	object-fit: cover;
+	color: var(--shp-quiet);
+	background: var(--basalt-plane-alt);
+}
+.shp-item-name {
+	flex: 1;
+	min-width: 0;
+	font-size: var(--shp-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.shp-item-qty {
+	flex: none;
+	font-size: var(--shp-fs-body);
+	font-variant-numeric: tabular-nums;
+	color: var(--shp-quiet);
+}

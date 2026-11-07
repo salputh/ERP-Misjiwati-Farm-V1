@@ -36,7 +36,7 @@ class AutentikasiTest extends TestCase
     {
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('Masuk ke ERP')
+            ->assertSee('Selamat datang kembali.')
             ->assertDontSee('Keluar');
 
         $this->get('/up')->assertOk();

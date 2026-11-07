@@ -1,0 +1,718 @@
+/* Basalt - Social Post Details (social-post-details.html)
+   Namespaced under .sd-*
+   Built from shared parts: the Headers component (Detail), segmented
+   control, choice tiles, the date picker, status pills, avatars and
+   toasts. This file lays out the four cards and draws what belongs to
+   this page only: the channel previews, the hashtag field, the results
+   and the steps from draft to post.
+   Four type sizes: the card title, the section heading, body text
+   (--sd-fs-body) and one small size (--sd-fs-small). */
+
+.sd-page {
+	--sd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--sd-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--sd-fill: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	--sd-success-text: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	--sd-danger-text: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+	--sd-line: var(--basalt-edge);
+	--sd-fs-body: 0.875rem;
+	--sd-fs-small: 0.77rem;
+}
+.sd-page .basalt-status {
+	font-size: var(--sd-fs-small);
+}
+
+/* Header */
+.basalt-hero-detail.sd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.sd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.sd-head .basalt-hero-actions .btn {
+	white-space: nowrap;
+}
+.sd-head .basalt-hero-actions .btn[hidden] {
+	display: none;
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.sd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.sd-status {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+.sd-status-note {
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+
+/* Cards
+   One column below 1200px. Above it the preview is a column of its own
+   that stays in view, and the other cards scroll beside it. */
+.sd-grid,
+.sd-stack {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-content: start;
+}
+@media (min-width: 1200px) {
+	.sd-grid {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+		align-items: start;
+	}
+}
+/* Kept in view only where the whole preview fits under the top bar. */
+@media (min-width: 1200px) and (min-height: 860px) {
+	.sd-card-preview {
+		position: sticky;
+		top: calc(var(--basalt-header-h) + 1.5rem);
+		box-shadow:
+			var(--basalt-card-shadow),
+			0 14px 32px color-mix(in srgb, var(--basalt-copy) 6%, transparent);
+	}
+}
+.sd-card.card {
+	display: flex;
+	flex-direction: column;
+	container-type: inline-size;
+}
+.sd-card-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.sd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.sd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--sd-fs-body);
+	color: var(--sd-quiet);
+}
+.sd-card-body {
+	flex: 1 1 auto;
+	padding: 1.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.sd-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 1.1rem var(--basalt-pad-x) 1.35rem;
+	border-top: 1px solid var(--sd-line);
+}
+.sd-card-foot .btn {
+	white-space: nowrap;
+}
+.sd-note {
+	margin: 0.4rem 0 0;
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+.sd-card-foot .sd-note {
+	margin: 0;
+}
+@container (max-width: 420px) {
+	.sd-card-head,
+	.sd-card-body,
+	.sd-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Preview */
+.sd-stage {
+	display: grid;
+	flex: 1 1 auto;
+	place-items: center;
+	margin: 1.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+	padding: 1.5rem 1rem;
+	border-radius: 18px;
+	background: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane-alt));
+}
+@container (max-width: 420px) {
+	.sd-stage {
+		margin-left: var(--basalt-pad-x-narrow);
+		margin-right: var(--basalt-pad-x-narrow);
+		padding: 1.25rem 0.75rem;
+	}
+}
+.sd-phone {
+	width: 100%;
+	max-width: 320px;
+	border: 1px solid var(--sd-line);
+	border-radius: 22px;
+	overflow: hidden;
+	font-size: var(--sd-fs-small);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	animation: sd-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes sd-in {
+	from {
+		transform: translateY(6px);
+		opacity: 0;
+	}
+}
+.sd-pic {
+	position: relative;
+	background: var(--basalt-plane-alt);
+}
+.sd-pic img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.sd-pic-portrait {
+	aspect-ratio: 4 / 5;
+}
+.sd-pic-tall {
+	aspect-ratio: 2 / 3;
+	border-radius: 16px;
+	overflow: hidden;
+}
+.sd-pic-video {
+	aspect-ratio: 9 / 16;
+}
+.sd-pic-wide {
+	aspect-ratio: 3 / 2;
+}
+.sd-brand {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 800;
+	color: var(--basalt-on-hue);
+	background: var(--sd-fill);
+}
+.sd-who {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.3;
+}
+.sd-who b {
+	font-weight: 700;
+}
+.sd-who > span {
+	color: var(--sd-quiet);
+}
+.sd-tag {
+	font-weight: 600;
+	color: var(--sd-link);
+}
+.sd-phone p {
+	margin: 0;
+}
+
+.sd-ig-head {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.7rem 0.8rem;
+}
+.sd-ig-bar {
+	display: flex;
+	gap: 0.9rem;
+	padding: 0.7rem 0.8rem 0.2rem;
+	font-size: 1.1rem;
+	color: var(--basalt-copy);
+}
+.sd-ig-text {
+	padding: 0.3rem 0.8rem 0.9rem;
+}
+.sd-ig-likes {
+	margin-bottom: 0.25rem;
+	font-weight: 700;
+}
+.sd-ig-cap {
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.sd-ig-cap b {
+	color: var(--basalt-copy);
+}
+.sd-ig-time {
+	margin-top: 0.4rem;
+	font-size: 0.7rem;
+	color: var(--sd-quiet);
+}
+
+.sd-pin {
+	padding: 0.75rem;
+	border-radius: 22px;
+}
+.sd-pin-save {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	padding: 0.3rem 0.8rem;
+	border-radius: 999px;
+	font-weight: 700;
+	color: var(--basalt-on-hue);
+	background: var(--sd-fill);
+}
+.sd-pin-text {
+	padding: 0.7rem 0.25rem 0.2rem;
+}
+.sd-pin-title {
+	font-size: var(--sd-fs-body);
+	font-weight: 700;
+}
+.sd-pin-cap {
+	display: -webkit-box;
+	margin-top: 0.3rem;
+	overflow: hidden;
+	line-height: 1.5;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	color: var(--basalt-copy-body);
+}
+.sd-pin-by {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 0.7rem;
+}
+.sd-pin-by .sd-brand {
+	width: 1.6rem;
+	height: 1.6rem;
+	font-size: 0.7rem;
+}
+.sd-pin-by span:last-child:not(.sd-brand) {
+	margin-left: auto;
+	color: var(--sd-quiet);
+}
+
+/* TikTok: text sits on small dark tabs over the picture, so it reads on
+   any photo. The tab follows the text color, flipping in dark mode. */
+.sd-tt {
+	max-width: 300px;
+	border-radius: 26px;
+}
+.sd-tt .sd-pic {
+	--sd-tab: color-mix(in srgb, var(--basalt-copy) 80%, transparent);
+}
+.sd-tt-side {
+	position: absolute;
+	right: 0.6rem;
+	bottom: 5.5rem;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-tt-side li {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: center;
+	min-width: 2.6rem;
+	padding: 0.3rem 0.25rem;
+	border-radius: 12px;
+	font-size: 0.67rem;
+	font-weight: 700;
+	color: var(--basalt-plane);
+	background: var(--sd-tab);
+}
+.sd-tt-side .bi {
+	font-size: 1rem;
+}
+.sd-tt-text {
+	position: absolute;
+	right: 3.9rem;
+	bottom: 0.7rem;
+	left: 0.6rem;
+	padding: 0.5rem 0.6rem;
+	border-radius: 12px;
+	color: var(--basalt-plane);
+	background: var(--sd-tab);
+}
+.sd-tt-name {
+	font-weight: 700;
+}
+.sd-tt-cap {
+	display: -webkit-box;
+	margin-top: 0.2rem;
+	overflow: hidden;
+	line-height: 1.45;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+}
+.sd-tt .sd-tag {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: inherit;
+}
+
+.sd-fb-cap {
+	padding: 0 0.8rem 0.7rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.sd-fb-count {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.6rem 0.8rem 0;
+	color: var(--sd-quiet);
+}
+.sd-fb-count .bi {
+	color: var(--sd-link);
+}
+.sd-fb-bar {
+	display: flex;
+	justify-content: space-around;
+	margin: 0.6rem 0.8rem 0;
+	padding: 0.5rem 0 0.65rem;
+	border-top: 1px solid var(--sd-line);
+	font-weight: 600;
+	color: var(--sd-quiet);
+}
+.sd-fb-bar span {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+
+/* The post */
+.sd-form {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+}
+.sd-field + .sd-field,
+.sd-error-after + .sd-field {
+	margin-top: 1.25rem;
+}
+.sd-field .form-label {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sd-w-name {
+	max-width: 22rem;
+}
+.sd-w-pick {
+	max-width: 18rem;
+}
+.sd-w-date {
+	width: 12.5rem;
+	max-width: 100%;
+}
+.sd-w-time {
+	width: 8.5rem;
+}
+.sd-channels {
+	--basalt-choice-min: 7.5rem;
+	max-width: 36rem;
+}
+.sd-channels .basalt-choice {
+	white-space: nowrap;
+}
+.sd-when {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.sd-error {
+	margin: 0.4rem 0 0;
+	font-size: var(--sd-fs-small);
+	font-weight: 600;
+	color: var(--sd-danger-text);
+}
+.sd-count {
+	margin: 0.4rem 0 0;
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+.sd-count.is-over {
+	font-weight: 600;
+	color: var(--sd-danger-text);
+}
+
+/* Hashtags: chips and a text box inside one field-like box. One focus
+   ring, on the box. */
+.sd-tags {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-height: 2.6rem;
+	padding: 0.3rem 0.5rem;
+	border: var(--bs-border-width) solid var(--bs-border-color);
+	border-radius: var(--bs-border-radius);
+	background: var(--bs-body-bg);
+	cursor: text;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+}
+.sd-tags:focus-within {
+	border-color: var(--basalt-hue-border);
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+}
+.sd-tags-list {
+	display: contents;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-tags-chip {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.1rem 0.2rem 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: var(--sd-fs-small);
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.sd-tags-x {
+	display: inline-grid;
+	place-items: center;
+	width: 1.2rem;
+	height: 1.2rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	color: inherit;
+	background: none;
+}
+.sd-tags-x:hover {
+	background: color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+}
+.sd-tags-x:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.sd-tags-x:focus:not(:focus-visible) {
+	outline: 0;
+}
+.sd-tags-input {
+	flex: 1 1 8rem;
+	min-width: 6rem;
+	padding: 0.2rem 0.25rem;
+	border: 0;
+	font-size: var(--sd-fs-body);
+	color: var(--basalt-copy);
+	background: none;
+}
+.sd-tags-input:focus,
+.sd-tags-input:focus-visible {
+	outline: 0;
+	box-shadow: none;
+}
+
+/* Read-only, once the post is out */
+.sd-facts {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	margin: 0;
+}
+.sd-facts dt {
+	font-size: var(--sd-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--sd-quiet);
+}
+.sd-facts dd {
+	margin: 0.3rem 0 0;
+	font-size: var(--sd-fs-body);
+	color: var(--basalt-copy);
+}
+.sd-facts-cap {
+	max-width: 40rem;
+	line-height: 1.6;
+}
+.sd-facts-tags {
+	font-weight: 600;
+	word-spacing: 0.25rem;
+	color: var(--sd-link);
+}
+
+/* How it did */
+.sd-figs {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+}
+/* The shared figure cards, with the bar and its note stacked under the figure. */
+.sd-figs .basalt-fig-body {
+	gap: 0.5rem;
+}
+.sd-figs .basalt-fig-note {
+	margin: 0;
+}
+.sd-fig-bar {
+	position: relative;
+	display: block;
+	height: 6px;
+	border-radius: 99px;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+}
+.sd-fig-bar > span {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: inherit;
+	background: var(--basalt-hue);
+}
+.sd-fig-bar > i {
+	position: absolute;
+	top: -3px;
+	bottom: -3px;
+	width: 2px;
+	margin-left: -1px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+.sd-fig-vs.is-up {
+	font-weight: 600;
+	color: var(--sd-success-text);
+}
+.sd-figs-key {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 1rem;
+}
+.sd-key-line {
+	display: inline-block;
+	width: 2px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+@container (min-width: 620px) {
+	.sd-figs {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.sd-blank {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	min-height: 9rem;
+	margin: 0;
+	font-size: var(--sd-fs-body);
+	text-align: center;
+	color: var(--sd-quiet);
+}
+.sd-blank p {
+	max-width: 28rem;
+	margin: 0;
+}
+
+/* Who and when */
+.sd-steps {
+	position: relative;
+	display: flex;
+	gap: 1.1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-steps li {
+	position: relative;
+	display: flex;
+	gap: 0.85rem;
+	align-items: flex-start;
+}
+.sd-steps li:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.1rem;
+	bottom: -1rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	border-radius: 2px;
+	background: var(--sd-line);
+}
+.sd-steps-mark {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+}
+.sd-steps .is-done .sd-steps-mark {
+	color: var(--sd-success-text);
+	background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+}
+.sd-steps .is-wait .sd-steps-mark {
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: var(--basalt-warning-soft);
+}
+.sd-steps .is-next .sd-steps-mark {
+	color: var(--sd-link);
+	background: var(--basalt-hue-soft);
+}
+.sd-steps-title {
+	display: block;
+	padding-top: 0.2rem;
+	font-size: var(--sd-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sd-steps-meta {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: var(--sd-fs-small);
+	color: var(--sd-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sd-phone {
+		animation: none;
+	}
+}
+
+/* The title takes focus after Approve so screen readers hear the new
+   state; it is not a control, so it shows no ring. */
+.sd-head .basalt-hero-title:focus {
+	outline: 0;
+	box-shadow: none;
+}
+.sd-card[hidden] {
+	display: none;
+}

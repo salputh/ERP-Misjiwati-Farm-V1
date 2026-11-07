@@ -1,0 +1,857 @@
+/*
+ * Delivery setup page, shipping.html. Every class here starts with
+ * .sh- and covers what is unique to the page: region tiles, the rate
+ * table, the checkout preview, carrier accounts and the two drawers.
+ * Headers, status pills, selects, the segmented control, drawer layout,
+ * empty states and toasts come from the shared components.
+ */
+
+/* The page and its drawers share four tokens. The quiet gray leans toward
+   the body color so small text keeps 4.5:1 on light palettes and on
+   hovered rows. */
+.sh-page,
+.sh-layer {
+	--sh-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--sh-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--sh-good: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	--sh-line: var(--basalt-edge);
+}
+
+/* Inputs, gray buttons and links read the same on the cards as in the
+   drawers, whatever the palette. */
+:is(.sh-page, .sh-layer) {
+	& :is(.form-control, .form-select) {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+	& .form-control::placeholder {
+		color: var(--sh-quiet);
+		opacity: 1;
+	}
+	& .btn-outline-secondary {
+		--bs-btn-color: var(--basalt-copy-body);
+		--bs-btn-border-color: var(--basalt-edge-strong);
+		--bs-btn-hover-color: var(--basalt-copy);
+		--bs-btn-hover-bg: var(--basalt-wash);
+		--bs-btn-hover-border-color: var(--basalt-edge-strong);
+		--bs-btn-active-color: var(--basalt-copy);
+		--bs-btn-active-bg: var(--basalt-wash);
+		--bs-btn-active-border-color: var(--basalt-edge-strong);
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+	& a:not(.btn) {
+		color: var(--sh-link);
+	}
+}
+.sh-layer .input-group-text {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+
+/* Region tiles share the row evenly and wrap to a second row once they
+   run out of room. A phone keeps a single sideways-scrolling row whose
+   edges fade wherever more tiles are hidden. */
+.sh-zones {
+	position: relative;
+	container: sh-zones / inline-size;
+	margin: 0 -0.5rem 1.5rem;
+	&.is-more-end .sh-zones-track {
+		mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent);
+	}
+	&.is-more-start .sh-zones-track {
+		mask-image: linear-gradient(90deg, transparent, #000 3rem);
+	}
+	&.is-more-start.is-more-end .sh-zones-track {
+		mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+	}
+}
+.sh-zones-track {
+	display: grid;
+	gap: 1rem;
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(11.5rem, 1fr);
+	scroll-snap-type: x proximity;
+	scroll-padding: 0 0.5rem;
+	padding: 0.5rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+/* Past phone width a row holds three tiles at most, and a short last row
+   stretches so both rows finish level. Near 920px all tiles share one row. */
+@container sh-zones (min-width: 540px) {
+	.sh-zones-track {
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.sh-zones-track > .sh-zone {
+		flex: 1 1 calc((100% - 2rem) / 3);
+	}
+}
+@container sh-zones (min-width: 920px) {
+	.sh-zones-track > .sh-zone {
+		flex: 1 1 0;
+		min-width: 10.5rem;
+	}
+}
+
+.sh-zone {
+	--sh-tone: var(--basalt-series-1);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	scroll-snap-align: start;
+	min-width: 0;
+	padding: 1.25rem 1.25rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	text-align: start;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+	&:hover {
+		border-color: color-mix(in srgb, var(--sh-tone) 50%, var(--basalt-edge));
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible:not([aria-selected="true"]) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-selected="true"] {
+		border-color: var(--sh-tone);
+		box-shadow:
+			0 0 0 1px var(--sh-tone),
+			var(--basalt-card-shadow);
+	}
+}
+.sh-zone-icon {
+	display: inline-grid;
+	place-items: center;
+	margin-bottom: 0.85rem;
+	font-size: 1.35rem;
+	line-height: 1;
+	color: var(--sh-tone);
+}
+.sh-zone-name {
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+	font-size: 1rem;
+	font-weight: 700;
+	line-height: 1.3;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.sh-zone-where {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--sh-quiet);
+}
+.sh-zone-figure {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	width: 100%;
+	margin-top: 1rem;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--sh-line);
+}
+.sh-zone-value {
+	font-size: 1.25rem;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--basalt-copy);
+}
+.sh-zone-label {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--sh-quiet);
+}
+.sh-zone-pct {
+	margin-left: auto;
+	font-size: 0.77rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--sh-tone) 45%, var(--basalt-copy));
+}
+/* On tiles too narrow for one line the label drops below the count. */
+@container sh-zones (max-width: 1120px) {
+	.sh-zone-figure {
+		row-gap: 0.3rem;
+		flex-wrap: wrap;
+	}
+	.sh-zone-label {
+		flex-basis: 100%;
+		order: 3;
+	}
+}
+/* A region's slice of September's parcels, and later each carrier's,
+   drawn as a thin bar in its own color. */
+:is(.sh-zone-bar, .sh-carrier-bar) {
+	display: block;
+	width: 100%;
+	height: 0.375rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--sh-tone) 14%, var(--basalt-plane-alt));
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--sh-tone);
+	}
+}
+.sh-zone-bar {
+	margin-top: 0.7rem;
+}
+/* On the first paint each zone's bar grows from the left, one after another. */
+.sh-zones-track:not([data-sh-grown]) .sh-zone-bar > span {
+	transform-origin: left;
+	animation: sh-bar-grow 500ms cubic-bezier(0.32, 0.72, 0, 1) calc(var(--sh-at, 0) * 90ms + 150ms) both;
+}
+@keyframes sh-bar-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.sh-zones-track:not([data-sh-grown]) .sh-zone-bar > span {
+		animation: none;
+	}
+}
+
+/* Card frame shared by the rates, checkout and carrier panels. */
+.sh-card.basalt-box .card-body {
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.sh-card.basalt-box .card-body {
+		padding: 1.5rem 1.25rem;
+	}
+}
+.sh-card-head {
+	margin-bottom: 1.5rem;
+}
+.sh-card-head-split {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.sh-card-heading {
+	min-width: 0;
+}
+.sh-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sh-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	text-wrap: pretty;
+	color: var(--sh-quiet);
+}
+.sh-card-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* The rate table. It is widened by the cells' side padding so the method
+   column lines up with the card title above it. */
+.sh-rates {
+	container: sh-rates / inline-size;
+}
+.sh-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	width: calc(100% + 1.5rem);
+	margin: 0 -0.75rem;
+	font-size: 0.875rem;
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		vertical-align: top;
+	}
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--sh-quiet);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& > tbody > tr[data-sh-id] {
+		cursor: pointer;
+	}
+	& > tbody > tr[data-sh-id]:hover > * {
+		--bs-table-bg-state: var(--basalt-wash);
+	}
+	& th:nth-child(1) {
+		width: 32%;
+	}
+	& th:nth-child(2) {
+		width: 16%;
+	}
+	& th:nth-child(3) {
+		width: 20%;
+	}
+	& th:nth-child(4) {
+		width: 13%;
+	}
+	/* Money is compared down the column, so it sits flush right. */
+	& .sh-num {
+		text-align: end;
+	}
+	& th:last-child {
+		width: 3.25rem;
+	}
+	& :is(td, th):nth-child(5) {
+		padding-left: 2rem;
+	}
+	& .basalt-empty-row > td {
+		padding: 0;
+	}
+}
+
+.sh-line {
+	margin: 0;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sh-line-plain {
+	font-weight: 400;
+}
+.sh-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.4;
+	color: var(--sh-quiet);
+}
+.sh-money {
+	margin: 0;
+	font-weight: 600;
+	line-height: 1.5;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sh-none {
+	color: var(--sh-quiet);
+}
+.sh-edit {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	margin: -0.25rem 0;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	color: var(--sh-quiet);
+	background: none;
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+/* Below the full table width each method turns into a two-line card:
+   name and status first, then delivery time, price and free-over. */
+@container sh-rates (max-width: 700px) {
+	.sh-table {
+		width: 100%;
+		margin: 0;
+	}
+	.sh-table,
+	.sh-table > tbody {
+		display: block;
+	}
+	.sh-table > thead {
+		display: none;
+	}
+	.sh-table > tbody > tr:not(.basalt-empty-row) {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr) 2rem;
+		grid-template-areas:
+			"method method status go"
+			"days   price  free   free";
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.sh-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.sh-table > tbody > tr:not(.basalt-empty-row) > * {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+	.sh-table .sh-num {
+		text-align: start;
+	}
+	.sh-table > tbody > tr {
+		& > .sh-cell-method {
+			grid-area: method;
+		}
+		& > .sh-cell-days {
+			grid-area: days;
+		}
+		& > .sh-cell-price {
+			grid-area: price;
+		}
+		& > .sh-cell-free {
+			grid-area: free;
+		}
+		& > .sh-cell-status {
+			grid-area: status;
+			justify-self: end;
+		}
+		& > .sh-cell-go {
+			grid-area: go;
+		}
+	}
+	.sh-table > tbody > tr[data-sh-id]:hover {
+		background: var(--basalt-wash);
+	}
+	.sh-cell-label {
+		display: block;
+		margin-bottom: 0.25rem;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--sh-quiet);
+	}
+}
+@container sh-rates (min-width: 700.02px) {
+	.sh-cell-label {
+		display: none;
+	}
+}
+
+/* Checkout and carriers stack below 1200px and sit side by side, at
+   equal height, above it. */
+.sh-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 1.5rem;
+	& > .sh-card {
+		height: 100%;
+	}
+	& .card-body {
+		display: flex;
+		flex-direction: column;
+	}
+}
+@media (min-width: 1200px) {
+	.sh-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.sh-foot {
+	margin: auto 0 0;
+	padding-top: 1.25rem;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	text-wrap: pretty;
+	color: var(--sh-quiet);
+}
+
+/* The basket controls above the checkout preview. */
+.sh-label {
+	display: block;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sh-try {
+	display: flex;
+	gap: 1.25rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-bottom: 1.5rem;
+	/* While dragged the slider thumb keeps the palette color, and its focus
+     ring appears for keyboard users only. */
+	& .form-range {
+		&:active::-webkit-slider-thumb {
+			background-color: var(--basalt-hue-deep);
+		}
+		&:active::-moz-range-thumb {
+			background-color: var(--basalt-hue-deep);
+		}
+		&:focus::-webkit-slider-thumb {
+			box-shadow: none;
+		}
+		&:focus::-moz-range-thumb {
+			box-shadow: none;
+		}
+		&:focus-visible::-webkit-slider-thumb {
+			box-shadow:
+				0 0 0 1px var(--basalt-plane),
+				0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+		}
+		&:focus-visible::-moz-range-thumb {
+			box-shadow:
+				0 0 0 1px var(--basalt-plane),
+				0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+		}
+	}
+}
+.sh-try-basket {
+	flex: 1 1 14rem;
+	max-width: 22rem;
+}
+.sh-try-labelrow {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.3rem;
+}
+.sh-try-value {
+	font-size: 0.9rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+}
+.sh-try-weight {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	& > legend {
+		float: none;
+		width: auto;
+		margin-bottom: 0.4rem;
+	}
+}
+
+/* A small browser window framing the checkout as a shopper sees it. */
+.sh-frame {
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	box-shadow: 0 16px 32px -26px color-mix(in srgb, var(--basalt-copy) 60%, transparent);
+}
+.sh-frame-chrome {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0;
+	padding: 0.5rem 0.9rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	& span {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--basalt-edge-strong);
+	}
+	& em {
+		margin-left: 0.6rem;
+		font-size: 0.75rem;
+		font-style: normal;
+		line-height: 1.3;
+		color: var(--sh-quiet);
+	}
+}
+.sh-frame-page {
+	container: sh-frame / inline-size;
+	padding: 1.25rem 1.25rem 1.1rem;
+}
+@media (max-width: 575.98px) {
+	.sh-frame-page {
+		padding: 1rem 0.85rem;
+	}
+}
+.sh-frame-title {
+	margin: 0 0 0.9rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sh-frame-nudge {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.9rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	&:empty {
+		display: none;
+	}
+	& .bi {
+		color: var(--sh-good);
+	}
+}
+
+/* Each delivery option as the shopper reads it: carrier mark, name and
+   arrival, then price. It cannot be chosen here, so it has no radio. */
+.sh-offer {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sh-offer-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	&.is-first {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane));
+	}
+}
+.sh-offer-mark {
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--sh-tone, var(--basalt-hue)) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--sh-tone, var(--basalt-hue)) 14%, var(--basalt-plane));
+	& .bi {
+		font-size: 1rem;
+	}
+}
+.sh-offer-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sh-offer-when {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--sh-quiet);
+}
+.sh-offer-price {
+	font-size: 0.875rem;
+	font-weight: 700;
+	line-height: 1.2;
+	text-align: end;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	&.is-free {
+		color: var(--sh-good);
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	.sh-offer-price {
+		transition: color 200ms ease;
+	}
+}
+/* A very narrow frame hands the carrier mark's room to the name. */
+@container sh-frame (max-width: 300px) {
+	.sh-offer-item {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.sh-offer-mark {
+		display: none;
+	}
+}
+.sh-offer-none {
+	padding: 0.8rem 0;
+	font-size: 0.875rem;
+	color: var(--sh-quiet);
+}
+
+/* Carriers ranked by September parcels, busiest on top, each with its
+   bar, account and method count. */
+.sh-carriers {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sh-carrier {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr);
+	align-items: start;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.sh-carrier-logo {
+	display: inline-grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--sh-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--sh-tone) 20%, var(--basalt-plane));
+}
+.sh-carrier-top {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.sh-carrier-name {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sh-carrier-count {
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--sh-quiet);
+	& strong {
+		font-size: 0.875rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.sh-carrier-bar {
+	margin: 0.4rem 0 0.4rem;
+}
+.sh-carrier-what {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--sh-quiet);
+}
+
+/* The method and region drawers. */
+.sh-drawer {
+	--bs-offcanvas-width: 460px;
+	& .offcanvas-body {
+		padding-top: 1.5rem;
+		padding-bottom: 1.75rem;
+	}
+	& .form-label {
+		margin-bottom: 0.4rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.sh-d-usage {
+	margin: 0 0 1.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	line-height: 1.55;
+	text-wrap: pretty;
+	color: var(--basalt-copy-body);
+	& strong {
+		color: var(--basalt-copy);
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+.sh-fields {
+	display: grid;
+	gap: 1.25rem;
+}
+.sh-pair {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@container basalt-drawer (max-width: 360px) {
+	.sh-pair {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.sh-pair-error {
+	margin-top: 0.5rem;
+	&.is-shown {
+		display: block;
+	}
+}
+.sh-short {
+	max-width: 10rem;
+}
+.sh-select {
+	width: auto;
+	min-width: 12rem;
+	max-width: 100%;
+}
+.sh-help {
+	margin: 0.6rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	text-wrap: pretty;
+	color: var(--sh-quiet);
+	&:empty {
+		display: none;
+	}
+}
+.sh-free {
+	margin: 1.25rem 0 0;
+	& .form-check-label {
+		color: var(--basalt-copy);
+	}
+}
+.sh-free-amount {
+	margin-top: 1rem;
+	&[hidden] {
+		display: none;
+	}
+}
+/* A grouped field shows its message once anything in the group fails. */
+.input-group:has(.is-invalid) ~ .invalid-feedback {
+	display: block;
+}
+.input-group > .form-control.is-invalid {
+	z-index: 3;
+}
+.sh-offer-single .sh-offer-item {
+	background: var(--basalt-canvas);
+}

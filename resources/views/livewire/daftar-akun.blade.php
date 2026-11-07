@@ -1,29 +1,29 @@
 <div class="container-fluid" wire:poll.60s>
     <div class="row">
         <x-breadcrumb judul="Akun pengguna" :jejak="['Pengaturan', 'Akun pengguna']">
-            <x-tombol.kepala ikon="las la-plus" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-akun">Tambah akun</x-tombol.kepala>
+            <x-tombol.kepala ikon="bi bi-plus-lg" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-akun">Tambah akun</x-tombol.kepala>
         </x-breadcrumb>
 
         @if ($pesan)
             <div class="col-12">
-                <x-peringatan warna="success" class="mb-25">{{ $pesan }}</x-peringatan>
+                <x-peringatan warna="success" class="mb-4">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
         @error('akun_hapus')
             <div class="col-12">
-                <x-peringatan warna="danger" bisaDitutup="true" class="mb-25">{{ $message }}</x-peringatan>
+                <x-peringatan warna="danger" bisaDitutup="true" class="mb-4">{{ $message }}</x-peringatan>
             </div>
         @enderror
 
         {{-- Jumlah akun, yang sedang online, dan sesi yang belum keluar --}}
-        <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka(count($this->daftar)).' akun'" label="Seluruh akun" ikon="uil-users-alt" warna="primary">
+        <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka(count($this->daftar)).' akun'" label="Seluruh akun" ikon="bi-people" warna="primary">
             <small>Bisa masuk ke ERP dengan email dan password</small>
         </x-dashboard.kartu>
-        <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka($this->jumlahOnline).' akun'" label="Sedang online" ikon="uil-signal-alt-3" warna="success">
+        <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka($this->jumlahOnline).' akun'" label="Sedang online" ikon="bi-reception-4" warna="success">
             <small>Membuka ERP dalam {{ \App\Models\Sesi::MENIT_ONLINE }} menit terakhir</small>
         </x-dashboard.kartu>
-        <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka($this->sesiMasuk->count()).' perangkat'" label="Sesi masuk" ikon="uil-desktop" warna="info">
+        <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka($this->sesiMasuk->count()).' perangkat'" label="Sesi masuk" ikon="bi-display" warna="info">
             <small>Belum keluar dan aktif dalam {{ config('session.lifetime') }} menit terakhir</small>
         </x-dashboard.kartu>
 

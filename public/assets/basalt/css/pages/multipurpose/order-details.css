@@ -1,0 +1,1007 @@
+/**
+ * Styles for order-details.html, the single-order page of the Marlo shop.
+ * Everything sits under .od-*. No color is written out here: each one is a
+ * --basalt-* token or a mix of two, so every palette and dark mode come
+ * through on their own.
+ */
+
+/* The page root derives the three colors its parts share: a muted gray
+   pulled toward the body color so small labels keep their contrast, the
+   rule color between rows, and a link color that leans on the brand. */
+.od-page {
+	--od-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--od-line: var(--basalt-edge);
+	--od-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+
+	& .dropdown-item .bi {
+		margin-right: 0.6rem;
+	}
+
+	/* Cancel order is the one destructive item in the "…" menu. */
+	& .dropdown-item.od-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+
+		&:hover,
+		&:focus {
+			color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+			background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+		}
+	}
+}
+
+/* The hero puts the back link, order number and status on the left and
+   the actions on the right, both resting on the same baseline. On a phone
+   the actions drop under the text. */
+.basalt-hero-detail.od-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+
+	@media (max-width: 575.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+.od-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+	@media print {
+		display: none;
+	}
+}
+.od-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	&:empty {
+		display: none;
+	}
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+
+/* The newer/older arrows sit apart from the actions behind a hairline;
+   an arrow with nowhere to go fades instead of vanishing. */
+.od-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.5rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+
+	& .btn.disabled {
+		opacity: 0.4;
+	}
+	@media (max-width: 575.98px) {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+
+/* One slim line under the hero says why an order is held or stopped; the
+   warning and danger tints only touch the surface, text and edge. */
+.od-notice {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		flex: none;
+		color: var(--od-quiet);
+	}
+}
+.od-notice-warning {
+	border-color: color-mix(in srgb, var(--basalt-warning) 40%, var(--basalt-edge));
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 10%, var(--basalt-plane));
+
+	& > .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+	}
+}
+.od-notice-danger {
+	border-color: color-mix(in srgb, var(--basalt-danger) 32%, var(--basalt-edge));
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-danger) 7%, var(--basalt-plane));
+
+	& > .bi {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+
+/* The cards stack on narrow screens in reading order. From desktop width
+   they fall into rows that end level: fulfillment and items across the
+   page, customer and payment side by side, addresses across, then notes
+   beside the activity log. At 1400px the three middle cards share a row. */
+.od-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 992px) {
+	.od-grid {
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.od-card-fulfil,
+	.od-card-items,
+	.od-card-address {
+		grid-column: span 6;
+	}
+	.od-card-customer,
+	.od-card-payment,
+	.od-card-notes,
+	.od-card-activity {
+		grid-column: span 3;
+	}
+}
+@media (min-width: 1400px) {
+	.od-card-customer,
+	.od-card-payment,
+	.od-card-address {
+		grid-column: span 2;
+	}
+}
+
+/* Every card shares a head: a title with an optional line of help under
+   it, and room on the right for a link. */
+.od-card {
+	min-width: 0;
+}
+.od-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.od-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .od-link {
+		flex: none;
+		margin-top: 0.2rem;
+		font-size: 0.875rem;
+		white-space: nowrap;
+	}
+}
+.od-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.od-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--od-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* Small pieces several cards use: a section label in caps, a field error,
+   the copy button next to a value, and a plain text link. */
+.od-sub {
+	margin: 0 0 0.6rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--od-quiet);
+}
+.od-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.od-copy {
+	padding: 0.1rem 0.3rem;
+	vertical-align: baseline;
+	color: var(--od-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	@media print {
+		display: none;
+	}
+}
+.od-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--od-link);
+
+	&[hidden] {
+		display: none;
+	}
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.od-sku {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Fulfillment is a row of numbered markers joined by a line that fills in
+   as the order moves on. The card measures itself, so the markers stack
+   vertically wherever the card is narrower than 620px. */
+.od-card-fulfil {
+	container-type: inline-size;
+}
+.od-steps {
+	--od-done: var(--basalt-success);
+	display: grid;
+	gap: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.od-step {
+	--od-trail-from: scaleY(0);
+	--od-trail-origin: top;
+	position: relative;
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	align-content: start;
+	padding-bottom: 1.25rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	/* The connector to the next step hangs below the marker and takes the
+     done color once this step is done. */
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.25rem;
+		bottom: 0.25rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+	&.is-done:not(:last-child)::before {
+		background: color-mix(in srgb, var(--od-done) 70%, var(--basalt-plane));
+	}
+
+	/* A done connector grows out of its marker the first time the steps
+     are on screen, each one a beat behind the one before. */
+	.od-steps.is-waiting &.is-done:not(:last-child)::before {
+		transform: var(--od-trail-from);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.od-steps.is-drawing &.is-done:not(:last-child)::before {
+			transform-origin: var(--od-trail-origin);
+			animation: od-trail-grow 600ms ease-out calc(var(--od-trail-at, 0) * 300ms) both;
+		}
+	}
+}
+@keyframes od-trail-grow {
+	from {
+		transform: var(--od-trail-from);
+	}
+}
+.od-step-marker {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--od-quiet);
+	background: var(--basalt-plane-alt);
+
+	.od-step.is-done & {
+		font-size: 0.95rem;
+		color: var(--basalt-plane);
+		background: var(--od-done);
+	}
+	.od-step.is-next & {
+		color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+	}
+	.od-step.is-stopped & {
+		color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-danger) 16%, var(--basalt-plane));
+	}
+	.od-step.is-fresh & {
+		animation: od-pop 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+		@media print {
+			animation: none;
+		}
+	}
+}
+@keyframes od-pop {
+	0% {
+		transform: scale(0.6);
+	}
+	60% {
+		transform: scale(1.12);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+.od-step-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.od-step-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	.od-step.is-todo & {
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+}
+.od-step-when {
+	font-size: 0.77rem;
+	color: var(--od-quiet);
+}
+
+/* With room to spare the steps line up across the card and the
+   connector runs sideways between markers. */
+@container (min-width: 620px) {
+	.od-steps {
+		grid-template-columns: repeat(var(--od-count, 5), minmax(0, 1fr));
+	}
+	.od-step {
+		--od-trail-from: scaleX(0);
+		--od-trail-origin: left;
+		row-gap: 0.7rem;
+		grid-template-columns: minmax(0, 1fr);
+		padding-bottom: 0;
+	}
+	.od-step:not(:last-child)::before {
+		top: calc(1rem - 1px);
+		right: 0.6rem;
+		bottom: auto;
+		left: 2.6rem;
+		width: auto;
+		height: 2px;
+	}
+	.od-step-text {
+		padding-top: 0;
+		padding-right: 0.75rem;
+	}
+}
+
+/* Once a tracking number exists the parcel strip shows the carrier, the
+   number with its copy button and, while in transit, an edit button. */
+.od-parcel {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+
+		@media print {
+			display: none;
+		}
+	}
+}
+.od-parcel-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+.od-parcel-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	flex: 1 1 14rem;
+	min-width: 0;
+}
+.od-parcel-carrier {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.od-parcel-track {
+	display: flex;
+	gap: 0.1rem 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	& .od-sku {
+		overflow-wrap: anywhere;
+	}
+}
+
+/* The items table drops its own cell padding at both edges so the
+   columns line up with the card text. It measures itself too: under
+   560px the SKU and unit price fold under the product name, and under
+   360px the product icon goes. */
+.od-card-items {
+	container-type: inline-size;
+}
+.od-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+		border-bottom-color: var(--od-line);
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		padding-bottom: 0.8rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--od-quiet);
+	}
+	& tbody td {
+		white-space: nowrap;
+	}
+	& tbody td:first-child {
+		width: 100%;
+		white-space: normal;
+	}
+}
+.od-product {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.od-product-icon {
+	--od-tone: var(--basalt-series-1);
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--od-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--od-tone) 15%, var(--basalt-plane));
+}
+.od-product-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.od-product-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.od-product-note {
+	font-size: 0.77rem;
+	color: var(--od-quiet);
+}
+.od-product-note-refund {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-info) 62%, var(--basalt-copy));
+}
+.od-fold {
+	display: none;
+}
+.od-qty {
+	color: var(--basalt-copy-body);
+}
+.od-line-total {
+	font-weight: 650;
+}
+@container (max-width: 560px) {
+	.od-col-sku,
+	.od-col-unit {
+		display: none;
+	}
+	.od-fold {
+		display: block;
+	}
+}
+@container (max-width: 360px) {
+	.od-product-icon {
+		display: none;
+	}
+}
+
+/* The totals hang off the right edge under the table. The total row is
+   ruled off above; a refund shows in the info color, and net payment
+   closes the list in bold. */
+.od-totals {
+	display: grid;
+	gap: 0.7rem;
+	width: min(100%, 24rem);
+	margin: 1.5rem 0 0 auto;
+	font-size: 0.875rem;
+
+	& > div {
+		display: flex;
+		gap: 1.5rem;
+		align-items: baseline;
+		justify-content: space-between;
+	}
+	& dt {
+		display: flex;
+		gap: 0.1rem;
+		flex-direction: column;
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+	& dt small {
+		font-size: 0.77rem;
+		font-weight: 400;
+		color: var(--od-quiet);
+	}
+	& dd {
+		margin: 0;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& .od-totals-total {
+		padding-top: 0.85rem;
+		border-top: 1px solid var(--basalt-edge-strong);
+
+		& dt,
+		& dd {
+			font-size: 1rem;
+			font-weight: 700;
+			color: var(--basalt-copy);
+		}
+	}
+	& .od-totals-refund dd {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--basalt-info) 62%, var(--basalt-copy));
+	}
+	& .od-totals-net dt,
+	& .od-totals-net dd {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The customer card opens with a monogram tile in the buyer's tone, then
+   the name and tier, and runs a fact list underneath. */
+.od-who {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.od-who-mark {
+	--od-tone: var(--basalt-series-1);
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+	font-weight: 800;
+	color: color-mix(in srgb, var(--od-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--od-tone) 14%, var(--basalt-plane));
+}
+.od-who-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.od-who-name {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.od-who-meta {
+	font-size: 0.8rem;
+	color: var(--od-quiet);
+}
+
+/* Facts are label and value pairs ruled apart, shared by the customer
+   and payment cards; long values wrap rather than widen the column. */
+.od-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 6.5rem minmax(0, 1fr);
+		align-items: baseline;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--od-line);
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--od-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& .basalt-status {
+		vertical-align: baseline;
+	}
+}
+
+/* The payment card leads with the method on a tile, the same shape as
+   the customer's monogram. */
+.od-method {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.od-method-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.od-method-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.od-method-name {
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.od-method-meta {
+	font-size: 0.8rem;
+	color: var(--od-quiet);
+}
+
+/* Shipping and billing addresses sit side by side when at least 11rem
+   each fits, otherwise one above the other. */
+.od-addresses {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+.od-address {
+	margin: 0;
+	font-size: 0.875rem;
+	font-style: normal;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 650;
+	}
+}
+.od-address-same {
+	color: var(--od-quiet);
+}
+
+/* Notes list newest first above a two-line box for the next one. A note
+   just added glows briefly so the eye finds it. */
+.od-notes {
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+
+	&:empty {
+		display: none;
+	}
+}
+.od-note {
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--od-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&.is-fresh {
+		animation: od-fresh 1.6s ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+		@media print {
+			animation: none;
+		}
+	}
+}
+@keyframes od-fresh {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+	}
+	to {
+		background: transparent;
+	}
+}
+.od-note-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.od-note-by {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.77rem;
+	color: var(--od-quiet);
+}
+.od-note-form {
+	& textarea {
+		min-height: 4.5rem;
+		resize: vertical;
+	}
+	@media print {
+		display: none;
+	}
+}
+.od-note-form-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+}
+
+/* The activity feed is a thread of icons on a vertical line, with the
+   newest entry highlighted in the brand tint when it was just added. */
+.od-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.od-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.2rem;
+		bottom: 0.2rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.od-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+
+	.od-feed-item.is-fresh & {
+		color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+	}
+}
+.od-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+}
+.od-feed-time {
+	font-size: 0.77rem;
+	color: var(--od-quiet);
+}
+.od-more {
+	margin-top: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+	@media print {
+		display: none;
+	}
+}
+
+/* The dialogs reuse the shared choice grid and stepper; the refund one
+   adds a ruled list of lines and a running sum on a tinted panel. */
+.od-carriers.basalt-choices {
+	--basalt-choice-min: 120px;
+}
+.od-reasons.basalt-choices {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.od-refund-lines {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	& > legend {
+		float: none;
+		width: 100%;
+		margin-bottom: 0.5rem;
+		font-size: 1rem;
+	}
+}
+.od-rlines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.od-rline {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--od-line);
+
+	&:first-child {
+		padding-top: 0.25rem;
+	}
+	& .basalt-stepper {
+		flex: none;
+	}
+}
+.od-rline-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.od-rline-name {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.od-rline-meta {
+	font-size: 0.77rem;
+	color: var(--od-quiet);
+}
+.od-refund-ship {
+	margin-top: 1rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+[data-od-restock-wrap][hidden] {
+	display: none;
+}
+.od-sum {
+	display: grid;
+	gap: 0.4rem;
+	margin-top: 1.5rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	background: var(--basalt-plane-alt);
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		color: var(--basalt-copy-body);
+	}
+	& .od-sum-total {
+		padding-top: 0.5rem;
+		border-top: 1px solid var(--basalt-edge-strong);
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}

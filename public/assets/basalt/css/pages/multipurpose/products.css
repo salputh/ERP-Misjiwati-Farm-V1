@@ -1,0 +1,1142 @@
+/**
+ * Products page (products.html), everything under .prl-.
+ *
+ * The page header, tabs, segmented control, styled selects, applied
+ * chips, drawer, dialog and empty state are shared parts from
+ * basalt.css. This file lays them out and owns the store look: the
+ * plain paper, the head, the filter column, the photo tiles, the table
+ * and the quick view.
+ * Colors are --basalt-* tokens passed through color-mix(), so every
+ * palette and mode keeps its own hues.
+ */
+
+/* The page, plus the drawer and dialog that open outside <main>. */
+.prl-page,
+.prl-drawer,
+.prl-editor {
+	/* Muted text leans toward the body color, which keeps it above 4.5:1
+     on the paler palettes and on a hovered row. */
+	--prl-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	/* The primary on its own misses 4.5:1 in a few light palettes. */
+	--prl-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--prl-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	--prl-row-on: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+/* Each product group borrows a hue from the palette's chart colors. */
+.prl-tone-1 {
+	--prl-tone: var(--basalt-series-1);
+}
+.prl-tone-3 {
+	--prl-tone: var(--basalt-series-3);
+}
+.prl-tone-5 {
+	--prl-tone: var(--basalt-series-5);
+}
+.prl-tone-8 {
+	--prl-tone: var(--basalt-series-8);
+}
+
+.prl-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.92em;
+	letter-spacing: 0.01em;
+}
+.prl-link,
+.prl-link.btn-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--prl-link);
+}
+.prl-link:hover,
+.prl-link:focus-visible,
+.prl-link.btn-link:hover {
+	text-decoration: underline;
+	color: var(--basalt-copy);
+}
+
+/* The page reads like a store: plain white paper in light mode and a deep
+   near-black in dark mode, with no tinted canvas behind it. The paper is
+   mixed from the palette's own tokens, so every palette keeps its cast. */
+body:has(.prl-store) {
+	--prl-paper: var(--basalt-plane);
+	--basalt-canvas: var(--prl-paper);
+}
+[data-bs-theme="dark"] body:has(.prl-store) {
+	--prl-paper: color-mix(in srgb, var(--basalt-copy) 2%, #050506);
+	--basalt-plane: color-mix(in srgb, var(--basalt-copy) 6%, #050506);
+}
+.prl-store {
+	/* The pale ground behind each product photo. */
+	--prl-photo: color-mix(in srgb, var(--basalt-copy) 4%, var(--prl-paper));
+}
+
+/* The head: a small breadcrumb, an uppercase title set wide and light, and
+   two or three lines about the page. */
+.prl-hero {
+	margin: 0.25rem 0 2rem;
+}
+.prl-crumbs .breadcrumb {
+	--bs-breadcrumb-divider-color: var(--prl-quiet);
+	--bs-breadcrumb-item-active-color: var(--prl-quiet);
+	font-size: 0.75rem;
+
+	& a {
+		text-decoration: none;
+		color: var(--prl-quiet);
+	}
+	& a:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+.prl-title {
+	margin: 0.9rem 0 0.6rem;
+	font-size: clamp(1.4rem, 1.1rem + 0.9vw, 1.85rem);
+	font-weight: 400;
+	line-height: 1.15;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+}
+.prl-lede {
+	max-width: 46ch;
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* The filter column sits beside the catalog from 1200px; under that it is
+   the same column opening from the Filters button. */
+.prl-shop {
+	display: grid;
+	gap: 2.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+}
+@media (min-width: 1200px) {
+	.prl-shop {
+		grid-template-columns: 13.75rem minmax(0, 1fr);
+	}
+	.prl-toolbar .prl-filter-btn.btn,
+	.prl-facets .prl-facets-done.btn {
+		display: none;
+	}
+}
+.prl-facets {
+	--bs-offcanvas-width: min(22rem, 100vw);
+}
+.prl-facets-title {
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+.prl-facets-inner {
+	width: 100%;
+}
+.prl-facets-top {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	min-height: 1.5rem;
+	margin-bottom: 0.4rem;
+}
+.prl-facets-label {
+	margin: 0;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+}
+@media (max-width: 1199.98px) {
+	.prl-facets-label {
+		visibility: hidden;
+	}
+}
+.prl-facets-clear.btn,
+.prl-facet-more.btn {
+	padding: 0;
+	border: 0;
+	font-size: 0.78rem;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--basalt-copy-body);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.prl-facet {
+	min-width: 0;
+	margin: 0;
+	padding: 1rem 0 1.1rem;
+	border: 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	& > .prl-facet-head + * {
+		clear: both;
+	}
+}
+/* A floated legend sits inside the fieldset like a heading, under the
+   divider rather than on it. */
+.prl-facet-head {
+	float: left;
+	width: 100%;
+	margin: 0 0 0.7rem;
+	padding: 0;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+}
+.prl-facet-list {
+	display: grid;
+	gap: 0.45rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.prl-facet-item {
+	display: flex;
+	gap: 0.55rem;
+	align-items: center;
+
+	& .form-check-input {
+		flex-shrink: 0;
+		margin: 0;
+		border-radius: 3px;
+	}
+	&.is-empty .prl-facet-label {
+		color: var(--basalt-copy-muted);
+	}
+}
+.prl-facet-label {
+	display: flex;
+	flex: 1;
+	gap: 0.5rem;
+	justify-content: space-between;
+	min-width: 0;
+	font-size: 0.82rem;
+	color: var(--basalt-copy-body);
+	cursor: pointer;
+
+	& > span:first-child {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+}
+.prl-facet-n {
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--prl-quiet);
+}
+.prl-facet-more.btn {
+	margin-top: 0.6rem;
+}
+.prl-range {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.prl-range-field {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+
+	& > span[aria-hidden] {
+		position: absolute;
+		top: 50%;
+		left: 0.55rem;
+		font-size: 0.8rem;
+		color: var(--prl-quiet);
+		transform: translateY(-50%);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 1.3rem;
+		border-radius: 2px;
+		font-size: 0.8rem;
+		-moz-appearance: textfield;
+	}
+	& .form-control::-webkit-inner-spin-button,
+	& .form-control::-webkit-outer-spin-button {
+		margin: 0;
+		-webkit-appearance: none;
+	}
+}
+.prl-range-to {
+	font-size: 0.75rem;
+	color: var(--prl-quiet);
+}
+.prl-facets-done {
+	margin-top: 1rem;
+}
+
+/* The catalog: groups, the quiet row, then tiles or a table. */
+.prl-cat {
+	container: prl-cat / inline-size;
+	min-width: 0;
+}
+.prl-restock-dot {
+	width: 0.45rem;
+	height: 0.45rem;
+	border-radius: 50%;
+	background: var(--basalt-warning);
+}
+/* The tabs scroll sideways rather than wrap, with no scrollbar showing. */
+.prl-groups {
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: none;
+
+	& .basalt-tabs-list {
+		flex-wrap: nowrap;
+		width: max-content;
+		min-width: 100%;
+	}
+	& .basalt-tabs-list .nav-link {
+		white-space: nowrap;
+	}
+}
+
+/* One quiet row: search, Filters and restock on the left; the count, the
+   order, Tiles / Table and the catalog actions on the right. */
+.prl-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.1rem 0 1.4rem;
+}
+.prl-toolbar-start,
+.prl-toolbar-end,
+.prl-toolbar-actions {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	align-items: center;
+}
+.prl-toolbar-end {
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-left: auto;
+}
+.prl-toolbar-actions {
+	gap: 0.4rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.prl-quiet-btn.btn {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.2rem;
+	border: 0;
+	font-size: 0.82rem;
+	font-weight: 500;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	&:hover,
+	&.is-on {
+		color: var(--basalt-copy);
+	}
+}
+/* Search is an icon that opens into a field when used. */
+.prl-search {
+	position: relative;
+	width: 2.25rem;
+	transition: width 0.2s ease;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.7rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.9rem;
+		color: var(--basalt-copy-body);
+		pointer-events: none;
+	}
+	& .form-control {
+		height: 2.1rem;
+		padding: 0.25rem 0.5rem 0.25rem 2.05rem;
+		border-color: transparent;
+		border-radius: 2px;
+		font-size: 0.82rem;
+		background-color: transparent;
+		cursor: pointer;
+	}
+	& .form-control::placeholder {
+		color: transparent;
+	}
+	&:focus-within,
+	&:has(.form-control:not(:placeholder-shown)) {
+		width: 15rem;
+
+		& .form-control {
+			border-color: var(--basalt-edge-strong);
+			cursor: text;
+		}
+		& .form-control::placeholder {
+			color: var(--prl-quiet);
+		}
+	}
+}
+.prl-sort.form-select {
+	width: auto;
+	min-width: 11.5rem;
+	border-radius: 2px;
+	font-size: 0.82rem;
+}
+.prl-applied {
+	flex: 1 1 100%;
+	order: 1;
+}
+.prl-summary {
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--prl-quiet);
+}
+.prl-layout .basalt-segmented-option .bi {
+	margin: 0;
+}
+
+/* Filters carries the number in use. */
+.prl-filter-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.2rem;
+	height: 1.2rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.68rem;
+	font-weight: 700;
+	color: var(--prl-paper);
+	background: var(--basalt-copy);
+}
+.prl-chips {
+	display: flex;
+	gap: 0.35rem;
+	flex-wrap: wrap;
+}
+/* Sizes are plain boxes with their count beside the size. */
+.prl-chip {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: baseline;
+	justify-content: center;
+	min-width: 2.6rem;
+	padding: 0.3rem 0.5rem;
+	border-radius: 2px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--prl-paper);
+	cursor: pointer;
+	user-select: none;
+	transition: border-color 170ms ease;
+
+	& .prl-facet-n {
+		font-size: 0.68rem;
+		font-weight: 500;
+	}
+	&:hover {
+		border-color: var(--basalt-copy-muted);
+		color: var(--basalt-copy);
+	}
+}
+.prl-size.is-empty .prl-chip {
+	color: var(--basalt-copy-faint);
+}
+.btn-check:checked + .prl-chip {
+	border-color: var(--basalt-copy);
+	color: var(--prl-paper);
+	background: var(--basalt-copy);
+
+	& .prl-facet-n {
+		color: inherit;
+	}
+}
+.btn-check:focus-visible + .prl-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* The bulk bar appears above the table while rows are checked. */
+.prl-bulk {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.75rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-hue-border);
+	background: var(--basalt-hue-soft);
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn-outline-secondary {
+		background: var(--basalt-plane);
+	}
+}
+.prl-bulk-count {
+	margin-right: 0.5rem;
+	font-weight: 700;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+
+/* A product picture is the photo over a tinted tile holding the
+   product's icon, so a product with no photo, or one whose photo fails
+   to load, still gets a picture in its group's color. */
+.prl-pic {
+	position: relative;
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	overflow: hidden;
+	color: color-mix(in srgb, var(--prl-tone, var(--basalt-hue)) 55%, var(--basalt-copy));
+	background:
+		radial-gradient(
+			circle at 20% 20%,
+			color-mix(in srgb, var(--prl-tone, var(--basalt-hue)) 24%, transparent),
+			transparent 60%
+		),
+		color-mix(in srgb, var(--prl-tone, var(--basalt-hue)) 12%, var(--basalt-plane));
+}
+:root[data-basalt-gradients="off"] .prl-pic {
+	background-image: none;
+}
+.prl-pic-img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.prl-pic-sm {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 11px;
+	font-size: 1.1rem;
+}
+.prl-pic-lg {
+	width: 3rem;
+	height: 3rem;
+	border-radius: 12px;
+	font-size: 1.3rem;
+}
+
+/* The tiles: a portrait photo on a pale ground with one round button in
+   its corner, and under it, centered, the maker, the name and the price.
+   Four across on wide screens, three on tablets, two on phones. */
+.prl-grid {
+	display: grid;
+	gap: 2.75rem 1.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@media (min-width: 768px) {
+	.prl-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+@media (min-width: 1200px) {
+	.prl-grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.prl-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	cursor: pointer;
+
+	&:hover .prl-card-name {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	/* The photo carries the keyboard ring on behalf of the name link. */
+	&:has(.prl-card-link:focus-visible) .prl-card-art {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.prl-card-media {
+	position: relative;
+}
+.prl-card-art.prl-pic {
+	display: grid;
+	width: 100%;
+	aspect-ratio: 3 / 4;
+	border-radius: 0;
+	font-size: 2.25rem;
+	color: var(--basalt-copy-faint);
+	background: var(--prl-photo);
+}
+.prl-card-menu {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	z-index: 2;
+
+	& .prl-menu-btn.btn-icon {
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		font-size: 0.95rem;
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--prl-paper) 88%, transparent);
+		box-shadow: 0 1px 4px -1px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+	}
+	& .prl-menu-btn.btn-icon:hover,
+	& .prl-menu-btn.btn-icon[aria-expanded="true"] {
+		background: var(--prl-paper);
+	}
+}
+.prl-menu-btn.btn-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border-radius: 9px;
+	color: var(--basalt-copy-body);
+}
+.prl-row-menu .prl-menu-btn.btn-icon:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.prl-card-body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 1rem 0.25rem 0;
+	text-align: center;
+}
+.prl-card-maker {
+	margin: 0 0 0.3rem;
+	max-width: 100%;
+	overflow: hidden;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+}
+.prl-card-name {
+	display: -webkit-box;
+	margin: 0;
+	overflow: hidden;
+	font-size: 0.82rem;
+	font-weight: 400;
+	line-height: 1.4;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+/* The name links to the product's page, and so does the rest of the
+   tile (products.js); the round menu holds the quick view. */
+.prl-card-link {
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+
+	/* The ring is on the photo, so the name itself draws none. */
+	&:focus-visible {
+		box-shadow: none;
+	}
+}
+.prl-card-price {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.15rem 0.45rem;
+	align-items: baseline;
+	justify-content: center;
+	margin: 0.35rem 0 0;
+	font-size: 0.82rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+/* A running sale: the new price and the share off in red, the old price
+   struck through. */
+.prl-sale,
+.prl-off {
+	color: color-mix(in srgb, var(--basalt-danger) 85%, var(--basalt-copy));
+}
+.prl-off {
+	font-weight: 500;
+}
+.prl-was {
+	font-weight: 400;
+	color: var(--prl-quiet);
+}
+.prl-card-pill {
+	margin: 0.6rem 0 0;
+
+	& span {
+		display: inline-block;
+		padding: 0.12rem 0.55rem;
+		border-radius: 999px;
+		font-size: 0.66rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		background: color-mix(in srgb, var(--basalt-copy) 7%, var(--prl-paper));
+	}
+}
+.prl-rating {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: baseline;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		font-size: 0.75rem;
+		color: var(--basalt-warning);
+	}
+}
+.prl-per {
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--prl-quiet);
+}
+
+/* Load more, centered under the tiles, with how many are showing. */
+.prl-loadmore {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	align-items: center;
+	margin-top: 3rem;
+}
+.prl-loadmore-count {
+	margin: 0;
+	font-size: 0.75rem;
+	color: var(--prl-quiet);
+}
+.prl-loadmore-btn.btn {
+	display: inline-flex;
+	gap: 0.45rem;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-decoration: none;
+	text-transform: uppercase;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.25em;
+	}
+}
+
+/* The table hangs out of the card by the cells' side padding, so the
+   first column's text starts on the card edge under the title. */
+.prl-table-wrap {
+	margin: 0 -0.55rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.prl-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.5rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+	}
+
+	& > :not(caption) > * > .prl-col-stock {
+		padding-left: 1.75rem;
+	}
+
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--prl-quiet);
+	}
+
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+}
+.prl-row {
+	cursor: pointer;
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background: var(--prl-row-hover);
+	}
+	&.is-selected {
+		background: var(--prl-row-on);
+	}
+}
+.prl-col-check {
+	width: 2.25rem;
+
+	& .form-check-input {
+		margin: 0;
+		cursor: pointer;
+	}
+}
+.prl-col-group {
+	width: 8.5rem;
+}
+.prl-col-stock {
+	width: 11rem;
+
+	& .basalt-status {
+		white-space: nowrap;
+	}
+}
+.prl-col-num {
+	width: 7.5rem;
+	text-align: right;
+	white-space: nowrap;
+}
+.prl-col-menu {
+	width: 8rem;
+	text-align: right;
+}
+.prl-prod {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 12rem;
+}
+.prl-prod-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.prl-prod-name {
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.prl-prod-sku {
+	font-size: 0.8rem;
+	color: var(--prl-quiet);
+}
+.prl-group {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+
+	&::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--prl-tone);
+	}
+}
+.prl-num {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.prl-sub {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--prl-quiet);
+}
+
+/* A product just added flashes once, as a card or as a row. */
+.prl-card.is-fresh,
+.prl-row.is-fresh {
+	animation: prl-fresh 1.8s ease;
+}
+@keyframes prl-fresh {
+	from {
+		background-color: var(--basalt-hue-soft);
+	}
+}
+
+.prl-foot {
+	margin: 1.5rem 0 0;
+	padding-top: 1.2rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--prl-quiet);
+}
+
+/* The quick view drawer: stock, price, the last thirty days with the
+   biggest buyers as bars, then a list of facts. */
+.prl-drawer {
+	--bs-offcanvas-width: 500px;
+
+	/* The title takes focus when the drawer opens, for screen readers; it
+     is not a control and so shows no ring. */
+	& .offcanvas-title:focus-visible {
+		box-shadow: none;
+	}
+	& .basalt-drawer-section {
+		margin-bottom: 1.75rem;
+	}
+}
+.prl-d-pill {
+	margin: 0 0 0.5rem;
+}
+.prl-d-text {
+	margin: 0;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+
+	& .prl-link {
+		white-space: nowrap;
+	}
+}
+.prl-d-price {
+	margin: 0 0 0.3rem;
+	font-size: 1.35rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& .prl-per {
+		font-size: 0.85rem;
+	}
+}
+.prl-d-label {
+	margin: 1.1rem 0 0.6rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--prl-quiet);
+}
+.prl-bars {
+	display: grid;
+	gap: 0.8rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.prl-bars-row {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: minmax(0, 11rem) 1fr 2.5rem;
+	align-items: center;
+}
+.prl-bars-name {
+	overflow: hidden;
+	font-weight: 600;
+	font-size: 0.9rem;
+	text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+.prl-bars-track {
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.prl-bars-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--prl-tone);
+}
+.prl-bars-value {
+	font-weight: 600;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.prl-facts {
+	margin: 0;
+
+	& dt {
+		font-weight: 500;
+		color: var(--prl-quiet);
+	}
+	& dd {
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+}
+.prl-facts-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 8rem 1fr;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+
+/* The add-or-duplicate dialog. */
+.prl-field + .prl-field {
+	margin-top: 1.25rem;
+}
+.prl-kinds {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+}
+.prl-kind {
+	align-items: center;
+	text-align: center;
+}
+.prl-select-maker {
+	width: 10.5rem;
+}
+.prl-select-wh {
+	width: 9.5rem;
+}
+/* A legend reads as a field label here, not as Bootstrap's large one. */
+.prl-editor legend.form-label {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+}
+
+/* A narrower catalog drops the group column (the tabs still say it), and
+   under 760px the table gives way to the tiles, so the Tiles / Table
+   switch goes too. */
+@container prl-cat (max-width: 1000px) {
+	.prl-col-group {
+		display: none;
+	}
+}
+@container prl-cat (max-width: 759.98px) {
+	.prl-layout {
+		display: none;
+	}
+}
+/* On a phone the row splits in two: search, Filters and restock, then the
+   count, the order and the actions. */
+@media (max-width: 575.98px) {
+	.prl-toolbar-end {
+		flex: 1 1 100%;
+		justify-content: space-between;
+		margin-left: 0;
+	}
+	.prl-sort.form-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	.prl-summary {
+		flex: 1 1 100%;
+	}
+	.prl-grid {
+		gap: 2rem 0.85rem;
+	}
+	.prl-search:focus-within,
+	.prl-search:has(.form-control:not(:placeholder-shown)) {
+		width: min(15rem, 55vw);
+	}
+}
+/* A phone-width drawer keeps its header to the name and the arrows, and
+   gives each buyer's name a line of its own above the bar. */
+@container basalt-drawer (max-width: 440px) {
+	.prl-drawer .prl-pic-lg,
+	.prl-drawer .basalt-drawer-pos {
+		display: none;
+	}
+	.prl-bars-row {
+		row-gap: 0.3rem;
+		grid-template-columns: 1fr 2.25rem;
+	}
+	.prl-bars-name {
+		grid-column: 1 / -1;
+	}
+	.prl-facts-row {
+		grid-template-columns: 6.5rem 1fr;
+	}
+}
+/* On a phone the three kinds are rows: the icon, then name and line. */
+@media (max-width: 575.98px) {
+	.prl-kind {
+		display: grid;
+		row-gap: 0.1rem;
+		column-gap: 0.85rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		padding: 0.85rem 1rem;
+		text-align: left;
+	}
+	.prl-kind .basalt-choice-card-icon {
+		grid-row: span 2;
+	}
+	.prl-kind .basalt-choice-card-title,
+	.prl-kind .basalt-choice-card-text {
+		grid-column: 2;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.prl-search {
+		transition: none;
+	}
+}
+
+/* Whatever the script hides stays hidden, no matter what display the
+   element was given above. */
+.prl-restock.btn[hidden],
+.prl-filter-count[hidden],
+.prl-bulk[hidden],
+.prl-grid[hidden],
+.prl-table-wrap[hidden],
+.prl-empty[hidden],
+.prl-loadmore[hidden],
+.prl-facets-clear[hidden],
+.prl-facet-more[hidden],
+.prl-facet-item[hidden],
+.prl-field[hidden] {
+	display: none;
+}

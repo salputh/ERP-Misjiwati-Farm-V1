@@ -1,0 +1,762 @@
+/**
+ * Loaders page (loaders.html): the page shell under .ld-*, meaning the
+ * chip row, the card grid, each card's head and snippet, and the small
+ * demo layouts inside the cards. The loaders on show (.basalt-skeleton,
+ * .btn-loading, the dots and the bar) are styled in basalt.css. Every
+ * color is a --basalt-* token or a mix of two, so small text keeps 4.5:1
+ * in each palette, light or dark.
+ */
+
+/* The page root defines its two text mixes: a quiet gray for small type,
+   and the primary pulled toward the body color so it reads as text. */
+.ld-page {
+	--ld-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--ld-accent-text: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+
+	& .form-range {
+		max-width: 22rem;
+	}
+	& .form-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& .form-check-label {
+		color: var(--basalt-copy-body);
+	}
+	& .placeholder {
+		border-radius: 4px;
+	}
+}
+
+/* A busy primary button keeps the soft tint with readable primary text;
+   an outline button with nothing to do goes dashed and quiet rather than
+   faded. */
+.ld-page .btn-primary,
+.ld-hero-btn.btn-primary {
+	--bs-btn-disabled-color: var(--ld-accent-text);
+	--bs-btn-disabled-bg: var(--basalt-hue-soft);
+	--bs-btn-disabled-border-color: var(--basalt-hue-soft);
+}
+.ld-page .btn-outline-secondary:disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: var(--ld-quiet);
+	--bs-btn-disabled-bg: transparent;
+	--bs-btn-disabled-border-color: var(--basalt-edge-strong);
+	border-style: dashed;
+}
+
+/* The hidden "Loading…" label inside a Bootstrap spinner inherits the
+   spinner color; it gets the text color and its own ground so it would be
+   readable if it were ever shown. It is clipped away either way. */
+.ld-page .spinner-border > .visually-hidden,
+.ld-page .spinner-grow > .visually-hidden {
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+/* The chip row sits above the grid; the pressed chip inverts to the text color. */
+.ld-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.ld-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.ld-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.ld-chips .ld-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.ld-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ld-quiet);
+}
+
+/* Twelve columns so a card can take half a row or the whole of it. Under
+   1200px every card takes the row; the script marks an odd card at the
+   end of a run as alone so it spans too. */
+.ld-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.ld-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.75rem;
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem;
+		}
+	}
+
+	/* Whatever the demo ends with, the snippet line keeps its distance. */
+	& .card-body > :nth-last-child(2) {
+		margin-bottom: 1.75rem;
+	}
+}
+@media (min-width: 1200px) {
+	.ld-card {
+		grid-column: span 6;
+	}
+	.ld-card-full,
+	.ld-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* The kind pill is drawn above the title although it follows it in the
+   markup, so a screen reader hears the title first. */
+.ld-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.ld-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ld-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ld-quiet);
+}
+.ld-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--ld-quiet);
+}
+
+/* Spinner cards lay their variants out as captioned figures. */
+.ld-swatches {
+	display: flex;
+	gap: 1.5rem 1.75rem;
+	flex-wrap: wrap;
+
+	& figure {
+		display: grid;
+		gap: 0.4rem;
+		grid-template-rows: 3rem auto;
+		align-items: center;
+		justify-items: center;
+		min-width: 3.5rem;
+		margin: 0;
+	}
+	& figcaption {
+		font-size: 0.76rem;
+		color: var(--ld-quiet);
+	}
+}
+.ld-row {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.ld-stack {
+	display: grid;
+	gap: 1.25rem;
+}
+.ld-inline {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.ld-spinner-lg {
+	--bs-spinner-width: 3rem;
+	--bs-spinner-height: 3rem;
+}
+
+/* Search results fade while a reply is pending; the match is marked. */
+.ld-results {
+	min-height: 9.5rem;
+	margin: 0.9rem 0 0;
+	padding: 0;
+	list-style: none;
+	transition: opacity 150ms ease;
+
+	&[aria-busy="true"] {
+		opacity: 0.5;
+	}
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.5rem 0.1rem;
+		font-size: 0.875rem;
+		color: var(--basalt-copy-body);
+	}
+	& li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& li span:last-child {
+		color: var(--ld-quiet);
+	}
+	& mark {
+		padding: 0 0.1em;
+		border-radius: 3px;
+		color: var(--basalt-copy);
+		background: var(--basalt-warning-soft);
+	}
+}
+
+/* The staged job: a title line with its clock, then the ready line that
+   appears once every step has checked off. */
+.ld-job {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.ld-job-title {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ld-job-clock {
+	font-size: 0.8rem;
+	color: var(--ld-quiet);
+}
+.ld-job-done {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The button rows under a demo, with a status line that hugs the right
+   edge until the row is too narrow for it. */
+.ld-toolbar {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+}
+.ld-toolbar-top {
+	margin: 0 0 1.5rem;
+}
+.ld-toolbar-status {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--ld-quiet);
+
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+		margin-left: 0;
+	}
+}
+.ld-sub {
+	margin: 0 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--ld-quiet);
+}
+.ld-lbtn-block {
+	margin-top: 1.75rem;
+	padding-top: 1.5rem;
+	border-top: 1px dashed var(--basalt-edge);
+}
+
+/* The segmented radio row. The picked option keeps the brand fill, nudged
+   toward the text color so the lighter palettes still clear 4.5:1. */
+.ld-seg {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+
+	& .btn {
+		border-radius: 999px;
+		font-weight: 600;
+		font-size: 0.77rem;
+	}
+	& .btn-check:checked + .btn {
+		--ld-seg-on: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+		border-color: var(--ld-seg-on);
+		color: var(--basalt-on-hue);
+		background-color: var(--ld-seg-on);
+	}
+}
+
+/* Mini panels: a head with title and meta, a body, and either a key-value
+   list or one big figure with a note under it. */
+.ld-panel {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.ld-panel-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem 1.1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.ld-panel-title {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ld-panel-meta {
+	margin: 0.1rem 0 0;
+	font-size: 0.76rem;
+	color: var(--ld-quiet);
+}
+.ld-panel-body {
+	padding: 1rem 1.1rem;
+}
+.ld-kv {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+		font-size: 0.875rem;
+		color: var(--basalt-copy-body);
+	}
+	& li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.ld-stat {
+	font-size: 2rem;
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.ld-stat-note {
+	margin: 0.25rem 0 0;
+	font-size: 0.8rem;
+	color: var(--ld-quiet);
+}
+.ld-stat-grid {
+	display: grid;
+	gap: 1rem;
+
+	@media (min-width: 576px) {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+/* Two placeholder cards side by side from the small breakpoint up. */
+.ld-ph-grid {
+	display: grid;
+	gap: 1rem;
+
+	@media (min-width: 576px) {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+.ld-ph-card {
+	padding: 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+
+	& .placeholder-glow,
+	& .placeholder-wave {
+		color: var(--basalt-copy-muted);
+	}
+}
+
+/* The skeleton table keeps the real headers; each ghost bar is about as
+   wide as the value it stands in for. */
+.ld-page .table {
+	--bs-table-bg: transparent;
+	margin: 0;
+	font-size: 0.875rem;
+
+	& th {
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--ld-quiet);
+	}
+	& td {
+		vertical-align: middle;
+		color: var(--basalt-copy-body);
+	}
+	& .basalt-skeleton-text {
+		margin: 0.2rem 0;
+	}
+}
+.ld-ghost-table td:nth-child(1) > .basalt-skeleton {
+	width: 3rem;
+}
+.ld-ghost-table td:nth-child(2) > .basalt-skeleton {
+	width: 7rem;
+}
+.ld-ghost-table tr:nth-child(2) > td:nth-child(2) > .basalt-skeleton {
+	width: 6rem;
+}
+.ld-ghost-table tr:nth-child(3) > td:nth-child(2) > .basalt-skeleton {
+	width: 8rem;
+}
+.ld-ghost-table tr:nth-child(4) > td:nth-child(2) > .basalt-skeleton {
+	width: 5.5rem;
+}
+.ld-ghost-table td:nth-child(3) > .basalt-skeleton {
+	width: 1.5rem;
+}
+.ld-ghost-table td:nth-child(4) > .basalt-skeleton {
+	width: 3.5rem;
+}
+.ld-ghost-table tr:nth-child(even) > td:nth-child(4) > .basalt-skeleton {
+	width: 3rem;
+}
+.ld-ghost-table td:nth-child(5) > .basalt-skeleton {
+	width: 4rem;
+}
+.ld-ghost-table tr:nth-child(2) > td:nth-child(5) > .basalt-skeleton {
+	width: 4.5rem;
+}
+.ld-ghost-table tr:nth-child(5) > td:nth-child(5) > .basalt-skeleton {
+	width: 5rem;
+}
+
+/* Product tiles for the skeleton demo, ghost and real alike. The media
+   block takes its tint from the tile's series tone. */
+.ld-products {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+.ld-product {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+}
+.ld-product-media {
+	display: grid;
+	place-items: center;
+	height: 8rem;
+	margin-bottom: 1rem;
+	border-radius: 12px;
+	font-size: 2.4rem;
+	color: color-mix(in srgb, var(--ld-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ld-tone) 16%, var(--basalt-plane));
+}
+.ld-product-name {
+	margin: 0 0 0.2rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ld-product-desc {
+	margin: 0 0 1rem;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--ld-quiet);
+}
+.ld-product-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+}
+.ld-product-price {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ld-tone-1 {
+	--ld-tone: var(--basalt-series-1);
+}
+.ld-tone-2 {
+	--ld-tone: var(--basalt-series-2);
+}
+.ld-tone-3 {
+	--ld-tone: var(--basalt-series-3);
+}
+.ld-ghost-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+}
+.ld-sk-short {
+	width: 70%;
+}
+.ld-sk-price {
+	width: 4rem;
+}
+
+/* The chat log for the typing bubble: your message on the right, theirs
+   on the left, and each one rises in as it appears. */
+.ld-chat {
+	display: grid;
+	gap: 0.6rem;
+	align-content: start;
+	min-height: 13.5rem;
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background: var(--basalt-canvas);
+
+	& .ld-msg:not([hidden]) {
+		animation: basalt-rise 300ms ease both;
+	}
+}
+.ld-msg {
+	max-width: 85%;
+	padding: 0.6rem 0.85rem;
+	border-radius: 16px;
+	font-size: 0.875rem;
+	line-height: 1.45;
+}
+.ld-msg-them {
+	justify-self: start;
+	border: 1px solid var(--basalt-edge);
+	border-bottom-left-radius: 4px;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.ld-msg-me {
+	justify-self: end;
+	border-bottom-right-radius: 4px;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.ld-msg-who {
+	display: block;
+	margin-bottom: 0.1rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--ld-quiet);
+}
+.ld-typing-row {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-size: 0.77rem;
+	color: var(--ld-quiet);
+}
+.ld-typing-row[hidden],
+.ld-msg[hidden] {
+	display: none;
+}
+
+/* A browser-like frame for the loading bar: three dots, a URL and some
+   gray lines that dim while the "page" loads. */
+.ld-frame {
+	position: relative;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+
+	&.is-loading .ld-frame-page {
+		opacity: 0.55;
+	}
+}
+.ld-frame-bar {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.65rem 0.9rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+
+	& > span:not(.ld-frame-url) {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--basalt-edge-strong);
+	}
+}
+.ld-frame-url {
+	margin-left: 0.5rem;
+	font-size: 0.76rem;
+	font-family: "Chivo Mono", monospace;
+	color: var(--ld-quiet);
+}
+.ld-frame-page {
+	position: relative;
+	display: grid;
+	gap: 0.65rem;
+	padding: 1.1rem;
+	transition: opacity 200ms ease;
+}
+.ld-frame-line {
+	height: 0.6rem;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+}
+
+/* The snippet sits at the foot of every card behind a disclosure; its
+   chevron turns when open and the copy button floats over the code. */
+.ld-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.ld-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.ld-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* With motion reduced nothing slides, fades or turns; in print the
+   controls go and every card shows. */
+@media (prefers-reduced-motion: reduce) {
+	.ld-chip,
+	.ld-code summary .bi,
+	.ld-frame-page,
+	.ld-results {
+		transition: none;
+	}
+	.ld-chat .ld-msg:not([hidden]) {
+		animation: none;
+	}
+}
+@media print {
+	.ld-filter,
+	.ld-code,
+	.ld-toolbar,
+	.ld-seg {
+		display: none;
+	}
+	.ld-card.is-hidden {
+		display: block;
+	}
+}

@@ -1,0 +1,1277 @@
+/* Reports library (reports.html), every class under the .rpt- prefix.
+   Colors come only from the --basalt-* tokens, so cards, keys and tables
+   follow the active palette exactly as the canvases do; reports.js reads
+   the same tokens when it builds a chart. */
+
+.rpt-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--rpt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--rpt-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--rpt-focus: 2px solid var(--basalt-hue);
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+	& .form-control::placeholder {
+		color: var(--rpt-quiet);
+		opacity: 1;
+	}
+	/* A fieldset's legend reads as a field label, not a heading. */
+	& legend.form-label {
+		float: none;
+		font-size: var(--bs-body-font-size);
+	}
+}
+.rpt-num {
+	font-variant-numeric: tabular-nums;
+}
+.rpt-quiet {
+	color: var(--rpt-quiet);
+}
+.rpt-sub {
+	display: block;
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--rpt-quiet);
+}
+
+/* Anything the page hides with the hidden attribute stays hidden, whatever
+   display its own rule asks for. */
+.rpt-custom[hidden],
+.rpt-month-pop[hidden],
+.rpt-pager[hidden],
+.rpt-drawer-actions .btn[hidden],
+.rpt-drill-tools .btn[hidden],
+.rpt-field-error[hidden],
+[data-rpt-s="day-wrap"][hidden] {
+	display: none;
+}
+
+/* Notes, keys and stat lists take no room while they hold nothing. */
+.rpt-stats:empty,
+.rpt-drawer-hint:empty,
+.rpt-key:empty,
+.rpt-builder-note:empty {
+	display: none;
+}
+
+/* A chart box sizes the canvas to fill it edge to edge. */
+.rpt-card-chart > canvas,
+.rpt-drawer-chart > canvas,
+.rpt-builder-chart > canvas {
+	position: absolute;
+	inset: 0;
+}
+
+/* The lens card: the range tabs and three filters share a row that wraps,
+   and on a phone each filter takes a row of its own. */
+.rpt-lens .card-body {
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+.rpt-lens-row {
+	display: flex;
+	gap: 0.9rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.rpt-lens-field {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	flex: 1 1 9.5rem;
+	min-width: 0;
+
+	@media (max-width: 575.98px) {
+		&:not(.rpt-lens-field-range) {
+			flex-basis: 100%;
+		}
+	}
+}
+.rpt-lens-field-range {
+	flex: 0 1 auto;
+}
+.rpt-lens-label {
+	margin: 0;
+	font-size: 0.76rem;
+	font-weight: 600;
+	color: var(--rpt-quiet);
+}
+.rpt-range {
+	& .basalt-tabs-list {
+		flex-wrap: nowrap;
+	}
+	& .nav-link {
+		white-space: nowrap;
+	}
+}
+
+/* The custom range opens under a dashed rule, two month fields and a note. */
+.rpt-custom {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-top: 0.9rem;
+	padding-top: 0.9rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+}
+.rpt-custom-field {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+}
+.rpt-custom-note {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--rpt-quiet);
+
+	&.is-error {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+
+/* Each month field is a select-look button whose popup shows one year. */
+.rpt-month {
+	position: relative;
+}
+.rpt-month-btn.form-select {
+	min-width: 10rem;
+	text-align: start;
+	white-space: nowrap;
+	cursor: pointer;
+
+	&.is-open {
+		border-color: var(--basalt-hue);
+		box-shadow: 0 0 0 0.25rem var(--basalt-hue-border);
+	}
+	&.is-open.is-invalid {
+		border-color: var(--basalt-danger);
+	}
+}
+.rpt-month-pop {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	left: 0;
+	z-index: 1010;
+	width: 17.5rem;
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	box-shadow:
+		0 20px 48px color-mix(in srgb, var(--basalt-copy) 18%, transparent),
+		0 2px 6px color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+}
+.rpt-month-nav {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+.rpt-month-year {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rpt-month-step {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	color: var(--basalt-copy-body);
+	background: transparent;
+
+	&:hover:not(:disabled) {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: var(--rpt-focus);
+		outline-offset: 1px;
+	}
+	&:disabled {
+		color: var(--rpt-quiet);
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+}
+.rpt-month-grid {
+	display: grid;
+	gap: 0.4rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.rpt-month-cell {
+	height: 2.5rem;
+	padding: 0;
+	border: 1px solid color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	border-radius: 10px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover:not(:disabled):not(.is-selected) {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-edge));
+	}
+	&:focus-visible {
+		outline: var(--rpt-focus);
+		outline-offset: 2px;
+	}
+	&.is-selected {
+		border-color: transparent;
+		color: var(--basalt-on-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-hue-deep));
+	}
+	&.is-selected:focus-visible {
+		outline: none;
+	}
+	&:disabled {
+		border-style: dashed;
+		font-weight: 400;
+		color: var(--rpt-quiet);
+		background: transparent;
+		cursor: not-allowed;
+	}
+}
+
+/* Under the filters, the plain-language summary sits across from the chips. */
+.rpt-lens-foot {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.9rem;
+}
+.rpt-lens-summary {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: var(--rpt-focus);
+		outline-offset: 2px;
+	}
+}
+
+/* Section heads put the title and its line on the left and any action on
+   the right, wrapping under them when space runs out. */
+.rpt-section-head {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.rpt-section-head-title {
+	margin: 0 0 0.25rem;
+	font-size: 1.05rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rpt-section-head-desc {
+	max-width: 70ch;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--rpt-quiet);
+}
+
+/* Pinned figures run one, two, then four to a row as the page widens. */
+.rpt-kpis {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 576px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	@media (min-width: 1200px) {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
+	& > .rpt-error {
+		grid-column: 1 / -1;
+	}
+}
+.rpt-tone-1 {
+	--basalt-tone: var(--basalt-series-1);
+}
+.rpt-tone-2 {
+	--basalt-tone: var(--basalt-series-2);
+}
+.rpt-tone-3 {
+	--basalt-tone: var(--basalt-series-3);
+}
+.rpt-tone-5 {
+	--basalt-tone: var(--basalt-series-5);
+}
+.rpt-kpi .basalt-trend-card-delta {
+	min-height: 1.2rem;
+}
+.rpt-kpi-ghost {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column;
+	min-height: 9.5rem;
+	padding-bottom: 1.1rem;
+}
+.rpt-kpi-ghost-spark {
+	height: 2.5rem;
+	margin-top: auto;
+}
+.rpt-w-30 {
+	width: 30%;
+}
+.rpt-w-50 {
+	width: 50%;
+}
+.rpt-w-60 {
+	width: 60%;
+}
+.rpt-w-70 {
+	width: 70%;
+}
+.rpt-empty,
+.rpt-error {
+	margin: 0;
+}
+
+/* The toolbar stacks the shelf tabs over search, sort and the layout
+   switch. Sort stays beside the search, and only the switch is pushed to
+   the far end; once the row is too narrow for all three, the search takes
+   a full row and the other two share the next. */
+.rpt-toolbar {
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+	container: rpt-tools / inline-size;
+	margin-bottom: 1.1rem;
+}
+.rpt-groups {
+	max-width: 100%;
+
+	& .nav-link {
+		white-space: nowrap;
+	}
+}
+.rpt-toolbar-row {
+	display: flex;
+	gap: 0.65rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.rpt-toolbar-end {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: nowrap;
+	flex: 1 1 auto;
+	align-items: center;
+	min-width: 0;
+
+	/* The sort is as wide as its longest option, not the rest of the row. */
+	& > .rpt-sort.form-select {
+		flex: 0 0 auto;
+		width: auto;
+		min-width: 12rem;
+	}
+	& > .basalt-segmented {
+		margin-left: auto;
+	}
+}
+.rpt-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--rpt-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+@container rpt-tools (max-width: 36rem) {
+	.rpt-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.rpt-toolbar-end > .rpt-sort.form-select {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+
+/* A page of the library is four cards: a row of four when it is wide and
+   two rows of two in between, so a row is never left half full. */
+.rpt-results {
+	container: rpt-results / inline-size;
+}
+.rpt-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@container rpt-results (min-width: 34rem) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	@container rpt-results (min-width: 64rem) {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+/* The card's title opens the report's own page; anywhere else on the card
+   opens the quick view, so the whole card takes the pointer. */
+.rpt-card.basalt-box {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.1rem 1rem;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+	}
+	&:has(:focus-visible) {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-edge));
+	}
+	&:not(.rpt-card-ghost) {
+		cursor: pointer;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.rpt-card-ghost {
+	gap: 0.75rem;
+}
+.rpt-card-top {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+}
+.rpt-card-tools {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	gap: 0.1rem;
+	align-items: center;
+}
+.rpt-kind {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.18rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	white-space: nowrap;
+	color: var(--rpt-quiet);
+
+	& .bi {
+		font-size: 0.8rem;
+	}
+}
+.rpt-icon-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	color: var(--rpt-quiet);
+	background: transparent;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: var(--rpt-focus);
+		outline-offset: 1px;
+	}
+}
+/* A set star keeps its color under the pointer, so it comes after the hover. */
+.rpt-star.is-on {
+	color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+}
+.rpt-card-title {
+	margin: 0;
+	font-size: 0.98rem;
+	font-weight: 650;
+	line-height: 1.3;
+}
+.rpt-card-open {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+.rpt-card-desc {
+	display: -webkit-box;
+	min-height: 2.46rem;
+	margin: 0;
+	overflow: hidden;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	color: var(--rpt-quiet);
+}
+.rpt-card-chart {
+	position: relative;
+	height: 7.5rem;
+	margin: 0.25rem 0 0.2rem;
+}
+.rpt-chart-ghost {
+	height: 100%;
+	min-height: 7.5rem;
+	border-radius: 10px;
+}
+.rpt-chart-ghost-lg {
+	min-height: 18rem;
+}
+
+/* The card foot: owner on the left, Quick view and Open full page across
+   from it, and the schedule on its own line beneath. */
+.rpt-card-meta {
+	display: flex;
+	gap: 0.3rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: auto;
+	padding-top: 0.65rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.77rem;
+	color: var(--rpt-quiet);
+
+	& .basalt-row-actions {
+		margin-left: auto;
+	}
+	& .rpt-sched {
+		flex-basis: 100%;
+		justify-content: flex-end;
+	}
+}
+.rpt-avatar.basalt-avatar-sm {
+	flex-shrink: 0;
+	width: 26px;
+	height: 26px;
+	font-size: 0.64rem;
+	font-weight: 700;
+}
+.rpt-card-owner {
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.rpt-sched {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-left: auto;
+	white-space: nowrap;
+
+	&.is-on {
+		color: var(--basalt-copy-body);
+	}
+	& .bi {
+		font-size: 0.85rem;
+	}
+}
+.rpt-nodata {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	min-height: 6rem;
+	margin: 0;
+	padding: 0.5rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 10px;
+	font-size: 0.8rem;
+	text-align: center;
+	color: var(--rpt-quiet);
+}
+
+.rpt-pager {
+	margin-top: 1.25rem;
+}
+
+/* Report tables, in the list view and in the drawer. The list card holds
+   its table edge to edge, so the outer cells keep the card's inset. */
+.rpt-list.basalt-box {
+	overflow: hidden;
+}
+.rpt-list .rpt-table > tbody > tr {
+	cursor: pointer;
+}
+.rpt-scroll:focus-visible {
+	outline: var(--rpt-focus);
+	outline-offset: -2px;
+}
+.rpt-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	margin-bottom: 0;
+	font-size: 0.85rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+	& > thead > tr > th {
+		padding-top: 0.6rem;
+		padding-bottom: 0.6rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--rpt-quiet);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& td,
+	& th {
+		white-space: nowrap;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+
+	@media (max-width: 575.98px) {
+		& > :not(caption) > * > :first-child {
+			padding-left: var(--basalt-pad-x-narrow);
+		}
+		& > :not(caption) > * > :last-child {
+			padding-right: var(--basalt-pad-x-narrow);
+		}
+	}
+
+	& > tbody > tr > th {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& > tfoot > tr > * {
+		border-top: 1px solid var(--basalt-edge-strong);
+		border-bottom-width: 0;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.rpt-table-star {
+	width: 2.75rem;
+	padding-right: 0;
+}
+.rpt-table-name {
+	min-width: 15rem;
+	max-width: 26rem;
+	white-space: normal;
+
+	& .rpt-sub {
+		white-space: normal;
+	}
+}
+.rpt-owner {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.rpt-link {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	text-decoration: none;
+	color: var(--rpt-link);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+}
+.rpt-card-open:focus-visible,
+.rpt-link:focus-visible {
+	border-radius: 3px;
+	outline: var(--rpt-focus);
+	outline-offset: 2px;
+}
+
+/* Under table width each report keeps two lines: the name, owner and opens
+   on fixed tracks below their headers, then a muted line with the chart,
+   schedule and last update. On a phone the header goes and the owner and
+   opens join that second line. */
+.rpt-list {
+	container: rpt-list / inline-size;
+}
+@container rpt-list (max-width: 64rem) {
+	.rpt-list .rpt-scroll {
+		overflow: visible;
+	}
+	.rpt-list .rpt-table,
+	.rpt-list .rpt-table thead,
+	.rpt-list .rpt-table tbody {
+		display: block;
+	}
+	.rpt-list .rpt-table tr {
+		display: flex;
+		column-gap: 1rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: 0 var(--basalt-pad-x);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.rpt-list .rpt-table tbody tr {
+		row-gap: 0.3rem;
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: var(--basalt-pad-row-y);
+	}
+	.rpt-list .rpt-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	/* Laid out as lines, the cells no longer meet, so the hover tints the
+	   whole row instead of each cell on its own. */
+	.rpt-list .rpt-table > tbody > tr > * {
+		box-shadow: none;
+	}
+	.rpt-list .rpt-table > tbody > tr:hover {
+		background: var(--basalt-wash);
+	}
+	.rpt-list .rpt-table tbody td,
+	.rpt-list .rpt-table thead th {
+		display: block;
+		padding: 0;
+		border: 0;
+		white-space: nowrap;
+	}
+	.rpt-list .rpt-table thead th {
+		padding: 0.6rem 0;
+	}
+	.rpt-list .rpt-table tr::after {
+		content: "";
+		flex-basis: 100%;
+		order: 6;
+	}
+	.rpt-list .rpt-table tr > :nth-child(1) {
+		flex: 0 0 1.75rem;
+		order: 1;
+		width: auto;
+	}
+	.rpt-list .rpt-table tr > :nth-child(2) {
+		flex: 1 1 0;
+		order: 2;
+		min-width: 0;
+		max-width: none;
+		white-space: normal;
+	}
+	.rpt-list .rpt-table tr > :nth-child(4) {
+		flex: 0 0 11rem;
+		order: 3;
+		min-width: 0;
+	}
+	.rpt-list .rpt-table tr > :nth-child(7) {
+		flex: 0 0 3.5rem;
+		order: 4;
+		text-align: right;
+	}
+	.rpt-list .rpt-table tr > :nth-child(8) {
+		flex: 0 0 6.875rem;
+		order: 5;
+		text-align: right;
+	}
+	.rpt-list .rpt-table thead th:nth-child(3),
+	.rpt-list .rpt-table thead th:nth-child(5),
+	.rpt-list .rpt-table thead th:nth-child(6) {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.rpt-list .rpt-table tbody td:nth-child(3) {
+		order: 7;
+		margin-left: calc(1.75rem + 1rem);
+	}
+	.rpt-list .rpt-table tbody td:nth-child(5) {
+		order: 8;
+		font-size: 0.8rem;
+		color: var(--rpt-quiet);
+	}
+	.rpt-list .rpt-table tbody td:nth-child(6) {
+		order: 9;
+		font-size: 0.8rem;
+	}
+	.rpt-list .rpt-table tbody td:nth-child(5)::before,
+	.rpt-list .rpt-table tbody td:nth-child(6)::before {
+		content: "· ";
+	}
+	.rpt-list .rpt-table tbody td:nth-child(6)::before {
+		content: "· Updated ";
+	}
+}
+@container rpt-list (max-width: 36rem) {
+	/* Every line after the first starts under the name. */
+	.rpt-list .rpt-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.rpt-list .rpt-table tbody tr {
+		column-gap: 0.6rem;
+		padding-left: calc(var(--basalt-pad-x-narrow) + 2.35rem);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rpt-list .rpt-table tbody td:nth-child(1) {
+		margin-left: -2.35rem;
+	}
+	.rpt-list .rpt-table tbody td:nth-child(3) {
+		flex-basis: 100%;
+		margin-left: 0;
+	}
+	.rpt-list .rpt-table tbody td:nth-child(4) {
+		flex: 0 0 auto;
+		order: 10;
+		font-size: 0.8rem;
+	}
+	.rpt-list .rpt-table tbody td:nth-child(4) .basalt-avatar,
+	.rpt-list .rpt-table tbody td:nth-child(4) [class*="basalt-avatar"] {
+		display: none;
+	}
+	.rpt-list .rpt-table tbody td:nth-child(7) {
+		flex: 0 0 auto;
+		order: 11;
+		font-size: 0.8rem;
+		color: var(--rpt-quiet);
+	}
+	.rpt-list .rpt-table tbody td:nth-child(7)::before {
+		content: "· ";
+	}
+	.rpt-list .rpt-table tbody td:nth-child(7)::after {
+		content: " opens";
+	}
+	.rpt-list .rpt-table tbody td:nth-child(5)::before {
+		content: none;
+	}
+	.rpt-list .rpt-table tbody td:nth-child(5),
+	.rpt-list .rpt-table tbody td:nth-child(6) {
+		white-space: normal;
+	}
+}
+
+/* The quick-view drawer: heading, action bar, lead, stats, key, chart and
+   the numbers table, top to bottom. */
+.rpt-drawer {
+	&.offcanvas-end {
+		--bs-offcanvas-width: min(760px, 100vw);
+	}
+	& .offcanvas-header {
+		gap: 0.75rem;
+		align-items: flex-start;
+	}
+	& .basalt-drawer-heading .rpt-kind {
+		margin-bottom: 0.5rem;
+	}
+}
+.rpt-drawer-body {
+	padding-top: 1rem;
+}
+.rpt-drawer-actions {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-bottom: var(--basalt-pad-head);
+}
+.rpt-star-btn {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+
+	&[aria-pressed="true"] .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+	}
+}
+.rpt-drawer-lead {
+	max-width: 70ch;
+	margin: 0 0 var(--basalt-pad-head);
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.rpt-stats {
+	display: grid;
+	gap: 0.9rem 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+	margin: 0 0 var(--basalt-pad-head);
+
+	& > div {
+		min-width: 0;
+		padding-left: 0.8rem;
+		border-left: 2px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		border-left-color: var(--basalt-series-1);
+	}
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.76rem;
+		font-weight: 500;
+		color: var(--rpt-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.2rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		overflow-wrap: anywhere;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	& dd .bi {
+		margin-right: 0.1rem;
+		font-size: 0.9rem;
+	}
+	& dd.is-up .bi {
+		color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	}
+	& dd.is-down .bi {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+.rpt-drawer-chart {
+	position: relative;
+	min-height: 18rem;
+}
+.rpt-drawer-chart-ring > canvas {
+	max-width: 100%;
+}
+.rpt-drawer-chart-bars,
+.rpt-drawer-chart-bullet {
+	min-height: 15rem;
+}
+.rpt-drawer-hint {
+	margin: 0.6rem 0 0;
+	font-size: 0.77rem;
+	color: var(--rpt-quiet);
+}
+.rpt-drill {
+	margin-top: var(--basalt-pad-head);
+	padding-top: var(--basalt-pad-head);
+	border-top: 1px solid var(--basalt-edge);
+}
+.rpt-drill-head {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+.rpt-drill-title {
+	margin: 0 0 0.1rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rpt-drill-crumb {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--rpt-quiet);
+}
+.rpt-drill-tools {
+	display: flex;
+	gap: 0.4rem;
+}
+/* Only the drawer body scrolls, so its numbers table fits the drawer's
+   width: labels and headings wrap while the figures stay whole. */
+.rpt-drawer .rpt-table-data {
+	& td,
+	& th {
+		white-space: normal;
+	}
+	& .rpt-num {
+		white-space: nowrap;
+	}
+	& > :not(caption) > * > * {
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+}
+
+/* Chart keys are HTML lists, so a long key wraps instead of colliding;
+   each swatch takes its color from --rpt-c. */
+.rpt-key {
+	display: flex;
+	gap: 0.3rem 1rem;
+	flex-wrap: wrap;
+	margin: 0 0 0.9rem;
+	padding: 0;
+	font-size: 0.77rem;
+	color: var(--rpt-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.rpt-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--rpt-c);
+	border-radius: 2px;
+}
+.rpt-key-line-dashed {
+	border-top-style: dashed;
+}
+.rpt-key-line-dotted {
+	border-top-style: dotted;
+	border-top-width: 3px;
+}
+.rpt-key-bar {
+	width: 10px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--rpt-c);
+}
+.rpt-key-band {
+	width: 16px;
+	height: 10px;
+	border-radius: 3px;
+	background: var(--rpt-c);
+	opacity: 0.8;
+}
+.rpt-key-tick {
+	width: 3px;
+	height: 13px;
+	border-radius: 2px;
+	background: var(--rpt-c);
+}
+
+/* The builder dialog is wide enough for two even halves, form on the left
+   and a readable preview on the right, and stacks them once the dialog
+   itself turns narrow. */
+@media (min-width: 992px) {
+	.modal-dialog.rpt-builder {
+		--bs-modal-width: 900px;
+	}
+}
+.rpt-builder .basalt-dialog-split-body {
+	gap: 1.75rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+
+	@container basalt-dialog (max-width: 760px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.rpt-builder-pair {
+	display: grid;
+	gap: 0 0.9rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@container basalt-dialog (max-width: 560px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.rpt-builder-note {
+	margin: 0.5rem 0 0;
+	font-size: 0.77rem;
+	color: var(--rpt-quiet);
+}
+
+/* Chart tiles are compact, the icon beside a one-line label: two to a row
+   in the form column, three once the dialog has stacked on a tablet. */
+.rpt-chart-tiles {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@container basalt-dialog (min-width: 560px) and (max-width: 760px) {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+.rpt-tile.basalt-choice {
+	gap: 0.5rem;
+	flex-direction: row;
+	justify-content: flex-start;
+	padding: 0.5rem 0.75rem;
+	border-radius: 10px;
+	text-align: start;
+
+	/* On a phone the icon moves above the label, so the longest label still
+     fits one line. */
+	@container basalt-dialog (max-width: 440px) {
+		gap: 0.3rem;
+		flex-direction: column;
+		justify-content: center;
+		padding: 0.5rem 0.5rem;
+		text-align: center;
+	}
+}
+.rpt-tile-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.1rem;
+	height: 1.1rem;
+	font-size: 1rem;
+	color: var(--basalt-choice-tone);
+}
+.rpt-tile-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+}
+/* A tile that does not suit the split turns dashed and quiet, yet its label
+   stays readable; the shared half opacity would drop it under 4.5:1. */
+.rpt-chart-tiles .rpt-tile.is-disabled {
+	border-style: dashed;
+	color: var(--rpt-quiet);
+	background: transparent;
+	opacity: 1;
+	cursor: not-allowed;
+
+	& .rpt-tile-icon {
+		color: inherit;
+	}
+}
+.rpt-builder-preview {
+	align-self: stretch;
+	min-width: 0;
+	padding: 1.25rem;
+}
+.rpt-builder-ptitle {
+	margin: 0.4rem 0 0.1rem;
+	font-weight: 650;
+	font-size: 0.95rem;
+	color: var(--basalt-copy);
+}
+.rpt-builder-pdesc {
+	margin: 0 0 0.75rem;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--rpt-quiet);
+}
+.rpt-builder-chart {
+	position: relative;
+	height: 18rem;
+}
+
+/* The schedule dialog lists the next sends and a mock of the email. */
+.rpt-field-error {
+	margin: 0.25rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.rpt-sends {
+	display: grid;
+	gap: 0.3rem;
+	margin: 0.5rem 0 1rem;
+	padding-left: 1.2rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.rpt-mail {
+	padding: 0.75rem 0.85rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+}
+.rpt-mail-subject {
+	margin: 0 0 0.3rem;
+	font-size: 0.85rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.rpt-mail-line {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--rpt-quiet);
+}
+
+/* On paper the controls drop away and a card never splits across pages. */
+@media print {
+	.rpt-lens,
+	.rpt-toolbar,
+	.rpt-pager,
+	.rpt-card-tools {
+		display: none;
+	}
+	.rpt-card.basalt-box {
+		transition: none;
+		break-inside: avoid;
+	}
+}
+
+/* Each figure's line takes the same tone as its icon, so the row reads in
+   several colors rather than one. */
+.rpt-kpi .basalt-trendline {
+	--basalt-trendline-tone: var(--basalt-tone);
+}

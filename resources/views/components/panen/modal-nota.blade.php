@@ -2,14 +2,14 @@
 
 {{-- Modal seluruh isi satu nota timbang (satu trip mobil), dibuka ikon "Lihat" di tabel nota; hanya untuk dibaca.
      Isinya dari App\Support\DetailNotaPanen: angka utama, identitas, waktu, timbangan, harga, dan tim tangkap. --}}
-<div class="modal-basic modal fade" id="modal-detail-nota-panen" tabindex="-1" aria-labelledby="judul-detail-nota-panen" aria-hidden="true" wire:ignore.self>
+<div class="modal fade" id="modal-detail-nota-panen" tabindex="-1" aria-labelledby="judul-detail-nota-panen" aria-hidden="true" wire:ignore.self>
     <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered" role="document">
-        <div class="modal-content modal-bg-white">
+        <div class="modal-content">
             <div class="modal-header">
                 <div>
                     <h6 class="modal-title" id="judul-detail-nota-panen">Nota timbang {{ $detail['identitas']['no_btpa'] ?? '' }}</h6>
                     @if ($detail)
-                        <span class="d-block fs-13 color-light">
+                        <span class="d-block small text-body-secondary">
                             @isset($detail['identitas']['hari'])
                                 Hari panen {{ $detail['identitas']['hari'] }} ·
                             @endisset
@@ -17,9 +17,7 @@
                         </span>
                     @endif
                 </div>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Tutup">
-                    <img src="{{ asset('assets/img/svg/x.svg') }}" alt="x" class="svg">
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
 
             <div class="modal-body">
@@ -31,37 +29,38 @@
                 <div wire:loading.remove wire:target="lihat">
                     @if ($detail)
                         {{-- Angka utama --}}
-                        <div class="row g-3 mb-25">
+                        <div class="row g-3 mb-4">
                             @foreach ($detail['utama'] as $utama)
                                 <div class="col-lg-3 col-6">
-                                    <div class="card card-default card-sm bg-transparent card-bordered h-100">
-                                        <div class="card-body">
-                                            <div class="statistics-item statistics-default">
-                                                <span class="statistics-item__title">{{ $utama['label'] }}</span>
-                                                <p class="statistics-item__number">{{ $utama['nilai'] }}</p>
-                                                <small class="d-block fs-12 color-light mt-1">{{ $utama['catatan'] }}</small>
+                                    <section class="card basalt-box db-card bg-transparent h-100">
+<div class="db-card-body">
+                                            <div class="border rounded p-3 h-100">
+                                                <span class="d-block small text-body-secondary">{{ $utama['label'] }}</span>
+                                                <p class="h5 mb-0">{{ $utama['nilai'] }}</p>
+                                                <small class="d-block small text-body-secondary mt-1">{{ $utama['catatan'] }}</small>
                                             </div>
-                                        </div>
-                                    </div>
+                                        
+</div>
+</section>
                                 </div>
                             @endforeach
                         </div>
 
-                        <div class="row g-4 mb-25">
+                        <div class="row g-4 mb-4">
                             {{-- Identitas dan waktu --}}
                             <div class="col-lg-6">
-                                <h6 class="mb-15">Identitas dan waktu</h6>
-                                <div class="table4 table-responsive">
-                                    <table class="table tabel-laporan mb-0">
+                                <h6 class="mb-3">Identitas dan waktu</h6>
+                                <div class="tabel-data table-responsive">
+                                    <table class="table tabel-laporan mb-0 db-table">
                                         <tbody>
-                                            <tr><td class="color-light">No. BTPA</td><td class="text-end fw-500 color-dark">{{ $detail['identitas']['no_btpa'] }}</td></tr>
-                                            <tr><td class="color-light">No. SPA</td><td class="text-end fw-500 color-dark">{{ $detail['identitas']['no_spa'] ?? '-' }}</td></tr>
-                                            <tr><td class="color-light">Pembeli</td><td class="text-end fw-500 color-dark">{{ $detail['identitas']['pembeli'] }}</td></tr>
-                                            <tr><td class="color-light">No. polisi</td><td class="text-end fw-500 color-dark">{{ $detail['identitas']['no_polisi'] }}</td></tr>
-                                            <tr><td class="color-light">Tanggal panen</td><td class="text-end fw-500 color-dark">{{ $detail['identitas']['tanggal']->translatedFormat('j F Y') }}</td></tr>
-                                            <tr><td class="color-light">Mulai timbang</td><td class="text-end fw-500 color-dark">{{ $detail['waktu']['mulai']->translatedFormat('j M Y H:i') }}</td></tr>
-                                            <tr><td class="color-light">Selesai timbang</td><td class="text-end fw-500 color-dark">{{ $detail['waktu']['selesai']->translatedFormat('j M Y H:i') }}</td></tr>
-                                            <tr><td class="color-light">Lama timbang</td><td class="text-end fw-500 color-dark">{{ $detail['waktu']['durasi'] }}</td></tr>
+                                            <tr><td class="text-body-secondary">No. BTPA</td><td class="text-end fw-medium text-body">{{ $detail['identitas']['no_btpa'] }}</td></tr>
+                                            <tr><td class="text-body-secondary">No. SPA</td><td class="text-end fw-medium text-body">{{ $detail['identitas']['no_spa'] ?? '-' }}</td></tr>
+                                            <tr><td class="text-body-secondary">Pembeli</td><td class="text-end fw-medium text-body">{{ $detail['identitas']['pembeli'] }}</td></tr>
+                                            <tr><td class="text-body-secondary">No. polisi</td><td class="text-end fw-medium text-body">{{ $detail['identitas']['no_polisi'] }}</td></tr>
+                                            <tr><td class="text-body-secondary">Tanggal panen</td><td class="text-end fw-medium text-body">{{ $detail['identitas']['tanggal']->translatedFormat('j F Y') }}</td></tr>
+                                            <tr><td class="text-body-secondary">Mulai timbang</td><td class="text-end fw-medium text-body">{{ $detail['waktu']['mulai']->translatedFormat('j M Y H:i') }}</td></tr>
+                                            <tr><td class="text-body-secondary">Selesai timbang</td><td class="text-end fw-medium text-body">{{ $detail['waktu']['selesai']->translatedFormat('j M Y H:i') }}</td></tr>
+                                            <tr><td class="text-body-secondary">Lama timbang</td><td class="text-end fw-medium text-body">{{ $detail['waktu']['durasi'] }}</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -69,46 +68,46 @@
 
                             {{-- Timbangan dan harga --}}
                             <div class="col-lg-6">
-                                <h6 class="mb-15">Timbangan dan harga</h6>
-                                <div class="table4 table-responsive">
-                                    <table class="table tabel-laporan mb-0">
+                                <h6 class="mb-3">Timbangan dan harga</h6>
+                                <div class="tabel-data table-responsive">
+                                    <table class="table tabel-laporan mb-0 db-table">
                                         <tbody>
-                                            <tr><td class="color-light">Jumlah krat</td><td class="text-end fw-500 color-dark">@angka($detail['timbang']['krat'])</td></tr>
-                                            <tr><td class="color-light">Ekor per krat</td><td class="text-end fw-500 color-dark">@angka($detail['timbang']['ekor_per_krat'], 1)</td></tr>
-                                            <tr><td class="color-light">Berat timbang</td><td class="text-end fw-500 color-dark">@angka($detail['timbang']['berat'], 2) kg</td></tr>
-                                            <tr><td class="color-light">Netto nota</td><td class="text-end fw-500 color-dark">@angka($detail['timbang']['netto'], 2) kg</td></tr>
+                                            <tr><td class="text-body-secondary">Jumlah krat</td><td class="text-end fw-medium text-body">@angka($detail['timbang']['krat'])</td></tr>
+                                            <tr><td class="text-body-secondary">Ekor per krat</td><td class="text-end fw-medium text-body">@angka($detail['timbang']['ekor_per_krat'], 1)</td></tr>
+                                            <tr><td class="text-body-secondary">Berat timbang</td><td class="text-end fw-medium text-body">@angka($detail['timbang']['berat'], 2) kg</td></tr>
+                                            <tr><td class="text-body-secondary">Netto nota</td><td class="text-end fw-medium text-body">@angka($detail['timbang']['netto'], 2) kg</td></tr>
                                             <tr>
-                                                <td class="color-light">Selisih timbang − netto</td>
-                                                <td @class(['text-end fw-500', 'color-danger' => $detail['timbang']['selisih'] != 0, 'color-dark' => $detail['timbang']['selisih'] == 0])>@kurung($detail['timbang']['selisih'], 2) kg</td>
+                                                <td class="text-body-secondary">Selisih timbang − netto</td>
+                                                <td @class(['text-end fw-medium', 'text-danger' => $detail['timbang']['selisih'] != 0, 'text-body' => $detail['timbang']['selisih'] == 0])>@kurung($detail['timbang']['selisih'], 2) kg</td>
                                             </tr>
                                             <tr>
-                                                <td class="color-light">Harga kontrak</td>
-                                                <td class="text-end fw-500 color-dark">
+                                                <td class="text-body-secondary">Harga kontrak</td>
+                                                <td class="text-end fw-medium text-body">
                                                     @isset($detail['harga']['kontrak'])
                                                         Rp @angka($detail['harga']['kontrak'])/kg
-                                                        <span class="d-block fs-12 color-light fw-400">nilai Rp @angka($detail['harga']['nilai_kontrak'])</span>
+                                                        <span class="d-block small text-body-secondary fw-normal">nilai Rp @angka($detail['harga']['nilai_kontrak'])</span>
                                                     @else
-                                                        <span class="fs-12 color-light fw-400">BW di luar bracket harga kontrak</span>
+                                                        <span class="small text-body-secondary fw-normal">BW di luar bracket harga kontrak</span>
                                                     @endisset
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td class="color-light">Harga real</td>
-                                                <td class="text-end fw-500 color-dark">
+                                                <td class="text-body-secondary">Harga real</td>
+                                                <td class="text-end fw-medium text-body">
                                                     @isset($detail['harga']['real'])
                                                         Rp @angka($detail['harga']['real'])/kg
-                                                        <span class="d-block fs-12 color-light fw-400">nilai Rp @angka($detail['harga']['nilai_real'])</span>
+                                                        <span class="d-block small text-body-secondary fw-normal">nilai Rp @angka($detail['harga']['nilai_real'])</span>
                                                     @else
-                                                        <span class="fs-12 color-light fw-400">belum diisi di RHPP real</span>
+                                                        <span class="small text-body-secondary fw-normal">belum diisi di RHPP real</span>
                                                     @endisset
                                                 </td>
                                             </tr>
                                             @isset($detail['harga']['selisih_nilai'])
                                                 <tr>
-                                                    <td class="color-light">Selisih real − kontrak</td>
-                                                    <td @class(['text-end fw-500', 'color-success' => $detail['harga']['selisih_nilai'] > 0, 'color-danger' => $detail['harga']['selisih_nilai'] < 0])>
+                                                    <td class="text-body-secondary">Selisih real − kontrak</td>
+                                                    <td @class(['text-end fw-medium', 'text-success' => $detail['harga']['selisih_nilai'] > 0, 'text-danger' => $detail['harga']['selisih_nilai'] < 0])>
                                                         Rp @kurung($detail['harga']['selisih_nilai'])
-                                                        <span class="d-block fs-12 color-light fw-400">@kurung($detail['harga']['selisih_harga']) per kg</span>
+                                                        <span class="d-block small text-body-secondary fw-normal">@kurung($detail['harga']['selisih_harga']) per kg</span>
                                                     </td>
                                                 </tr>
                                             @endisset
@@ -119,55 +118,55 @@
                         </div>
 
                         {{-- Tim tangkap --}}
-                        <h6 class="mb-15">Tim tangkap</h6>
-                        <div class="table4 table-responsive">
-                            <table class="table tabel-laporan mb-0">
+                        <h6 class="mb-3">Tim tangkap</h6>
+                        <div class="tabel-data table-responsive">
+                            <table class="table tabel-laporan mb-0 db-table">
                                 <thead>
-                                    <tr class="userDatatable-header">
-                                        <th><span class="userDatatable-title">Pemanen</span></th>
-                                        <th class="text-end"><span class="userDatatable-title">Krat</span></th>
-                                        <th class="text-end"><span class="userDatatable-title">Tonase upah</span></th>
-                                        <th class="text-end"><span class="userDatatable-title">Upah</span></th>
+                                    <tr>
+                                        <th>Pemanen</th>
+                                        <th class="text-end">Krat</th>
+                                        <th class="text-end">Tonase upah</th>
+                                        <th class="text-end">Upah</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($detail['tim'] as $orang)
                                         <tr wire:key="detail-tim-{{ $loop->index }}">
                                             <td>
-                                                <span class="fw-500 color-dark">{{ $orang['nama'] }}</span>
+                                                <span class="fw-medium text-body">{{ $orang['nama'] }}</span>
                                                 @switch($orang['status'])
                                                     @case('abk')
-                                                        <span class="dm-tag tag-info tag-transparented ms-1 my-0">ABK, tidak dibayar</span>
+                                                        <span class="badge bg-info-subtle text-info ms-1 my-0">ABK, tidak dibayar</span>
                                                         @break
                                                     @case('belum_terdaftar')
-                                                        <span class="dm-tag tag-warning tag-transparented ms-1 my-0">Belum terdaftar</span>
+                                                        <span class="badge bg-warning-subtle text-warning ms-1 my-0">Belum terdaftar</span>
                                                         @break
                                                 @endswitch
                                             </td>
                                             <td class="text-end text-nowrap">
                                                 @isset($orang['krat_mulai'])
                                                     {{ $orang['krat_mulai'] }}–{{ $orang['krat_selesai'] }}
-                                                    <span class="d-block fs-12 color-light">@angka($orang['jumlah_krat']) krat</span>
+                                                    <span class="d-block small text-body-secondary">@angka($orang['jumlah_krat']) krat</span>
                                                 @else
-                                                    <span class="color-light">semua krat</span>
+                                                    <span class="text-body-secondary">semua krat</span>
                                                 @endisset
                                             </td>
                                             <td class="text-end text-nowrap">
                                                 @angka($orang['berat_kg'], 2) kg
-                                                <span class="d-block fs-12 color-light">{{ $orang['cara'] }}</span>
+                                                <span class="d-block small text-body-secondary">{{ $orang['cara'] }}</span>
                                             </td>
                                             <td class="text-end text-nowrap">
                                                 @isset($orang['upah'])
-                                                    <span class="fw-500 color-dark">Rp @angka($orang['upah'])</span>
-                                                    <span class="d-block fs-12 color-light">Rp @angka($orang['tarif'])/kg</span>
+                                                    <span class="fw-medium text-body">Rp @angka($orang['upah'])</span>
+                                                    <span class="d-block small text-body-secondary">Rp @angka($orang['tarif'])/kg</span>
                                                 @else
-                                                    <span class="color-light">-</span>
+                                                    <span class="text-body-secondary">-</span>
                                                 @endisset
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center color-light">Nota ini belum mencatat nama tukang tangkap.</td>
+                                            <td colspan="4" class="text-center text-body-secondary">Nota ini belum mencatat nama tukang tangkap.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -183,7 +182,7 @@
                             </table>
                         </div>
                         @if ($detail['nota_lama'])
-                            <p class="fs-13 color-light mt-15 mb-0">Nota ini belum memakai krat mulai, jadi setiap nama tukang tangkap dihitung dengan seluruh berat nota.</p>
+                            <p class="small text-body-secondary mt-3 mb-0">Nota ini belum memakai krat mulai, jadi setiap nama tukang tangkap dihitung dengan seluruh berat nota.</p>
                         @endif
                     @endif
                 </div>

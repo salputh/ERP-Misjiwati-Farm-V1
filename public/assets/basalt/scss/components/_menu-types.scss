@@ -1,0 +1,703 @@
+/*
+ * Dropdown menus that live inside the page content, plus every menu variant
+ * that builds on them: the filter-as-you-type list, the multi-pick with chips,
+ * the small form panel, rich two-line rows, the wide mega menu, nested
+ * flyouts, the right-click menu and the two-step delete row. The
+ * header menus are styled elsewhere. dropdowns.html shows them all;
+ * basalt.js supplies the behavior behind the data-basalt-* hooks.
+ */
+
+$menu-muted-ink: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+$menu-hue-ink: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+$menu-danger-ink: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+$menu-danger-ink-hover: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+$menu-danger-wash: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+
+/*
+ * Bootstrap reads its menu from these --bs-dropdown-* knobs, so the look is
+ * set by feeding it Basalt tokens rather than by overriding its rules.
+ */
+$menu-knobs: (
+	font-size: 0.875rem,
+	color: var(--basalt-copy-body),
+	bg: var(--basalt-plane),
+	border-color: var(--basalt-edge-strong),
+	border-radius: 12px,
+	inner-border-radius: 11px,
+	padding-x: 0.3rem,
+	padding-y: 0.3rem,
+	divider-bg: var(--basalt-edge),
+	divider-margin-y: 0.3rem,
+	header-color: $menu-muted-ink,
+	header-padding-x: 0.7rem,
+	header-padding-y: 0.4rem,
+	item-padding-x: 0.7rem,
+	item-padding-y: 0.4rem,
+	link-color: var(--basalt-copy-body),
+	link-hover-color: var(--basalt-copy),
+	link-hover-bg: var(--basalt-wash),
+	link-active-color: $menu-hue-ink,
+	link-active-bg: var(--basalt-hue-soft),
+	link-disabled-color: $menu-muted-ink,
+);
+
+@mixin menu-bare-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+@mixin menu-centered-grid {
+	display: inline-grid;
+	place-items: center;
+}
+
+/*
+ * The menu surface is padded and rounded, lifted on a two-step shadow, and
+ * drops in by animating `translate` because Popper only ever writes
+ * `transform`. Selected rows get a tint instead of a solid fill so their
+ * label keeps its contrast under every palette.
+ */
+.basalt-stage .dropdown-menu {
+	@each $knob, $setting in $menu-knobs {
+		--bs-dropdown-#{$knob}: #{$setting};
+	}
+
+	min-width: 12rem;
+	border-color: var(--bs-dropdown-border-color);
+	color: var(--bs-dropdown-color);
+	background-color: var(--bs-dropdown-bg);
+	box-shadow:
+		0 2px 6px color-mix(in srgb, var(--basalt-copy) 6%, transparent),
+		0 14px 34px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+
+	&.show {
+		animation: basalt-dd-in 170ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+
+/* A menu that opens upward rises into place instead of falling. */
+.basalt-stage .dropup .dropdown-menu.show {
+	animation-name: basalt-dd-in-up;
+}
+
+@keyframes basalt-dd-in {
+	from {
+		translate: 0 -6px;
+		opacity: 0;
+	}
+}
+
+@keyframes basalt-dd-in-up {
+	from {
+		translate: 0 6px;
+		opacity: 0;
+	}
+}
+
+/* Rows lay their icon and label out on one line with rounded hover pills. */
+.basalt-stage .dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	border-radius: 8px;
+	font-weight: 500;
+	color: var(--bs-dropdown-link-color);
+
+	&:hover,
+	&:focus {
+		color: var(--bs-dropdown-link-hover-color);
+		background-color: var(--bs-dropdown-link-hover-bg);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+
+	&:active,
+	&.active {
+		color: var(--bs-dropdown-link-active-color);
+		background-color: var(--bs-dropdown-link-active-bg);
+	}
+
+	&:disabled,
+	&.disabled {
+		color: var(--bs-dropdown-link-disabled-color);
+		background: none;
+	}
+
+	> .bi:first-child {
+		width: 1rem;
+		text-align: center;
+		opacity: 0.85;
+	}
+}
+
+/* Group headings are small caps labels; plain text rows keep the body ink. */
+.basalt-stage {
+	.dropdown-header {
+		margin: 0;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+	}
+
+	.dropdown-item-text {
+		color: var(--basalt-copy-body);
+	}
+}
+
+/*
+ * Destructive rows, including the two-step delete row, read red enough to
+ * warn while staying dark enough to pass contrast.
+ */
+.basalt-stage {
+	.basalt-dd-danger,
+	.dropdown-item-confirm {
+		color: $menu-danger-ink;
+	}
+
+	.basalt-dd-danger:hover,
+	.basalt-dd-danger:focus,
+	.dropdown-item-confirm:hover,
+	.dropdown-item-confirm:focus {
+		color: $menu-danger-ink-hover;
+		background-color: $menu-danger-wash;
+	}
+}
+
+/* A toggle spaces its leading icon from the label and its caret from both. */
+.basalt-stage .dropdown-toggle {
+	display: inline-flex;
+	align-items: center;
+
+	&::after {
+		margin-left: 0.5rem;
+	}
+
+	> .bi:first-child,
+	.bi + span {
+		margin-right: 0.4rem;
+	}
+}
+
+.basalt-stage .dropdown-toggle-split::after {
+	margin-left: 0;
+}
+
+/*
+ * The two-step delete row swaps its idle label for a question on the first
+ * press, turns solid and shakes once so the second press is deliberate.
+ */
+.dropdown-item-confirm-idle,
+.dropdown-item-confirm.is-asking .dropdown-item-confirm-ask {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+
+.dropdown-item-confirm-ask,
+.dropdown-item-confirm.is-asking .dropdown-item-confirm-idle {
+	display: none;
+}
+
+.basalt-stage .dropdown-item-confirm.is-asking {
+	&,
+	&:hover,
+	&:focus {
+		color: var(--basalt-plane);
+		background-color: color-mix(in srgb, var(--basalt-danger) 76%, var(--basalt-copy));
+		animation: basalt-dd-nudge 280ms ease;
+	}
+}
+
+@keyframes basalt-dd-nudge {
+	30% {
+		translate: -3px 0;
+	}
+	60% {
+		translate: 3px 0;
+	}
+	100% {
+		translate: 0 0;
+	}
+}
+
+/* The searchable menu pins its field above a scrolling list. */
+.basalt-stage .basalt-dd-search-menu {
+	width: 17rem;
+	padding: 0;
+	overflow: hidden;
+}
+
+.basalt-dd-search-field {
+	position: relative;
+	padding: 0.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	.bi {
+		position: absolute;
+		top: 50%;
+		left: 1.1rem;
+		translate: 0 -50%;
+		font-size: 0.8rem;
+		color: $menu-muted-ink;
+		pointer-events: none;
+	}
+}
+
+.basalt-dd-search-input.form-control {
+	padding-left: 2rem;
+}
+
+.basalt-dd-search-list {
+	max-height: 15rem;
+	margin: 0;
+	padding: 0.3rem;
+	overflow-y: auto;
+	list-style: none;
+}
+
+.basalt-dd-search-empty {
+	margin: 0;
+	padding: 1rem;
+	font-size: 0.8rem;
+	text-align: center;
+	color: $menu-muted-ink;
+}
+
+/*
+ * People rows carry an initials disc tinted from the chart series, a
+ * presence dot on its corner and a check that shows on the current pick.
+ */
+.basalt-dd-avatar {
+	--av-tone: var(--basalt-series-1);
+	flex-shrink: 0;
+	width: 1.9rem;
+	height: 1.9rem;
+	border-radius: 50%;
+	font-size: 0.67rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--av-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--av-tone) 18%, var(--basalt-plane));
+	@include menu-centered-grid;
+	position: relative;
+}
+
+@each $step in 1, 2, 3, 4, 5, 6 {
+	.basalt-dd-avatar-#{$step} {
+		--av-tone: var(--basalt-series-#{$step});
+	}
+}
+
+.basalt-dd-avatar-empty {
+	--av-tone: var(--basalt-copy-muted);
+	font-size: 0.85rem;
+}
+
+.basalt-dd-avatar-status {
+	position: absolute;
+	right: -1px;
+	bottom: -1px;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	border: 2px solid var(--basalt-plane);
+	background: var(--basalt-copy-faint);
+}
+
+.basalt-dd-avatar-status-on {
+	background: var(--basalt-success);
+}
+
+.basalt-dd-avatar-status-away {
+	background: var(--basalt-warning);
+}
+
+.basalt-dd-person-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	line-height: 1.25;
+}
+
+.basalt-dd-person-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.basalt-dd-person-role {
+	font-size: 0.75rem;
+	color: $menu-muted-ink;
+}
+
+.basalt-dd-person-check {
+	visibility: hidden;
+	color: $menu-hue-ink;
+}
+
+.basalt-dd-person[aria-current="true"] .basalt-dd-person-check {
+	visibility: visible;
+}
+
+.basalt-stage .basalt-dd-person[aria-current="true"] {
+	background: var(--basalt-hue-soft);
+}
+
+/*
+ * The multi-pick menu lists checkbox rows under a select-all row and ends in
+ * a tinted footer; picks show as removable chips beside the trigger.
+ */
+.basalt-stage {
+	.basalt-dd-multi-menu {
+		width: 15rem;
+	}
+
+	.basalt-dd-multi-all,
+	.basalt-dd-multi-option {
+		margin: 0;
+		cursor: pointer;
+	}
+
+	.basalt-dd-multi-all {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+.basalt-dd-multi-list {
+	@include menu-bare-list;
+}
+
+.basalt-dd-multi-all .form-check-input,
+.basalt-dd-multi-option .form-check-input {
+	flex-shrink: 0;
+	margin: 0;
+}
+
+.basalt-dd-multi-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0.3rem -0.35rem -0.35rem;
+	padding: 0.5rem 0.6rem;
+	border-top: 1px solid var(--basalt-edge);
+	border-radius: 0 0 11px 11px;
+	background: var(--basalt-canvas);
+}
+
+.basalt-dd-multi-count {
+	min-width: 1.35rem;
+	height: 1.35rem;
+	margin-left: 0.5rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-on-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	@include menu-centered-grid;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.basalt-dd-multi-chips {
+	@include menu-bare-list;
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	min-height: 1.9rem;
+}
+
+.basalt-dd-multi-chip {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.1rem 0.2rem 0.1rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 56%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+	animation: basalt-dd-in 170ms ease;
+
+	button {
+		width: 1.4rem;
+		height: 1.4rem;
+		border: 0;
+		border-radius: 50%;
+		font-size: 0.7rem;
+		color: inherit;
+		background: transparent;
+		@include menu-centered-grid;
+
+		&:hover {
+			background: color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 1px;
+		}
+	}
+}
+
+.basalt-dd-multi-none {
+	align-self: center;
+	font-size: 0.8rem;
+	color: $menu-muted-ink;
+}
+
+/* The form panel stacks a title bar, fieldsets and a right-aligned action footer. */
+.basalt-stage .dropdown-menu.basalt-dd-panel {
+	width: min(20rem, calc(100vw - 2rem));
+	padding: 0;
+}
+
+.basalt-dd-panel-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 0.75rem 0.5rem 1rem;
+}
+
+.basalt-dd-panel-title {
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.basalt-dd-panel-body {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	padding: 0.25rem 1rem 1rem;
+}
+
+.basalt-dd-panel-group {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.basalt-dd-panel-label {
+	float: none;
+	margin: 0 0 0.4rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: $menu-muted-ink;
+}
+
+.basalt-dd-panel .form-check-label {
+	color: var(--basalt-copy-body);
+}
+
+.basalt-dd-panel-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	padding: 0.7rem 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	border-radius: 0 0 11px 11px;
+	background: var(--basalt-canvas);
+}
+
+/*
+ * Rich rows pair a tinted icon tile with a title, a hint line and an
+ * optional shortcut key.
+ */
+.basalt-stage .basalt-dd-item {
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.5rem 0.6rem;
+}
+
+.basalt-dd-item-icon {
+	--item-tone: var(--basalt-hue);
+	flex-shrink: 0;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 9px;
+	color: color-mix(in srgb, var(--item-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--item-tone) 14%, var(--basalt-plane));
+	@include menu-centered-grid;
+}
+
+@each $step in 1, 2, 3, 4 {
+	.basalt-dd-item-icon-#{$step} {
+		--item-tone: var(--basalt-series-#{$step});
+	}
+}
+
+.basalt-dd-item-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	line-height: 1.3;
+	white-space: normal;
+}
+
+.basalt-dd-item-title {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.basalt-dd-item-sub {
+	font-size: 0.76rem;
+	color: $menu-muted-ink;
+}
+
+.basalt-dd-item-kbd {
+	flex-shrink: 0;
+	padding: 0.12rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge-strong);
+	font:
+		600 0.67rem/1.2 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+	box-shadow: none;
+}
+
+.basalt-stage .basalt-dd-rich {
+	width: min(20rem, calc(100vw - 2rem));
+}
+
+/* The mega menu opens as three columns, the last a featured card, and stacks on phones. */
+.basalt-stage .dropdown-menu.basalt-dd-mega {
+	width: min(44rem, calc(100vw - 2rem));
+	padding: 0.6rem;
+}
+
+.basalt-dd-mega.show {
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: 1fr 1fr 1fr;
+
+	@media (max-width: 767.98px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.basalt-dd-mega-col ul {
+	@include menu-bare-list;
+}
+
+.basalt-dd-mega-feature {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	padding: 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	line-height: 1.45;
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-grad-soft);
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+		color: var(--basalt-copy-body);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.basalt-dd-mega-eyebrow {
+	font-size: 0.67rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-body);
+}
+
+.basalt-dd-mega-title {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.basalt-dd-mega-more {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-top: auto;
+	padding-top: 0.5rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 58%, var(--basalt-copy));
+}
+
+/*
+ * A nested flyout opens beside its parent row, lines its first row up with
+ * that row, and moves to the left side when basalt.js marks it flipped.
+ */
+.basalt-stage .dropdown-submenu-toggle {
+	&::after {
+		content: "\f285";
+		margin-left: auto;
+		padding-left: 1rem;
+		border: 0;
+		font-family: "bootstrap-icons";
+		font-size: 0.7rem;
+		color: $menu-muted-ink;
+	}
+
+	&[aria-expanded="true"] {
+		color: var(--bs-dropdown-link-hover-color);
+		background-color: var(--bs-dropdown-link-hover-bg);
+	}
+}
+
+.dropdown-submenu {
+	position: relative;
+
+	> .dropdown-menu {
+		position: absolute;
+		top: calc(var(--bs-dropdown-padding-y, 0.3rem) * -1 - 1px);
+		left: calc(100% + 0.3rem);
+		margin: 0;
+	}
+
+	&.is-flipped > .dropdown-menu {
+		right: calc(100% + 0.3rem);
+		left: auto;
+	}
+
+	> .dropdown-menu.show {
+		display: block;
+	}
+}
+
+/* The right-click menu is placed at the pointer, above sticky page chrome. */
+.basalt-stage .dropdown-menu.basalt-context-menu {
+	position: fixed;
+	z-index: 1060;
+}
+
+/* Without motion, menus, chips and the delete row simply appear. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-stage .dropdown-menu.show,
+	.basalt-dd-multi-chip,
+	.basalt-stage .dropdown-item-confirm.is-asking {
+		animation: none;
+	}
+}

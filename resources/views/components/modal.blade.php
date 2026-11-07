@@ -16,20 +16,18 @@
 --}}
 
 <div
-    {{ $attributes->merge(['class' => 'modal-basic modal fade', 'id' => $id]) }}
+    {{ $attributes->merge(['class' => 'modal fade', 'id' => $id]) }}
     tabindex="-1"
     role="dialog"
     aria-labelledby="{{ $id }}-judul"
     aria-hidden="true"
     wire:ignore.self
 >
-    <div class="modal-dialog modal-{{ $ukuran }} @if($scrollable) modal-dialog-scrollable @endif modal-dialog-centered" role="document">
-        <div class="modal-content modal-bg-white">
+    <div class="modal-dialog {{ ['sm' => 'modal-sm', 'lg' => 'modal-lg', 'xl' => 'modal-xl'][$ukuran] ?? '' }} @if($scrollable) modal-dialog-scrollable @endif modal-dialog-centered" role="document">
+        <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title" id="{{ $id }}-judul">{{ $judul }}</h6>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Tutup" @isset($aksiTutup) wire:click="{{ $aksiTutup }}" @endisset>
-                    <img src="{{ asset('assets/img/svg/x.svg') }}" alt="x" class="svg">
-                </button>
+                <h2 class="modal-title h6" id="{{ $id }}-judul">{{ $judul }}</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup" @isset($aksiTutup) wire:click="{{ $aksiTutup }}" @endisset></button>
             </div>
             @if ($submit)
                 <form wire:submit="{{ $submit }}">

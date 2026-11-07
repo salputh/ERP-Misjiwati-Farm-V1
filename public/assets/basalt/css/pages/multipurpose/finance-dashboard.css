@@ -1,0 +1,796 @@
+/* Basalt - Finance dashboard
+   Namespaced under .fin-*
+   Cash in bank, profit and loss, unpaid invoices, spend
+   against budget, revenue and costs, and the latest bank
+   movements. The page header, the segmented switch,
+   status pills and toasts are the shared components. */
+
+.fin-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--fin-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Unpaid invoices and bank movements sit side by side; one row height
+	   keeps their rows level. */
+	--fin-row: 5.5rem;
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--fin-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--fin-danger-text: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	--fin-warning-text: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	--fin-success-text: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+}
+.fin-page .basalt-pagehead {
+	margin-bottom: 1.5rem;
+}
+
+/* Chart colors, one class per step of the theme ramp. Swatches, chips
+   and bars read their color from --fin-tone. */
+.fin-s1 {
+	--fin-tone: var(--basalt-series-1);
+}
+.fin-s2 {
+	--fin-tone: var(--basalt-series-2);
+}
+.fin-s3 {
+	--fin-tone: var(--basalt-series-3);
+}
+.fin-s4 {
+	--fin-tone: var(--basalt-series-4);
+}
+.fin-s5 {
+	/* The palette's pink slot is left out: this page keeps to violets. */
+	--fin-tone: var(--basalt-series-7);
+}
+.fin-s7 {
+	--fin-tone: var(--basalt-series-7);
+}
+.fin-s8 {
+	--fin-tone: var(--basalt-series-8);
+}
+.fin-swatch {
+	display: inline-block;
+	flex: none;
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--fin-tone);
+}
+
+/* Grid
+   Below 1200px every card takes the row; from desktop width the cards
+   pair up and each pair ends level, apart from revenue and costs,
+   which keeps the whole row. */
+.fin-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.fin-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+@media (min-width: 1200px) {
+	.fin-card-wide {
+		grid-column: span 7;
+	}
+	.fin-card-narrow {
+		grid-column: span 5;
+	}
+	.fin-card-half {
+		grid-column: span 6;
+	}
+}
+
+/* Card */
+.fin-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.4rem 1.5rem;
+}
+.fin-card-head {
+	margin-bottom: 1.15rem;
+}
+.fin-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fin-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--fin-quiet);
+}
+.fin-card-foot {
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	color: var(--fin-quiet);
+}
+/* The card's way on to the full page, pinned to the bottom so the cards
+   in a pair end on the same line. */
+.fin-card-more {
+	align-self: flex-start;
+	margin-top: auto;
+	padding-top: 1.5rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--fin-link);
+}
+.fin-card-more:hover {
+	color: var(--basalt-copy);
+}
+.fin-card-more .bi {
+	display: inline-block;
+	transition: transform 170ms ease;
+}
+.fin-card-more:hover .bi {
+	transform: translateX(3px);
+}
+
+.fin-chart {
+	position: relative;
+	flex: 1 0 auto;
+	height: 250px;
+	min-height: 250px;
+}
+.fin-chart canvas {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+}
+
+/* Cash in bank
+   The page's first card: a soft wash of the palette along the top, the
+   balance large, a line of month-end balances and the three accounts. */
+.fin-cash.basalt-box {
+	background-image: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--basalt-series-1) 9%, transparent),
+		transparent 14rem
+	);
+}
+:root[data-basalt-gradients="off"] .fin-cash.basalt-box {
+	background-image: none;
+}
+.fin-cash-now {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.fin-cash-total {
+	margin: 0;
+	font-size: 2.4rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.fin-cash-change {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+}
+.fin-cash-change .basalt-status {
+	font-size: 0.8rem;
+}
+.fin-cash-why {
+	font-size: 0.875rem;
+	color: var(--fin-quiet);
+}
+/* The cash chart grows with the card beside it, but only so far; any
+   height left over is shared out between the card's parts. */
+.fin-cash .card-body {
+	justify-content: space-between;
+}
+.fin-chart-cash {
+	height: 180px;
+	min-height: 180px;
+	max-height: 240px;
+}
+
+.fin-accounts {
+	margin-top: 1.5rem;
+}
+.fin-accounts-bar {
+	display: flex;
+	gap: 3px;
+	height: 0.5rem;
+	margin-bottom: 1rem;
+}
+.fin-accounts-part {
+	flex: 0 0 var(--share);
+	min-width: 0.5rem;
+	border-radius: 999px;
+	background: var(--fin-tone);
+}
+.fin-accounts-list {
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+}
+.fin-accounts-list li {
+	display: grid;
+	gap: 0.3rem 0.5rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+}
+.fin-accounts-name {
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.fin-accounts-no {
+	color: var(--fin-quiet);
+}
+.fin-accounts-amount {
+	grid-column: 2;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+@media (max-width: 419.98px) {
+	.fin-accounts-list {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.fin-accounts-list li {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+	.fin-accounts-amount {
+		grid-column: 3;
+	}
+}
+
+/* Profit and loss */
+.fin-switch {
+	align-self: flex-start;
+	margin-bottom: 1.5rem;
+}
+.fin-ring {
+	position: relative;
+	width: 9.5rem;
+	height: 9.5rem;
+	margin: 0 auto 0.9rem;
+}
+.fin-ring canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+/* The ring's tooltip draws over its center words, not under them: the
+   words sit behind the canvas, which is clear except where it draws. */
+.fin-ring canvas {
+	position: relative;
+	z-index: 1;
+}
+.fin-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	font-size: 0.7rem;
+	text-align: center;
+	color: var(--fin-quiet);
+	pointer-events: none;
+	z-index: 0;
+}
+/* A long slice name wraps rather than running past the hole. */
+.fin-ring-center > :first-child,
+.fin-ring-center > :last-child:not(strong) {
+	max-width: 52%;
+	line-height: 1.25;
+}
+.fin-ring-center strong {
+	font-size: 1.05rem;
+	font-weight: 750;
+	line-height: 1.15;
+	color: var(--basalt-copy);
+}
+/* When the card has the whole row, the ring sits beside the list. */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.fin-pl-body {
+		display: grid;
+		gap: 3rem;
+		grid-template-columns: 12.5rem minmax(0, 1fr);
+		align-items: center;
+	}
+	.fin-pl-body .fin-ring {
+		margin: 0;
+	}
+}
+.fin-pl {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.875rem;
+}
+.fin-pl th,
+.fin-pl td {
+	padding: 0.4rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.fin-pl th {
+	padding-right: 1rem;
+}
+.fin-pl th .fin-swatch {
+	margin-right: 0.6rem;
+}
+.fin-pl td {
+	text-align: right;
+	white-space: nowrap;
+}
+.fin-pl td:last-child {
+	width: 3.5rem;
+	color: var(--fin-quiet);
+}
+.fin-pl-revenue th,
+.fin-pl-revenue td:not(:last-child),
+.fin-pl-net th,
+.fin-pl-net td:not(:last-child) {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fin-pl-revenue th,
+.fin-pl-revenue td {
+	padding-top: 0;
+}
+.fin-pl-net th,
+.fin-pl-net td {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.fin-pl.is-changing td {
+	animation: fin-fade 0.3s ease;
+}
+@keyframes fin-fade {
+	from {
+		opacity: 0.25;
+	}
+}
+
+/* Unpaid invoices
+   Pulled out by the cells' side padding, so the first column's text
+   starts on the card's left edge, under the title. */
+.fin-scroll {
+	margin: 0 -0.75rem;
+}
+.fin-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+}
+.fin-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+}
+.fin-table > thead > tr > th {
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--fin-quiet);
+}
+.fin-table > tbody > tr:last-child > * {
+	border-bottom-width: 0;
+}
+.fin-table tbody tr:hover > * {
+	--bs-table-bg-state: var(--basalt-wash);
+}
+.fin-table td {
+	height: var(--fin-row);
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	white-space: nowrap;
+}
+/* The name column may wrap, so the action button stays inside a narrow card. */
+.fin-table td:first-child {
+	white-space: normal;
+}
+.fin-table-name {
+	display: block;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.fin-table-name:hover {
+	text-decoration: underline;
+	color: var(--fin-link);
+}
+.fin-table-sub {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--fin-quiet);
+}
+.fin-table-sub a {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--fin-link);
+}
+.fin-table-sub a:hover {
+	text-decoration: underline;
+}
+.fin-table-amount {
+	font-weight: 650;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+/* Gray buttons sit on the card, and their label keeps its contrast. */
+.fin-card .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+}
+/* Same width before and after, so the column doesn't jump. */
+.fin-remind {
+	min-width: 6.5rem;
+	white-space: nowrap;
+}
+.fin-remind.is-sent {
+	--bs-btn-color: var(--fin-quiet);
+	--bs-btn-hover-color: var(--fin-quiet);
+	--bs-btn-hover-bg: transparent;
+	--bs-btn-active-bg: transparent;
+	--bs-btn-border-color: var(--basalt-edge);
+	--bs-btn-hover-border-color: var(--basalt-edge);
+	cursor: default;
+}
+
+/* Small tablet: the customer's line under the name wraps on whole words,
+   so the reminder buttons stay inside the card. */
+@media (max-width: 767.98px) {
+	.fin-table > tbody > tr > :first-child {
+		white-space: normal;
+	}
+}
+
+/* Phone: each invoice becomes a short stacked record. Who and the amount
+   on top, the due pill and the reminder under them. */
+@media (max-width: 575.98px) {
+	.fin-scroll {
+		margin: 0;
+	}
+	.fin-table,
+	.fin-table > tbody {
+		display: block;
+	}
+	.fin-table > thead {
+		display: none;
+	}
+	.fin-table > tbody > tr {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "who who" "due act";
+		align-items: center;
+		padding: 1.2rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.fin-table > tbody > tr:first-child {
+		padding-top: 0;
+	}
+	.fin-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.fin-table > tbody > tr > * {
+		display: block;
+		height: auto;
+		padding: 0;
+		border: 0;
+		white-space: normal;
+	}
+	/* The amount sits beside the name; the line under the name runs the
+     full width beneath it, and a long name wraps before reaching it. */
+	.fin-table > tbody > tr > :nth-child(1) {
+		grid-column: 1 / -1;
+		grid-row: 1;
+		align-self: start;
+		min-width: 0;
+	}
+	.fin-table > tbody > tr > :nth-child(1) .fin-table-name {
+		padding-right: 6.5rem;
+	}
+	.fin-table > tbody > tr > :nth-child(2) {
+		grid-area: due;
+	}
+	.fin-table > tbody > tr > :nth-child(3) {
+		grid-column: 2;
+		grid-row: 1;
+		align-self: start;
+		font-size: 0.95rem;
+	}
+	.fin-table > tbody > tr > :nth-child(4) {
+		grid-area: act;
+	}
+}
+
+/* Spend against budget: the bar deepens in the palette's own color as a
+   line nears and passes its budget; the percentage says which in words. */
+.fin-budget {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.fin-budget-row {
+	--fin-tone: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-plane));
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "name pct" "bar bar" "sub sub";
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.fin-budget-row:first-child {
+	padding-top: 0;
+}
+.fin-budget-row:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.fin-budget-row-near {
+	--fin-tone: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-plane));
+}
+.fin-budget-row-over {
+	--fin-tone: var(--basalt-hue);
+}
+.fin-budget-name {
+	grid-area: name;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.fin-budget-pct {
+	grid-area: pct;
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--fin-success-text);
+}
+.fin-budget-row-near .fin-budget-pct {
+	color: var(--fin-warning-text);
+}
+.fin-budget-row-over .fin-budget-pct {
+	color: var(--fin-danger-text);
+}
+.fin-budget-bar {
+	grid-area: bar;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+}
+.fin-budget-bar > span {
+	transform-origin: left center;
+	display: block;
+	width: var(--share, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--fin-tone);
+	animation: fin-grow 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes fin-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+.fin-budget-sub {
+	grid-area: sub;
+	font-size: 0.8rem;
+	color: var(--fin-quiet);
+}
+
+/* Revenue and costs */
+.fin-trend-bar {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.fin-keys {
+	display: flex;
+	gap: 1rem 2.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+}
+.fin-keys dt {
+	margin-bottom: 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--fin-quiet);
+}
+.fin-keys dd {
+	margin: 0;
+	font-size: 1.35rem;
+	font-weight: 700;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.fin-keys-note {
+	margin-left: 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--fin-quiet);
+}
+.fin-legend {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.fin-legend li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+
+/* Latest bank movements
+   Date, who and the category they were booked to, then the amount.
+   Labeled and spaced like the invoices table beside it, so the rows of
+   the two cards sit level. */
+.fin-moves-head,
+.fin-moves-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+	padding: 0 0.75rem;
+}
+.fin-moves-head {
+	margin: 0 -0.75rem;
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+	border-bottom: 1px solid var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--fin-quiet);
+}
+.fin-moves {
+	margin: 0 -0.75rem;
+	padding: 0;
+	list-style: none;
+}
+.fin-moves-row {
+	align-items: center;
+	min-height: var(--fin-row);
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.fin-moves-row:last-child {
+	border-bottom: 0;
+}
+.fin-moves-date {
+	white-space: nowrap;
+	color: var(--fin-quiet);
+}
+.fin-moves-what {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+}
+.fin-moves-who {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.fin-moves-amount {
+	font-weight: 650;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.fin-moves-amount-in {
+	color: var(--fin-success-text);
+}
+.fin-chip {
+	display: inline-block;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.5;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--fin-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--fin-tone) 15%, transparent);
+}
+.fin-chip-none {
+	color: var(--fin-quiet);
+	background: transparent;
+	box-shadow: inset 0 0 0 1px var(--basalt-edge-strong);
+}
+
+/* AI suggestions: the sparkle sits beside the title, and the ideas share
+   out the card's height beside the budgets until fewer than four are
+   left. */
+.fin-ideas-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.fin-ideas {
+	flex: 1 1 auto;
+
+	.basalt-idea {
+		align-content: center;
+	}
+}
+.fin-ideas:not(:has(> :nth-child(4))) {
+	align-content: start;
+}
+.fin-idea-drop {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	color: var(--fin-quiet);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-copy);
+	}
+}
+.fin-ideas-done {
+	padding: 2rem 0;
+	text-align: center;
+	color: var(--fin-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fin-budget-bar > span,
+	.fin-pl.is-changing td {
+		animation: none;
+	}
+	.fin-card-more .bi {
+		transition: none;
+	}
+}
+
+@media print {
+	.fin-budget-bar > span,
+	.fin-pl.is-changing td {
+		animation: none;
+	}
+	.fin-remind {
+		display: none;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.fin-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

@@ -1,0 +1,1544 @@
+/*
+ * Styles for the product usage report (product-usage.html), all under the
+ * .pu-* prefix. Colors come only from the --basalt-* tokens, so legends,
+ * meters and swatches change palette together with the canvases, which
+ * product-usage.js paints from the same tokens.
+ */
+
+/* The page sets two derived colors: a small gray that still clears 4.5:1
+   on the lighter palettes, and a link tint pulled toward the body copy. */
+.pu-page {
+	--pu-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--pu-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+}
+.pu-page canvas {
+	display: block;
+	max-width: 100%;
+}
+
+/* Anything the script hides stays out of the layout, whatever display
+   its component normally uses. */
+.pu-custom[hidden],
+.pu-key li[hidden],
+.pu-adopt-key[hidden],
+.pu-table-empty[hidden],
+.pu-foot nav[hidden],
+.pu-near[hidden],
+.pu-near-none[hidden],
+.pu-power[hidden],
+.pu-drawer .basalt-drawer-nav[hidden] {
+	display: none;
+}
+
+/* Summary toggles and sort headers share one focus ring. */
+.pu-data summary:focus-visible,
+.pu-sort:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+/* Lists end without a rule under their final row. */
+.pu-steps li:last-child,
+.pu-near li:last-child,
+.pu-person:last-child {
+	border-bottom: 0;
+}
+
+/* In a row of figures the first one carries the lead series color. */
+.pu-figs > div:first-child,
+.pu-acc-stats > div:first-child {
+	border-left-color: var(--basalt-series-1);
+}
+
+/* Settings bar: range, comparison and filters wrap onto as many lines as
+   the width needs, with the period summary underneath. */
+.pu-controls {
+	margin-bottom: 1.5rem;
+
+	& .card-body {
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	}
+}
+.pu-controls-row {
+	display: flex;
+	gap: 0.9rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.pu-field {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+
+	& .basalt-segmented {
+		max-width: 100%;
+	}
+}
+.pu-field-select {
+	flex: 1 1 9rem;
+	max-width: 13rem;
+}
+.pu-field-label {
+	margin: 0;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--pu-quiet);
+}
+.pu-page .form-control,
+.pu-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.pu-page .form-control::placeholder {
+	color: var(--pu-quiet);
+	opacity: 1;
+}
+.pu-short {
+	display: none;
+}
+@media (max-width: 459.98px) {
+	.pu-long {
+		display: none;
+	}
+	.pu-short {
+		display: inline;
+	}
+}
+@media (max-width: 575.98px) {
+	.pu-controls .card-body {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The custom date form opens under a rule and keeps its error message on
+   a line of its own. */
+.pu-custom {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .form-control {
+		min-width: 9.5rem;
+	}
+}
+.pu-custom-error {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+.pu-controls-foot {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.9rem;
+}
+.pu-period {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--pu-quiet);
+}
+
+/* The error and empty panels take the report's place with the same gap below. */
+.pu-state {
+	margin-bottom: 1.5rem;
+}
+
+/* While a report loads, skeletons cover each card body from the inside
+   instead of collapsing it. */
+.pu-kpi .card-body,
+.pu-card .card-body {
+	position: relative;
+}
+.pu-skel {
+	position: absolute;
+	inset: 1.1rem 1.25rem;
+	z-index: 2;
+	display: none;
+	flex-direction: column;
+	background: var(--basalt-plane);
+}
+.pu-skel-chart {
+	inset: 4.75rem 1.5rem 1.5rem;
+
+	& .basalt-skeleton-block {
+		height: 100%;
+	}
+}
+.pu-skel-spark {
+	height: 2.75rem;
+	margin-top: auto;
+}
+.pu-page.is-loading .pu-skel {
+	display: flex;
+}
+
+/* Headline numbers run two to a row, four on wide screens and one on the
+   narrowest phones; the sparkline sits on each card's floor. */
+.pu-kpis {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-bottom: 1.5rem;
+}
+@media (min-width: 1200px) {
+	.pu-kpis {
+		gap: 1.5rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+@media (max-width: 459.98px) {
+	.pu-kpis {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.pu-kpi .card-body {
+	--basalt-foot-x: 1.25rem;
+	--basalt-foot-y: 1rem;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.1rem var(--basalt-foot-x) var(--basalt-foot-y);
+}
+.pu-kpi-label {
+	margin: 0 0 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--pu-quiet);
+}
+.pu-kpi-value {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pu-kpi-change {
+	display: flex;
+	gap: 0.25rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-height: 1.4rem;
+	margin: 0.4rem 0 0;
+	font-size: 0.77rem;
+}
+.pu-kpi-was {
+	color: var(--pu-quiet);
+}
+.pu-kpi-note {
+	margin: 0.3rem 0 0.6rem;
+	font-size: 0.75rem;
+	color: var(--pu-quiet);
+}
+.pu-kpi-spark {
+	position: relative;
+	height: calc(46px + var(--basalt-foot-y));
+	margin-top: auto;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+}
+
+/* The cards sit on a twelve-column grid: full width by default, two
+   thirds and a third or halves from 1200px up. */
+.pu-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.pu-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+@media (min-width: 1200px) {
+	.pu-card-wide {
+		grid-column: span 8;
+	}
+	.pu-card-narrow {
+		grid-column: span 4;
+	}
+	.pu-card-half {
+		grid-column: span 6;
+	}
+}
+.pu-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--basalt-pad-head);
+}
+@media (max-width: 575.98px) {
+	.pu-card.basalt-box .card-body {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+.pu-card-head {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.1rem;
+
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+}
+.pu-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pu-card-desc {
+	max-width: 64ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pu-quiet);
+}
+.pu-card-tool {
+	flex-shrink: 0;
+}
+.pu-card-foot {
+	margin: 1rem 0 0;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+
+/* Chart legends are HTML, so their entries wrap rather than collide.
+   Each entry takes its color from --pu-c, set by a .pu-c* class. */
+.pu-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--pu-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.pu-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--pu-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.pu-key-line-dashed {
+	border-top-style: dashed;
+	border-top-width: 2px;
+}
+.pu-key-bar {
+	width: 10px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--pu-c, var(--basalt-series-1));
+}
+.pu-key-bar-soft {
+	background: color-mix(in srgb, var(--pu-c, var(--basalt-series-1)) 32%, transparent);
+}
+.pu-key-bar-track {
+	width: 14px;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+}
+.pu-key-band {
+	width: 18px;
+	height: 10px;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--pu-c, var(--basalt-series-1)) 22%, transparent);
+	box-shadow: inset 0 2px 0 var(--pu-c, var(--basalt-series-1));
+}
+.pu-key-tick {
+	width: 3px;
+	height: 13px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+.pu-c1 {
+	--pu-c: var(--basalt-series-1);
+}
+.pu-c2 {
+	--pu-c: var(--basalt-series-2);
+}
+.pu-c3 {
+	--pu-c: var(--basalt-series-3);
+}
+.pu-c4 {
+	--pu-c: var(--basalt-series-4);
+}
+.pu-c5 {
+	--pu-c: var(--basalt-series-5);
+}
+.pu-c6 {
+	--pu-c: var(--basalt-series-6);
+}
+.pu-c7 {
+	--pu-c: var(--basalt-series-7);
+}
+.pu-c8 {
+	--pu-c: var(--basalt-series-8);
+}
+/* .pu-cr is the faint gray the canvases draw the comparison period in. */
+.pu-cr {
+	--pu-c: color-mix(in srgb, var(--basalt-copy) 32%, transparent);
+}
+.pu-ct {
+	--pu-c: var(--basalt-copy);
+}
+
+/* A chart box grows to fill its card and the canvas fills the box. The
+   seat bullets size to their row count and the drawer chart stays short;
+   on phones every box settles at the same height. */
+.pu-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 260px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+}
+.pu-chart-seats {
+	--pu-rows: 3;
+	flex: 0 0 auto;
+	min-height: calc(var(--pu-rows) * 58px + 40px);
+}
+.pu-chart-drawer {
+	flex: 0 0 auto;
+	min-height: 190px;
+}
+@media (max-width: 575.98px) {
+	.pu-chart {
+		min-height: 240px;
+	}
+}
+.pu-sub-title {
+	margin: 1.5rem 0 0.5rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* "Show the numbers" opens under a rule with a chevron that turns as the
+   details open. The box is a size container for the tables inside. */
+.pu-data {
+	container: pu-data / inline-size;
+	margin-top: 1.1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.pu-data summary .bi {
+		transition: none;
+	}
+}
+.pu-data-body {
+	margin-top: 0.75rem;
+
+	& .table-responsive {
+		overflow: visible;
+	}
+}
+.pu-data-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin: 0;
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+
+	& th {
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& td {
+		white-space: nowrap;
+	}
+}
+
+/* Column heads in the data tables and the accounts table read as small
+   spaced capitals. */
+.pu-data-table thead th,
+.pu-table > thead > tr > th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--pu-quiet);
+}
+.pu-data-table thead th {
+	white-space: normal;
+	text-wrap: balance;
+}
+
+/* A data table too wide for its box stacks its rows: the row name on a
+   line of its own, then every figure labeled with its column. More
+   columns need more room, so each width class has its own breakpoint. */
+@container pu-data (max-width: 240px) {
+	.pu-data-table-c2 {
+		display: block;
+
+		& > thead {
+			display: none;
+		}
+		& > tbody {
+			display: block;
+		}
+		& > tbody > tr {
+			display: flex;
+			gap: 0.2rem 1rem;
+			flex-wrap: wrap;
+			padding: 0.5rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& > tbody > tr > * {
+			display: block;
+			padding: 0;
+			border: 0;
+			text-align: start;
+		}
+		& > tbody > tr > th {
+			flex-basis: 100%;
+		}
+		& td[data-label]::before {
+			content: attr(data-label) " ";
+			color: var(--pu-quiet);
+		}
+	}
+}
+@container pu-data (max-width: 340px) {
+	.pu-data-table-c3 {
+		display: block;
+
+		& > thead {
+			display: none;
+		}
+		& > tbody {
+			display: block;
+		}
+		& > tbody > tr {
+			display: flex;
+			gap: 0.2rem 1rem;
+			flex-wrap: wrap;
+			padding: 0.5rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& > tbody > tr > * {
+			display: block;
+			padding: 0;
+			border: 0;
+			text-align: start;
+		}
+		& > tbody > tr > th {
+			flex-basis: 100%;
+		}
+		& td[data-label]::before {
+			content: attr(data-label) " ";
+			color: var(--pu-quiet);
+		}
+	}
+}
+@container pu-data (max-width: 440px) {
+	.pu-data-table-c4 {
+		display: block;
+
+		& > thead {
+			display: none;
+		}
+		& > tbody {
+			display: block;
+		}
+		& > tbody > tr {
+			display: flex;
+			gap: 0.2rem 1rem;
+			flex-wrap: wrap;
+			padding: 0.5rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& > tbody > tr > * {
+			display: block;
+			padding: 0;
+			border: 0;
+			text-align: start;
+		}
+		& > tbody > tr > th {
+			flex-basis: 100%;
+		}
+		& td[data-label]::before {
+			content: attr(data-label) " ";
+			color: var(--pu-quiet);
+		}
+	}
+}
+@container pu-data (max-width: 500px) {
+	.pu-data-table-c5 {
+		display: block;
+
+		& > thead {
+			display: none;
+		}
+		& > tbody {
+			display: block;
+		}
+		& > tbody > tr {
+			display: flex;
+			gap: 0.2rem 1rem;
+			flex-wrap: wrap;
+			padding: 0.5rem 0;
+			border-bottom: 1px solid var(--basalt-edge);
+		}
+		& > tbody > tr > * {
+			display: block;
+			padding: 0;
+			border: 0;
+			text-align: start;
+		}
+		& > tbody > tr > th {
+			flex-basis: 100%;
+		}
+		& td[data-label]::before {
+			content: attr(data-label) " ";
+			color: var(--pu-quiet);
+		}
+	}
+}
+
+/* Stickiness rings spread evenly across the card, one per plan, each in
+   its plan's series color. */
+.pu-rings {
+	display: flex;
+	gap: 1.25rem 1rem;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	margin: auto 0;
+	padding: 0.5rem 0;
+}
+.pu-ring {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: center;
+	margin: 0;
+
+	& .basalt-ring {
+		--size: 96px;
+		--thickness: 9px;
+	}
+	& .basalt-ring-value {
+		font-size: 1.3rem;
+	}
+	& figcaption {
+		display: flex;
+		gap: 0.3rem;
+		flex-direction: column;
+		align-items: center;
+		font-size: 0.8rem;
+	}
+}
+.pu-ring-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pu-tone-1 .basalt-ring {
+	--ring-tone: var(--basalt-series-1);
+}
+.pu-tone-2 .basalt-ring {
+	--ring-tone: var(--basalt-series-2);
+}
+.pu-tone-3 .basalt-ring {
+	--ring-tone: var(--basalt-series-3);
+}
+
+/* Feature adoption is a ranked list of five-column rows; in a narrow card
+   each row folds into name and share, the bar, then days and tag. */
+.pu-adopt {
+	display: flex;
+	gap: 0.8rem;
+	flex-direction: column;
+	container: pu-adopt / inline-size;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pu-adopt-row {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) 3rem 7.5rem 7.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+}
+.pu-adopt-name {
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pu-adopt-track {
+	position: relative;
+	height: 10px;
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--basalt-copy) 7%, transparent);
+}
+.pu-adopt-fill {
+	display: block;
+	height: 100%;
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--basalt-series-1) 55%, var(--basalt-plane));
+}
+.pu-adopt-row.is-core .pu-adopt-fill {
+	background: var(--basalt-series-1);
+}
+.pu-adopt-was {
+	position: absolute;
+	top: -4px;
+	bottom: -4px;
+	width: 2px;
+	margin-left: -1px;
+	border-radius: 1px;
+	background: var(--basalt-copy);
+}
+.pu-adopt-pct {
+	font-family: inherit;
+	font-weight: 650;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pu-adopt-days {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--pu-quiet);
+}
+.pu-adopt-tag {
+	min-width: 0;
+}
+.pu-adopt-group {
+	display: inline-block;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-series-1) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-1) 12%, transparent);
+}
+.pu-adopt-key {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--pu-quiet);
+}
+.pu-adopt-tick {
+	width: 2px;
+	height: 0.9em;
+	border-radius: 1px;
+	background: var(--basalt-copy);
+}
+@container pu-adopt (max-width: 620px) {
+	.pu-adopt-row {
+		gap: 0.3rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) 3rem;
+		grid-template-areas: "name pct" "track track" "days tag";
+	}
+	.pu-adopt-name {
+		grid-area: name;
+	}
+	.pu-adopt-pct {
+		grid-area: pct;
+	}
+	.pu-adopt-track {
+		grid-area: track;
+	}
+	.pu-adopt-days {
+		grid-area: days;
+	}
+	.pu-adopt-tag {
+		grid-area: tag;
+		justify-self: end;
+	}
+	.pu-adopt {
+		gap: 1.1rem;
+	}
+}
+
+/* Top events: the total sits in the hole of the ring, and the list below
+   repeats the ring's colors as dots. */
+.pu-donut {
+	position: relative;
+	height: 200px;
+	margin: 0.25rem 0 1.25rem;
+}
+.pu-donut-mid {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	pointer-events: none;
+}
+.pu-donut-num {
+	font-size: 1.5rem;
+	font-weight: 750;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+}
+.pu-donut-unit {
+	font-size: 0.77rem;
+	color: var(--pu-quiet);
+}
+.pu-evlist {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pu-evlist-row {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: auto minmax(0, 1fr) auto 2.6rem 3.4rem;
+	align-items: center;
+	font-size: 0.84rem;
+}
+.pu-evlist-dot {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 3px;
+	background: var(--pu-ev);
+}
+.pu-ev-0 {
+	--pu-ev: var(--basalt-series-1);
+}
+.pu-ev-1 {
+	--pu-ev: var(--basalt-series-2);
+}
+.pu-ev-2 {
+	--pu-ev: var(--basalt-series-3);
+}
+.pu-ev-3 {
+	--pu-ev: var(--basalt-series-4);
+}
+.pu-ev-4 {
+	--pu-ev: var(--basalt-series-5);
+}
+.pu-ev-5 {
+	--pu-ev: var(--basalt-series-6);
+}
+.pu-ev-6 {
+	--pu-ev: var(--basalt-series-7);
+}
+.pu-ev-7 {
+	--pu-ev: var(--basalt-series-8);
+}
+.pu-evlist-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pu-evlist-count {
+	font-family: inherit;
+	font-weight: 650;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pu-evlist-share {
+	font-size: 0.77rem;
+	text-align: right;
+	color: var(--pu-quiet);
+}
+.pu-evlist-change {
+	font-size: 0.77rem;
+	font-weight: 600;
+	text-align: right;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+
+	&.is-down {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+
+/* Still active after signup: three week marks side by side, each set off
+   by a rule on its left. */
+.pu-figs {
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+
+	& > div {
+		padding-left: 0.85rem;
+		border-left: 2px solid var(--basalt-edge);
+	}
+	& dt {
+		margin-bottom: 0.25rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--pu-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: var(--basalt-fs-card-title, 1.2rem);
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The setup checklist gives each step a name, a count and a share, with
+   a full-width meter beneath; a period without signups hides the list. */
+.pu-steps {
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.3rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto 3rem;
+		align-items: center;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& .pu-meter {
+		grid-column: 1 / -1;
+		margin: 0;
+	}
+}
+.pu-steps-name {
+	color: var(--basalt-copy-body);
+}
+.pu-steps-count {
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.pu-steps-share {
+	text-align: right;
+	color: var(--pu-quiet);
+}
+.pu-card.is-blank .pu-steps {
+	display: none;
+}
+
+/* Accounts with falling usage: a search toolbar over a table that runs
+   to the card edges, and a footer for paging. */
+.pu-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: var(--basalt-pad-head);
+}
+.pu-toolbar-count {
+	font-size: 0.8rem;
+	color: var(--pu-quiet);
+}
+.pu-toolbar-end {
+	margin-left: auto;
+}
+.pu-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--pu-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+/* The table bleeds to the card edges and its outer cells take the card's
+   inset back, so the columns line up with the heading above. */
+.pu-scroll {
+	position: relative;
+	margin: 0 calc(-1 * var(--basalt-pad-x));
+	padding: 0;
+}
+.pu-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	margin: 0;
+	font-size: 0.875rem;
+}
+.pu-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.75rem;
+}
+.pu-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.pu-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.pu-scroll {
+		margin: 0 calc(-1 * var(--basalt-pad-x-narrow));
+	}
+	.pu-table > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.pu-table > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+.pu-table > thead > tr > th {
+	border-bottom-color: var(--basalt-edge-strong);
+	white-space: nowrap;
+}
+.pu-table > tbody > tr {
+	cursor: pointer;
+}
+.pu-table > tbody > tr:last-child > * {
+	border-bottom-width: 0;
+}
+.pu-table td {
+	white-space: nowrap;
+}
+.pu-table > tbody > tr > td:first-child {
+	min-width: 10rem;
+	white-space: normal;
+}
+.pu-table .pu-col-act {
+	width: 1%;
+	padding-top: 0;
+	padding-bottom: 0;
+	padding-left: 0.25rem;
+}
+.pu-table-sub {
+	display: block;
+	font-size: 0.76rem;
+	color: var(--pu-quiet);
+}
+
+/* Sort buttons look like the heading text; the sorted column shows at
+   full strength, and right-aligned columns put the arrow first. */
+.pu-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.pu-sort-icon {
+	font-size: 0.7rem;
+	opacity: 0.5;
+}
+th[aria-sort] .pu-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort] .pu-sort-icon {
+	opacity: 1;
+}
+.text-end > .pu-sort {
+	flex-direction: row-reverse;
+}
+
+/* Account names are buttons or links styled as bold text that underline
+   on hover; the quiet kind sits inside secondary lines. */
+.pu-link {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--pu-link);
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.pu-link-quiet {
+	font-weight: 500;
+	color: var(--pu-quiet);
+}
+
+/* Meters are short inline pills beside a figure; the wide kind spans its
+   row and uses the lead series color. */
+.pu-meter {
+	display: inline-block;
+	width: 3.5rem;
+	height: 6px;
+	margin-right: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	vertical-align: middle;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+}
+.pu-meter-fill {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-2);
+}
+.pu-meter-wide {
+	display: block;
+	width: 100%;
+	margin: 0.3rem 0;
+
+	& .pu-meter-fill {
+		background: var(--basalt-series-1);
+	}
+}
+
+.pu-table-empty {
+	margin: 1rem 0;
+}
+.pu-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+}
+.pu-foot-range {
+	font-size: 0.8rem;
+	color: var(--pu-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The accounts table answers to its card's width, not the window's.
+   A little narrower and the owner column goes, since the quick view
+   shows it. */
+.pu-card:has(.pu-table) {
+	container: pu-falling / inline-size;
+}
+@container pu-falling (max-width: 840px) {
+	.pu-table > * > tr > :nth-child(6) {
+		display: none;
+	}
+	.pu-table > :not(caption) > * > * {
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
+	}
+	.pu-table .basalt-row-actions .btn-icon {
+		width: 30px;
+		height: 30px;
+	}
+}
+/* Narrower still, each row turns into a small card: the name and its
+   change on top, then plan and seat use, then a muted line with daily
+   actives and the owner. The repeated class outweighs the table's own
+   cell rules. */
+@container pu-falling (max-width: 700px) {
+	.pu-table thead {
+		display: none;
+	}
+	.pu-table,
+	.pu-table > tbody {
+		display: block;
+		width: 100%;
+		min-width: 0;
+	}
+	.pu-table > tbody > tr[data-pu-open] {
+		display: flex;
+		gap: 0.5rem 0.75rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.pu-table > tbody > tr[data-pu-open]:last-child {
+		border-bottom: 0;
+	}
+	.pu-table.pu-table.pu-table.pu-table.pu-table.pu-table > tbody > tr[data-pu-open] > td {
+		display: block;
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: start;
+		white-space: normal;
+		background: transparent;
+	}
+	.pu-table > tbody > tr[data-pu-open]::before,
+	.pu-table > tbody > tr[data-pu-open]::after {
+		content: "";
+		flex-basis: 100%;
+		height: 0;
+	}
+	.pu-table > tbody > tr[data-pu-open]::before {
+		order: 20;
+	}
+	.pu-table > tbody > tr[data-pu-open]::after {
+		order: 40;
+	}
+	.pu-table > tbody > tr[data-pu-open] > :nth-child(1) {
+		flex: 1 1 0;
+		order: 10;
+	}
+	.pu-table > tbody > tr[data-pu-open] > :nth-child(4) {
+		order: 19;
+	}
+	.pu-table > tbody > tr[data-pu-open] > :nth-child(2) {
+		order: 21;
+	}
+	.pu-table > tbody > tr[data-pu-open] > :nth-child(5) {
+		order: 22;
+	}
+	.pu-table.pu-table.pu-table.pu-table.pu-table.pu-table > tbody > tr[data-pu-open] > :nth-child(3) {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		order: 41;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--basalt-copy-muted);
+	}
+	.pu-table.pu-table.pu-table.pu-table.pu-table.pu-table > tbody > tr[data-pu-open] > :nth-child(6) {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		order: 42;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--basalt-copy-muted);
+	}
+	.pu-table > tbody > tr[data-pu-open] > :nth-child(6)::before {
+		content: "\00b7";
+	}
+	.pu-table > tbody > tr[data-pu-open] > :nth-child(7) {
+		order: 59;
+		margin-left: auto;
+	}
+	.pu-table > tbody > tr[data-pu-open] > :nth-child(3)::after {
+		content: " daily active";
+	}
+	.pu-table > tbody > tr[data-pu-open] > :nth-child(5)::after {
+		content: " of seats used";
+	}
+	@media (max-width: 575.98px) {
+		.pu-table > tbody > tr[data-pu-open] {
+			padding-left: var(--basalt-pad-x-narrow);
+			padding-right: var(--basalt-pad-x-narrow);
+		}
+		/* A phone keeps the account, the drop, the plan, the seats and the
+		   daily count; the region and the owner wait in the quick view. */
+		.pu-table.pu-table.pu-table.pu-table.pu-table.pu-table > tbody > tr[data-pu-open] > :nth-child(6),
+		.pu-table > tbody > tr[data-pu-open] > :nth-child(1) .pu-table-sub {
+			display: none;
+		}
+	}
+}
+
+/* Accounts close to full: name, plan and a seat meter per row, with the
+   meter dropping to its own line on the smallest phones. */
+.pu-near {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.3rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 11rem);
+		align-items: center;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.84rem;
+	}
+}
+.pu-near-plan {
+	font-size: 0.76rem;
+	color: var(--pu-quiet);
+}
+.pu-near-use {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.pu-near-none {
+	margin: 0;
+	font-size: 0.84rem;
+	color: var(--pu-quiet);
+}
+@media (max-width: 459.98px) {
+	.pu-near li {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.pu-near-use {
+		grid-column: 1 / -1;
+		justify-content: flex-start;
+	}
+}
+
+/* Power users: rank, avatar, who they are and how often they are in;
+   on phones the usage column moves under the name. */
+.pu-power {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pu-person {
+	display: grid;
+	gap: 0.5rem 0.85rem;
+	grid-template-columns: 1.25rem auto minmax(0, 1fr) minmax(0, 13rem);
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.pu-person-rank {
+	font-size: 0.77rem;
+	font-weight: 600;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--pu-quiet);
+}
+.pu-person-who {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.pu-person-name {
+	font-weight: 600;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.pu-person-sub {
+	font-size: 0.76rem;
+	color: var(--pu-quiet);
+}
+/* On a phone a power user keeps their days and the change; the action
+   count and favorite feature step aside. */
+@media (max-width: 575.98px) {
+	.pu-person-use .pu-person-sub {
+		display: none;
+	}
+}
+.pu-person-use {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.pu-person-days {
+	display: flex;
+	gap: 0.25rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+@media (max-width: 575.98px) {
+	.pu-person {
+		grid-template-columns: 1.25rem auto minmax(0, 1fr);
+	}
+	.pu-person-use {
+		grid-column: 3;
+	}
+}
+
+/* The account drawer: a pair of stat columns, a feature checklist in two
+   columns and a tinted box with the suggested next step. */
+.pu-drawer .offcanvas-header {
+	gap: 0.75rem;
+	align-items: flex-start;
+}
+.pu-drawer-head {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.pu-acc-stats {
+	display: grid;
+	gap: 0.85rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+
+	& > div {
+		padding-left: 0.75rem;
+		border-left: 2px solid var(--basalt-edge);
+	}
+	& dt {
+		margin-bottom: 0.1rem;
+		font-size: 0.76rem;
+		font-weight: 500;
+		color: var(--pu-quiet);
+	}
+	& dd {
+		display: flex;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+		align-items: center;
+		margin: 0;
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.pu-acc-section {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+}
+.pu-acc-section-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pu-acc-features {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--pu-quiet);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& .bi {
+		font-size: 0.8rem;
+	}
+	& li.is-on {
+		color: var(--basalt-copy);
+	}
+	/* A feature not in use shows a dimmed dash; an empty ring would look
+     like a checkbox waiting to be ticked. */
+	& li:not(.is-on) .bi-circle::before {
+		content: "\F2E5";
+		opacity: 0.6;
+	}
+	& li.is-on .bi {
+		color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	}
+}
+.pu-acc-next {
+	padding: 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.86rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+}
+.pu-drawer-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+/* On paper the report keeps its figures and drops every control. */
+@media print {
+	.pu-controls .basalt-segmented,
+	.pu-custom,
+	.pu-data summary,
+	.pu-toolbar,
+	.pu-foot nav,
+	.basalt-hero-actions {
+		display: none;
+	}
+	.pu-skel {
+		display: none;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.pu-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

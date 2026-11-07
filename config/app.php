@@ -123,4 +123,30 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo Mode
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk versi demo yang dipakai di portofolio. Saat aktif,
+    | aplikasi menampilkan banner demo dan (bila readonly) menolak semua
+    | perubahan data agar isi demo tetap konsisten antar pengunjung.
+    |
+    */
+
+    'demo_mode' => (bool) env('DEMO_MODE', false),
+
+    'demo_readonly' => (bool) env('DEMO_READONLY', false),
+
+    'admin' => [
+        'nama' => env('ADMIN_NAME', 'Admin'),
+        'email' => env('ADMIN_EMAIL'),
+        'password' => env('ADMIN_PASSWORD'),
+    ],
+
+    'demo_credentials' => [
+        'username' => env('DEMO_USERNAME', 'demo@misjiwatifarm.tech'),
+        'password' => env('DEMO_PASSWORD', 'DemoMisjiwati2026'),
+    ],
+
 ];

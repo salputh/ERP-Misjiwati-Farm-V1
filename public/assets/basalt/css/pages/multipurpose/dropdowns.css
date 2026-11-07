@@ -1,0 +1,534 @@
+/* Dropdowns demo page (dropdowns.html). Everything here is .dd-*:
+   the filter chips, the two-column card grid, the demo stages inside
+   each card and the code snippet at the bottom. The menu components
+   on show (.basalt-command, .basalt-dd-* and the plain Bootstrap menu)
+   are styled in basalt.css. Colors are mixed from the --basalt-*
+   tokens and were checked at 4.5:1 or better in every palette, light
+   and dark. */
+
+.dd-page {
+	--dd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The chip row sits above the grid; the pressed chip is drawn solid. */
+.dd-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.dd-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.dd-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.dd-chips .dd-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.dd-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--dd-quiet);
+}
+
+/* Twelve columns: every card spans them all until the desktop width,
+   where cards pair up and a full-width or lone card keeps the row. */
+.dd-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.dd-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.dd-card.is-hidden {
+	display: none;
+}
+@media (min-width: 1200px) {
+	.dd-card {
+		grid-column: span 6;
+	}
+	.dd-card-full,
+	.dd-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* The card body is a column, so the snippet can sit at the bottom and
+   paired cards end level. */
+.dd-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.dd-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+/* The kind label is drawn above the title although it follows it in
+   the markup, so a screen reader meets the title first. */
+.dd-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.dd-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dd-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--dd-quiet);
+
+	& kbd {
+		padding: 0.05rem 0.3rem;
+		border-radius: 4px;
+		border: 1px solid var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+		box-shadow: none;
+	}
+}
+.dd-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--dd-quiet);
+}
+/* The stage grows to fill the card, and whatever comes right before
+   the snippet keeps a gap above it. */
+.dd-card .card-body > .dd-stage {
+	flex: 1 0 auto;
+	align-content: center;
+}
+.dd-card .card-body > .dd-stage-col {
+	align-content: stretch;
+	justify-content: flex-start;
+}
+.dd-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+
+/* A stage is the framed area a demo sits in: a wrapping row by
+   default, a column for stacked demos, extra tall for menus that open
+   upward or sideways. */
+.dd-stage {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.5rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+.dd-stage-col {
+	gap: 1rem;
+	flex-direction: column;
+	align-items: stretch;
+}
+.dd-stage-tall {
+	justify-content: center;
+	padding: 4.5rem 1.5rem;
+}
+.dd-row {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.dd-note {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--dd-quiet);
+}
+.dd-note:empty {
+	display: none;
+}
+
+/* Icon trigger: two order rows with the menu button at the end. */
+.dd-mini-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 1fr auto auto;
+	align-items: center;
+	padding: 0.5rem 0.6rem 0.5rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	& strong {
+		margin-right: 0.3rem;
+		color: var(--basalt-copy);
+	}
+}
+.dd-mini-row-total {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Context menu: the rows that answer a right-click. */
+.dd-ctx {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dd-ctx-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 4.2rem minmax(0, 1fr) auto 4.5rem;
+	align-items: center;
+	padding: 0.65rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: context-menu;
+	user-select: none;
+	transition:
+		border-color 130ms ease,
+		background-color 130ms ease;
+
+	&:hover,
+	&.is-target {
+		border-color: color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.dd-ctx-num {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+}
+.dd-ctx-who {
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.dd-ctx-status {
+	font-size: 0.75rem;
+	color: var(--dd-quiet);
+}
+.dd-ctx-total {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+@media (max-width: 479.98px) {
+	.dd-ctx-row {
+		grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+	}
+	.dd-ctx-status {
+		display: none;
+	}
+}
+
+/* Headers and dividers: the signed-in line at the top of the menu. */
+.dd-signed {
+	font-size: 0.8rem;
+}
+.dd-signed strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Active and disabled items: the "Soon" tag on the item you can't pick. */
+.dd-soon {
+	margin-left: auto;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.67rem;
+	font-weight: 600;
+}
+
+/* Confirm item: the product line beside the menu button. */
+.dd-product {
+	font-size: 0.875rem;
+	color: var(--dd-quiet);
+}
+.dd-product strong {
+	margin-right: 0.3rem;
+	color: var(--basalt-copy);
+}
+
+/* Checkbox items: plain form checks inside the menu. */
+.basalt-stage .dd-checks {
+	padding: 0.5rem 0.9rem;
+}
+.dd-checks {
+	& .form-check {
+		margin: 0.3rem 0;
+	}
+	& .form-check-label {
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* Form in menu: the discount code form and its answer line. */
+.basalt-stage .dropdown-menu.dd-form {
+	width: 17rem;
+	padding: 1rem;
+}
+.dd-form {
+	& .form-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+	}
+	& .form-text {
+		color: var(--dd-quiet);
+	}
+	& .form-text.is-good {
+		color: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	}
+}
+
+/* Filter panel: the type pills and the from-to price pair. */
+.dd-pills {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.dd-price {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.dd-price-to {
+	font-size: 0.8rem;
+	color: var(--dd-quiet);
+}
+
+/* Searchable menu: the button that names the chosen packer. */
+.dd-assign {
+	gap: 0.6rem;
+}
+.dd-assign strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+/* Command menu: a side column with the dropdown launcher and the
+   "try" chips, and the inline menu beside it from the large width. */
+.dd-command-demo {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	& .dd-note {
+		margin-top: 0.5rem;
+	}
+}
+@media (min-width: 992px) {
+	.dd-command-demo {
+		gap: 2rem;
+		grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+	}
+}
+.dd-command-demo-side {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.dd-label {
+	margin: 0.5rem 0 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--dd-quiet);
+}
+.dd-label:first-child {
+	margin-top: 0;
+}
+.basalt-stage .dd-launch {
+	--bs-btn-font-weight: 400;
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	justify-content: flex-start;
+	min-width: 15rem;
+	color: var(--dd-quiet);
+}
+.dd-launch span {
+	flex: 1 1 auto;
+	text-align: left;
+}
+.dd-launch-kbd,
+.dd-try-btn {
+	font:
+		600 0.71rem/1.2 "Chivo Mono",
+		monospace;
+}
+.dd-launch-kbd {
+	padding: 0.1rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge-strong);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+	box-shadow: none;
+}
+.dd-try {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.dd-try-btn {
+	padding: 0.3rem 0.6rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The snippet closes every card: a disclosure line, then the code
+   with its copy button pinned in the corner. */
+.dd-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.dd-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.dd-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* Nothing moves for people who asked for less motion, and the chips
+   and snippets are left off the printed page. */
+@media (prefers-reduced-motion: reduce) {
+	.dd-chip,
+	.dd-code summary .bi,
+	.dd-ctx-row {
+		transition: none;
+	}
+}
+@media print {
+	.dd-filter,
+	.dd-code {
+		display: none;
+	}
+	.dd-card.is-hidden {
+		display: block;
+	}
+}

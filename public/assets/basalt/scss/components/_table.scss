@@ -1,0 +1,38 @@
+/* The ledger table borrows the card's surface instead of painting its own,
+   and a hovered row picks up the wash tone. */
+.basalt-ledger {
+	--bs-table-bg: transparent;
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-color: var(--basalt-copy);
+	--bs-table-color-state: var(--basalt-copy);
+
+	/* A hairline runs under every cell, header and body alike. */
+	thead th,
+	tbody td {
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+
+	/* Column labels are small, spaced capitals in the muted ink. */
+	thead th {
+		padding: 0.625rem 0.75rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--basalt-copy-muted);
+		background: transparent;
+	}
+
+	tbody {
+		td {
+			padding: 0.875rem 0.75rem;
+			font-size: 0.875rem;
+			vertical-align: middle;
+		}
+
+		/* The card edge already closes the table, so the last row drops its rule. */
+		tr:last-child td {
+			border-bottom: 0;
+		}
+	}
+}

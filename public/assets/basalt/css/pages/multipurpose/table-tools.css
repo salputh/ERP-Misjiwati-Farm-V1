@@ -1,0 +1,1346 @@
+/*
+ * Advanced tables (table-tools.html). Every class here starts with .tadv-.
+ *
+ * The seven tables are ordinary Bootstrap .table markup. This file feeds the
+ * palette into Bootstrap's --bs-table-* variables and supplies the parts
+ * Bootstrap has no class for: sort buttons, editable cells, group rows, a
+ * pinned first column and the stacked layouts narrow cards fall back to.
+ */
+
+.tadv-page {
+	/* Small gray text leans toward the body color so it keeps 4.5:1 even on
+     the lighter palettes. */
+	--tadv-quiet: color-mix(in srgb, var(--basalt-copy-muted) 78%, var(--basalt-copy));
+	--tadv-line: var(--basalt-edge);
+}
+
+/* Filled buttons use the palette's own on-fill text color, because white is
+   unreadable on the pale primaries of dark mode. */
+.tadv-page .btn-primary {
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-active-color: var(--basalt-on-hue);
+	--bs-btn-disabled-color: var(--basalt-on-hue);
+	--bs-btn-disabled-bg: var(--basalt-hue);
+	--bs-btn-disabled-border-color: var(--basalt-hue);
+}
+.tadv-page .btn:disabled {
+	opacity: 0.55;
+}
+/* Light mode mixes in some of the deep shade, which lifts white text past
+   4.5:1 on the few palettes (Verdant, Pastel Pop) that fall just short. */
+:root:not([data-bs-theme="dark"]) .tadv-page .btn-primary {
+	--bs-btn-bg: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-hue-deep));
+	--bs-btn-border-color: var(--bs-btn-bg);
+	--bs-btn-disabled-bg: var(--bs-btn-bg);
+	--bs-btn-disabled-border-color: var(--bs-btn-bg);
+}
+/* Bootstrap fades disabled buttons and gives outline ones a fixed gray, and
+   both land under 4.5:1. A readable muted label on a faint fill still says
+   "not now" in every palette; the other table pages share this rule. */
+:root .tadv-page .btn:disabled,
+:root .tadv-page .btn.disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--bs-btn-disabled-bg: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	--bs-btn-disabled-border-color: var(--basalt-edge);
+	opacity: 1;
+}
+
+/* The kind chips run in one row with the table count on its own line below. */
+.tadv-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+.tadv-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.tadv-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.tadv-chips .tadv-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.tadv-chips-small .tadv-chip {
+	padding: 0.3rem 0.75rem;
+	font-size: 0.77rem;
+}
+.tadv-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--tadv-quiet);
+}
+
+/* Cards span the full twelve columns until 1200px, where they pair up. */
+.tadv-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.tadv-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.tadv-card.is-hidden {
+	display: none;
+}
+@media (min-width: 1200px) {
+	.tadv-card {
+		grid-column: span 6;
+	}
+	.tadv-card-full,
+	.tadv-grid.is-filtered .tadv-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* The card body sets the inset that unframed tables reach back across. */
+.tadv-card.basalt-box .card-body {
+	--tadv-inset: 1.75rem;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--tadv-inset);
+}
+@media (max-width: 575.98px) {
+	.tadv-card.basalt-box .card-body {
+		--tadv-inset: 1.25rem;
+	}
+}
+/* The kind label follows the title in the source, so the title is heard
+   first, yet it shows above it and never squeezes it. */
+.tadv-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.tadv-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tadv-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tadv-quiet);
+}
+.tadv-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--tadv-quiet);
+}
+
+/* Toolbars wrap freely; on a phone the search and selects share full rows. */
+.tadv-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+
+	& .form-check-label {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.tadv-toolbar-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--tadv-quiet);
+}
+.tadv-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--tadv-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.tadv-select {
+	width: auto;
+	min-width: 9rem;
+}
+@media (max-width: 575.98px) {
+	.tadv-search {
+		flex: 1 1 100%;
+		max-width: none;
+	}
+	.tadv-toolbar .tadv-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+}
+.tadv-page .form-control,
+.tadv-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.tadv-page .form-control:focus,
+.tadv-page .form-select:focus-visible {
+	border-color: var(--basalt-hue);
+}
+.tadv-page .form-control::placeholder {
+	color: var(--tadv-quiet);
+	opacity: 1;
+}
+
+/* The selection bar appears over the order grid once any row is checked. */
+.tadv-bulk {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+	padding: 0.6rem 0.6rem 0.6rem 1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.tadv-bulk-text {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tadv-bulk-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Scrollers: an unframed table bleeds to the card edges while its outer
+   cells keep the inset, so the first column lines up with the title. */
+.tadv-scroll {
+	position: relative;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.tadv-scroll:not(.tadv-scroll-tall) {
+	margin-inline: calc(-1 * var(--tadv-inset));
+}
+.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > .tadv-table > :not(caption) > * > :first-child {
+	padding-left: var(--tadv-inset);
+}
+.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > .tadv-table > :not(caption) > * > :last-child {
+	padding-right: var(--tadv-inset);
+}
+/* A table with its own scroll gets a frame so its edge reads as an edge. */
+.tadv-scroll-tall {
+	border: 1px solid var(--tadv-line);
+	border-radius: 10px;
+}
+/* From 992px the tall list grows with the page rather than scrolling in a
+   box, so its header can stick under the top bar; only narrow screens,
+   where the columns cannot fit, clip it sideways. */
+@media (min-width: 992px) {
+	.tadv-scroll-tall {
+		overflow: visible;
+	}
+	.tadv-scroll-tall > .tadv-table-sticky > thead {
+		top: var(--tadv-top, var(--basalt-header-h, 72px));
+	}
+	.tadv-scroll-tall > .tadv-table-sticky > thead > tr:first-child > :first-child {
+		border-top-left-radius: 10px;
+	}
+	.tadv-scroll-tall > .tadv-table-sticky > thead > tr:first-child > :last-child {
+		border-top-right-radius: 10px;
+	}
+}
+.tadv-more {
+	display: flex;
+	justify-content: center;
+	padding-top: 1rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Each table maps the palette onto Bootstrap's own table variables. */
+.tadv-page .tadv-table {
+	--bs-table-bg: var(--basalt-plane);
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--tadv-line);
+	--bs-table-striped-bg: color-mix(in srgb, var(--basalt-copy) 4%, transparent);
+	--bs-table-striped-color: var(--basalt-copy-body);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	--bs-table-active-bg: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	--bs-table-active-color: var(--basalt-copy);
+	margin: 0;
+	font-size: 0.875rem;
+}
+.tadv-page .tadv-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.75rem;
+}
+.tadv-page .tadv-table > tbody > tr:last-child > *,
+.tadv-page .tadv-table > tbody:last-of-type > tr:last-child > *,
+.tadv-page .tadv-table > tfoot > tr > * {
+	border-bottom-width: 0;
+}
+.tadv-page .tadv-table.table-sm > :not(caption) > * > * {
+	padding: 0.4rem 0.6rem;
+}
+
+/* Column labels are short, muted and uppercase, over a firmer rule. */
+.tadv-page .tadv-table > thead > tr > th {
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--tadv-quiet);
+}
+.tadv-table strong,
+.tadv-table .tadv-strong {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.tadv-table .tadv-sub {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--tadv-quiet);
+}
+.tadv-num {
+	white-space: nowrap;
+}
+.tadv-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.tadv-check {
+	width: 2.5rem;
+}
+.tadv-page .tadv-table .form-check-input {
+	margin: 0;
+	cursor: pointer;
+}
+/* A checkbox edge needs 3:1 on the card to read as a control; checked and
+   half-checked boxes take the palette color. */
+.tadv-page .form-check-input {
+	border-color: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+}
+.tadv-page .form-check-input:checked,
+.tadv-page .form-check-input:indeterminate {
+	border-color: var(--basalt-hue);
+	background-color: var(--basalt-hue);
+}
+
+/* A sort button fills its header cell and looks like the label itself. */
+.tadv-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .bi {
+		font-size: 0.7rem;
+		opacity: 0.5;
+	}
+}
+th[aria-sort="ascending"] .tadv-sort,
+th[aria-sort="descending"] .tadv-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort="ascending"] .tadv-sort .bi,
+th[aria-sort="descending"] .tadv-sort .bi {
+	opacity: 1;
+}
+/* Over a right-aligned column the arrow goes first, so the label ends where the figures do. */
+.text-end > .tadv-sort {
+	flex-direction: row-reverse;
+}
+
+/* A filter that matches nothing leaves one centered message row. */
+.tadv-empty {
+	padding: 2.5rem 1rem;
+	text-align: center;
+	color: var(--tadv-quiet);
+
+	& .btn {
+		margin-top: 0.75rem;
+	}
+}
+
+/* A status pill is a soft tint of its tone with a dot; the label mixes the
+   tone into the body text so it stays legible on the tint in any palette. */
+.tadv-pill {
+	--tadv-tone: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--tadv-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tadv-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--tadv-tone);
+	}
+}
+.tadv-pill-ok {
+	--tadv-tone: var(--basalt-success);
+}
+.tadv-pill-wait {
+	--tadv-tone: var(--basalt-warning);
+}
+.tadv-pill-bad {
+	--tadv-tone: var(--basalt-danger);
+}
+.tadv-pill-info {
+	--tadv-tone: var(--basalt-flare);
+}
+.tadv-pill-quiet {
+	--tadv-tone: var(--basalt-copy-muted);
+}
+
+/* Under the order grid: rows per page and the range on one side, the pager on the other. */
+.tadv-pager {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+}
+.tadv-pager-info {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.tadv-pager-size {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	& .form-select {
+		width: auto;
+		min-width: 4.5rem;
+	}
+}
+.tadv-pager-label {
+	margin: 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--tadv-quiet);
+}
+
+/* Page buttons are bordered squares with chevrons at either end; the
+   current page fills with the text color, like a pressed chip. */
+.tadv-page .pagination {
+	--bs-pagination-color: var(--basalt-copy-body);
+	--bs-pagination-bg: var(--basalt-plane);
+	--bs-pagination-border-color: var(--basalt-edge-strong);
+	--bs-pagination-hover-color: var(--basalt-copy);
+	--bs-pagination-hover-bg: var(--basalt-wash);
+	--bs-pagination-hover-border-color: var(--basalt-edge-strong);
+	--bs-pagination-focus-color: var(--basalt-copy);
+	--bs-pagination-focus-bg: var(--basalt-wash);
+	--bs-pagination-focus-box-shadow: 0 0 0 0.2rem var(--basalt-hue-border);
+	--bs-pagination-active-color: var(--basalt-plane);
+	--bs-pagination-active-bg: var(--basalt-copy);
+	--bs-pagination-active-border-color: var(--basalt-copy);
+	--bs-pagination-disabled-color: var(--tadv-quiet);
+	--bs-pagination-disabled-bg: var(--basalt-plane);
+	--bs-pagination-disabled-border-color: var(--basalt-edge);
+	--bs-pagination-border-radius: 8px;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& .page-link {
+		min-width: 2rem;
+		margin-left: 0;
+		border-radius: 8px;
+		font-weight: 600;
+		text-align: center;
+		color: var(--bs-pagination-color);
+	}
+	& .page-link:hover {
+		color: var(--bs-pagination-hover-color);
+	}
+	& .active > .page-link {
+		border-color: var(--bs-pagination-active-border-color);
+		color: var(--bs-pagination-active-color);
+		background-color: var(--bs-pagination-active-bg);
+	}
+	& .disabled > .page-link {
+		color: var(--bs-pagination-disabled-color);
+	}
+	/* The ellipsis between page runs is text, not a button. */
+	& .tadv-gap > .page-link {
+		border-color: transparent;
+		background: transparent;
+	}
+}
+
+/* Customer directory. The header is pinned with separate borders, because
+   collapsed borders let scrolling rows show through its seams; below 48rem
+   the table scrolls sideways instead of squeezing its text columns. */
+.tadv-table-sticky {
+	border-collapse: separate;
+	border-spacing: 0;
+}
+.tadv-table-sticky > thead {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background-color: var(--bs-table-bg);
+	box-shadow:
+		0 1px 0 var(--basalt-edge-strong),
+		0 12px 24px -18px var(--basalt-scrim);
+}
+.tadv-table-sticky > thead > tr > * {
+	background-color: var(--bs-table-bg);
+}
+.tadv-page .tadv-table > thead > .tadv-filters > td {
+	--bs-table-bg: var(--basalt-plane);
+	min-width: 7.5rem;
+	padding: 0.6rem 0.5rem;
+}
+.tadv-page .tadv-table > thead > .tadv-filters > td:first-child {
+	min-width: 12rem;
+	padding-left: 0.75rem;
+}
+.tadv-page .tadv-table > thead > .tadv-filters > td:last-child {
+	padding-right: 0.75rem;
+}
+[data-cust-grid] {
+	min-width: 48rem;
+}
+
+/* Editable cells look like plain values until hovered or focused. */
+.tadv-cell {
+	position: relative;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: -0.3rem -0.55rem;
+	padding: 0.3rem 0.5rem;
+	border: 1px dashed transparent;
+	border-radius: 8px;
+	font: inherit;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: text;
+
+	/* The pencil hangs outside the value, so values stay flush with their
+     column edge like any other cell. */
+	& .bi {
+		position: absolute;
+		left: calc(100% - 0.3rem);
+		font-size: 0.71rem;
+		color: var(--tadv-quiet);
+		opacity: 0;
+		transition: opacity 110ms ease;
+	}
+	&:hover,
+	&:focus-visible {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+	&:hover .bi,
+	&:focus-visible .bi {
+		opacity: 1;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.text-end .tadv-cell .bi {
+	right: calc(100% - 0.3rem);
+	left: auto;
+}
+.text-end .tadv-cell {
+	flex-direction: row-reverse;
+}
+/* An edited value that has not been saved yet carries a tint and a dot. */
+.tadv-cell.is-dirty {
+	border-color: color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+
+	&::after {
+		content: "";
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--basalt-hue);
+	}
+}
+.tadv-edit {
+	position: relative;
+	display: inline-block;
+
+	& .form-select {
+		width: 7.5rem;
+	}
+}
+.tadv-money {
+	flex-wrap: nowrap;
+	width: 7.5rem;
+
+	& .input-group-text {
+		padding-left: 0.5rem;
+		padding-right: 0.4rem;
+		color: var(--tadv-quiet);
+	}
+	& .form-control {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+}
+.tadv-edit .basalt-stepper {
+	gap: 0;
+	vertical-align: middle;
+}
+.tadv-edit .basalt-stepper-input {
+	width: 2.25rem;
+}
+/* Phone cells get a slimmer number box; stock never runs past three digits. */
+@media (max-width: 575.98px) {
+	.tadv-page td .basalt-stepper {
+		gap: 0;
+	}
+	.tadv-page td .basalt-stepper-input {
+		width: 2rem;
+	}
+}
+.tadv-page input[type="number"] {
+	appearance: textfield;
+}
+.tadv-page input[type="number"]::-webkit-outer-spin-button,
+.tadv-page input[type="number"]::-webkit-inner-spin-button {
+	margin: 0;
+	-webkit-appearance: none;
+}
+.tadv-edit .invalid-feedback {
+	position: absolute;
+	right: 0;
+	font-size: 0.71rem;
+	white-space: nowrap;
+}
+.tadv-low {
+	margin-left: 0.4rem;
+}
+
+/* The save bar sits under the editable tables: a status line and its buttons. */
+.tadv-savebar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+}
+.tadv-savebar-text {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--tadv-quiet);
+
+	&.is-busy {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.tadv-savebar-actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+/* Ranked rows show a grip, dim while dragged and flash where they land. */
+.tadv-rank-pos {
+	width: 3rem;
+}
+.tadv-rank-row .tadv-rank-num {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.tadv-prod {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.tadv-handle {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 1rem;
+	color: var(--tadv-quiet);
+	cursor: grab;
+}
+.tadv-rank-row.is-dragging > * {
+	opacity: 0.45;
+}
+.tadv-rank-row.is-over > * {
+	box-shadow: inset 0 2px 0 var(--basalt-hue);
+}
+.tadv-rank-row.is-moved > * {
+	animation: tadv-flash 900ms ease;
+}
+@keyframes tadv-flash {
+	from {
+		background-color: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+	}
+}
+.tadv-move {
+	display: inline-flex;
+	gap: 0.3rem;
+}
+.tadv-icon-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover:not(:disabled) {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&:disabled {
+		opacity: 0.35;
+		cursor: default;
+	}
+}
+
+/* A subscription's chevron turns as its detail row opens on a canvas tint. */
+.tadv-toggle .bi {
+	transition: transform 170ms ease;
+}
+.tadv-toggle[aria-expanded="true"] .bi {
+	transform: rotate(90deg);
+}
+.tadv-table-expand > tbody > tr.is-open > * {
+	border-bottom-width: 0;
+}
+.tadv-page .tadv-table > tbody > .tadv-detail > td {
+	--bs-table-bg: var(--basalt-canvas);
+	padding: 1.25rem 1.25rem 1.5rem 3.75rem;
+}
+.tadv-detail-grid {
+	display: grid;
+	gap: 1.25rem 1.5rem;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+.tadv-detail-label {
+	margin: 0 0 0.3rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--tadv-quiet);
+}
+.tadv-detail-value {
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+}
+.tadv-detail-list {
+	margin: 0;
+	padding: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.1rem 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.tadv-page .tadv-table > tbody > .tadv-detail > td {
+		padding-left: 1.25rem;
+	}
+}
+
+/* Group rows sit on the canvas tint, and the totals close the table with a heavy rule. */
+.tadv-page .tadv-table > tbody > .tadv-group > * {
+	--bs-table-bg: var(--basalt-canvas);
+	padding-top: 0.7rem;
+	padding-bottom: 0.7rem;
+}
+.tadv-group-btn {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 650;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+	&[aria-expanded="true"] .bi {
+		transform: rotate(90deg);
+	}
+}
+.tadv-group-meta {
+	font-weight: 500;
+	font-size: 0.8rem;
+	color: var(--tadv-quiet);
+}
+.tadv-group-total {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.tadv-page .tadv-table > tfoot > tr > * {
+	border-top: 2px solid var(--basalt-edge-strong);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.tadv-page .tadv-table > tfoot > tr + tr > * {
+	padding-top: 0;
+	border-top-width: 0;
+	font-weight: 500;
+	color: var(--tadv-quiet);
+}
+
+/* The catalog's column menu, plus a product column that stays put while the rest scroll. */
+.tadv-colmenu {
+	min-width: 13rem;
+	padding: 0.5rem;
+
+	& .form-check {
+		margin: 0;
+		padding: 0.4rem 0.6rem 0.4rem 2.1rem;
+		border-radius: 6px;
+	}
+	& .form-check:hover {
+		background: var(--basalt-wash);
+	}
+	& .form-check-label {
+		font-size: 0.85rem;
+		color: var(--basalt-copy);
+		cursor: pointer;
+	}
+}
+.tadv-table-pin {
+	min-width: 52rem;
+}
+.tadv-table-pin > * > tr > :first-child {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	box-shadow:
+		inset -1px 0 0 var(--tadv-line),
+		inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg)));
+}
+.tadv-page .tadv-table-pin > thead > tr > :first-child {
+	box-shadow: inset -1px 0 0 var(--tadv-line);
+}
+.tadv-stars {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	& .bi {
+		margin-right: 0.2rem;
+		font-size: 0.75rem;
+		color: var(--basalt-warning);
+	}
+}
+
+/* Each card ends with a folded snippet showing how it is built. */
+.tadv-code {
+	margin-top: 1.5rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:hover {
+		color: var(--basalt-copy);
+	}
+	& summary:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* Two narrow tables let their headers and product names wrap, so each fits a half-width card. */
+.tadv-page [data-prices-table] > thead > tr > th,
+.tadv-page [data-rank-table] > thead > tr > th {
+	white-space: normal;
+}
+[data-prices-table] .tadv-strong,
+[data-rank-table] .tadv-strong {
+	white-space: normal;
+}
+
+/*
+ * Stacked records. When a card is too narrow for every column, each order
+ * and subscription turns into a small card of its own rather than a table to
+ * scroll sideways: the name and status first, the main content next, then a
+ * muted line of facts. Fixed tracks keep badges and dates aligned from one
+ * record to the next, and the card body acts as the size container.
+ */
+.tadv-card .card-body {
+	container: tadv-card / inline-size;
+}
+@container tadv-card (max-width: 46rem) {
+	.tadv-page [data-orders-table] {
+		--bs-table-hover-bg: transparent;
+	}
+	[data-orders-table],
+	[data-orders-table] > thead,
+	[data-orders-table] > tbody {
+		display: block;
+	}
+	.tadv-page [data-orders-table] > thead > tr {
+		display: flex;
+		gap: 0.5rem 1rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: 0.65rem var(--tadv-inset);
+		border-bottom: 1px solid var(--basalt-edge-strong);
+	}
+	.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > [data-orders-table] > thead > tr > :nth-child(n) {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+	.tadv-page [data-orders-table] > thead > tr > :nth-child(4) {
+		display: none;
+	}
+	.tadv-page [data-orders-table] > tbody > tr {
+		display: grid;
+		gap: 0.3rem 0.75rem;
+		grid-template-columns: 1.75rem minmax(0, 1fr) 7.5rem;
+		grid-template-areas: "chk who status" ". items total" ". id date";
+		align-items: center;
+		padding: 1rem var(--tadv-inset);
+		border-bottom: 1px solid var(--tadv-line);
+	}
+	.tadv-page [data-orders-table] > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > [data-orders-table] > tbody > tr > :nth-child(n) {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	[data-orders-table] > tbody > tr > :nth-child(1) {
+		grid-area: chk;
+	}
+	[data-orders-table] > tbody > tr > :nth-child(2) {
+		grid-area: id;
+		font-size: 0.8rem;
+		color: var(--tadv-quiet);
+	}
+	[data-orders-table] > tbody > tr > :nth-child(3) {
+		grid-area: who;
+	}
+	[data-orders-table] > tbody > tr > :nth-child(4) {
+		grid-area: items;
+	}
+	[data-orders-table] > tbody > tr > :nth-child(5) {
+		grid-area: date;
+		font-size: 0.8rem;
+		color: var(--tadv-quiet);
+	}
+	[data-orders-table] > tbody > tr > :nth-child(6) {
+		grid-area: total;
+	}
+	[data-orders-table] > tbody > tr > :nth-child(7) {
+		grid-area: status;
+	}
+	[data-orders-table] > tbody > tr > .tadv-empty {
+		grid-column: 1 / -1;
+	}
+}
+@container tadv-card (max-width: 38rem) {
+	.tadv-page [data-subs-table] {
+		--bs-table-hover-bg: transparent;
+	}
+	[data-subs-table],
+	[data-subs-table] > tbody {
+		display: block;
+	}
+	[data-subs-table] > thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.tadv-page [data-subs-table] > tbody > tr:not(.tadv-detail) {
+		display: grid;
+		gap: 0.3rem 0.75rem;
+		grid-template-columns: 2.25rem minmax(0, 1fr) 6.5rem;
+		grid-template-areas: "tog who status" ". box next";
+		align-items: center;
+		padding: 1rem var(--tadv-inset);
+		border-bottom: 1px solid var(--tadv-line);
+	}
+	.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > [data-subs-table] > tbody > tr > :nth-child(n) {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	[data-subs-table] > tbody > tr:not(.tadv-detail) > :nth-child(1) {
+		grid-area: tog;
+	}
+	[data-subs-table] > tbody > tr:not(.tadv-detail) > :nth-child(2) {
+		grid-area: who;
+	}
+	[data-subs-table] > tbody > tr:not(.tadv-detail) > :nth-child(3) {
+		grid-area: box;
+	}
+	[data-subs-table] > tbody > tr:not(.tadv-detail) > :nth-child(4) {
+		grid-area: next;
+		font-size: 0.8rem;
+		color: var(--tadv-quiet);
+	}
+	[data-subs-table] > tbody > tr:not(.tadv-detail) > :nth-child(5) {
+		grid-area: status;
+	}
+	.tadv-page [data-subs-table] > tbody > tr.tadv-detail {
+		display: block;
+		border-bottom: 1px solid var(--tadv-line);
+	}
+	.tadv-page [data-subs-table] > tbody > tr.tadv-detail[hidden] {
+		display: none;
+	}
+	.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > [data-subs-table] > tbody > tr.tadv-detail > td {
+		padding: 0 var(--tadv-inset) 1rem calc(var(--tadv-inset) + 3rem);
+	}
+}
+@container tadv-card (max-width: 46rem) {
+	.tadv-page [data-orders-table] > thead > tr > .text-end > .tadv-sort {
+		flex-direction: row;
+	}
+}
+/* Grouped invoices become short cards under their group, and the group and
+   total rows turn into plain label-and-amount lines. */
+@container tadv-card (max-width: 34rem) {
+	[data-whs-table],
+	[data-whs-table] > tbody,
+	[data-whs-table] > tfoot {
+		display: block;
+	}
+	[data-whs-table] > thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.tadv-page [data-whs-table] > tbody > tr:not([hidden]),
+	.tadv-page [data-whs-table] > tfoot > tr {
+		display: flex;
+		align-items: center;
+	}
+	.tadv-page [data-whs-table] > tbody > .tadv-group > :first-child,
+	.tadv-page [data-whs-table] > tfoot > tr > :first-child {
+		flex: 1 1 auto;
+	}
+	.tadv-page [data-whs-table] > tbody > tr:not([hidden]):not(.tadv-group) {
+		display: grid;
+		gap: 0.3rem 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr) 6.5rem;
+		grid-template-areas: "who who status" "id due amount";
+		padding: 1rem var(--tadv-inset);
+		border-bottom: 1px solid var(--tadv-line);
+	}
+	.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > [data-whs-table] > tbody > tr:not(.tadv-group) > :nth-child(n) {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	[data-whs-table] > tbody > tr:not(.tadv-group) > :nth-child(1) {
+		grid-area: id;
+		font-size: 0.8rem;
+		color: var(--tadv-quiet);
+	}
+	[data-whs-table] > tbody > tr:not(.tadv-group) > :nth-child(2) {
+		grid-area: who;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	[data-whs-table] > tbody > tr:not(.tadv-group) > :nth-child(3) {
+		grid-area: due;
+		font-size: 0.8rem;
+		color: var(--tadv-quiet);
+	}
+	[data-whs-table] > tbody > tr:not(.tadv-group) > :nth-child(3)::before {
+		content: "Due ";
+	}
+	[data-whs-table] > tbody > tr:not(.tadv-group) > :nth-child(4) {
+		grid-area: status;
+	}
+	[data-whs-table] > tbody > tr:not(.tadv-group) > :nth-child(5) {
+		grid-area: amount;
+	}
+}
+/* On a phone the price list tucks the category under the product name, so
+   price and stock keep labeled columns of their own. */
+@container tadv-card (max-width: 23rem) {
+	[data-prices-table],
+	[data-prices-table] > thead,
+	[data-prices-table] > tbody {
+		display: block;
+	}
+	.tadv-page [data-prices-table] > thead > tr,
+	.tadv-page [data-prices-table] > tbody > tr {
+		display: grid;
+		column-gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr) 5.5rem 4.5rem;
+		grid-template-areas: "name price stock" "cat price stock";
+		padding: 0 var(--tadv-inset);
+		border-bottom: 1px solid var(--tadv-line);
+	}
+	.tadv-page [data-prices-table] > thead > tr {
+		border-bottom-color: var(--basalt-edge-strong);
+	}
+	.tadv-page [data-prices-table] > tbody > tr {
+		row-gap: 0.3rem;
+		padding-top: 1rem;
+		padding-bottom: 1rem;
+	}
+	.tadv-page [data-prices-table] > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > [data-prices-table] > * > tr > :nth-child(n) {
+		display: block;
+		width: auto;
+		padding-left: 0;
+		padding-right: 0;
+		border: 0;
+	}
+	.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > [data-prices-table] > tbody > tr > :nth-child(n) {
+		padding: 0;
+	}
+	[data-prices-table] > * > tr > :nth-child(1) {
+		grid-area: name;
+		min-width: 0;
+	}
+	.tadv-page .tadv-scroll:not(.tadv-scroll-tall) > [data-prices-table] > thead > tr > :nth-child(2) {
+		display: none;
+	}
+	[data-prices-table] > tbody > tr > :nth-child(2) {
+		grid-area: cat;
+	}
+	[data-prices-table] > * > tr > :nth-child(3) {
+		grid-area: price;
+	}
+	[data-prices-table] > * > tr > :nth-child(4) {
+		grid-area: stock;
+	}
+	[data-prices-table] .tadv-strong {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+/* Below desktop the directory drops City and tightens its cells, and a card
+   under 40rem drops the last-order column too. That keeps it inside its card
+   on tablets and from 992px up, where it grows with the page. */
+@media (max-width: 1199.98px) {
+	[data-cust-grid] {
+		min-width: 34rem;
+	}
+	.tadv-page [data-cust-grid] > * > tr > :nth-child(3) {
+		display: none;
+	}
+	.tadv-page [data-cust-grid] > :not(caption) > * > * {
+		padding-inline: 0.5rem;
+	}
+	.tadv-page [data-cust-grid] > thead > .tadv-filters > td:first-child {
+		min-width: 0;
+	}
+	.tadv-page [data-cust-grid] > thead > .tadv-filters > td:nth-child(4) {
+		min-width: 5.75rem;
+	}
+}
+@container tadv-card (max-width: 40rem) {
+	.tadv-page [data-cust-grid] > * > tr > :nth-child(6) {
+		display: none;
+	}
+}
+
+/* On tablets and phones the catalog scrolls sideways, and its right edge
+   fades while columns wait past it, so the cut reads as "more this way". */
+@media screen and (max-width: 1199.98px) {
+	.tadv-scroll.is-more-end {
+		-webkit-mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+		mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tadv-chip,
+	.tadv-code summary .bi,
+	.tadv-toggle .bi,
+	.tadv-group-btn .bi,
+	.tadv-cell .bi {
+		transition: none;
+	}
+	.tadv-rank-row.is-moved > * {
+		animation: none;
+	}
+}
+@media print {
+	.tadv-filter,
+	.tadv-code,
+	.tadv-pager,
+	.tadv-toolbar {
+		display: none;
+	}
+	.tadv-card.is-hidden {
+		display: block;
+	}
+}

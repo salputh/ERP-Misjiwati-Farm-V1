@@ -5,12 +5,12 @@
         <x-breadcrumb judul="Form laporan harian" :jejak="['Produksi', 'Laporan harian', 'Form']" />
 
         @if ($this->kandang->isNotEmpty())
-            <div class="col-12 mb-25">
+            <div class="col-12 mb-4">
                 <x-kartu :judul="$this->tersimpan ? 'Ubah laporan harian' : 'Laporan harian baru'" :subjudul="$this->labelTanggal.' · '.$this->kandang->pluck('kandang.nama')->join(', ')">
                     <x-slot:ekstra>
                         <x-tombol data-bs-toggle="modal" data-bs-target="#modal-form-laporan-harian">{{ $this->tersimpan ? 'Ubah laporan' : 'Isi laporan' }}</x-tombol>
                     </x-slot:ekstra>
-                    <p class="fs-14 color-gray mb-0">Buka form untuk mengisi kematian, afkir, ABW, pakan diberikan, dan pakan masuk pada tanggal ini.</p>
+                    <p class="text-body-secondary mb-0">Buka form untuk mengisi kematian, afkir, ABW, pakan diberikan, dan pakan masuk pada tanggal ini.</p>
                 </x-kartu>
             </div>
         @elseif ($this->periode)
@@ -30,10 +30,10 @@
             {{-- Enter di isian mana pun sama dengan menekan tombol simpan, termasuk konfirmasinya saat mengubah laporan --}}
             <form x-data x-on:submit.prevent="$refs.simpan.click()" novalidate>
                 {{-- Tanggal laporan; mengganti tanggal memuat isian tanggal itu --}}
-                <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-25">
+                <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
                     <x-info>
                         <div>
-                            <span class="d-block color-light fs-12 mb-1">Tanggal laporan</span>
+                            <span class="d-block text-body-secondary small mb-1">Tanggal laporan</span>
                             <x-pilih-tanggal
                                 :nilai="$tanggal"
                                 :min="$this->batas['min']->format('Y-m-d')"
@@ -45,21 +45,21 @@
                         <x-info.butir label="Kandang">{{ $this->kandang->pluck('kandang.nama')->join(', ') }}</x-info.butir>
                     </x-info>
                     @if ($this->tersimpan)
-                        <span class="dm-tag tag-info tag-transparented m-0">Mengubah laporan tersimpan</span>
+                        <span class="badge bg-info-subtle text-info m-0">Mengubah laporan tersimpan</span>
                     @else
-                        <span class="dm-tag tag-success tag-transparented m-0">Laporan baru</span>
+                        <span class="badge bg-success-subtle text-success m-0">Laporan baru</span>
                     @endif
                 </div>
 
                 <div class="row">
                     {{-- Pakan masuk ke farm pada tanggal ini --}}
-                    <div class="col-12 mb-25">
-                        <div class="card card-default card-sm bg-transparent card-bordered">
-                            <div class="card-header">
-                                <h6>Pakan masuk</h6>
-                                <div class="card-extra fs-13 color-light tanpa-kapital">zak yang diterima farm pada tanggal ini</div>
-                            </div>
-                            <div class="card-body pb-0">
+                    <div class="col-12 mb-4">
+                        <section class="card basalt-box db-card bg-transparent">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Pakan masuk</h2></div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">zak yang diterima farm pada tanggal ini</div>
+</header>
                                 <div class="row">
                                     @foreach ($this->jenisPakan as $jenis)
                                         <div class="col-md-4" wire:key="masuk-{{ $jenis->id }}">
@@ -67,19 +67,20 @@
                                         </div>
                                     @endforeach
                                 </div>
-                            </div>
-                        </div>
+                            
+</div>
+</section>
                     </div>
 
                     {{-- Satu kartu bergaris per kandang --}}
                     @foreach ($this->kandang as $satu)
-                        <div @class(['mb-25', 'col-xxl-6' => $this->kandang->count() > 1, 'col-12' => $this->kandang->count() === 1]) wire:key="kandang-{{ $satu->id }}">
-                            <div class="card card-default card-sm bg-transparent card-bordered h-100">
-                                <div class="card-header">
-                                    <h6>{{ $satu->kandang->nama }}</h6>
-                                    <div class="card-extra fs-13 color-light tanpa-kapital">sisa @angka($this->sisaSebelum['k'.$satu->id]) dari @angka($satu->populasi_awal) ekor</div>
-                                </div>
-                                <div class="card-body pb-0">
+                        <div @class(['mb-4', 'col-xxl-6' => $this->kandang->count() > 1, 'col-12' => $this->kandang->count() === 1]) wire:key="kandang-{{ $satu->id }}">
+                            <section class="card basalt-box db-card bg-transparent h-100">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">{{ $satu->kandang->nama }}</h2></div>
+                                    <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">sisa @angka($this->sisaSebelum['k'.$satu->id]) dari @angka($satu->populasi_awal) ekor</div>
+</header>
                                     <div class="row">
                                         <div class="col-md-4">
                                             <x-laporan.isian label="Kematian (ekor)" :model="'isian.k'.$satu->id.'.mati'" />
@@ -92,7 +93,7 @@
                                         </div>
                                     </div>
 
-                                    <span class="d-block fs-14 fw-500 color-dark mb-15">Pakan diberikan</span>
+                                    <span class="d-block fw-medium text-body mb-3">Pakan diberikan</span>
                                     <div class="row">
                                         @foreach ($this->jenisPakan as $jenis)
                                             <div class="col-md-4" wire:key="pakan-{{ $satu->id }}-{{ $jenis->id }}">
@@ -106,32 +107,33 @@
                                         @endisset
                                     </div>
 
-                                    <div class="form-group mb-25">
-                                        <label for="catatan-{{ $satu->id }}" class="il-gray fs-14 fw-500 align-center mb-10">Catatan</label>
+                                    <div class="mb-3 mb-4">
+                                        <label for="catatan-{{ $satu->id }}" class="form-label fw-medium mb-2">Catatan</label>
                                         <textarea
                                             id="catatan-{{ $satu->id }}"
                                             rows="2"
                                             wire:model="isian.k{{ $satu->id }}.catatan"
-                                            @class(['form-control ip-gray radius-xs b-light px-15', 'is-invalid' => $errors->has('isian.k'.$satu->id.'.catatan')])
+                                            @class(['form-control    px-3', 'is-invalid' => $errors->has('isian.k'.$satu->id.'.catatan')])
                                         ></textarea>
                                         @error('isian.k'.$satu->id.'.catatan')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                </div>
-                            </div>
+                                
+</div>
+</section>
                         </div>
                     @endforeach
                 </div>
 
-                <p class="fs-13 color-light mb-25">
+                <p class="small text-body-secondary mb-4">
                     Isian yang dikosongkan dianggap belum dicatat, bukan nol. Data yang disimpan langsung dipakai halaman Laporan harian, Recording harian, serta Pakan dan stok.
                     Konversi pakan ke kg memakai berat per zak pada master tiap jenis pakan.
                 </p>
 
                 {{-- Simpan, batal, hapus --}}
-                <div class="d-flex flex-wrap align-items-center gap-2 border-top pt-20">
-                    <a href="{{ route('laporan.harian', ['periode' => $this->periode->id]) }}" class="btn btn-light btn-outlined btn-sm">Batal</a>
+                <div class="d-flex flex-wrap align-items-center gap-2 border-top pt-3">
+                    <a href="{{ route('laporan.harian', ['periode' => $this->periode->id]) }}" class="btn btn-light btn-sm">Batal</a>
                     @if ($this->tersimpan)
                         <x-tombol x-ref="simpan" wire:key="tombol-simpan-perubahan" data-bs-toggle="modal" data-bs-target="#konfirmasi-simpan-laporan" wire:loading.attr="disabled" wire:target="simpan, hapus">Simpan perubahan</x-tombol>
                     @else
@@ -139,10 +141,10 @@
                     @endif
 
                     @error('kosong')
-                        <span class="color-danger fs-14" role="alert">{{ $message }}</span>
+                        <span class="text-danger" role="alert">{{ $message }}</span>
                     @else
                         @if ($errors->any())
-                            <span class="color-danger fs-14" role="alert">Periksa lagi isian yang ditandai merah ({{ $errors->count() }} isian).</span>
+                            <span class="text-danger" role="alert">Periksa lagi isian yang ditandai merah ({{ $errors->count() }} isian).</span>
                         @endif
                     @enderror
 

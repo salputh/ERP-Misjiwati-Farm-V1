@@ -1,0 +1,1066 @@
+/* Basalt - Refunds page (Sales)
+   Namespaced under .rfd-*
+   The header, cards, drawer, dialog, stepper,
+   status pills and empty states are the shared components from
+   basalt.css; this file lays out the Answer first card, the claim
+   lists, the reasons chart and the drawer's contents. Every color is a --basalt-* token. */
+
+.rfd-page,
+.rfd-drawer,
+.rfd-modal {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--rfd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--rfd-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--rfd-line: var(--basalt-edge);
+}
+
+/* One color per reason or product, from the chart ramp. */
+.rfd-tone-1 {
+	--stp-tone: var(--basalt-series-1);
+}
+.rfd-tone-2 {
+	--stp-tone: var(--basalt-series-2);
+}
+.rfd-tone-3 {
+	--stp-tone: var(--basalt-series-3);
+}
+.rfd-tone-4 {
+	--stp-tone: var(--basalt-series-4);
+}
+.rfd-tone-5 {
+	--stp-tone: var(--basalt-series-5);
+}
+.rfd-tone-6 {
+	--stp-tone: var(--basalt-series-6);
+}
+.rfd-tone-7 {
+	--stp-tone: var(--basalt-series-7);
+}
+.rfd-tone-8 {
+	--stp-tone: var(--basalt-series-8);
+}
+/* Reason pills take a chart color, and some are pale in a few light
+   palettes, so their text leans a little further toward the text color. */
+.basalt-status[class*="rfd-tone-"] {
+	color: color-mix(in srgb, var(--stp-tone) 40%, var(--basalt-copy));
+}
+
+.rfd-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.rfd-card.card[hidden] {
+	display: none;
+}
+
+.rfd-cardhead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.rfd-cardhead > div {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+.rfd-cardhead > .btn {
+	white-space: nowrap;
+}
+.rfd-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rfd-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--rfd-quiet);
+}
+.rfd-cardhead-sub a {
+	font-weight: 600;
+	color: var(--rfd-link);
+}
+
+/* Answer first */
+.rfd-next-body {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: minmax(0, 1fr) 20rem;
+	padding: 0.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.rfd-next-story {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.rfd-next-story .rfd-who {
+	gap: 0.9rem;
+	align-items: center;
+}
+.rfd-next-acct {
+	display: block;
+	width: fit-content;
+	font-size: 1.05rem;
+	font-weight: 700;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.rfd-next-acct:hover {
+	text-decoration: underline;
+}
+
+/* The customer's words, large and easy to read, with a straight inset
+   bar in the color of the reason. */
+.rfd-next-quote {
+	position: relative;
+	margin: 0;
+	padding: 1.1rem 1.35rem 1.1rem 1.6rem;
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--stp-tone) 9%, var(--basalt-plane));
+}
+.rfd-next-quote::before {
+	content: "";
+	position: absolute;
+	top: 0.85rem;
+	bottom: 0.85rem;
+	left: 0.6rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--stp-tone);
+}
+.rfd-next-quote p {
+	margin: 0;
+	font-size: 1.05rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+
+/* What they sent: a tile per file, each on its own soft color. */
+.rfd-shots {
+	display: flex;
+	gap: 0.85rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rfd-shot {
+	width: 9.5rem;
+	min-width: 0;
+}
+.rfd-shot-pic {
+	display: grid;
+	place-items: center;
+	height: 5.75rem;
+	margin-bottom: 0.5rem;
+	border-radius: 12px;
+	font-size: 1.6rem;
+	color: color-mix(in srgb, var(--stp-tone) 62%, var(--basalt-copy));
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--stp-tone) 24%, var(--basalt-plane)),
+		color-mix(in srgb, var(--stp-tone) 8%, var(--basalt-plane))
+	);
+}
+:root[data-basalt-gradients="off"] .rfd-shot-pic {
+	background: color-mix(in srgb, var(--stp-tone) 24%, var(--basalt-plane));
+}
+.rfd-shot-name {
+	display: block;
+	overflow: hidden;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rfd-shot .rfd-sub {
+	margin-top: 0.1rem;
+}
+
+.rfd-next-ask {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	align-self: start;
+	padding: 1.25rem;
+	border: 1px solid var(--rfd-line);
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+}
+.rfd-next-items {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rfd-next-items li {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.rfd-next-sum {
+	margin: 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--rfd-line);
+}
+.rfd-next-amount {
+	display: block;
+	font-size: 1.6rem;
+	font-weight: 750;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+}
+.rfd-next-ask .btn {
+	white-space: nowrap;
+}
+.rfd-empty-top {
+	border-top: 0;
+}
+
+@container (max-width: 820px) {
+	.rfd-next-body {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+@container (max-width: 560px) {
+	.rfd-next-body {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-bottom: var(--basalt-pad-x-narrow);
+	}
+	.rfd-next-ask {
+		padding: 1rem;
+	}
+	.rfd-shots {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.rfd-shot {
+		width: auto;
+	}
+}
+
+/* Toolbar */
+.rfd-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: 0 var(--basalt-pad-x) 1.25rem;
+}
+/* The search stops growing at a comfortable width so the filter stays
+   beside it; on a narrow card each takes a row of its own. */
+.rfd-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 13rem;
+}
+.rfd-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--rfd-quiet);
+	pointer-events: none;
+}
+.rfd-search .form-control {
+	padding-left: 2.4rem;
+}
+.rfd-toolbar-select {
+	flex: 0 0 auto;
+	min-width: 13.5rem;
+}
+
+.rfd-status {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) 1rem;
+	font-size: 0.8rem;
+	color: var(--rfd-quiet);
+}
+.rfd-status[hidden] {
+	display: none;
+}
+
+/* Tables */
+.rfd-table-wrap {
+	border-top: 1px solid var(--rfd-line);
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.rfd-table-wrap[hidden] {
+	display: none;
+}
+.rfd-table {
+	--bs-table-bg: transparent;
+	--bs-table-hover-bg: var(--basalt-wash);
+}
+.rfd-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.75rem;
+	border-color: var(--rfd-line);
+	vertical-align: top;
+	color: var(--basalt-copy);
+}
+.rfd-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.rfd-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+}
+.rfd-table thead th {
+	padding-top: 0.85rem;
+	padding-bottom: 0.85rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--rfd-quiet);
+}
+.rfd-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.rfd-table tbody tr {
+	cursor: pointer;
+}
+.rfd-table tbody tr:hover > * {
+	background: var(--basalt-wash);
+}
+.rfd-table th.rfd-col-amount,
+.rfd-table td.rfd-col-amount {
+	text-align: right;
+	white-space: nowrap;
+}
+.rfd-table td.rfd-col-act {
+	width: 1%;
+}
+.rfd-table td.rfd-col-act .basalt-row-actions {
+	margin-top: -0.3rem;
+}
+.rfd-col-claim,
+.rfd-col-stage,
+.rfd-col-outcome {
+	white-space: nowrap;
+}
+
+.rfd-link {
+	display: block;
+	padding: 0;
+	border: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--rfd-link) 35%, transparent);
+	text-underline-offset: 0.2em;
+	color: var(--rfd-link);
+	background: none;
+	cursor: pointer;
+}
+.rfd-link:hover {
+	text-decoration-color: currentColor;
+	color: var(--basalt-copy);
+}
+.rfd-link:focus {
+	outline: none;
+}
+.rfd-link:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+.rfd-who {
+	display: flex;
+	gap: 0.65rem;
+	align-items: flex-start;
+	min-width: 0;
+}
+.rfd-who > span:last-child {
+	min-width: 0;
+}
+.rfd-strong {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+a.rfd-acct {
+	width: fit-content;
+	text-decoration: none;
+}
+a.rfd-acct:hover {
+	text-decoration: underline;
+}
+.rfd-line {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.rfd-sub {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--rfd-quiet);
+}
+.rfd-sub-warning {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+.rfd-sub-danger {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+a.rfd-order {
+	width: fit-content;
+	text-decoration: none;
+}
+a.rfd-order:hover {
+	text-decoration: underline;
+	color: var(--basalt-copy);
+}
+.rfd-reason {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.rfd-dot {
+	flex-shrink: 0;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--stp-tone);
+}
+
+/* A product's tile: its icon on a pale wash of its own ramp color. */
+.rfd-tile {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--stp-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 16%, var(--basalt-plane));
+}
+.rfd-items-cell {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+}
+.rfd-items-cell > span:last-child {
+	min-width: 0;
+}
+.rfd-money {
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rfd-money-muted {
+	text-decoration: line-through;
+	color: var(--rfd-quiet);
+}
+
+.rfd-more {
+	display: flex;
+	justify-content: center;
+	margin-top: auto;
+	padding: 1rem var(--basalt-pad-x) 1.25rem;
+	border-top: 1px solid var(--rfd-line);
+}
+.rfd-more[hidden] {
+	display: none;
+}
+.rfd-more .btn {
+	white-space: nowrap;
+}
+.rfd-empty {
+	padding: 2.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--rfd-line);
+}
+
+/* Narrow cards: each claim becomes a stacked record. The queue folds
+   first, as it has the most columns; Settled stays a table until the
+   card is phone-sized. */
+@container (max-width: 820px) {
+	.rfd-table-queue thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.rfd-table-queue,
+	.rfd-table-queue tbody,
+	.rfd-table-queue tr,
+	.rfd-table-queue td {
+		display: block;
+		width: 100%;
+	}
+	.rfd-table-queue tbody tr {
+		display: grid;
+		gap: 0.9rem 1.25rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+		grid-template-areas:
+			"claim account amount"
+			"stage items   act";
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--rfd-line);
+	}
+	.rfd-table-queue tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.rfd-table-queue > :not(caption) > * > *,
+	.rfd-table-queue > :not(caption) > * > :first-child,
+	.rfd-table-queue > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.rfd-table-queue tbody tr:hover > * {
+		background: none;
+	}
+	.rfd-table-queue tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.rfd-table-queue td.rfd-col-claim {
+		grid-area: claim;
+	}
+	.rfd-table-queue td.rfd-col-account {
+		grid-area: account;
+	}
+	.rfd-table-queue td.rfd-col-items {
+		grid-area: items;
+	}
+	.rfd-table-queue td.rfd-col-stage {
+		grid-area: stage;
+	}
+	.rfd-table-queue td.rfd-col-amount {
+		grid-area: amount;
+		width: auto;
+	}
+	.rfd-table-queue td.rfd-col-act {
+		grid-area: act;
+		align-self: end;
+		width: auto;
+	}
+	.rfd-table-queue td.rfd-col-act .basalt-row-actions {
+		margin-top: 0;
+	}
+}
+/* A settled list a little narrower than its columns: closer cells and
+   slightly smaller row icons keep the last column inside the card. */
+@container (min-width: 560.01px) and (max-width: 680px) {
+	.rfd-table-settled > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	.rfd-table-settled > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	.rfd-table-settled > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rfd-table-settled .basalt-row-actions .btn-icon {
+		width: 30px;
+		height: 30px;
+	}
+}
+@container (max-width: 560px) {
+	.rfd-cardhead,
+	.rfd-status {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rfd-toolbar {
+		flex-wrap: wrap;
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rfd-search,
+	.rfd-toolbar-select {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.rfd-search {
+		max-width: 28rem;
+	}
+	.rfd-toolbar-select {
+		max-width: 14.5rem;
+	}
+	.rfd-table-settled thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.rfd-table-settled,
+	.rfd-table-settled tbody,
+	.rfd-table-settled tr,
+	.rfd-table-settled td {
+		display: block;
+		width: 100%;
+	}
+	.rfd-table-settled > :not(caption) > * > *,
+	.rfd-table-settled > :not(caption) > * > :first-child,
+	.rfd-table-settled > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.rfd-table-settled tbody tr:hover > * {
+		background: none;
+	}
+	.rfd-table-settled tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.rfd-table-settled td.rfd-col-claim {
+		grid-area: claim;
+	}
+	.rfd-table-settled td.rfd-col-account {
+		grid-area: account;
+	}
+	.rfd-table-settled td.rfd-col-outcome {
+		grid-area: outcome;
+	}
+	.rfd-table-settled td.rfd-col-amount {
+		grid-area: amount;
+		width: auto;
+	}
+	.rfd-table-settled td.rfd-col-act {
+		grid-area: act;
+		align-self: end;
+		width: auto;
+	}
+	.rfd-table-settled td.rfd-col-act .basalt-row-actions {
+		margin-top: 0;
+	}
+	.rfd-table tbody tr {
+		display: grid;
+		gap: 0.85rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--rfd-line);
+	}
+	.rfd-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.rfd-table-queue tbody tr {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"claim   amount"
+			"account account"
+			"items   items"
+			"stage   act";
+	}
+	.rfd-table-settled tbody tr {
+		grid-template-areas:
+			"claim   amount"
+			"account account"
+			"outcome act";
+	}
+	.rfd-more,
+	.rfd-empty,
+	.rfd-reasons,
+	.rfd-note {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* On a phone a claim keeps its number, the customer, the amount and the
+   stage. The items, the reason, the order and the dates under them wait
+   in the quick view. */
+@media (max-width: 575.98px) {
+	.rfd-table-queue tbody tr {
+		grid-template-areas:
+			"claim   amount"
+			"account account"
+			"stage   act";
+	}
+	.rfd-table td.rfd-col-items,
+	.rfd-table :is(td.rfd-col-claim, td.rfd-col-account, td.rfd-col-stage, td.rfd-col-outcome) .rfd-sub {
+		display: none;
+	}
+}
+
+/* Why claims come in */
+.rfd-reasons {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x);
+	list-style: none;
+}
+.rfd-reasons-row {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"name  count"
+		"track track"
+		"amount amount";
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rfd-line);
+}
+.rfd-reasons-row:first-child {
+	padding-top: 0;
+}
+.rfd-reasons-row:last-child {
+	border-bottom: 0;
+}
+.rfd-reasons-name {
+	grid-area: name;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rfd-reasons-count {
+	grid-area: count;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rfd-reasons-track {
+	display: block;
+	grid-area: track;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.rfd-reasons-bar {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--stp-tone);
+}
+.rfd-reasons-amount {
+	grid-area: amount;
+	font-size: 0.77rem;
+	color: var(--rfd-quiet);
+}
+.rfd-note {
+	margin: auto 0 0;
+	padding: 1rem var(--basalt-pad-x) 1.25rem;
+	border-top: 1px solid var(--rfd-line);
+	font-size: 0.8rem;
+	color: var(--rfd-quiet);
+}
+.rfd-note strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rfd-card.card > .rfd-reasons {
+	margin-bottom: 1.25rem;
+}
+
+/* Drawer */
+.rfd-drawer {
+	--bs-offcanvas-width: 500px;
+}
+.rfd-drawer .offcanvas-title {
+	white-space: nowrap;
+}
+.rfd-drawer .basalt-drawer-sub a {
+	font-weight: 600;
+	color: var(--rfd-link);
+}
+.rfd-drawer .basalt-drawer-sub a:hover {
+	color: var(--basalt-copy);
+}
+.rfd-r-state {
+	margin-bottom: 1.5rem;
+}
+.rfd-r-pills {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.rfd-alert {
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	margin: 1rem 0 0;
+	padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+	border-radius: 10px;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+/* A straight inset bar, not a border that bends round the corners. */
+.rfd-alert::before {
+	content: "";
+	position: absolute;
+	top: 0.5rem;
+	bottom: 0.5rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--rfd-alert-tone);
+}
+.rfd-alert .bi {
+	flex-shrink: 0;
+	margin-top: 0.1rem;
+	color: color-mix(in srgb, var(--rfd-alert-tone) 55%, var(--basalt-copy));
+}
+.rfd-alert-warning {
+	--rfd-alert-tone: var(--basalt-warning);
+}
+.rfd-alert-danger {
+	--rfd-alert-tone: var(--basalt-danger);
+}
+
+/* The customer's own words, with the same straight bar on the left. */
+.rfd-quote {
+	position: relative;
+	margin: 0;
+	padding: 0.9rem 1rem 0.9rem 1.25rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.rfd-quote::before {
+	content: "";
+	position: absolute;
+	top: 0.7rem;
+	bottom: 0.7rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--basalt-hue);
+}
+.rfd-quote p {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+.rfd-quote footer {
+	margin-top: 0.5rem;
+}
+
+.rfd-files {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 0.85rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.rfd-files li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.7rem;
+	border: 1px solid var(--rfd-line);
+	border-radius: 8px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+}
+.rfd-files .bi {
+	color: var(--rfd-quiet);
+}
+.rfd-files-size {
+	color: var(--rfd-quiet);
+}
+.rfd-files-none {
+	margin: 0.85rem 0 0;
+}
+
+.rfd-check {
+	display: flex;
+	gap: 0.65rem;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.rfd-check > .bi {
+	flex-shrink: 0;
+	margin-top: 0.1rem;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+}
+
+.rfd-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rfd-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rfd-line);
+}
+.rfd-item:first-child {
+	padding-top: 0;
+}
+.rfd-item-text {
+	min-width: 0;
+}
+.rfd-error {
+	margin: 0.6rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.rfd-error[hidden] {
+	display: none;
+}
+
+.rfd-sums {
+	margin: 0.8rem 0 0;
+}
+.rfd-sums > div {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	padding: 0.3rem 0;
+}
+.rfd-sums dt {
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: var(--basalt-copy-body);
+}
+.rfd-sums dd {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rfd-sums .rfd-sums-total {
+	margin-top: 0.4rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--rfd-line);
+}
+.rfd-sums .rfd-sums-total dt {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rfd-sums .rfd-sums-total dd {
+	font-weight: 700;
+}
+.rfd-r-answer {
+	margin-top: 1rem;
+}
+
+/* A stepper clicked with the mouse keeps no focus ring; the ring is for
+   the keyboard and for typing in the number. */
+.rfd-items .basalt-stepper:focus-within:not(:has(:focus-visible)) {
+	border-color: var(--basalt-control-line);
+	box-shadow: none;
+}
+
+.rfd-facts {
+	margin: 0;
+}
+.rfd-facts > div {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 6.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rfd-line);
+}
+.rfd-facts > div:first-child {
+	padding-top: 0;
+}
+.rfd-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.rfd-facts dt {
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: var(--rfd-quiet);
+}
+.rfd-facts dd {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.rfd-facts a {
+	font-weight: 600;
+	color: var(--rfd-link);
+}
+.rfd-facts a:hover {
+	color: var(--basalt-copy);
+}
+
+/* New claim dialog */
+.rfd-form-row {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+/* Legends read as field labels, not as Bootstrap's large legend. */
+.rfd-modal legend.form-label {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+}
+.rfd-order-field .basalt-select-trigger,
+.rfd-order-field .form-select {
+	max-width: 22rem;
+}
+.rfd-reason-field .basalt-select-trigger,
+.rfd-reason-field .form-select {
+	max-width: 14.5rem;
+}
+.rfd-pick-empty {
+	margin: 0;
+	padding: 0.9rem 1rem;
+	border: 1px dashed var(--rfd-line);
+	border-radius: 10px;
+}
+.rfd-new-sum {
+	margin: 0.85rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.rfd-new-sum:empty {
+	display: none;
+}
+.rfd-new-sum strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rfd-table tbody tr {
+		transition: none;
+	}
+}
+
+@media print {
+	.rfd-toolbar,
+	.rfd-col-act,
+	.rfd-more,
+	.rfd-cardhead > .btn {
+		display: none;
+	}
+	.rfd-table tbody tr {
+		transition: none;
+	}
+}

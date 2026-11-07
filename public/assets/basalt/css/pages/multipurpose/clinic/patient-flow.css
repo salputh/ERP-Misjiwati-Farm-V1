@@ -1,0 +1,141 @@
+/* Patient Flow: a reading on the vitals strip lights its stop in the
+   flow; the other stops step back while it is in focus. */
+.hc-flow {
+	& .stop,
+	& .lanes,
+	& .dots {
+		transition: opacity 0.2s;
+	}
+	&[data-pf-focus] :is(.stop, .lanes, .dots) {
+		opacity: 0.25;
+	}
+	&[data-pf-focus="door"] .stop-door,
+	&[data-pf-focus="wait"] .stop-wait,
+	&[data-pf-focus="rooms"] .stop-rooms,
+	&[data-pf-focus="ward"] .stop-ward {
+		opacity: 1;
+	}
+}
+
+/* The flow card's foot: the line on the left, the Moving dots switch in
+   the bottom-right corner. */
+.pf-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.pf-dots-switch {
+	margin: 0;
+	font-size: 0.85rem;
+	white-space: nowrap;
+}
+.hc-flow.is-still .dots {
+	display: none;
+}
+
+/* Narrow cards: the flow reads as one vertical journey instead of the
+   wide drawing; the lab and the ward branch off the exam rooms. */
+.pf-journey {
+	display: none;
+	position: relative;
+	margin: 0;
+	padding: 0.5rem 0 0.5rem 1.75rem;
+	list-style: none;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.25rem;
+		bottom: 1.25rem;
+		left: 0.55rem;
+		width: 3px;
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--basalt-hue) 22%, transparent);
+	}
+	& li {
+		position: relative;
+		padding: 0.4rem 0;
+	}
+	& li::before {
+		content: "";
+		position: absolute;
+		top: 1.35rem;
+		left: -1.45rem;
+		width: 13px;
+		height: 13px;
+		border: 3px solid var(--basalt-plane);
+		border-radius: 50%;
+		background: var(--basalt-hue);
+		box-shadow: 0 0 0 1px var(--basalt-hue);
+	}
+	& li.is-side {
+		margin-left: 1.5rem;
+	}
+	& li.is-side::before {
+		left: -2.95rem;
+		background: var(--basalt-plane);
+	}
+}
+.pf-journey-stop {
+	display: grid;
+	gap: 0.25rem;
+	padding: 0.9rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	color: var(--basalt-copy);
+	text-decoration: none;
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+	}
+}
+.pf-journey-label {
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--hc-quiet);
+}
+.pf-journey-read {
+	font-size: 0.875rem;
+	color: var(--hc-quiet);
+
+	& b {
+		margin-right: 0.25rem;
+		font-size: 1.6rem;
+		font-weight: 750;
+		color: var(--basalt-copy);
+	}
+}
+.pf-journey-line {
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--basalt-hue);
+}
+/* The switch follows the card's width, not the window's: with the menu
+   open, a laptop's card is already too narrow for the drawing. */
+@container (max-width: 62rem) {
+	.hc-flow .hc-flow-art {
+		display: none;
+	}
+	.pf-journey {
+		display: block;
+		width: 100%;
+	}
+	.hc-flow-card .hc-legend {
+		display: none;
+	}
+	.pf-foot .pf-dots-switch {
+		display: none;
+	}
+}
+/* healthcare.css hides the flow card on phones; on this page it is the
+   point of the page, so it stays as the journey. */
+@media (max-width: 575.98px) {
+	.hc-card.hc-flow-card {
+		display: flex;
+	}
+}

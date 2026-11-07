@@ -1,0 +1,728 @@
+/* Basalt - Categories (categories.html)
+   Namespaced under .pc-*
+   Built from shared parts: the page head, the sortable list,
+   switches, dropdowns, choice tiles, styled selects, the drawer,
+   dialogs, the confirmation dialog, empty states and toasts. This
+   file lays out one card per category with its subcategory rows,
+   and styles what belongs to this page only: category marks, sales
+   bars, color swatches and the product list in the drawer. */
+
+.pc-page,
+.pc-drawer,
+.pc-dialog {
+	/* Small gray text: the muted token pulled toward the body color, so
+     it clears 4.5:1 on the lighter palettes and on the tinted rows. */
+	--pc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--pc-line: var(--basalt-edge);
+}
+
+/* Category colors come from the theme's chart series. */
+.pc-tone-1 {
+	--pc-tone: var(--basalt-series-1);
+}
+.pc-tone-2 {
+	--pc-tone: var(--basalt-series-2);
+}
+.pc-tone-3 {
+	--pc-tone: var(--basalt-series-3);
+}
+.pc-tone-4 {
+	--pc-tone: var(--basalt-series-4);
+}
+.pc-tone-5 {
+	--pc-tone: var(--basalt-series-5);
+}
+.pc-tone-6 {
+	--pc-tone: var(--basalt-series-6);
+}
+.pc-tone-7 {
+	--pc-tone: var(--basalt-series-7);
+}
+.pc-tone-8 {
+	--pc-tone: var(--basalt-series-8);
+}
+
+/* A top-level category's icon tile, also used in the drawer header. */
+.pc-mark,
+.pc-thumb {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--pc-tone, var(--basalt-hue)) 78%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pc-tone, var(--basalt-hue)) 15%, var(--basalt-plane));
+}
+.pc-drawer-mark {
+	display: flex;
+	flex: none;
+}
+.pc-thumb {
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.95rem;
+}
+.pc-dot {
+	flex: none;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--pc-tone, var(--basalt-hue));
+}
+
+/* Toolbar */
+.pc-toolbar {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+/* The search stops growing at a comfortable width; spare room goes to
+   the end of the bar. */
+.pc-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 0;
+}
+.pc-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--pc-quiet);
+	pointer-events: none;
+}
+.pc-search .form-control {
+	padding-left: 2.4rem;
+	background-color: var(--basalt-plane);
+}
+.pc-toolbar-sum {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--pc-quiet);
+}
+/* On a phone the summary takes its own line under the search. */
+@media (max-width: 575.98px) {
+	.pc-toolbar {
+		flex-wrap: wrap;
+	}
+	.pc-search {
+		flex-basis: 100%;
+	}
+	.pc-toolbar-sum {
+		margin-left: 0;
+		white-space: normal;
+	}
+}
+
+/* Category cards
+   One card per top-level category. The head and every subcategory row
+   share one grid: handle, name, products, sales, the In store switch
+   and the row's menu, so the columns line up down the card. */
+.pc-row {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 1.9rem minmax(0, 1fr) 5.5rem 15rem 4.5rem 2.25rem;
+	align-items: center;
+}
+.pc-tree.basalt-sortable {
+	gap: 1.25rem;
+}
+.pc-tree.basalt-sortable[hidden],
+.pc-subs.basalt-sortable[hidden] {
+	display: none;
+}
+.pc-subs.basalt-sortable {
+	gap: 0;
+}
+
+.pc-tree > .pc-group.basalt-sortable-item {
+	display: block;
+	container: pc-card / inline-size;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-size: inherit;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.pc-tree > .pc-group.basalt-sortable-item:hover {
+	border-color: var(--basalt-edge);
+}
+.pc-tree .basalt-sortable-item[hidden] {
+	display: none;
+}
+.pc-tree > .pc-group.is-grabbed {
+	border-color: var(--basalt-hue);
+	box-shadow:
+		0 0 0 3px var(--basalt-hue-border),
+		var(--basalt-card-shadow);
+}
+.pc-tree > .basalt-sortable-placeholder {
+	border-radius: 12px;
+}
+
+/* The head carries the category's color as a soft wash. */
+.pc-row-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-radius: 11px 11px 0 0;
+	background: color-mix(in srgb, var(--pc-tone) 9%, var(--basalt-plane));
+	cursor: pointer;
+}
+.pc-group.is-off > .pc-row-head {
+	background: var(--basalt-plane-alt);
+}
+.pc-row-head .pc-mark {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.3rem;
+	background: color-mix(in srgb, var(--pc-tone) 22%, var(--basalt-plane));
+}
+.pc-title {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.25;
+}
+.pc-title .pc-name {
+	font-size: inherit;
+	font-weight: inherit;
+}
+.pc-stat {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.pc-stat.pc-num {
+	align-items: flex-end;
+}
+.pc-stat-label {
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--pc-quiet);
+}
+.pc-stat-val {
+	font-size: 1rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pc-sales-head {
+	align-items: flex-end;
+}
+.pc-stat-store .pc-store {
+	min-height: 1.5rem;
+}
+.pc-share {
+	margin-left: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--pc-quiet);
+}
+
+/* Subcategory rows: flat rows inside the card. */
+.pc-subs > .basalt-sortable-item {
+	display: block;
+	padding: 0;
+	border: 0;
+	border-top: 1px solid var(--pc-line);
+	border-radius: 0;
+	font-size: inherit;
+	background: var(--basalt-plane);
+}
+.pc-subs > .basalt-sortable-item:hover {
+	border-color: var(--pc-line);
+}
+.pc-sub .pc-row {
+	padding: 1rem var(--basalt-pad-x);
+	cursor: pointer;
+	transition: background-color 130ms ease;
+}
+.pc-sub .pc-row:hover {
+	background: var(--basalt-wash);
+}
+.pc-subs > .pc-sub.is-grabbed {
+	box-shadow: 0 0 0 2px var(--basalt-hue) inset;
+}
+.pc-subs > .pc-sub.is-dragging {
+	border: 1px solid var(--basalt-hue);
+	border-radius: 12px;
+}
+.pc-subs > .basalt-sortable-placeholder {
+	border-radius: 0;
+	border-width: 1.5px 0;
+}
+/* An empty subcategory list still takes a drop while something moves. */
+.basalt-is-sorting .pc-subs.is-empty {
+	min-height: 3rem;
+}
+
+.pc-cat {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	min-width: 0;
+}
+.pc-cat-text {
+	min-width: 0;
+}
+/* A subcategory's dot sits under the middle of its category's icon, so
+   the names start on one line under the category's name. */
+.pc-sub .pc-dot {
+	margin: 0 1.075rem;
+}
+.pc-sub .pc-cat {
+	gap: 0;
+}
+.pc-sub .pc-cat-text {
+	display: flex;
+	gap: 0.25rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.pc-group.is-off > .pc-row-head .pc-mark,
+.pc-sub.is-off .pc-dot,
+.pc-sub.is-off .pc-bar > span {
+	opacity: 0.4;
+}
+
+.pc-name {
+	display: inline;
+	max-width: 100%;
+	padding: 0;
+	border: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+}
+.pc-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.pc-pill {
+	font-size: 0.71rem;
+}
+.pc-desc,
+.pc-facts {
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	color: var(--pc-quiet);
+}
+.pc-facts {
+	display: none;
+}
+.pc-sub .pc-facts {
+	flex-basis: 100%;
+	margin: 0;
+}
+
+.pc-num {
+	font-size: 0.9rem;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.pc-count {
+	text-decoration: none;
+	color: inherit;
+}
+.pc-count:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-hue);
+}
+.pc-quiet {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--pc-quiet);
+}
+
+/* Sales: a bar on one scale for the whole Store, then the amount. */
+.pc-sales {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.pc-bar {
+	flex: 1;
+	height: 0.5rem;
+	border-radius: 99px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--pc-tone) 12%, var(--basalt-plane-alt));
+}
+.pc-bar > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--pc-tone);
+}
+.pc-sales-val {
+	flex: none;
+	width: 4.75rem;
+	font-size: 0.9rem;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.pc-store {
+	display: flex;
+	align-items: center;
+	min-height: 1.75rem;
+	white-space: nowrap;
+}
+.pc-store .form-switch {
+	display: flex;
+	align-items: center;
+	min-height: 0;
+	padding-left: 0;
+}
+.pc-store .form-switch .form-check-input {
+	float: none;
+	margin: 0;
+	cursor: pointer;
+}
+.pc-menu {
+	justify-self: end;
+}
+.pc-menu .dropdown-item:disabled {
+	color: var(--pc-quiet);
+	opacity: 0.6;
+}
+
+/* Card foot: show or hide the subcategories, and add one. */
+.pc-group-foot {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.9rem var(--basalt-pad-x);
+	border-top: 1px solid var(--pc-line);
+}
+.pc-chev,
+.pc-add {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-left: -0.5rem;
+	padding: 0.3rem 0.5rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	background: none;
+	transition: background-color 130ms ease;
+}
+.pc-chev {
+	color: var(--pc-quiet);
+}
+.pc-add {
+	margin-left: 0;
+	color: var(--basalt-copy);
+}
+.pc-chev:hover,
+.pc-add:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.pc-chev[hidden] {
+	display: none;
+}
+.pc-chev .bi {
+	transition: transform 170ms ease;
+}
+.pc-chev[aria-expanded="false"] .bi {
+	transform: rotate(-90deg);
+}
+.pc-chev:focus-visible,
+.pc-add:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+.pc-foot {
+	margin: 1.25rem 0 0;
+	font-size: 0.85rem;
+	color: var(--pc-quiet);
+}
+.pc-foot a {
+	margin-left: 0.3rem;
+	font-weight: 600;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+
+/* Narrow cards: products and sales move under the name. */
+@container pc-card (max-width: 820px) {
+	.pc-row {
+		column-gap: 0.75rem;
+		grid-template-columns: 1.9rem minmax(0, 1fr) auto 2.25rem;
+	}
+	.pc-row > .pc-num,
+	.pc-row > .pc-sales-head,
+	.pc-sales-val {
+		display: none;
+	}
+	/* The sales bar stays, on its own line under the name. */
+	.pc-row > .pc-sales {
+		grid-column: 2;
+		grid-row: 2;
+		max-width: 14rem;
+		margin: 0.6rem 0 0 2.75rem;
+	}
+	.pc-row-head .pc-stat-store .pc-stat-label {
+		display: none;
+	}
+	.pc-facts {
+		display: block;
+	}
+	.pc-desc {
+		display: none;
+	}
+}
+@container pc-card (max-width: 460px) {
+	.pc-row {
+		column-gap: 0.5rem;
+		grid-template-columns: 1.5rem minmax(0, 1fr) auto 2rem;
+	}
+	.pc-row-head,
+	.pc-sub .pc-row {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.pc-group-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.pc-cat {
+		gap: 0.75rem;
+	}
+	.pc-row-head .pc-mark {
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 10px;
+		font-size: 1.05rem;
+	}
+	.pc-sub .pc-dot {
+		margin: 0 0.825rem;
+	}
+	.pc-row > .pc-sales {
+		margin-left: 2.25rem;
+	}
+	.pc-tree .basalt-sortable-handle {
+		width: 1.5rem;
+	}
+}
+
+/* Drawer and dialogs */
+.pc-field {
+	margin-bottom: 1.25rem;
+}
+.pc-field:last-child {
+	margin-bottom: 0;
+}
+fieldset.pc-field {
+	min-width: 0;
+	padding: 0;
+	border: 0;
+}
+fieldset.pc-field > legend {
+	float: none;
+	width: auto;
+	font-size: inherit;
+}
+.pc-label-row {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.pc-counter {
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--pc-quiet);
+}
+.pc-drawer .form-text,
+.pc-dialog .form-text {
+	color: var(--pc-quiet);
+}
+.pc-prefix {
+	font-size: 0.85rem;
+	color: var(--pc-quiet);
+}
+.pc-select {
+	width: auto;
+	min-width: 12rem;
+	max-width: 100%;
+}
+
+/* Eight icons, always one even row. */
+.pc-icons {
+	grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+.pc-icons .basalt-choice {
+	padding: 0.5rem 0;
+}
+.pc-icons .basalt-choice > .bi {
+	color: var(--basalt-copy);
+}
+.pc-parents {
+	--basalt-choice-min: 5rem;
+}
+/* On a phone the four categories pair up under a full-width Top level. */
+@media (max-width: 575.98px) {
+	.pc-parents {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.pc-parents > :first-child {
+		grid-column: 1 / -1;
+	}
+}
+
+/* Eight swatches, always one row: they shrink a little in a narrow panel. */
+.pc-swatches {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(8, minmax(0, 2rem));
+}
+.pc-swatch {
+	position: relative;
+	cursor: pointer;
+}
+.pc-swatch-dot {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: var(--pc-tone);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-copy) 15%, transparent);
+	transition: box-shadow 150ms ease;
+}
+.pc-swatch .btn-check:checked + .pc-swatch-dot {
+	box-shadow:
+		0 0 0 2px var(--basalt-plane),
+		0 0 0 4px var(--basalt-copy);
+}
+.pc-swatch .btn-check:focus-visible:not(:checked) + .pc-swatch-dot {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 5px;
+}
+
+.pc-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pc-items-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--pc-line);
+	font-size: 0.875rem;
+}
+.pc-items-row:first-child {
+	padding-top: 0;
+}
+.pc-items-row:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.pc-items-row > .pc-dot {
+	justify-self: center;
+}
+.pc-items-name {
+	min-width: 0;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pc-items-name .basalt-status {
+	margin-left: 0.3rem;
+}
+.pc-items-sku {
+	display: block;
+	margin-top: 0.1rem;
+	font:
+		400 0.75rem/1.3 "Chivo Mono",
+		monospace;
+	color: var(--pc-quiet);
+}
+.pc-items-end {
+	font-size: 0.8rem;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--pc-quiet);
+}
+.pc-items-price {
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.pc-per {
+	font-weight: 400;
+	color: var(--pc-quiet);
+}
+.pc-note {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--pc-quiet);
+}
+.pc-note a {
+	font-weight: 600;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.pc-items:empty + .pc-note {
+	margin-top: 0;
+}
+.pc-items:not(:empty) + .pc-note {
+	margin-top: 1rem;
+}
+
+.pc-move {
+	margin: 0 0 1.5rem;
+	text-align: left;
+}
+.pc-move .pc-select {
+	width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pc-chev .bi,
+	.pc-chev,
+	.pc-add,
+	.pc-sub .pc-row,
+	.pc-swatch-dot {
+		transition: none;
+	}
+}
+@media print {
+	.pc-toolbar,
+	.pc-menu,
+	.basalt-sortable-handle,
+	.pc-group-foot {
+		display: none;
+	}
+	.pc-sub .pc-row {
+		transition: none;
+	}
+}

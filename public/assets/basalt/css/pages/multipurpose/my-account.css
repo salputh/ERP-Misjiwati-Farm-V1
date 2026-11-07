@@ -1,0 +1,2871 @@
+/* Account settings (my-account.html), every class under .account-.
+   The page opens on a security checkup; under it each setting is a row
+   that shows its current value. A Profile card opens as a whole and saves
+   once, rows on the other tabs open one at a time in place, and the
+   section bar keeps count of whatever is still unsaved. */
+
+.account-page {
+	--account-ok: var(--basalt-success);
+	--account-warn: var(--basalt-warning);
+	--account-bad: var(--basalt-danger);
+	--account-label-w: 200px;
+	--account-pad: var(--basalt-pad-x);
+	--account-radius: 18px;
+	--account-sticky-top: var(--basalt-header-h, 72px);
+	/* The checkup and every card measure themselves against the page column. */
+	container-type: inline-size;
+}
+
+/* Tokens shared by the page and the dialogs and toasts that sit outside it.
+   Dark mode mixes its own divider, since the inherited light border token
+   vanishes against a dark surface. */
+.account-page,
+.account-dialog,
+.account-toasts {
+	--account-line: var(--basalt-edge);
+	/* Unchecked boxes and choice tiles keep an outline on any surface. */
+	--account-control: color-mix(in srgb, var(--basalt-copy) 22%, transparent);
+	/* Quiet text that still reads on the tinted card feet and the page. */
+	--account-muted: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+[data-bs-theme="dark"] .account-page,
+[data-bs-theme="dark"] .account-dialog,
+[data-bs-theme="dark"] .account-toasts {
+	--account-line: color-mix(in srgb, var(--basalt-copy) 11%, transparent);
+}
+
+/* Paragraphs never end on a lone word, and headings wrap evenly. */
+.account-page p,
+.account-page .account-row-value,
+.account-page .account-row-muted,
+.account-dialog p,
+.account-dialog li {
+	text-wrap: pretty;
+}
+.account-page h1,
+.account-page h2,
+.account-dialog h2 {
+	text-wrap: balance;
+}
+
+/* The hidden attribute wins over any display a block asks for itself. */
+.account-row-form[hidden],
+.account-confirmstrip[hidden],
+.account-warnline[hidden] {
+	display: none;
+}
+
+.account-head {
+	margin-bottom: 1.5rem;
+}
+.account-head-lede {
+	max-width: 64ch;
+	margin: 0;
+	color: var(--account-muted);
+}
+
+/* Status pills come in one shape and five tints. */
+.account-pill {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.18rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--account-muted);
+	background: var(--basalt-plane-alt);
+
+	& .bi {
+		font-size: 0.8rem;
+	}
+}
+.account-pill-ok {
+	color: color-mix(in srgb, var(--account-ok) 52%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--account-ok) 14%, transparent);
+}
+.account-pill-warn,
+.account-row-flag.is-unsaved {
+	color: color-mix(in srgb, var(--account-warn) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--account-warn) 18%, transparent);
+}
+.account-pill-danger {
+	color: color-mix(in srgb, var(--account-bad) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--account-bad) 13%, transparent);
+}
+.account-pill-primary {
+	color: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.account-pill-info {
+	color: color-mix(in srgb, var(--basalt-info) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-info) 13%, transparent);
+}
+
+/* The security checkup leads the page: a summary with the ring on one
+   side, the list of checks on the other. Its right padding keeps a lane
+   free for the close button. */
+.account-checkup {
+	position: relative;
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+	align-items: center;
+	margin-bottom: 1.5rem;
+	padding: 1rem 3.25rem 1rem 1rem;
+	border: 1px solid var(--account-line);
+	border-radius: 22px;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+
+/* Closing the card swaps it for the slim bar further down. */
+.account-checkup-close {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+	background: none;
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.account-checkup-bar {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+	padding: 0.65rem 0.75rem 0.65rem 1rem;
+	border: 1px solid var(--account-line);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+}
+.account-checkup-bar-icon {
+	font-size: 1.1rem;
+	color: var(--account-ok);
+}
+.account-checkup-bar.is-open-items .account-checkup-bar-icon {
+	color: var(--account-warn);
+}
+.account-checkup-bar.is-bad .account-checkup-bar-icon {
+	color: var(--account-bad);
+}
+.account-checkup-bar-text {
+	display: flex;
+	gap: 0.1rem 0.6rem;
+	flex-wrap: wrap;
+	margin: 0 auto 0 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+
+	& b {
+		color: var(--basalt-copy);
+	}
+}
+.account-checkup-summary {
+	display: flex;
+	gap: 1.5rem;
+	align-items: center;
+	align-self: stretch;
+	min-width: 0;
+	padding: 1.5rem;
+	border-radius: 16px;
+	background: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane));
+}
+.account-checkup-copy {
+	min-width: 0;
+}
+.account-checkup-eyebrow {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.4rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-muted);
+
+	& .bi {
+		font-size: 0.9rem;
+		color: var(--basalt-hue);
+	}
+}
+.account-checkup-title {
+	margin: 0 0 0.4rem;
+	font-size: 1.45rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+}
+.account-checkup-text {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* Five arcs make the ring, one for each check. Passed arcs draw in, and
+   the rest stay on as a tinted track, so what is left is easy to count. */
+.account-ring {
+	position: relative;
+	flex-shrink: 0;
+	width: 136px;
+	height: 136px;
+
+	& svg {
+		transform: rotate(-90deg);
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+	& circle {
+		fill: none;
+		stroke-width: 11;
+		stroke-linecap: round;
+	}
+}
+/* Dashes are in user units. A circle of radius 52 runs 326.73 long, so
+   every arc covers 16% of it (52.28) and leaves a 4% gap after it. */
+.account-ring-track circle {
+	stroke: var(--basalt-plane-alt);
+	stroke-dasharray: 52.28 274.45;
+
+	&.is-pending {
+		stroke: color-mix(in srgb, var(--account-warn) 32%, var(--basalt-plane-alt));
+	}
+	&.is-bad {
+		stroke: color-mix(in srgb, var(--account-bad) 30%, var(--basalt-plane-alt));
+	}
+}
+.account-ring-fill circle {
+	opacity: 0;
+	stroke: var(--account-ok);
+	stroke-dasharray: 0 326.73;
+	transition:
+		stroke-dasharray 700ms cubic-bezier(0.3, 0.7, 0.2, 1),
+		opacity 110ms ease;
+
+	&.is-done {
+		opacity: 1;
+		stroke-dasharray: 52.28 274.45;
+	}
+}
+.account-ring circle {
+	&[data-seg="0"] {
+		stroke-dashoffset: -6.53;
+	}
+	&[data-seg="1"] {
+		stroke-dashoffset: -71.88;
+	}
+	&[data-seg="2"] {
+		stroke-dashoffset: -137.22;
+	}
+	&[data-seg="3"] {
+		stroke-dashoffset: -202.57;
+	}
+	&[data-seg="4"] {
+		stroke-dashoffset: -267.92;
+	}
+}
+.account-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+.account-ring-count {
+	font-size: 2.1rem;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: -0.03em;
+	color: var(--basalt-copy);
+
+	& small {
+		font-size: 1rem;
+		font-weight: 700;
+		letter-spacing: 0;
+		color: var(--basalt-copy-muted);
+	}
+}
+.account-ring-label {
+	margin-top: 0.3rem;
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--basalt-copy-muted);
+}
+.account-ring.is-bump .account-ring-count {
+	animation: account-bump 420ms ease;
+}
+@keyframes account-bump {
+	40% {
+		transform: scale(1.14);
+	}
+}
+
+/* Each check shows an icon for its state, and a Fix button until it passes. */
+.account-checks {
+	min-width: 0;
+	margin: 0;
+	padding: 0.5rem 0;
+	list-style: none;
+}
+.account-check {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 30px minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.6rem 0;
+	border-top: 1px solid var(--account-line);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+.account-check-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border-radius: 10px;
+	font-size: 1rem;
+}
+.account-check-title {
+	margin: 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+.account-check-meta {
+	margin: 0.1rem 0 0;
+	font-size: 0.77rem;
+	color: var(--basalt-copy-muted);
+}
+.account-check-fix {
+	white-space: nowrap;
+}
+.account-check-ok {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--account-ok) 52%, var(--basalt-copy));
+}
+.account-check[data-state="ok"] {
+	& .account-check-icon {
+		color: var(--account-ok);
+		background: color-mix(in srgb, var(--account-ok) 14%, transparent);
+	}
+	& .account-check-icon .bi::before {
+		content: "\f633";
+	} /* bi-check-lg */
+}
+.account-check[data-state="warn"] {
+	& .account-check-icon {
+		color: color-mix(in srgb, var(--account-warn) 80%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--account-warn) 18%, transparent);
+	}
+	& .account-check-icon .bi::before {
+		content: "\f63c";
+	} /* bi-exclamation-lg */
+}
+.account-check[data-state="bad"] {
+	& .account-check-icon {
+		color: var(--account-bad);
+		background: color-mix(in srgb, var(--account-bad) 14%, transparent);
+	}
+	& .account-check-icon .bi::before {
+		content: "\f659";
+	} /* bi-x-lg */
+}
+.account-check[data-state="ok"] .account-check-fix,
+.account-check:not([data-state="ok"]) .account-check-ok {
+	display: none;
+}
+.account-check.is-changed .account-check-icon {
+	animation: account-pop 480ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes account-pop {
+	0% {
+		transform: scale(0.5);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* As the column narrows the summary stacks first, then the whole card
+   folds into one column. */
+@container (max-width: 900px) {
+	.account-checkup {
+		gap: 1.25rem 1.75rem;
+		grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+	}
+	.account-checkup-summary {
+		gap: 1rem;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.account-ring {
+		width: 116px;
+		height: 116px;
+	}
+}
+@container (max-width: 640px) {
+	.account-checkup {
+		gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr);
+		padding: 0.75rem;
+	}
+	.account-checkup-close {
+		top: 1.1rem;
+		right: 1.1rem;
+	}
+	.account-checkup-summary {
+		flex-direction: row;
+		align-items: center;
+		padding: 1.25rem;
+	}
+	.account-checks {
+		padding: 0 0.5rem 0.25rem;
+	}
+}
+@container (max-width: 400px) {
+	.account-checkup-summary {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.account-checkup-title {
+		font-size: 1.25rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.account-checkup {
+		border-radius: 18px;
+	}
+}
+
+/* The section bar holds the tabs and the unsaved count, pinned under the
+   top bar while the page scrolls. */
+.account-bar {
+	position: sticky;
+	top: var(--account-sticky-top);
+	z-index: 20;
+	container-type: inline-size;
+	margin: 0 0 1.25rem;
+	border: 1px solid var(--account-line);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+	box-shadow: 0 8px 24px -18px color-mix(in srgb, var(--basalt-copy) 40%, transparent);
+}
+.account-bar-inner {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 0.4rem 0.4rem 0.4rem 0.5rem;
+}
+.account-tabs {
+	display: flex;
+	gap: 0.25rem;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.account-tab {
+	position: relative;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.5rem 0.85rem;
+	border: 0;
+	border-radius: 11px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	& .bi {
+		font-size: 1rem;
+	}
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&.active {
+		color: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-copy));
+		background: var(--basalt-hue-soft);
+	}
+}
+.account-tab-count {
+	min-width: 1.25rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 800;
+	line-height: 1.25rem;
+	text-align: center;
+	color: color-mix(in srgb, var(--account-warn) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--account-warn) 22%, transparent);
+}
+.account-tab-count-danger {
+	color: color-mix(in srgb, var(--account-bad) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--account-bad) 15%, transparent);
+}
+.account-tab-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--account-warn);
+	box-shadow: 0 0 0 2px var(--basalt-plane);
+}
+
+/* The save note is plain text while all is saved, and a warm button that
+   jumps to the first unsaved row once something is not. */
+.account-savestate {
+	display: inline-flex;
+	gap: 0.4rem;
+	flex-shrink: 0;
+	align-items: center;
+	padding: 0.4rem 0.85rem;
+	border: 1px solid transparent;
+	border-radius: 11px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+	cursor: default;
+
+	& .bi {
+		font-size: 1rem;
+		color: var(--account-ok);
+	}
+	&.is-dirty {
+		border-color: color-mix(in srgb, var(--account-warn) 45%, transparent);
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--account-warn) 12%, var(--basalt-plane));
+		cursor: pointer;
+	}
+	&.is-dirty .bi {
+		color: color-mix(in srgb, var(--account-warn) 80%, var(--basalt-copy));
+	}
+	&.is-dirty:hover {
+		background: color-mix(in srgb, var(--account-warn) 20%, var(--basalt-plane));
+	}
+}
+.account-savestate-short {
+	display: none;
+}
+
+/* At middle widths the tabs drop their icons and the save note shortens. */
+@container (max-width: 900px) {
+	.account-tab {
+		padding: 0.5rem 0.75rem;
+	}
+	.account-tab .bi {
+		display: none;
+	}
+	.account-savestate-long {
+		display: none;
+	}
+	.account-savestate-short {
+		display: inline;
+	}
+}
+/* Narrower still, the six tabs become a three by two grid of small tiles,
+   so no label is ever clipped by a scrolling strip. */
+@container (max-width: 680px) {
+	.account-bar-inner {
+		gap: 0.3rem;
+		flex-direction: column;
+		align-items: stretch;
+		padding: 0.4rem;
+	}
+	.account-tabs {
+		display: grid;
+		gap: 0.3rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.account-tab {
+		gap: 0.2rem;
+		flex-direction: column;
+		justify-content: center;
+		padding: 0.5rem 0.25rem;
+		font-size: 0.77rem;
+		text-align: center;
+	}
+	.account-tab .bi {
+		display: inline-block;
+		font-size: 1.1rem;
+	}
+	.account-tab span {
+		line-height: 1.2;
+		white-space: normal;
+	}
+	.account-tab-count,
+	.account-tab-dot {
+		position: absolute;
+		top: 0.3rem;
+		right: 0.4rem;
+	}
+	.account-savestate {
+		justify-content: center;
+		border-color: var(--account-line);
+	}
+	.account-savestate-long {
+		display: inline;
+	}
+	.account-savestate-short {
+		display: none;
+	}
+}
+/* On a phone the tile grid is too tall to keep pinned. */
+@media (max-width: 767.98px) {
+	.account-bar {
+		position: static;
+	}
+}
+
+/* Cards hold the rows; the head names the card and the foot sums it up. */
+.account-card {
+	container-type: inline-size;
+	margin-bottom: 1.25rem;
+	border: 1px solid var(--account-line);
+	border-radius: var(--account-radius);
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.account-card-head {
+	padding: var(--basalt-pad-head) var(--account-pad) var(--basalt-pad-row-y);
+}
+.account-card-head-split {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	& > div {
+		flex: 1 1 320px;
+		min-width: 0;
+	}
+}
+.account-card-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.2rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+}
+.account-card-desc {
+	max-width: 86ch;
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-muted);
+}
+.account-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem var(--account-pad);
+	border-top: 1px solid var(--account-line);
+	font-size: 0.8rem;
+	color: var(--account-muted);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+
+	& b {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.account-card-foot-plain {
+	background: transparent;
+}
+
+/* A row is a label, its current value and an action, on one grid line. */
+.account-row {
+	border-top: 1px solid var(--account-line);
+	transition:
+		background-color 200ms ease,
+		box-shadow 200ms ease;
+}
+.account-row-head {
+	display: grid;
+	gap: 0.5rem 1.25rem;
+	grid-template-columns: var(--account-label-w) minmax(0, 1fr) auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--account-pad);
+}
+.account-row-label {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.account-row-value {
+	display: flex;
+	gap: 0.3rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-width: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy-body);
+}
+.account-row-value-text {
+	display: block;
+	max-width: 62ch;
+	line-height: 1.55;
+}
+/* A badge followed by a sentence about it: the badge on a line of its
+   own, the sentence below. */
+.account-row-value:has(> .account-pill + .account-row-muted) {
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.account-row-value-stack {
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.account-row-muted {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+}
+.account-row-muted-warn {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--account-warn) 40%, var(--basalt-copy));
+
+	&.is-ok {
+		color: color-mix(in srgb, var(--account-ok) 52%, var(--basalt-copy));
+	}
+}
+.account-row-edit {
+	justify-self: end;
+	white-space: nowrap;
+}
+.account-row-tools {
+	display: flex;
+	gap: 0.4rem;
+	justify-self: end;
+}
+.account-row-tag {
+	font-size: 0.66rem;
+}
+
+/* The small flag beside a label says Unsaved, or Saved before fading out. */
+.account-row-flag:empty {
+	display: none;
+}
+.account-row-flag {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.67rem;
+	font-weight: 700;
+
+	&.is-saved {
+		color: color-mix(in srgb, var(--account-ok) 52%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--account-ok) 14%, transparent);
+		animation: account-fade-in 240ms ease;
+	}
+	&.is-leaving {
+		opacity: 0;
+		transition: opacity 400ms ease;
+	}
+}
+@keyframes account-fade-in {
+	from {
+		transform: translateY(3px);
+		opacity: 0;
+	}
+}
+
+/* A row open for editing lifts onto a tinted panel with an accent edge,
+   and its form lines up under the value column. */
+.account-row.is-editing {
+	background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	box-shadow: inset 3px 0 0 var(--basalt-hue);
+
+	& .account-row-edit {
+		visibility: hidden;
+	}
+}
+.account-row-form {
+	padding: 0 var(--account-pad) 1.1rem calc(var(--account-pad) + var(--account-label-w) + 1.25rem);
+}
+.account-row.is-editing .account-row-form {
+	animation: account-open 210ms ease;
+}
+@keyframes account-open {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+}
+.account-row-actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
+.account-row-note {
+	display: flex;
+	align-items: flex-start;
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+}
+.account-row-form .form-label,
+.account-fieldset legend {
+	margin-bottom: 0.3rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.account-row-form .form-control,
+.account-row-form .form-select {
+	border-radius: 10px;
+}
+
+/* Field grids: one, two or three across, and the phone pair. */
+.account-fields {
+	display: grid;
+	gap: 0.85rem 1rem;
+	grid-template-columns: minmax(0, 1fr);
+	max-width: 640px;
+}
+.account-fields-2 {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.account-fields-3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.account-fields-phone {
+	grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+.account-fields-2:has(> :only-child) > * {
+	grid-column: 1 / -1;
+	max-width: 420px;
+}
+.account-count {
+	margin-top: 0.3rem;
+	font-size: 0.75rem;
+	text-align: right;
+	color: var(--basalt-copy-muted);
+
+	&.is-near {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--account-warn) 60%, var(--basalt-copy));
+	}
+}
+
+.account-fieldset {
+	min-width: 0;
+	margin: 0 0 0.85rem;
+	padding: 0;
+	border: 0;
+
+	& legend {
+		float: none;
+		width: auto;
+		padding: 0;
+	}
+}
+/* Segmented choices reuse the shared tiles, kept to the width of their text. */
+.account-seg {
+	display: inline-flex;
+	flex-wrap: wrap;
+
+	& .basalt-choice {
+		padding: 0.4rem 0.9rem;
+		font-size: 0.84rem;
+		line-height: inherit;
+		color: var(--basalt-copy-body);
+	}
+	& .basalt-choice:has(input:checked) {
+		color: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-copy));
+	}
+}
+
+/* The avatar shows initials until a photo is chosen, then the photo. */
+.account-avatar {
+	position: relative;
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	overflow: hidden;
+	font-weight: 800;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+
+	&.has-image .account-avatar-img {
+		display: block;
+	}
+	&.has-image .account-avatar-initials {
+		visibility: hidden;
+	}
+}
+.account-avatar-img {
+	position: absolute;
+	inset: 0;
+	display: none;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.account-row-photo .account-row-form {
+	padding-top: 0;
+}
+
+.account-dots {
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	color: var(--basalt-copy-body);
+}
+.account-switch {
+	justify-self: end;
+	min-height: 0;
+	margin: 0;
+	padding-left: 2.75em;
+
+	& .form-check-input {
+		width: 2.6em;
+		height: 1.4em;
+		margin-top: 0;
+		cursor: pointer;
+	}
+}
+
+/* In a narrow card the label sits over the value and the action keeps the
+   top right corner. */
+@container (max-width: 620px) {
+	.account-card {
+		--account-pad: var(--basalt-pad-x-narrow);
+	}
+	.account-row-head {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "label action" "value value";
+	}
+	.account-row-label {
+		grid-area: label;
+	}
+	.account-row-value {
+		grid-area: value;
+	}
+	.account-row-head > :last-child {
+		grid-area: action;
+	}
+	/* Profile rows carry no button, so there the value is the last child. */
+	.account-row-head > .account-row-value:last-child {
+		grid-area: value;
+	}
+	.account-row-form {
+		padding-left: var(--account-pad);
+	}
+	.account-fields-3 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.account-fields-3 > :last-child {
+		grid-column: 1 / -1;
+	}
+}
+@container (max-width: 420px) {
+	.account-fields-2,
+	.account-fields-phone {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.account-row-actions .btn {
+		flex: 1 1 0;
+	}
+}
+
+/* Profile cards read as label and value until Edit is pressed. Then every
+   value in the card gives way to its fields, beside the label, and a
+   single Save and Cancel wait in the card's foot. */
+.account-card-head-edit {
+	display: flex;
+	gap: 0.75rem 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	& > div {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+.account-card-edit {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+.account-card.is-editing {
+	border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--account-line));
+}
+.account-card:not(.is-editing) .account-row-hint {
+	display: none;
+}
+
+.account-card.is-editing .account-row:has(> [data-account-fields]) {
+	display: grid;
+	gap: 0.5rem 1.25rem;
+	grid-template-columns: var(--account-label-w) minmax(0, 1fr);
+	padding: var(--basalt-pad-row-y) var(--account-pad);
+
+	& > .account-row-head {
+		display: contents;
+	}
+	& .account-row-value {
+		display: none;
+	}
+	/* The label lines up with the box beside it; in a row of several fields
+     it lines up with their small labels instead. */
+	& .account-row-label {
+		grid-area: auto;
+		align-self: start;
+		padding-top: 0.5rem;
+	}
+}
+.account-card.is-editing {
+	& .account-row-group .account-row-label {
+		padding-top: 0;
+	}
+	& .account-row-form {
+		padding: 0;
+		animation: account-open 210ms ease;
+	}
+	& .account-row-photo .account-row-head {
+		align-items: center;
+	}
+}
+
+.account-section-foot {
+	position: relative;
+}
+.account-section-status {
+	margin: 0;
+	color: var(--account-muted);
+
+	&.is-bad {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--account-bad) 70%, var(--basalt-copy));
+	}
+}
+.account-section-actions {
+	display: flex;
+	gap: 0.5rem;
+	margin-left: auto;
+}
+
+@container (max-width: 620px) {
+	.account-card.is-editing .account-row:has(> [data-account-fields]) {
+		gap: 0.4rem;
+		grid-template-columns: minmax(0, 1fr);
+
+		& .account-row-label {
+			padding-top: 0;
+		}
+	}
+}
+@container (max-width: 420px) {
+	.account-section-actions {
+		flex: 1 1 100%;
+	}
+	.account-section-actions .btn {
+		flex: 1 1 0;
+	}
+	.account-card.is-editing .account-row-photo .account-row-tools {
+		flex-wrap: wrap;
+	}
+}
+
+/* Devices list: one row per signed-in session, with the flagged one tinted. */
+.account-session {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 40px minmax(0, 1fr) auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--account-pad);
+	border-top: 1px solid var(--account-line);
+	transition:
+		opacity 260ms ease,
+		background-color 260ms ease;
+
+	&.is-current .account-session-icon {
+		color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+	}
+	&.is-flagged {
+		background: color-mix(in srgb, var(--account-warn) 8%, var(--basalt-plane));
+		box-shadow: inset 3px 0 0 var(--account-warn);
+	}
+	&.is-flagged .account-session-icon {
+		color: color-mix(in srgb, var(--account-warn) 70%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--account-warn) 20%, transparent);
+	}
+	&.is-leaving {
+		opacity: 0;
+	}
+	&.is-highlight {
+		animation: account-highlight 1600ms ease;
+	}
+}
+.account-session-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.account-session-title {
+	margin: 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.account-session-meta {
+	margin: 0.1rem 0 0;
+	font-size: 0.79rem;
+	color: var(--account-muted);
+}
+.account-session-tools {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+.account-session-why {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--account-warn) 40%, var(--basalt-copy));
+}
+@keyframes account-highlight {
+	0%,
+	40% {
+		box-shadow:
+			inset 3px 0 0 var(--account-warn),
+			0 0 0 3px color-mix(in srgb, var(--account-warn) 45%, transparent) inset;
+	}
+}
+@container (max-width: 520px) {
+	.account-session {
+		grid-template-columns: 40px minmax(0, 1fr);
+	}
+	.account-session > :last-child {
+		grid-column: 2;
+		justify-self: start;
+	}
+	.account-session-tools {
+		justify-content: flex-start;
+	}
+}
+
+/* The notification matrix: a topic per row and a checkbox per channel. */
+.account-saved {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	min-height: 1.9rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--account-ok) 52%, var(--basalt-copy));
+
+	&:empty {
+		visibility: hidden;
+	}
+}
+.account-matrix {
+	padding: 0 0 0.5rem;
+}
+.account-matrix,
+.account-matrix-head {
+	--account-chan-w: 76px;
+}
+/* The head shares the rows' grid, so every channel label sits centered over
+   its column of boxes, level with the subtitle. */
+.account-matrix-head,
+.account-matrix-row {
+	display: grid;
+	column-gap: 0.25rem;
+	grid-template-columns: minmax(0, 1fr) repeat(3, var(--account-chan-w));
+	align-items: center;
+	padding: 0 var(--account-pad);
+}
+.account-matrix-head {
+	align-items: end;
+	padding-top: var(--basalt-pad-head);
+	padding-bottom: var(--basalt-pad-row-y);
+	border-bottom: 1px solid var(--account-line);
+}
+.account-matrix-intro {
+	min-width: 0;
+	padding-right: 1rem;
+}
+.account-matrix-headline {
+	display: flex;
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.2rem;
+
+	& .account-card-title {
+		margin: 0;
+	}
+	& .account-saved {
+		min-height: 0;
+	}
+}
+.account-matrix-col {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	font-weight: 700;
+	line-height: 1.3;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--account-muted);
+
+	& .bi {
+		font-size: 0.85rem;
+		letter-spacing: 0;
+	}
+}
+/* Group names act as section headings: a clear step above the row labels,
+   with a full step of air over each group. */
+.account-matrix-group {
+	margin: 0;
+	padding: var(--basalt-pad-head) var(--account-pad) 0.5rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	/* Mixing in a little text color keeps the primary readable in every palette. */
+	color: color-mix(in srgb, var(--basalt-hue) 80%, var(--basalt-copy));
+}
+.account-matrix-row {
+	padding-top: 0.6rem;
+	padding-bottom: 0.6rem;
+	border-radius: 0;
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+}
+.account-matrix-what {
+	min-width: 0;
+	padding-right: 1rem;
+
+	& p {
+		display: flex;
+		gap: 0.3rem;
+		align-items: center;
+		margin: 0;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& p .bi {
+		font-size: 0.75rem;
+		color: var(--basalt-copy-muted);
+	}
+	& span {
+		display: block;
+		margin-top: 0.1rem;
+		font-size: 0.79rem;
+		line-height: 1.45;
+		color: var(--basalt-copy-muted);
+	}
+}
+
+/* Channel boxes: the real checkbox stays in the page for keyboards and
+   screen readers, and the square beside it is what people see. */
+.account-chan {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	margin: 0;
+	cursor: pointer;
+
+	& input {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		opacity: 0;
+		pointer-events: none;
+	}
+	& span {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border: 1.5px solid var(--account-control);
+		border-radius: 11px;
+		font-size: 1.1rem;
+		color: var(--basalt-on-hue);
+		background: var(--basalt-plane);
+		transition:
+			background-color 170ms ease,
+			border-color 170ms ease,
+			transform 170ms ease;
+	}
+	& span .bi {
+		transform: scale(0.6);
+		opacity: 0;
+		transition:
+			opacity 170ms ease,
+			transform 200ms cubic-bezier(0.3, 1.6, 0.5, 1);
+	}
+	&:hover span {
+		border-color: var(--basalt-hue-border);
+	}
+	& input:checked + span {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-hue);
+	}
+	& input:checked + span .bi {
+		transform: none;
+		opacity: 1;
+	}
+	& input:focus-visible + span {
+		box-shadow: 0 0 0 3px var(--basalt-hue-border);
+	}
+	&.is-refused span {
+		border-color: var(--account-bad);
+		animation: account-shake 360ms ease;
+	}
+}
+@keyframes account-shake {
+	25% {
+		transform: translateX(-3px);
+	}
+	75% {
+		transform: translateX(3px);
+	}
+}
+
+/* When narrow, the title spans the full width and the channel labels drop
+   to a line of their own, still centered over their boxes. */
+@container (max-width: 640px) {
+	.account-matrix-head {
+		row-gap: var(--basalt-pad-row-y);
+	}
+	.account-matrix-intro {
+		grid-column: 1 / -1;
+		padding-right: 0;
+	}
+	.account-matrix-head .account-matrix-col {
+		grid-row: 2;
+	}
+	.account-matrix-head .account-matrix-col:nth-of-type(1) {
+		grid-column: 2;
+	}
+	.account-matrix-head .account-matrix-col:nth-of-type(2) {
+		grid-column: 3;
+	}
+	.account-matrix-head .account-matrix-col:nth-of-type(3) {
+		grid-column: 4;
+	}
+	.account-matrix-head {
+		padding-bottom: calc(var(--basalt-pad-row-y) / 2);
+	}
+}
+@container (max-width: 560px) {
+	.account-matrix,
+	.account-matrix-head {
+		--account-chan-w: 46px;
+	}
+	.account-matrix-col {
+		gap: 0.1rem;
+		flex-direction: column;
+		font-size: 0.62rem;
+		letter-spacing: 0.02em;
+	}
+	.account-matrix-what {
+		padding-right: 0.5rem;
+	}
+	.account-chan span {
+		width: 34px;
+		height: 34px;
+	}
+}
+
+/* An overdue invoice gets one quiet row: a small icon, a sentence and the
+   Pay button. A light tint and thin border make it noticed without
+   outweighing the plan card under it. */
+.account-alert {
+	display: grid;
+	gap: 0.5rem 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	margin-bottom: 1.25rem;
+	padding: calc(var(--basalt-pad-row-y) / 2) calc(var(--basalt-pad-row-y) / 2) calc(var(--basalt-pad-row-y) / 2)
+		var(--basalt-pad-x);
+	border: 1px solid color-mix(in srgb, var(--account-bad) 24%, var(--account-line));
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--account-bad) 5%, var(--basalt-plane));
+}
+.account-alert-icon {
+	display: inline-flex;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--account-bad);
+}
+.account-alert-text {
+	margin: 0;
+	font-size: 0.88rem;
+	color: var(--basalt-copy-body);
+}
+.account-alert-title {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.account-alert.is-cleared {
+	border-color: color-mix(in srgb, var(--account-ok) 28%, var(--account-line));
+	background: color-mix(in srgb, var(--account-ok) 6%, var(--basalt-plane));
+
+	& .account-alert-icon {
+		color: var(--account-ok);
+	}
+}
+/* When narrow the sentence wraps and Pay drops beneath it, on the text's edge. */
+@container (max-width: 560px) {
+	.account-alert {
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: start;
+		padding-inline: var(--basalt-pad-x-narrow);
+	}
+	.account-alert-icon {
+		padding-top: 0.2rem;
+	}
+	.account-alert > .btn {
+		grid-column: 2;
+		justify-self: start;
+	}
+}
+
+/* The plan head gives the plan name at card-title size, what it includes
+   and its price on one muted line, with the plan links level beside it. */
+.account-plan {
+	display: grid;
+	gap: 1rem 2rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	padding: var(--basalt-pad-head) var(--account-pad);
+}
+.account-plan-name {
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.2rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+}
+.account-plan-tag {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+}
+.account-plan-what {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.account-plan-price {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	color: var(--account-muted);
+}
+.account-plan-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+@container (max-width: 760px) {
+	.account-plan {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.account-plan-actions {
+		justify-content: flex-start;
+	}
+}
+@container (max-width: 520px) {
+	.account-plan-actions .btn {
+		flex: 1 1 auto;
+	}
+}
+
+/* Usage: four meters side by side, two by two in a narrower card. */
+.account-usage {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	border-top: 1px solid var(--account-line);
+}
+.account-meter {
+	padding: 1rem var(--account-pad) 1.1rem;
+	border-left: 1px solid var(--account-line);
+
+	&:first-child {
+		border-left: 0;
+	}
+	&.is-high .account-meter-bar span {
+		background: var(--account-warn);
+	}
+	& small {
+		display: block;
+		margin-top: 0.4rem;
+		font-size: 0.75rem;
+		color: var(--basalt-copy-muted);
+	}
+}
+.account-meter-top {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+
+	& b {
+		font-size: 0.86rem;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+}
+.account-meter-bar {
+	height: 8px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+
+	& span {
+		display: block;
+		width: 0;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-hue);
+		transition: width 500ms cubic-bezier(0.3, 0.7, 0.2, 1);
+	}
+}
+@container (max-width: 760px) {
+	.account-usage {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.account-meter:nth-child(3) {
+		border-left: 0;
+	}
+	.account-meter:nth-child(n + 3) {
+		border-top: 1px solid var(--account-line);
+	}
+}
+
+/* A small card face stands for the card on file. */
+.account-minicard {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 46px;
+	height: 30px;
+	border-radius: 6px;
+	font-size: 0.62rem;
+	font-weight: 800;
+	font-style: italic;
+	letter-spacing: 0.035em;
+	color: var(--basalt-on-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 80%, var(--basalt-copy)) var(--basalt-grad);
+}
+.account-row[data-account-row="card"] .account-row-value > span:last-child {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+/* Invoice rows: number, seats, amount, status and a download button. */
+.account-invoice {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) 110px 120px 104px 38px;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--account-pad);
+	border-top: 1px solid var(--account-line);
+
+	& .account-pill {
+		justify-self: start;
+	}
+}
+.account-invoice-id {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+
+	& b {
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.account-invoice-link {
+	font-size: 0.88rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-hue);
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+.account-invoice-id span,
+.account-invoice-seats {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-muted);
+}
+.account-invoice-amount {
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.account-invoice-get {
+	justify-self: end;
+	padding: 0.25rem 0.5rem;
+}
+@container (max-width: 560px) {
+	.account-invoice {
+		row-gap: 0.2rem;
+		grid-template-columns: minmax(0, 1fr) 6.5rem 38px;
+		grid-template-areas: "id amount get" "id pill get";
+	}
+	.account-invoice-id {
+		grid-area: id;
+	}
+	.account-invoice-seats {
+		display: none;
+	}
+	.account-invoice-amount {
+		grid-area: amount;
+	}
+	.account-invoice .account-pill {
+		grid-area: pill;
+		justify-self: start;
+	}
+	.account-invoice-get {
+		grid-area: get;
+	}
+}
+
+/* Team rows: avatar, name and email, role, status and the row's buttons. */
+.account-member {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 32px minmax(0, 1.4fr) minmax(150px, 0.9fr) 86px minmax(160px, auto);
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--account-pad);
+	border-top: 1px solid var(--account-line);
+	transition:
+		background-color 200ms ease,
+		opacity 260ms ease;
+
+	& .account-pill {
+		justify-self: start;
+	}
+	&.is-confirming {
+		background: color-mix(in srgb, var(--account-bad) 6%, var(--basalt-plane));
+	}
+	&.is-new {
+		animation: account-fade-in 400ms ease;
+	}
+	&.is-leaving {
+		opacity: 0;
+	}
+}
+/* Avatar fills are the series colors pulled well toward the text color, so
+   initials in the surface color stay readable in any palette: deep fill
+   and light letters in light mode, light fill and dark letters in dark. */
+.account-member-avatar[data-tone] {
+	font-weight: 700;
+	color: var(--basalt-plane);
+	background: color-mix(in srgb, var(--account-tone-c) 48%, var(--basalt-copy));
+}
+.account-member-avatar[data-tone="1"] {
+	--account-tone-c: var(--basalt-series-1);
+}
+.account-member-avatar[data-tone="2"] {
+	--account-tone-c: var(--basalt-series-2);
+}
+.account-member-avatar[data-tone="3"] {
+	--account-tone-c: var(--basalt-series-3);
+}
+.account-member-avatar[data-tone="4"] {
+	--account-tone-c: var(--basalt-series-4);
+}
+.account-member-avatar[data-tone="5"] {
+	--account-tone-c: var(--basalt-series-5);
+}
+.account-member-avatar[data-tone="6"] {
+	--account-tone-c: var(--basalt-series-6);
+}
+.account-member-who {
+	min-width: 0;
+
+	& p {
+		display: flex;
+		gap: 0.4rem;
+		align-items: center;
+		margin: 0;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& > span {
+		display: block;
+		font-size: 0.79rem;
+		overflow-wrap: break-word;
+		color: var(--basalt-copy-muted);
+	}
+}
+.account-member-role {
+	max-width: 190px;
+	border-radius: 9px;
+}
+.account-member-role-fixed {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding-left: 0.1rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: var(--basalt-copy-muted);
+	}
+}
+.account-member-tools {
+	display: flex;
+	gap: 0.4rem;
+	justify-content: flex-end;
+}
+.account-member-note {
+	font-size: 0.77rem;
+	text-align: right;
+	color: var(--basalt-copy-muted);
+}
+.account-member-confirm {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+@container (max-width: 760px) {
+	/* The status keeps a start-aligned track, so badges of any width begin
+     at the same x; the buttons take the right edge on the line below. */
+	.account-member {
+		row-gap: 0.5rem;
+		grid-template-columns: 32px minmax(0, 1fr) auto 5.5rem;
+		grid-template-areas: "av who who pill" "av role tools tools";
+	}
+	.account-member-avatar {
+		grid-area: av;
+		align-self: start;
+	}
+	.account-member-who {
+		grid-area: who;
+	}
+	.account-member .account-pill {
+		grid-area: pill;
+		justify-self: start;
+	}
+	.account-member-role {
+		grid-area: role;
+		justify-self: start;
+	}
+	.account-member-tools {
+		grid-area: tools;
+	}
+}
+/* On a phone the name and email get the full width, role and status share
+   the next line, and the buttons go underneath. */
+@container (max-width: 440px) {
+	.account-member {
+		gap: 0.5rem 0.6rem;
+		grid-template-columns: 32px minmax(0, 1fr) 5.5rem;
+		grid-template-areas: "av who who" "av role pill" "av tools tools";
+	}
+	.account-member-role {
+		justify-self: stretch;
+		max-width: none;
+	}
+	.account-member-role-fixed {
+		justify-self: start;
+	}
+	.account-member-tools {
+		flex-wrap: wrap;
+		justify-content: flex-start;
+	}
+	.account-member-note {
+		text-align: left;
+	}
+}
+
+/* The card for leaving the account carries a red edge and red dividers. */
+.account-card-danger {
+	border-color: color-mix(in srgb, var(--account-bad) 35%, var(--account-line));
+
+	& .account-card-title .bi {
+		color: var(--account-bad);
+	}
+	& .account-row {
+		border-top-color: color-mix(in srgb, var(--account-bad) 16%, var(--account-line));
+	}
+}
+.account-row {
+	&.is-scheduled {
+		background: color-mix(in srgb, var(--account-bad) 6%, var(--basalt-plane));
+	}
+	&.is-working .account-row-edit {
+		pointer-events: none;
+	}
+}
+
+/* Every dialog shares one frame; --account-tone tints its icon and list
+   marks, primary by default and red or amber for the risky ones. */
+.account-dialog {
+	--account-tone: var(--basalt-hue);
+
+	& .modal-content {
+		border: 1px solid var(--account-line);
+		border-radius: 22px;
+		overflow: hidden;
+		background: var(--basalt-plane);
+		box-shadow: 0 30px 80px -30px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+	}
+}
+.account-dialog-danger {
+	--account-tone: var(--basalt-danger);
+}
+.account-dialog-warning {
+	--account-tone: var(--basalt-warning);
+}
+/* A little extra room on top, 1.5rem between the subtitle and the first
+   content, a full step under the body and a roomy foot. */
+.account-dialog-head {
+	display: flex;
+	gap: 0.9rem;
+	align-items: flex-start;
+	padding: calc(var(--basalt-pad-head) + 0.25rem) var(--basalt-pad-x) 1rem;
+
+	& .btn-close {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+}
+.account-dialog-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 46px;
+	height: 46px;
+	border-radius: 14px;
+	font-size: 1.3rem;
+	color: color-mix(in srgb, var(--account-tone) 85%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--account-tone) 13%, transparent);
+}
+.account-dialog-title {
+	margin: 0 0 0.1rem;
+	font-size: 1.1rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+}
+.account-dialog-sub {
+	margin: 0;
+	font-size: 0.86rem;
+	color: var(--basalt-copy-muted);
+}
+.account-dialog-body {
+	padding: 0.5rem var(--basalt-pad-x) var(--basalt-pad-head);
+
+	& .account-fields {
+		row-gap: 1.25rem;
+	}
+	& .account-reveal + .form-label {
+		margin-top: 1.25rem;
+	}
+	& .form-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+	}
+	& .form-control {
+		border-radius: 10px;
+	}
+}
+.account-dialog-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 1.1rem var(--basalt-pad-x) 1.35rem;
+	border-top: 1px solid var(--account-line);
+}
+.account-dialog-foot-spread {
+	justify-content: space-between;
+}
+.account-dialog-foot-group {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-left: auto;
+}
+.account-dialog-meta {
+	margin: 0.75rem 0 0;
+	font-size: 0.77rem;
+	color: var(--basalt-copy-muted);
+}
+.account-dialog-label {
+	margin: 0 0 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-muted);
+}
+.account-dialog-hint {
+	margin: -0.6rem var(--basalt-pad-x) 1.35rem;
+	font-size: 0.75rem;
+	text-align: right;
+	color: var(--basalt-copy-muted);
+}
+
+/* An eye button inside the field shows or hides what was typed. */
+.account-reveal {
+	position: relative;
+
+	& .form-control {
+		padding-right: 2.75rem;
+	}
+}
+.account-reveal-btn {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.6rem;
+	height: calc(1.5em + 0.75rem + 2px);
+	border: 0;
+	border-radius: 10px;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The strength meter fills one, two or three bars, and the rules tick
+   themselves off as they are met. */
+.account-strength {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin: 0.5rem 0 0.3rem;
+
+	&[data-score="1"] .account-strength-bar span:nth-child(-n + 1) {
+		background: var(--account-bad, var(--basalt-danger));
+	}
+	&[data-score="2"] .account-strength-bar span:nth-child(-n + 2) {
+		background: var(--basalt-warning);
+	}
+	&[data-score="3"] .account-strength-bar span {
+		background: var(--basalt-success);
+	}
+	&[data-score="1"] .account-strength-label {
+		color: color-mix(in srgb, var(--basalt-danger) 80%, var(--basalt-copy));
+	}
+	&[data-score="2"] .account-strength-label {
+		color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+	}
+	&[data-score="3"] .account-strength-label {
+		color: color-mix(in srgb, var(--basalt-success) 72%, var(--basalt-copy));
+	}
+}
+.account-strength-bar {
+	display: grid;
+	gap: 4px;
+	flex: 1 1 auto;
+	grid-template-columns: repeat(3, 1fr);
+
+	& span {
+		height: 6px;
+		border-radius: 999px;
+		background: var(--basalt-plane-alt);
+		transition: background-color 210ms ease;
+	}
+}
+.account-strength-label {
+	flex-shrink: 0;
+	min-width: 7.5rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy-muted);
+}
+.account-rules {
+	display: flex;
+	gap: 0.3rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.77rem;
+	color: var(--basalt-copy-muted);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+	}
+	& .bi::before {
+		content: "\f28a";
+	} /* bi-circle */
+	& li.is-met {
+		color: var(--basalt-copy-body);
+	}
+	& li.is-met .bi {
+		color: var(--basalt-success);
+	}
+	& li.is-met .bi::before {
+		content: "\f26a";
+	} /* bi-check-circle-fill */
+}
+.account-match {
+	min-height: 1.2rem;
+	margin: 0.3rem 0 0.75rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+
+	&.is-ok {
+		color: color-mix(in srgb, var(--basalt-success) 72%, var(--basalt-copy));
+	}
+	&.is-off {
+		color: color-mix(in srgb, var(--basalt-danger) 80%, var(--basalt-copy));
+	}
+}
+.account-check-line {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	padding: 0.75rem 0.9rem;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+	cursor: pointer;
+
+	& .form-check-input {
+		flex-shrink: 0;
+		margin-top: 0.2rem;
+	}
+	& em {
+		font-style: normal;
+		color: var(--basalt-copy-muted);
+	}
+}
+
+/* Two-factor uses one dialog both ways: setting up shows the code to scan,
+   turning off lists what is lost and switches the tone to red. */
+.account-dialog[data-mode="off"] .account-setup,
+.account-dialog[data-mode="on"] .account-consequences {
+	display: none;
+}
+.account-dialog[data-mode="off"] {
+	--account-tone: var(--basalt-danger);
+}
+.account-setup {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: 148px minmax(0, 1fr);
+	align-items: start;
+	margin-bottom: 1rem;
+}
+.account-qr {
+	padding: 10px;
+	border: 1px solid var(--account-line);
+	border-radius: 14px;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	& svg {
+		width: 100%;
+		height: auto;
+	}
+}
+.account-setup-steps {
+	margin: 0;
+	padding-left: 1.1rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& li {
+		margin-bottom: 0.5rem;
+		padding-left: 0.2rem;
+	}
+	& li::marker {
+		font-weight: 700;
+		color: var(--basalt-hue);
+	}
+}
+.account-key {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.4rem;
+
+	& code {
+		padding: 0.3rem 0.5rem;
+		border-radius: 8px;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+}
+@media (max-width: 480px) {
+	.account-setup {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.account-qr {
+		max-width: 160px;
+	}
+}
+.account-code {
+	max-width: 14rem;
+	padding-left: calc(0.75rem + 0.4em);
+	font-family: "Chivo Mono", monospace;
+	font-size: 1.35rem;
+	letter-spacing: 0.4em;
+	text-align: center;
+
+	&::placeholder {
+		color: var(--basalt-copy-faint);
+	}
+}
+
+.account-consequences {
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.65rem;
+		align-items: flex-start;
+		padding: 0.5rem 0;
+		border-top: 1px solid var(--account-line);
+		font-size: 0.86rem;
+		color: var(--basalt-copy-body);
+	}
+	& li:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& .bi {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--account-tone) 80%, var(--basalt-copy));
+	}
+}
+
+/* Backup codes sit numbered in two columns; a used code is struck through. */
+.account-codes {
+	counter-reset: code;
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	padding: 1rem;
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+	list-style: none;
+
+	& li {
+		counter-increment: code;
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		padding: 0.5rem 0.7rem;
+		border-radius: 10px;
+		background: var(--basalt-plane);
+	}
+	& code {
+		margin-right: auto;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.92rem;
+		color: var(--basalt-copy);
+	}
+	& li::before {
+		content: counter(code) ".";
+		min-width: 1.1rem;
+		font-size: 0.71rem;
+		color: var(--basalt-copy-muted);
+	}
+	& li span {
+		font-size: 0.7rem;
+		white-space: nowrap;
+		color: var(--basalt-copy-muted);
+	}
+	& li.is-used code {
+		text-decoration: line-through;
+		color: var(--basalt-copy-faint);
+	}
+	&.is-fresh li {
+		animation: account-fade-in 360ms ease both;
+	}
+}
+.account-confirmstrip {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+	padding: 0.8rem 1rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-warning) 40%, transparent);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-warning) 10%, var(--basalt-plane));
+
+	& p {
+		display: flex;
+		gap: 0.5rem;
+		flex: 1 1 240px;
+		margin: 0;
+		font-size: 0.84rem;
+		color: var(--basalt-copy);
+	}
+	& p .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+	}
+	& > div {
+		display: flex;
+		gap: 0.4rem;
+	}
+}
+
+/* Signing out elsewhere lists every device that goes, above a warning. */
+.account-goinglist {
+	margin: 0 0 1rem;
+	padding: 0;
+	border: 1px solid var(--account-line);
+	border-radius: 14px;
+	overflow: hidden;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 34px minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.65rem 0.9rem;
+		border-top: 1px solid var(--account-line);
+	}
+	& li:first-child {
+		border-top: 0;
+	}
+	& .bi-box-arrow-right {
+		color: color-mix(in srgb, var(--basalt-danger) 80%, var(--basalt-copy));
+	}
+	& b {
+		display: block;
+		font-size: 0.86rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& small {
+		display: block;
+		font-size: 0.76rem;
+		color: var(--basalt-copy-muted);
+	}
+}
+.account-goinglist-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 10px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.account-warnline {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	margin: 0;
+	padding: 0.75rem 0.9rem;
+	border-radius: 12px;
+	font-size: 0.84rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-danger) 8%, var(--basalt-plane));
+
+	& .bi {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--basalt-danger) 80%, var(--basalt-copy));
+	}
+}
+.account-warnline-soft {
+	margin-bottom: 0.75rem;
+	background: var(--basalt-plane-alt);
+
+	& .bi {
+		color: var(--basalt-copy-muted);
+	}
+}
+
+/* Hold to confirm: a fill sweeps across the button over the hold time. */
+.account-hold {
+	position: relative;
+	min-width: 14rem;
+	overflow: hidden;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: none;
+}
+.account-hold-fill {
+	position: absolute;
+	inset: 0;
+	transform: scaleX(0);
+	transform-origin: left center;
+	background: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+.account-hold.is-holding .account-hold-fill {
+	transform: scaleX(1);
+	transition: transform 1500ms linear;
+}
+.account-hold-text {
+	position: relative;
+}
+
+/* Invites: typed addresses turn into chips, and the role is picked from tiles. */
+.account-invitees {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	min-height: 1.75rem;
+	margin: 0.5rem 0 1rem;
+}
+.account-invitee {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+
+	&.is-bad {
+		color: color-mix(in srgb, var(--basalt-danger) 80%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-danger) 12%, transparent);
+	}
+	&.is-dupe {
+		color: var(--basalt-copy-muted);
+		background: var(--basalt-plane-alt);
+	}
+}
+.account-invitees-hint {
+	font-size: 0.77rem;
+	color: var(--basalt-copy-muted);
+}
+.account-roles {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	& legend {
+		float: none;
+		width: auto;
+		margin-bottom: 0.5rem;
+		padding: 0;
+	}
+}
+/* The role tiles are the shared .basalt-choice; the icon square fills in
+   once a role is picked. */
+.account-roles-grid {
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.account-roles .basalt-choice {
+	gap: 0.4rem;
+	justify-content: flex-start;
+	padding: 0.85rem 0.4rem 0.75rem;
+	border-radius: 14px;
+	font-size: 0.77rem;
+	color: var(--basalt-copy-body);
+
+	&:has(input:checked) {
+		color: var(--basalt-copy);
+	}
+}
+.account-role-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 11px;
+	font-size: 1.05rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+}
+.account-roles .basalt-choice:has(input:checked) .account-role-icon {
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.account-roles-desc {
+	margin: 0.75rem 0 0;
+	padding: 0.65rem 0.85rem;
+	border-radius: 12px;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+@media (max-width: 767.98px) {
+	.account-roles-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+/* While a new card is typed in, a card face above the form follows along. */
+.account-cardface {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	width: 100%;
+	max-width: 300px;
+	aspect-ratio: 1.586;
+	margin: 0 auto var(--basalt-pad-head);
+	padding: 1.1rem 1.25rem;
+	border-radius: 16px;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+	box-shadow: 0 18px 40px -22px color-mix(in srgb, var(--basalt-hue) 80%, transparent);
+}
+.account-cardface-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+	& b {
+		font-size: 0.9rem;
+		font-weight: 800;
+		font-style: italic;
+		letter-spacing: 0.035em;
+	}
+}
+.account-cardface-chip {
+	width: 34px;
+	height: 25px;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--basalt-on-hue) 35%, transparent);
+}
+.account-cardface-number {
+	font-family: "Chivo Mono", monospace;
+	font-size: 1.05rem;
+	letter-spacing: 0.055em;
+	white-space: nowrap;
+}
+.account-cardface-foot {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	font-size: 0.77rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+
+	& span:first-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+.account-fields-card {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	max-width: none;
+}
+.account-fields-wide {
+	grid-column: 1 / -1;
+}
+@media (max-width: 420px) {
+	.account-fields-card {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.account-fields-card > :last-child {
+		grid-column: 1 / -1;
+	}
+}
+
+/* Deactivating sets what pauses beside what is kept. */
+.account-split {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-bottom: 1.1rem;
+
+	& ul {
+		margin: 0;
+		padding-left: 1.05rem;
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+	}
+	& li {
+		margin-bottom: 0.3rem;
+	}
+	& li:last-child {
+		margin-bottom: 0;
+	}
+}
+.account-split-col {
+	padding: 0.9rem 1rem;
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--basalt-warning) 9%, var(--basalt-plane));
+}
+.account-split-col-keep {
+	background: color-mix(in srgb, var(--basalt-success) 8%, var(--basalt-plane));
+}
+.account-split-head {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+	}
+}
+.account-split-col-keep .account-split-head .bi {
+	color: color-mix(in srgb, var(--basalt-success) 75%, var(--basalt-copy));
+}
+@media (max-width: 480px) {
+	.account-split {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Deleting counts what goes, says when, and wants the name typed in. */
+.account-losing {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0 0 0.75rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		padding: 0.7rem 0.8rem;
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--basalt-danger) 7%, var(--basalt-plane));
+	}
+	& b {
+		display: block;
+		font-size: 1.1rem;
+		font-weight: 800;
+		line-height: 1.2;
+		color: var(--basalt-copy);
+	}
+	& span {
+		display: block;
+		font-size: 0.76rem;
+		line-height: 1.35;
+		color: var(--basalt-copy-muted);
+	}
+}
+.account-when {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0 0 0.75rem;
+	border: 1px solid var(--account-line);
+	border-radius: 12px;
+	overflow: hidden;
+
+	& > div {
+		padding: 0.6rem 0.85rem;
+	}
+	& > div + div {
+		border-left: 1px solid var(--account-line);
+	}
+	& span {
+		display: block;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--basalt-copy-muted);
+	}
+	& b {
+		font-size: 0.86rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.account-export-first {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+	padding: 0.6rem 0.85rem;
+	border: 1px dashed var(--account-control);
+	border-radius: 12px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	&.is-done {
+		border-style: solid;
+		border-color: color-mix(in srgb, var(--basalt-success) 40%, transparent);
+	}
+}
+.account-typeme {
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--basalt-danger) 85%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 10%, transparent);
+}
+.account-dialog [data-account-delete-input] {
+	font-family: "Chivo Mono", monospace;
+
+	&.is-match {
+		border-color: var(--basalt-danger);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-danger) 18%, transparent);
+	}
+}
+@media (max-width: 480px) {
+	.account-losing {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.account-when {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.account-when > div + div {
+		border-left: 0;
+		border-top: 1px solid var(--account-line);
+	}
+}
+
+/* Toasts stack in the bottom right corner; a colored edge gives the tone. */
+.account-toasts {
+	position: fixed;
+	right: 1.25rem;
+	bottom: 1.25rem;
+	z-index: 1090;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	max-width: 360px;
+}
+.account-toast {
+	--account-toast-tone: var(--basalt-hue);
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	padding: 0.75rem 0.9rem;
+	border: 1px solid var(--account-line);
+	border-radius: 12px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 14px 34px -14px color-mix(in srgb, var(--basalt-copy) 40%, transparent);
+	animation: account-toast-in 240ms ease-out;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.65rem;
+		bottom: 0.65rem;
+		left: -1px;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--account-toast-tone);
+	}
+	& .bi {
+		margin-top: 1px;
+		font-size: 1.05rem;
+		color: var(--basalt-hue);
+	}
+}
+.account-toast-done {
+	--account-toast-tone: var(--basalt-success);
+
+	& .bi {
+		color: var(--basalt-success);
+	}
+}
+.account-toast-warn {
+	--account-toast-tone: var(--basalt-warning);
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 80%, var(--basalt-copy));
+	}
+}
+.account-toast-problem {
+	--account-toast-tone: var(--basalt-danger);
+
+	& .bi {
+		color: var(--basalt-danger);
+	}
+}
+.account-toast > span {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.account-toast-action {
+	flex-shrink: 0;
+	align-self: center;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--account-line);
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		background: var(--basalt-plane-alt);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.account-toast.is-out {
+	transform: translateX(16px);
+	opacity: 0;
+	transition:
+		opacity 200ms ease,
+		transform 200ms ease;
+}
+@keyframes account-toast-in {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.account-toasts {
+		right: 1rem;
+		bottom: 1rem;
+		left: 1rem;
+		max-width: none;
+	}
+}
+
+/* With gradients off (data-basalt-gradients="off" on the root), the two
+   card faces, the only gradients here, fall back to the plain primary. */
+:root[data-basalt-gradients="off"] .account-cardface,
+:root[data-basalt-gradients="off"] .account-minicard {
+	background: var(--basalt-hue);
+}
+
+/* With reduced motion, nothing slides, fades, pops or sweeps. */
+@media (prefers-reduced-motion: reduce) {
+	.account-ring-fill circle,
+	.account-meter-bar span,
+	.account-chan span,
+	.account-chan span .bi,
+	.account-row,
+	.account-session,
+	.account-member {
+		transition: none;
+	}
+	.account-ring.is-bump .account-ring-count,
+	.account-check.is-changed .account-check-icon,
+	.account-row.is-editing .account-row-form,
+	.account-card.is-editing .account-row-form,
+	.account-row-flag.is-saved,
+	.account-codes.is-fresh li,
+	.account-member.is-new,
+	.account-session.is-highlight,
+	.account-chan.is-refused span,
+	.account-toast {
+		animation: none;
+	}
+	.account-hold.is-holding .account-hold-fill {
+		transition: none;
+	}
+}

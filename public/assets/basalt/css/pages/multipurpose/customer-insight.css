@@ -1,0 +1,231 @@
+/* Styles for the single-account page (customer-insight.html),
+   all under .cad-. The page also loads customer-insights.css and reuses
+   its cards, figures, charts and tables, so these rules only add what one
+   account needs and the two pages look like one product. */
+
+/* The header puts name and summary on the left and the buttons on the
+   right, then stacks the buttons underneath on a phone. */
+.basalt-hero-detail.cad-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.cad-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	margin: 0;
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.cad-head {
+		row-gap: 1rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+
+/* Phones fit two figures to a row and give the last one the full width. */
+@media (max-width: 575.98px) {
+	.ca-kpis.cad-kpis {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.cad-kpis {
+		& .ca-kpi:last-child {
+			grid-column: 1 / -1;
+		}
+		& .ca-kpi {
+			padding: 1rem;
+		}
+		& .ca-kpi-value {
+			font-size: 1.35rem;
+		}
+	}
+}
+
+/* From 1200px the revenue chart takes two thirds and a list the rest. */
+@media (min-width: 1200px) {
+	.ca-card.cad-card-wide {
+		grid-column: span 8;
+	}
+	.ca-card.cad-card-narrow {
+		grid-column: span 4;
+	}
+}
+.cad-stats {
+	margin-bottom: 1.25rem;
+}
+@media (min-width: 768px) {
+	.ca-stats.cad-stats {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		max-width: 28rem;
+	}
+}
+
+/* Add-ons are a ruled list: name and price note left, on or off right. */
+.cad-addons {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cad-addon {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.cad-addon-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cad-addon-name {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cad-addon-note,
+.cad-feed-time {
+	font-size: 0.77rem;
+	color: var(--ca-quiet);
+}
+.cad-off {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--ca-quiet);
+}
+
+/* The activity feed is a timeline: round icons joined by a thin line. */
+.cad-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cad-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.1rem;
+		bottom: 0.1rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.cad-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.cad-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+/* The first time the feed is on screen, each entry rises in turn and the
+   line below it draws down to the next. */
+@media (prefers-reduced-motion: no-preference) {
+	.cad-feed.is-arriving > .cad-feed-item {
+		animation: cad-rise 480ms ease-out calc(var(--cad-at, 0) * 110ms) both;
+
+		&::before {
+			transform-origin: top;
+			animation: cad-line-draw 360ms ease-out calc(var(--cad-at, 0) * 110ms + 260ms) both;
+		}
+	}
+	@keyframes cad-line-draw {
+		from {
+			transform: scaleY(0);
+		}
+	}
+}
+.cad-more {
+	align-self: flex-start;
+	margin-top: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Ticket and invoice tables borrow the Customers header style with
+   slightly shorter rows, and sit flush with the card's edges. */
+.cad-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+	font-variant-numeric: tabular-nums;
+
+	& > :not(caption) > * > * {
+		padding: 1rem 0.75rem;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& thead th {
+		padding-top: 0;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--ca-quiet);
+	}
+	& tbody td {
+		color: var(--basalt-copy);
+	}
+	& tbody td + td {
+		white-space: nowrap;
+	}
+	& tbody tr:last-child td {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+
+/* Ticket and invoice rows rise one after another on first view. */
+@media (prefers-reduced-motion: no-preference) {
+	.cad-table > tbody.is-arriving > tr {
+		animation: cad-rise 480ms ease-out calc(var(--cad-at, 0) * 80ms) both;
+	}
+	@keyframes cad-rise {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+	}
+}

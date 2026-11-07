@@ -1,0 +1,845 @@
+/* Basalt - Brands page (Catalog)
+   Namespaced under .cb-*
+   The header, cards, segmented switch, status pills, drawer,
+   dialog and empty state are the shared components from
+   basalt.css; this file lays out the sales share bar, the
+   brand list, the drawer's contents and the logo field.
+   Every color is a --basalt-* token. */
+
+.cb-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--cb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--cb-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--cb-line: var(--basalt-edge);
+}
+.cb-drawer,
+.cb-modal {
+	--cb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--cb-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--cb-line: var(--basalt-edge);
+}
+
+/* One chart color per brand. The logo tile, its slice of the share
+   bar and its legend dot all use it. */
+.cb-tone-1 {
+	--cb-tone: var(--basalt-series-1);
+}
+.cb-tone-2 {
+	--cb-tone: var(--basalt-series-2);
+}
+.cb-tone-3 {
+	--cb-tone: var(--basalt-series-3);
+}
+.cb-tone-4 {
+	--cb-tone: var(--basalt-series-4);
+}
+.cb-tone-5 {
+	--cb-tone: var(--basalt-series-5);
+}
+.cb-tone-6 {
+	--cb-tone: var(--basalt-series-6);
+}
+.cb-tone-7 {
+	--cb-tone: var(--basalt-series-7);
+}
+.cb-tone-8 {
+	--cb-tone: var(--basalt-series-8);
+}
+
+/* Logo tile: the uploaded logo, or the brand's initials on a
+   gradient of its color. The color keeps its hue and strength but
+   takes a fixed lightness (deep in light mode, pale in dark mode), so
+   the initials in the surface color read in every palette. Rounded
+   square, so it never reads as a person. */
+.cb-logo {
+	--cb-logo-a: color-mix(in srgb, oklch(from var(--cb-tone, var(--basalt-hue)) 0.5 c h) 100%, transparent);
+	--cb-logo-b: color-mix(in srgb, oklch(from var(--cb-tone, var(--basalt-hue)) 0.4 c h) 100%, transparent);
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	overflow: hidden;
+	font-size: 0.85rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	color: var(--basalt-plane);
+	background-color: var(--cb-logo-a);
+	background-image: linear-gradient(140deg, var(--cb-logo-a), var(--cb-logo-b));
+}
+:root[data-basalt-gradients="off"] .cb-logo {
+	background-image: none;
+}
+[data-bs-theme="dark"] .cb-logo {
+	--cb-logo-a: color-mix(in srgb, oklch(from var(--cb-tone, var(--basalt-hue)) 0.8 c h) 100%, transparent);
+	--cb-logo-b: color-mix(in srgb, oklch(from var(--cb-tone, var(--basalt-hue)) 0.7 c h) 100%, transparent);
+}
+.cb-logo img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	background: var(--basalt-plane);
+}
+.cb-logo:has(img) {
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+}
+.cb-logo-sm {
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 0.8rem;
+}
+.cb-logo-lg {
+	width: 4rem;
+	height: 4rem;
+	border-radius: 16px;
+	font-size: 1.25rem;
+}
+
+.cb-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+
+.cb-cardhead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.cb-cardhead > div {
+	flex: 1 1 18rem;
+	min-width: 0;
+}
+.cb-cardhead > .btn {
+	white-space: nowrap;
+}
+.cb-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cb-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--cb-quiet);
+}
+
+/* Sales by brand */
+.cb-share {
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+}
+.cb-total {
+	display: flex;
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0.25rem 0 0;
+}
+.cb-total-value {
+	font-size: 2.1rem;
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.cb-total-change {
+	display: inline-flex;
+	align-items: center;
+	font-size: 0.95rem;
+	font-weight: 700;
+}
+.cb-total-note {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--cb-quiet);
+}
+.cb-share-bar {
+	display: flex;
+	gap: 4px;
+	height: 1.5rem;
+	margin-top: 1.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+}
+.cb-share-seg {
+	transform-origin: left center;
+	flex: 0 0 auto;
+	min-width: 6px;
+	background: var(--cb-tone);
+	animation: cb-grow 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.cb-share-seg:first-child {
+	border-radius: 999px 0 0 999px;
+}
+.cb-share-seg:last-child {
+	border-radius: 0 999px 999px 0;
+}
+@keyframes cb-grow {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
+/* The key under the bar: one button per brand, its logo tile in
+   the same color as its slice. */
+.cb-share-legend {
+	display: flex;
+	gap: 0.25rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 1.25rem 0 0 -0.65rem;
+	padding: 0;
+	list-style: none;
+}
+.cb-share-item {
+	display: grid;
+	column-gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	grid-template-areas: "logo name" "logo num";
+	align-items: center;
+	min-width: 9rem;
+	padding: 0.5rem 0.65rem;
+	border: 0;
+	border-radius: 12px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+	transition: background-color 130ms ease;
+}
+.cb-share-item:hover {
+	background: var(--basalt-wash);
+}
+.cb-share-item:focus {
+	outline: none;
+}
+.cb-share-item:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 0;
+}
+.cb-share-item .cb-logo {
+	grid-area: logo;
+}
+.cb-share-name {
+	grid-area: name;
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.cb-share-num {
+	grid-area: num;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--cb-quiet);
+}
+.cb-share-note {
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cb-quiet);
+}
+.cb-share-note:empty {
+	display: none;
+}
+
+/* Toolbar */
+.cb-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: 0 var(--basalt-pad-x) 1.25rem;
+}
+/* The search stops growing at a comfortable width so the status switch
+   stays beside it. */
+.cb-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 13rem;
+}
+.cb-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--cb-quiet);
+	pointer-events: none;
+}
+.cb-search .form-control {
+	padding-left: 2.4rem;
+}
+.cb-filter {
+	flex: 0 0 auto;
+}
+/* When both no longer fit side by side, the search keeps its own row. */
+@container (max-width: 720px) {
+	.cb-toolbar {
+		flex-wrap: wrap;
+	}
+	.cb-search {
+		flex: 1 1 100%;
+		max-width: 28rem;
+	}
+}
+.cb-summary {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) 1rem;
+	font-size: 0.8rem;
+	color: var(--cb-quiet);
+}
+
+@container (max-width: 560px) {
+	.cb-cardhead,
+	.cb-share,
+	.cb-toolbar,
+	.cb-summary {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.cb-search {
+		min-width: 0;
+	}
+	.cb-share-legend {
+		display: grid;
+		gap: 0.25rem 0.5rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.cb-share-item {
+		width: 100%;
+		min-width: 0;
+	}
+	.cb-total-value {
+		font-size: 1.75rem;
+	}
+}
+
+/* Table */
+.cb-table-wrap {
+	border-top: 1px solid var(--cb-line);
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.cb-table-wrap[hidden] {
+	display: none;
+}
+.cb-table {
+	--bs-table-bg: transparent;
+	--bs-table-hover-bg: var(--basalt-wash);
+}
+.cb-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.75rem;
+	border-color: var(--cb-line);
+	vertical-align: top;
+	color: var(--basalt-copy);
+}
+.cb-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.cb-table > :not(caption) > * > :last-child {
+	padding-right: calc(var(--basalt-pad-x) - 0.5rem);
+}
+.cb-table thead th {
+	padding-top: 0.85rem;
+	padding-bottom: 0.85rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--cb-quiet);
+}
+.cb-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.cb-table tbody tr {
+	cursor: pointer;
+}
+.cb-table tbody tr:hover > * {
+	background: var(--basalt-wash);
+}
+.cb-table th.cb-col-sales,
+.cb-table td.cb-col-sales,
+.cb-table th.cb-col-stock,
+.cb-table td.cb-col-stock {
+	text-align: right;
+}
+.cb-table td.cb-col-act {
+	width: 1%;
+}
+.cb-col-name {
+	width: 34%;
+}
+.cb-col-products,
+.cb-col-status {
+	white-space: nowrap;
+}
+
+/* Sortable headers look like the other headers until pointed at. */
+.cb-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+}
+.cb-sort:hover {
+	color: var(--basalt-copy);
+}
+.cb-sort:focus {
+	outline: none;
+}
+.cb-sort:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.cb-sort .bi {
+	font-size: 0.8rem;
+}
+[aria-sort="none"] .cb-sort .bi {
+	opacity: 0.55;
+}
+[aria-sort="ascending"] .cb-sort,
+[aria-sort="descending"] .cb-sort {
+	color: var(--basalt-copy);
+}
+
+.cb-who {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.cb-who > span:last-child {
+	min-width: 0;
+}
+.cb-link {
+	display: inline;
+	padding: 0;
+	border: 0;
+	font-family: inherit;
+	text-align: left;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+}
+.cb-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--cb-link);
+}
+.cb-link:focus {
+	outline: none;
+}
+.cb-link:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.cb-line {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.cb-sub {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--cb-quiet);
+}
+.cb-sub-warning {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+.cb-sub-danger {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.cb-sub-up {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+}
+.cb-sub-down {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.cb-money {
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cb-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+}
+.cb-more {
+	margin-top: -0.3rem;
+}
+.cb-page .dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.cb-empty {
+	padding: 2.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--cb-line);
+}
+
+/* Narrower cards keep the table but drop products and stock, which
+   the drawer shows. */
+@container (max-width: 880px) {
+	.cb-table .cb-col-products,
+	.cb-table .cb-col-stock {
+		display: none;
+	}
+	.cb-col-name {
+		width: auto;
+	}
+}
+
+/* Phones: each brand becomes a short record. Name on top, then sales
+   and status underneath. */
+@container (max-width: 640px) {
+	.cb-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.cb-table,
+	.cb-table tbody,
+	.cb-table td {
+		display: block;
+		width: 100%;
+	}
+	.cb-table tbody tr {
+		display: grid;
+		gap: 0.9rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"name  name   act"
+			"sales status status";
+		align-items: start;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--cb-line);
+	}
+	.cb-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.cb-table > :not(caption) > * > *,
+	.cb-table > :not(caption) > * > :first-child,
+	.cb-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.cb-table tbody tr:hover > * {
+		background: none;
+	}
+	.cb-table tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.cb-table td.cb-col-name {
+		grid-area: name;
+	}
+	.cb-table td.cb-col-act {
+		grid-area: act;
+		width: auto;
+	}
+	.cb-table td.cb-col-status {
+		grid-area: status;
+		width: auto;
+	}
+	.cb-table td.cb-col-sales {
+		grid-area: sales;
+		width: auto;
+		padding-left: 3.35rem;
+		text-align: left;
+	}
+	.cb-empty {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+/* Narrow phones: the actions take their own line under the record, so
+   the name keeps its width. */
+@container (max-width: 420px) {
+	.cb-table tbody tr {
+		grid-template-areas: "name name name" "sales status status" "act act act";
+	}
+	.cb-table td.cb-col-act {
+		padding-left: 3.35rem;
+	}
+}
+
+/* Drawer */
+.cb-drawer {
+	--bs-offcanvas-width: 480px;
+}
+.cb-drawer .offcanvas-header .cb-logo {
+	width: 2.75rem;
+	height: 2.75rem;
+}
+.cb-r-state {
+	margin-bottom: 1.5rem;
+}
+.cb-r-lead {
+	margin: 0.85rem 0 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.cb-r-lead strong {
+	color: var(--basalt-copy);
+}
+.cb-alert {
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	margin: 1rem 0 0;
+	padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+	border-radius: 10px;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+/* A straight inset bar, not a border that bends round the corners. */
+.cb-alert::before {
+	content: "";
+	position: absolute;
+	top: 0.5rem;
+	bottom: 0.5rem;
+	left: 0.4rem;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--cb-alert-tone);
+}
+.cb-alert .bi {
+	flex-shrink: 0;
+	margin-top: 0.1rem;
+	color: color-mix(in srgb, var(--cb-alert-tone) 55%, var(--basalt-copy));
+}
+.cb-alert-warning {
+	--cb-alert-tone: var(--basalt-warning);
+}
+
+.cb-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cb-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--cb-line);
+}
+.cb-item:first-child {
+	padding-top: 0;
+}
+.cb-item-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--cb-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cb-tone) 14%, var(--basalt-plane));
+}
+.cb-item-text {
+	min-width: 0;
+}
+.cb-item-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cb-item-stock {
+	font-size: 0.84rem;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cb-item-stock .cb-sub {
+	margin-top: 0.1rem;
+}
+.cb-r-more {
+	margin: 0.85rem 0 0;
+	font-size: 0.84rem;
+	color: var(--cb-quiet);
+}
+.cb-r-more:empty {
+	display: none;
+}
+.cb-r-more a,
+.cb-facts a,
+.cb-alert a {
+	font-weight: 600;
+	color: var(--cb-link);
+}
+.cb-alert a {
+	white-space: nowrap;
+}
+.cb-r-more a:hover,
+.cb-facts a:hover,
+.cb-alert a:hover {
+	color: var(--basalt-copy);
+}
+
+.cb-facts {
+	margin: 0;
+}
+.cb-facts > div {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--cb-line);
+}
+.cb-facts > div:first-child {
+	padding-top: 0;
+}
+.cb-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.cb-facts dt {
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: var(--cb-quiet);
+}
+.cb-facts dd {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.cb-facts dd .cb-sub {
+	margin-top: 0.1rem;
+}
+.cb-drawer .basalt-drawer-foot > [hidden] {
+	display: none;
+}
+
+/* Dialog */
+.cb-modal .basalt-dialog-body > .row {
+	--bs-gutter-x: 1.25rem;
+}
+.cb-modal legend.form-label {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+}
+.cb-modal fieldset {
+	min-width: 0;
+	border: 0;
+}
+.cb-form-logo {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.cb-form-logo-label {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cb-form-logo-hint {
+	margin: 0.2rem 0 0.6rem;
+	font-size: 0.8rem;
+	color: var(--cb-quiet);
+}
+.cb-form-logo-btns {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.cb-form-logo-btns .btn {
+	white-space: nowrap;
+}
+.cb-form-logo-remove {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--cb-link);
+}
+.cb-form-logo-remove:hover {
+	color: var(--basalt-copy);
+}
+.cb-form-logo-remove[hidden] {
+	display: none;
+}
+/* A file input hidden from view hands its keyboard focus to its button. */
+.cb-form-logo:has(input[type="file"]:focus-visible) label.btn {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.cb-fit {
+	max-width: 15rem;
+}
+.cb-lead {
+	max-width: 10rem;
+}
+.cb-lead.is-invalid ~ .invalid-feedback {
+	display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cb-share-seg {
+		animation: none;
+	}
+	.cb-share-item,
+	.cb-table tbody tr {
+		transition: none;
+	}
+}
+
+@media print {
+	.cb-toolbar,
+	.cb-col-act,
+	.cb-cardhead > .btn {
+		display: none;
+	}
+	.cb-share-seg {
+		animation: none;
+	}
+	.cb-share-item,
+	.cb-table tbody tr {
+		transition: none;
+	}
+}

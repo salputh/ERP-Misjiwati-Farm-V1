@@ -1,0 +1,2083 @@
+/*
+ * Project board (project-board.html). Every class here starts with pb-.
+ *
+ * The page leans on shared Basalt parts: the hero header, cards, sortable
+ * boards, the command menu, multi-select menus, segmented controls, styled
+ * selects, tag input, steppers, drawers, dialogs, choice tiles, empty
+ * states, skeletons, avatars and toasts. This sheet places those parts and
+ * draws what only this page has: the toolbar, columns and swimlanes, cards,
+ * quick add, the list view and the issue drawer.
+ *
+ * Colors come only from palette tokens, so every palette and both modes
+ * work with nothing to change here.
+ */
+
+/* Page tokens. Quiet text is the muted token pulled toward the body color,
+   which keeps it above 4.5:1 on light palettes and tinted columns. */
+.pb-page,
+.pb-layer {
+	--pb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--pb-late: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+	--pb-soon: color-mix(in srgb, var(--basalt-warning) 46%, var(--basalt-copy));
+	--pb-good: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	--pb-col-bg: color-mix(in srgb, var(--basalt-canvas) 62%, var(--basalt-plane));
+	--pb-col-w: 14.5rem;
+	--pb-c: var(--basalt-series-1);
+}
+
+/* Desktops may narrow the columns until the board fits without scrolling;
+   tablets and phones keep them wider and scroll instead. */
+@media (min-width: 1200px) {
+	.pb-page {
+		--pb-col-w: 10.75rem;
+	}
+}
+
+/* A column or label takes its color from the palette's chart series by number. */
+.pb-c1 {
+	--pb-c: var(--basalt-series-1);
+}
+.pb-c2 {
+	--pb-c: var(--basalt-series-2);
+}
+.pb-c3 {
+	--pb-c: var(--basalt-series-3);
+}
+.pb-c4 {
+	--pb-c: var(--basalt-series-4);
+}
+.pb-c5 {
+	--pb-c: var(--basalt-series-5);
+}
+.pb-c6 {
+	--pb-c: var(--basalt-series-6);
+}
+.pb-c7 {
+	--pb-c: var(--basalt-series-7);
+}
+.pb-c8 {
+	--pb-c: var(--basalt-series-8);
+}
+
+/* Small parts used all over the page: the color dot and the key cap. */
+.pb-dot {
+	flex-shrink: 0;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--pb-c);
+}
+
+.pb-kbd {
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.38rem;
+	border-radius: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+	font:
+		600 0.7rem/1.3 "Chivo Mono",
+		monospace;
+	color: inherit;
+	background: transparent;
+	box-shadow: none;
+}
+
+/* Every control drawn here shows the same hue ring on keyboard focus. */
+.pb-project-btn:focus-visible,
+.pb-people-btn:focus-visible,
+.pb-col-expand:focus-visible,
+.pb-addcol:focus-visible,
+.pb-board .pb-card .pb-card-main:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+.pb-quick-open:focus-visible,
+.pb-lane-toggle:focus-visible,
+.pb-label-pick:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+/* Quick add and the comment box end on the same row: a hint, then the button. */
+.pb-quick-foot,
+.pb-comment-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.4rem;
+}
+
+.pb-quick-hint,
+.pb-comment-hint {
+	font-size: 0.71rem;
+	color: var(--pb-quiet);
+}
+
+/* The toolbar sits in a card: two rows, the second set off by a rule. Its own width,
+   not the window's, decides how the clusters wrap, so the open sidebar counts.
+   Sizing it as a container also makes it a stacking layer, lifted so its menus clear the board. */
+.pb-toolbar.basalt-box {
+	--pb-ctl: 2.375rem;
+	container: pb-toolbar / inline-size;
+	position: relative;
+	z-index: 3;
+	margin-bottom: 1.5rem;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+
+	@media (max-width: 767.98px) {
+		padding: 1rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.pb-toolbar-row {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& + .pb-toolbar-row {
+		margin-top: 0.9rem;
+		padding-top: 0.9rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+
+/* Every boxed control in the toolbar stands the same height. */
+.pb-toolbar {
+	& .pb-project-btn,
+	& .pb-search .form-control,
+	& .pb-create,
+	& .pb-filter > .dropdown-toggle,
+	& .pb-group,
+	& .basalt-segmented {
+		height: var(--pb-ctl);
+	}
+
+	& .basalt-segmented-option {
+		min-height: 0;
+	}
+}
+
+/* The trailing cluster in each row is pinned to the right edge. */
+.pb-toolbar-end {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-left: auto;
+}
+
+/* Who, and which filters, each hold together as one cluster. */
+.pb-who {
+	display: flex;
+	gap: 0.75rem 1rem;
+	align-items: center;
+}
+
+.pb-what {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+
+.pb-inline-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--pb-quiet);
+}
+
+.pb-create {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding-left: 0.85rem;
+	padding-right: 0.85rem;
+
+	@media (max-width: 767.98px) {
+		& .pb-kbd {
+			display: none;
+		}
+	}
+}
+
+.pb-toolbar .pb-group {
+	width: auto;
+	min-width: 8.5rem;
+	font-size: 0.875rem;
+}
+
+/* The project switcher reads as one line: a lettered tile, a small caption, the name. */
+.pb-project-btn {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+	max-width: 100%;
+	padding: 0 0.75rem 0 0.3rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: var(--bs-border-radius);
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:hover,
+	&[aria-expanded="true"] {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	& .pb-project-tile {
+		flex: none;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 7px;
+		font-size: 0.8rem;
+	}
+}
+
+.pb-project-tile,
+.pb-project-menu .basalt-command-icon.pb-project-tile {
+	color: color-mix(in srgb, var(--pb-c) 38%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pb-c) 20%, var(--basalt-plane));
+}
+
+.pb-project-tile {
+	display: inline-grid;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 9px;
+	font-weight: 750;
+	font-size: 0.9rem;
+}
+
+.pb-project-text {
+	display: flex;
+	gap: 0.45rem;
+	align-items: baseline;
+	min-width: 0;
+	line-height: 1.25;
+}
+
+.pb-project-label {
+	font-size: 0.67rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--pb-quiet);
+}
+
+.pb-project-name {
+	overflow: hidden;
+	font-weight: 650;
+	font-size: 0.92rem;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.pb-project-chev {
+	margin-left: auto;
+	padding-left: 0.2rem;
+	color: var(--pb-quiet);
+}
+
+.pb-project-menu {
+	width: 20rem;
+	max-width: calc(100vw - 2rem);
+}
+
+/* Search keeps its magnifier and the "/" key cap inside the field, and takes all spare width. */
+.pb-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 0;
+
+	& > .bi-search {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		color: var(--pb-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+		padding-right: 2.2rem;
+		font-size: 0.875rem;
+	}
+}
+
+.pb-search-kbd {
+	position: absolute;
+	top: 50%;
+	right: 0.6rem;
+	transform: translateY(-50%);
+	margin: 0;
+	color: var(--pb-quiet);
+	pointer-events: none;
+}
+
+/* People are a row of overlapping avatars; a chosen face gets a ring and room beside it. */
+.pb-people {
+	display: flex;
+	align-items: center;
+	padding-left: 0.3rem;
+}
+
+.pb-people-btn {
+	position: relative;
+	margin-left: -0.4rem;
+	padding: 0;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	line-height: 0;
+	background: var(--basalt-plane);
+	transition:
+		margin 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover,
+	&:focus-visible {
+		z-index: 2;
+		margin-right: 0.2rem;
+	}
+
+	&.is-on {
+		z-index: 1;
+		box-shadow: 0 0 0 2px var(--basalt-hue);
+	}
+
+	&.is-on + .pb-people-btn {
+		margin-left: 0.1rem;
+	}
+
+	& .basalt-avatar {
+		width: 32px;
+		height: 32px;
+	}
+}
+
+.pb-mine {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 0;
+	margin: 0;
+	padding-left: 2.6em;
+
+	& .form-check-label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--basalt-copy-body);
+	}
+}
+
+.pb-filters-menus {
+	display: flex;
+	gap: 0.4rem;
+}
+
+.pb-filter {
+	& .dropdown-toggle {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+
+	& .basalt-dd-multi-option {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+}
+
+.pb-clear {
+	flex: none;
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+	font-weight: 600;
+}
+
+/* Narrower toolbars wrap whole clusters, never single controls. First the search
+   drops to a full line under the project and view controls. */
+@container pb-toolbar (max-width: 53.99rem) {
+	.pb-toolbar-row:first-child .pb-search {
+		flex-basis: 100%;
+		order: 1;
+	}
+}
+
+/* Then who gets a line of its own, the avatars at one edge and the switch at the other.
+   A showing "Clear filters" asks for that line a little sooner. */
+@container pb-toolbar (max-width: 63.99rem) {
+	.pb-who {
+		flex: 1 1 100%;
+		justify-content: space-between;
+	}
+}
+
+@container pb-toolbar (max-width: 70.99rem) {
+	.pb-filters:has(.pb-clear:not([hidden])) .pb-who {
+		flex: 1 1 100%;
+		justify-content: space-between;
+	}
+}
+
+/* Narrower still, filters and grouping each fill a line, their controls stretched to it. */
+@container pb-toolbar (max-width: 41.99rem) {
+	.pb-what,
+	.pb-filters .pb-toolbar-end {
+		flex: 1 1 100%;
+		margin-left: 0;
+	}
+
+	/* When the stretched filters leave no room, "Clear filters" drops under them. */
+	.pb-what {
+		flex-wrap: wrap;
+	}
+
+	.pb-filters-menus {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.pb-filter {
+		flex: 1 1 0;
+		min-width: 0;
+
+		& > .dropdown-toggle {
+			justify-content: center;
+			width: 100%;
+		}
+	}
+
+	.pb-toolbar .pb-group {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+
+/* On phones every cluster is a full line: project, view and create, then search. */
+@container pb-toolbar (max-width: 33.99rem) {
+	.pb-project,
+	.pb-toolbar-row:first-child .pb-toolbar-end {
+		flex: 1 1 100%;
+		margin-left: 0;
+	}
+
+	.pb-project-btn {
+		width: 100%;
+	}
+
+	.pb-toolbar-row:first-child .basalt-segmented {
+		flex: 1 1 auto;
+
+		& .basalt-segmented-option {
+			flex: 1 1 0;
+		}
+	}
+
+	.pb-people-btn .basalt-avatar {
+		width: 28px;
+		height: 28px;
+	}
+}
+
+/* The status picker only appears on phones, where the board shows one column at a time. */
+.pb-phone-status {
+	display: none;
+
+	@media (max-width: 767.98px) {
+		display: flex;
+		gap: 0.65rem;
+		align-items: center;
+		margin-bottom: 1rem;
+
+		& .form-select,
+		& .basalt-select {
+			flex: 1;
+			min-width: 0;
+		}
+	}
+}
+
+/* Empty boards, filters with no matches and load errors share one framed panel. */
+.pb-notice {
+	margin-bottom: 1.25rem;
+}
+
+.pb-notice .pb-empty,
+.pb-state .pb-empty {
+	padding: 2.25rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+}
+
+.pb-state {
+	width: 100%;
+}
+
+/* The board scrolls sideways inside its own frame and the page never does.
+   A soft shadow marks each edge that has more board beyond it. */
+.pb-board-wrap {
+	position: relative;
+
+	&::before,
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0.75rem;
+		z-index: 3;
+		width: 2rem;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 200ms ease;
+	}
+
+	&::before {
+		left: 0;
+		border-radius: 14px 0 0 14px;
+		background: linear-gradient(to right, color-mix(in srgb, var(--basalt-copy) 12%, transparent), transparent);
+	}
+
+	&::after {
+		right: 0;
+		border-radius: 0 14px 14px 0;
+		background: linear-gradient(to left, color-mix(in srgb, var(--basalt-copy) 12%, transparent), transparent);
+	}
+
+	&.has-before::before,
+	&.has-after::after {
+		opacity: 1;
+	}
+
+	/* A phone shows one column at full width, so there is nothing to hint at. */
+	@media (max-width: 767.98px) {
+		&::before,
+		&::after {
+			display: none;
+		}
+	}
+}
+
+.pb-board {
+	padding-bottom: 0.75rem;
+	border-radius: 14px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: thin;
+	scrollbar-color: var(--basalt-edge-strong) transparent;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+/* Positioned so screen-reader text inside is still clipped by the scroller. */
+.pb-board-inner {
+	position: relative;
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+	min-width: 0;
+}
+
+.pb-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: stretch;
+}
+
+/* Columns split the width between them but stop at --pb-col-w; past that
+   the board scrolls. A strip of the column's color hangs from the top. */
+.pb-board .pb-col {
+	position: relative;
+	display: flex;
+	flex: 1 0 var(--pb-col-w);
+	flex-direction: column;
+	min-width: 0;
+	max-width: 24rem;
+	padding: 0.8rem 0.6rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--pb-c) 4%, var(--pb-col-bg));
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: -1px;
+		right: 14px;
+		left: 14px;
+		height: 3px;
+		border-radius: 0 0 3px 3px;
+		background: var(--pb-c);
+	}
+
+	&.is-over {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--pb-col-bg));
+	}
+
+	&.is-over-limit {
+		border-color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-danger) 5%, var(--pb-col-bg));
+	}
+
+	&.is-over-limit::before {
+		background: var(--basalt-danger);
+	}
+
+	/* On a phone the one visible column takes the full width. */
+	@media (max-width: 767.98px) {
+		flex: 1 1 100%;
+		max-width: none;
+
+		&::before {
+			right: 18px;
+			left: 18px;
+		}
+	}
+}
+
+/* A column head: the dot and name, the count against its limit, then the menu. */
+.pb-col-head {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-height: 2rem;
+	padding: 0 0.1rem 0.65rem 0.3rem;
+}
+
+.pb-col-title {
+	display: flex;
+	gap: 0.5rem;
+	flex: 1;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.pb-col-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pb-col-done {
+	font-size: 0.9rem;
+	color: var(--pb-good);
+}
+
+.pb-col-count {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	padding: 0.1rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 650;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&.is-over {
+		border-color: color-mix(in srgb, var(--basalt-danger) 40%, transparent);
+		color: var(--pb-late);
+		background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+
+	& .bi {
+		font-size: 0.67rem;
+	}
+}
+
+.pb-col-menu .btn-icon {
+	width: 1.9rem;
+	height: 1.9rem;
+	color: var(--pb-quiet);
+
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* Folded, a column shrinks to a narrow strip with its name running down it. */
+.pb-board .pb-col.is-collapsed {
+	flex: 0 0 3rem;
+	max-width: 3rem;
+	padding: 0;
+}
+
+.pb-col-expand {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	min-height: 14rem;
+	padding: 1rem 0;
+	border: 0;
+	border-radius: 13px;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+
+	& .bi {
+		color: var(--pb-quiet);
+	}
+}
+
+.pb-col-vname {
+	font-size: 0.85rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	writing-mode: vertical-rl;
+}
+
+.pb-col-vcount {
+	padding: 0.1rem 0.4rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 650;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+
+/* The card list fills the column; empty, it turns into a dashed drop target. */
+.pb-board .pb-col .pb-list {
+	gap: 0.6rem;
+	flex: 1;
+	min-height: 4.5rem;
+	padding: 0.1rem;
+	border-radius: 11px;
+
+	&.is-empty {
+		border: 1.5px dashed var(--basalt-edge-strong);
+		background: color-mix(in srgb, var(--basalt-plane) 40%, transparent);
+	}
+
+	&.is-empty::after {
+		color: var(--pb-quiet);
+	}
+}
+
+/* The add-column button trails the last column as a small dashed square. */
+.pb-addcol {
+	display: inline-grid;
+	flex: 0 0 2.75rem;
+	place-items: center;
+	align-self: flex-start;
+	height: 2.75rem;
+	border: 1.5px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	color: var(--pb-quiet);
+	background: transparent;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+.pb-addcol-spacer {
+	visibility: hidden;
+}
+
+/* A card is one big button over its own menu. It lifts on hover. */
+.pb-board .pb-card.basalt-sortable-item {
+	display: block;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--basalt-copy) 6%, transparent);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		box-shadow: 0 4px 14px color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+	}
+}
+
+.pb-board .pb-card .pb-card-main {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
+	height: auto;
+	padding: 0.8rem 0.85rem 0.7rem;
+	border-radius: 11px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: grab;
+	/* Touch keeps vertical swipes for scrolling the page; sideways ones drag. */
+	touch-action: pan-y;
+
+	&:hover {
+		color: var(--basalt-copy-body);
+		background: transparent;
+	}
+
+	/* Lifted from the keyboard the card keeps its own colors, so every label stays readable. */
+	&[aria-pressed="true"] {
+		color: var(--basalt-copy-body);
+		background: transparent;
+	}
+}
+
+/* Lifted from the keyboard, the card rises with a hue ring around it. */
+.pb-board .pb-card.is-grabbed {
+	border-color: var(--basalt-hue);
+	box-shadow:
+		0 0 0 3px var(--basalt-hue-border),
+		0 10px 24px color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+}
+
+/* Dragged by a pointer, it floats a little higher and tilts. */
+.pb-board .pb-card.is-dragging {
+	rotate: 1.5deg;
+	border-color: var(--basalt-hue);
+	box-shadow: 0 18px 38px color-mix(in srgb, var(--basalt-copy) 22%, transparent);
+}
+
+.pb-board .basalt-sortable-placeholder {
+	border-radius: 12px;
+	border-color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+}
+
+/* Inside a card: the title, labels, dates and counts, then a foot with the key and owner. */
+.pb-card-title {
+	padding-right: 1.5rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.38;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+.pb-card-labels {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+
+.pb-label {
+	display: inline-block;
+	padding: 0.12rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 650;
+	line-height: 1.45;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--pb-c) 36%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pb-c) 16%, var(--basalt-plane));
+}
+
+.pb-card-meta {
+	display: flex;
+	gap: 0.3rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.75rem;
+	color: var(--pb-quiet);
+}
+
+.pb-meta,
+.pb-due {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-variant-numeric: tabular-nums;
+}
+
+.pb-meta-all {
+	color: var(--pb-good);
+}
+
+/* A date due today or already late turns into a tinted tag. */
+.pb-due-late,
+.pb-due-today {
+	padding: 0.05rem 0.4rem;
+	border-radius: 6px;
+	font-weight: 650;
+}
+
+.pb-due-late {
+	color: var(--pb-late);
+	background: var(--basalt-danger-soft);
+}
+
+.pb-due-today {
+	color: var(--pb-soon);
+	background: var(--basalt-warning-soft);
+}
+
+.pb-card-foot {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.pb-card-id {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-width: 0;
+}
+
+.pb-card-key {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.71rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--pb-quiet);
+}
+
+.pb-card.is-done .pb-card-key {
+	text-decoration: line-through;
+}
+
+.pb-card-end {
+	display: inline-flex;
+	gap: 0.4rem;
+	flex-shrink: 0;
+	align-items: center;
+	margin-left: auto;
+}
+
+/* Type badges are small tinted squares; the Create dialog's type tiles reuse their icon colors. */
+.pb-type {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.2rem;
+	height: 1.2rem;
+	border-radius: 5px;
+	font-size: 0.7rem;
+	line-height: 1;
+}
+
+.pb-type-task {
+	background: var(--basalt-info-soft);
+}
+.pb-type-bug {
+	background: var(--basalt-danger-soft);
+}
+.pb-type-story {
+	background: var(--basalt-success-soft);
+}
+
+.pb-type-task,
+.pb-choice-task > .bi {
+	color: color-mix(in srgb, var(--basalt-info) 70%, var(--basalt-copy));
+}
+
+.pb-type-bug,
+.pb-choice-bug > .bi {
+	color: color-mix(in srgb, var(--basalt-danger) 75%, var(--basalt-copy));
+}
+
+.pb-type-story,
+.pb-choice-story > .bi {
+	color: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-copy));
+}
+
+/* Priority is a bare chevron whose color climbs with urgency. */
+.pb-prio {
+	display: inline-grid;
+	place-items: center;
+	width: 1.1rem;
+	font-size: 0.85rem;
+	line-height: 1;
+}
+
+.pb-prio-urgent {
+	color: var(--pb-late);
+}
+.pb-prio-high {
+	color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+}
+.pb-prio-medium {
+	color: color-mix(in srgb, var(--basalt-info) 70%, var(--basalt-copy));
+}
+.pb-prio-low {
+	color: var(--pb-quiet);
+}
+
+.pb-points {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.4rem;
+	height: 1.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font:
+		650 0.7rem/1 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+.pb-avatar.basalt-avatar-xs {
+	width: 24px;
+	height: 24px;
+	font-size: 0.6rem;
+}
+
+/* Nobody assigned shows as an empty dashed circle. */
+.pb-avatar-none {
+	display: inline-grid;
+	place-items: center;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 50%;
+	color: var(--pb-quiet);
+	background: transparent;
+}
+
+/* The card menu sits in the top corner; with a fine pointer it waits for hover or focus. */
+.pb-card-menu {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.4rem;
+}
+
+.pb-card-more {
+	width: 1.7rem;
+	height: 1.7rem;
+	border-radius: 7px;
+	color: var(--pb-quiet);
+
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.pb-card-more {
+		opacity: 0;
+		transition: opacity 130ms ease;
+	}
+
+	.pb-card:hover .pb-card-more,
+	.pb-card:focus-within .pb-card-more,
+	.pb-card-more[aria-expanded="true"] {
+		opacity: 1;
+	}
+}
+
+/* Card and column menus: an icon before every item, the current status tinted. */
+.pb-menu {
+	min-width: 13rem;
+
+	& .dropdown-item {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	& .dropdown-item.active,
+	& .dropdown-item:active {
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.pb-danger-item.dropdown-item,
+.pb-danger-item.dropdown-item:hover,
+.pb-danger-item.dropdown-item:focus {
+	color: var(--pb-late);
+}
+
+/* Compact cards keep only the title, the key and who it belongs to. */
+.pb-page.is-compact {
+	& .pb-card-labels,
+	& .pb-card-meta {
+		display: none;
+	}
+
+	& .pb-board .pb-card .pb-card-main {
+		gap: 0.4rem;
+		padding: 0.5rem 0.7rem 0.5rem;
+	}
+
+	& .pb-card-title {
+		font-size: 0.84rem;
+	}
+
+	& .pb-board .pb-col .pb-list {
+		gap: 0.4rem;
+	}
+}
+
+/* Quick add: a quiet button at the foot of the list that opens into a small form. */
+.pb-quick-open {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	width: 100%;
+	margin-top: 0.4rem;
+	padding: 0.4rem 0.5rem;
+	border: 0;
+	border-radius: 9px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--pb-quiet);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+.pb-quick {
+	margin-top: 0.5rem;
+}
+
+.pb-quick-input {
+	font-size: 0.86rem;
+	resize: none;
+}
+
+/* Swimlanes: one row of column heads, then a band per person or priority with
+   its own cells. The cells drop the column strip and the empty-list frame. */
+.pb-board-inner.is-grouped {
+	gap: 1rem;
+}
+
+.pb-board .pb-col-as-head {
+	padding: 0.7rem 0.6rem 0.1rem;
+	border-radius: 12px;
+
+	&.is-collapsed {
+		padding: 0;
+	}
+
+	& .pb-col-head {
+		padding-bottom: 0.5rem;
+	}
+
+	& .pb-col-expand {
+		flex-direction: row;
+		justify-content: center;
+		min-height: 3.2rem;
+		padding: 0.4rem 0;
+	}
+
+	& .pb-col-vname {
+		display: none;
+	}
+}
+
+.pb-board .pb-cell {
+	padding: 0.5rem;
+	border-radius: 12px;
+
+	&::before {
+		display: none;
+	}
+
+	&.is-collapsed {
+		min-height: 3rem;
+	}
+
+	& .pb-list {
+		min-height: 3rem;
+	}
+
+	& .pb-list.is-empty::after {
+		content: none;
+	}
+
+	& .pb-quick-open {
+		margin-top: 0.3rem;
+		padding: 0.3rem 0.4rem;
+	}
+}
+
+.pb-board .pb-col.pb-cell .pb-list.is-empty {
+	border-color: transparent;
+	background: transparent;
+}
+
+/* A lane's title stays pinned to the left edge while the board scrolls. */
+.pb-lane-title {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	width: max-content;
+	max-width: 100%;
+	margin: 0 0 0.5rem;
+}
+
+.pb-lane-toggle {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.3rem 0.6rem 0.3rem 0.4rem;
+	border: 0;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+}
+
+.pb-lane-chev {
+	font-size: 0.8rem;
+	color: var(--pb-quiet);
+	transition: transform 170ms ease;
+}
+
+.pb-lane.is-folded .pb-lane-chev {
+	transform: rotate(-90deg);
+}
+
+.pb-lane-count {
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--pb-quiet);
+}
+
+.pb-lane-toggle .pb-prio {
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 7px;
+	background: var(--basalt-plane-alt);
+}
+
+/* While the board loads, gray columns stand in with a few card-sized blocks. */
+.pb-skeleton {
+	display: flex;
+	gap: 0.75rem;
+}
+
+.pb-skeleton-col {
+	display: grid;
+	gap: 0.65rem;
+	flex: 1 0 var(--pb-col-w);
+	align-content: start;
+	padding: 0.9rem 0.7rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--pb-col-bg);
+
+	& .basalt-skeleton-block {
+		height: 5.5rem;
+		border-radius: 12px;
+	}
+}
+
+/* The list view is one table with a tinted band above each status. */
+.pb-table-card.basalt-box {
+	container: pb-table / inline-size;
+	overflow: hidden;
+}
+
+.pb-table {
+	--bs-table-bg: transparent;
+	margin: 0;
+	font-size: 0.86rem;
+
+	& > thead th {
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--pb-quiet);
+	}
+
+	& td {
+		padding: var(--basalt-pad-row-y) 1rem;
+		border-color: var(--basalt-edge);
+		vertical-align: middle;
+		color: var(--basalt-copy-body);
+	}
+}
+
+.pb-table-group th {
+	padding: 0.75rem var(--basalt-pad-x);
+	border-color: var(--basalt-edge);
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--pb-col-bg);
+}
+
+/* The outer cells line up with the card's own side padding. */
+.pb-table > :not(caption) > tr {
+	& > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+
+	@media (max-width: 767.98px) {
+		& > :first-child {
+			padding-left: var(--basalt-pad-x-narrow);
+		}
+		& > :last-child {
+			padding-right: var(--basalt-pad-x-narrow);
+		}
+	}
+}
+
+.pb-table-group .pb-dot {
+	display: inline-block;
+	margin-right: 0.5rem;
+	vertical-align: middle;
+}
+
+.pb-table-n {
+	margin-left: 0.5rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 650;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+
+.pb-table-key {
+	white-space: nowrap;
+
+	& > span:last-child {
+		margin-left: 0.5rem;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		color: var(--pb-quiet);
+	}
+
+	& .pb-type {
+		vertical-align: middle;
+	}
+}
+
+.pb-table-title {
+	min-width: 16rem;
+
+	& .pb-card-labels {
+		margin-top: 0.3rem;
+	}
+}
+
+.pb-table-open {
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.pb-table-person {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	white-space: nowrap;
+}
+
+.pb-table-pts {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.pb-table-due {
+	white-space: nowrap;
+}
+
+.pb-table-none {
+	font-size: 0.8rem;
+	color: var(--pb-quiet);
+}
+
+.pb-table tr.is-done .pb-table-open {
+	text-decoration: line-through;
+	text-decoration-color: var(--pb-quiet);
+}
+
+/* Phones keep the avatar and the chevron but hide the names beside them from sight. */
+@media (max-width: 767.98px) {
+	.pb-table-who .pb-table-person > span:last-child,
+	.pb-table-prio .pb-table-person > span:last-child {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+
+/* Too narrow for real columns, each issue becomes two lines: the title with
+   its due date, then key, assignee, priority, points and subtasks as one
+   quiet line, so the list never has to scroll sideways. */
+@container pb-table (max-width: 919.98px) {
+	.pb-table > thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+
+	.pb-table,
+	.pb-table > tbody {
+		display: block;
+		width: 100%;
+	}
+
+	.pb-table > tbody > tr {
+		display: flex;
+		gap: 0.4rem 0.9rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+
+	.pb-table > tbody > tr.pb-table-group {
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		background: var(--pb-col-bg);
+	}
+
+	.pb-table.pb-table.pb-table > tbody > tr > * {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+
+	.pb-table > tbody > tr > td:empty {
+		display: none;
+	}
+
+	.pb-table > tbody > tr:not(.pb-table-group)::before {
+		content: "";
+		flex-basis: 100%;
+		order: 3;
+		height: 0;
+	}
+
+	.pb-table-title {
+		flex: 1 1 0;
+		order: 1;
+		min-width: 0;
+	}
+
+	.pb-table-due {
+		order: 2;
+	}
+
+	.pb-table-key,
+	.pb-table-who,
+	.pb-table-prio,
+	.pb-table-pts,
+	.pb-table-more {
+		order: 4;
+		font-size: 0.8rem;
+		color: var(--pb-quiet);
+	}
+
+	.pb-table-pts::before {
+		content: "Points ";
+	}
+}
+
+/* The issue drawer: a crumb with the key, an editable title, then fields in a framed grid. */
+.pb-sheet {
+	--bs-offcanvas-width: 620px;
+}
+
+.pb-sheet-head {
+	gap: 0.3rem;
+}
+
+.pb-sheet-crumb {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.pb-sheet-key {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.pb-sheet-saved {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--pb-good);
+}
+
+.pb-sheet-body {
+	padding-top: 0.25rem;
+}
+
+/* The title reads as a heading until hovered or focused, when it shows its field. */
+.pb-sheet-title.form-control {
+	width: calc(100% + 0.5rem);
+	margin: 0 0 0.25rem -0.55rem;
+	padding: 0.3rem 0.5rem;
+	border-color: transparent;
+	overflow: hidden;
+	font-size: 1.3rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+	background: transparent;
+	resize: none;
+
+	&:hover {
+		border-color: var(--basalt-edge);
+	}
+
+	&:focus {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-plane);
+	}
+}
+
+.pb-sheet-legend {
+	display: block;
+	margin: 0 0 0.4rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--pb-quiet);
+}
+
+/* Subtasks and Activity are sections of the drawer, so their legends read as headings. */
+h3.pb-sheet-legend {
+	margin-bottom: 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--basalt-copy);
+}
+
+.pb-sheet-status {
+	max-width: 15rem;
+	margin: 0.9rem 0 1.4rem;
+}
+
+.pb-sheet-grid {
+	display: grid;
+	gap: 1.1rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-bottom: 1.6rem;
+	padding: 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+}
+
+@container basalt-drawer (max-width: 420px) {
+	.pb-sheet-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.pb-sheet-section {
+	margin-bottom: 1.75rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.pb-sheet-row {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.4rem;
+}
+
+.pb-sheet-count {
+	font-size: 0.77rem;
+	color: var(--pb-quiet);
+}
+
+.pb-sheet .basalt-stepper {
+	width: 100%;
+}
+
+/* Unused labels wait under the tag field as dashed chips, one click to add. */
+.pb-label-picks {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-top: 0.75rem;
+
+	&:empty {
+		display: none;
+	}
+}
+
+.pb-label-pick {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	min-height: 1.75rem;
+	padding: 0.14rem 0.65rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: transparent;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	& .pb-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+	}
+}
+
+/* Subtasks: a thin progress bar, then rows whose remove button waits for hover. */
+.pb-subs-bar.progress {
+	height: 6px;
+	margin: 0.2rem 0 0.6rem;
+	background: var(--basalt-plane-alt);
+}
+
+.pb-subs-bar .progress-bar {
+	background: var(--basalt-success);
+	transition: width 240ms ease;
+}
+
+.pb-subs {
+	display: grid;
+	gap: 0.1rem;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	list-style: none;
+
+	&:empty {
+		margin: 0;
+	}
+}
+
+.pb-sub {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.3rem 0.3rem 0.3rem 0.4rem;
+	border-radius: 9px;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+
+	& .form-check-input {
+		flex-shrink: 0;
+		margin: 0;
+	}
+
+	&.is-done .pb-sub-text {
+		text-decoration: line-through;
+		text-decoration-color: var(--pb-quiet);
+		color: var(--basalt-copy-body);
+	}
+}
+
+.pb-sub-text {
+	flex: 1;
+	min-width: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+
+.pb-sub-del {
+	width: 1.7rem;
+	height: 1.7rem;
+	color: var(--pb-quiet);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.pb-sub-del {
+		opacity: 0;
+	}
+
+	.pb-sub:hover .pb-sub-del,
+	.pb-sub-del:focus-visible {
+		opacity: 1;
+	}
+}
+
+/* Activity: the comment box, then comments as bubbles and changes as single quiet lines. */
+.pb-comment,
+.pb-note {
+	display: flex;
+	gap: 0.7rem;
+	align-items: flex-start;
+}
+
+.pb-comment-box {
+	flex: 1;
+	min-width: 0;
+}
+
+.pb-thread {
+	display: grid;
+	gap: 0.9rem;
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pb-note-body {
+	flex: 1;
+	min-width: 0;
+	padding: 0.6rem 0.85rem 0.7rem;
+	border-radius: 4px 12px 12px 12px;
+	background: var(--basalt-plane-alt);
+}
+
+.pb-note-head {
+	margin: 0 0 0.2rem;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+}
+
+.pb-note-text {
+	margin: 0;
+	font-size: 0.875rem;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body);
+}
+
+.pb-note .pb-when {
+	color: color-mix(in srgb, var(--basalt-copy-muted) 60%, var(--basalt-copy));
+}
+
+.pb-event {
+	display: flex;
+	gap: 0.7rem;
+	align-items: baseline;
+	padding-left: 0.7rem;
+
+	& p {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--pb-quiet);
+	}
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+.pb-event-dot {
+	flex-shrink: 0;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.5rem;
+	border-radius: 50%;
+	background: var(--basalt-edge-strong);
+}
+
+.pb-when {
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--pb-quiet);
+}
+
+.pb-thread-none {
+	font-size: 0.84rem;
+	color: var(--pb-quiet);
+}
+
+/* The drawer's foot: who reported it on one side, Delete on the other. */
+.pb-sheet-foot {
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.pb-sheet-meta {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--pb-quiet);
+}
+
+.pb-danger-btn.btn {
+	color: var(--pb-late);
+
+	&:hover,
+	&:focus-visible {
+		border-color: var(--pb-late);
+		color: var(--pb-late);
+		background: var(--basalt-danger-soft);
+	}
+}
+
+/* Dialogs share small print: "optional" beside a label and help under a field. */
+.pb-optional {
+	margin-left: 0.25rem;
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--pb-quiet);
+}
+
+.pb-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--pb-quiet);
+}
+
+/* Create issue: type tiles three across, then the fields in a grid that narrows with the screen. */
+.pb-create-body {
+	display: grid;
+	gap: 1.1rem;
+}
+
+.pb-create-types {
+	margin: 0;
+}
+
+.pb-create-types > legend,
+.pb-column-body legend.form-label {
+	float: none;
+	width: auto;
+	margin-bottom: 0.5rem;
+	padding: 0;
+	font-size: inherit;
+}
+
+.pb-create-body .form-label,
+.pb-column-body .form-label {
+	display: block;
+}
+
+.pb-create-body .basalt-stepper,
+.pb-column-body .basalt-stepper {
+	width: 100%;
+}
+
+.pb-choices.basalt-choices {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pb-choice.basalt-choice {
+	justify-content: center;
+	text-align: center;
+}
+
+.pb-create-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	@media (max-width: 767.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	@media (max-width: 420px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.pb-create-foot .form-check {
+	margin-bottom: 0;
+}
+
+/* The column dialog: a name, a row of color swatches, and the card limit beside its help. */
+.pb-column-body {
+	display: grid;
+	gap: 1.25rem;
+}
+
+.pb-swatches {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.pb-swatch {
+	position: relative;
+	display: inline-grid;
+	cursor: pointer;
+}
+
+/* The real radio covers the dot, invisible, so it is still what gets clicked and focused. */
+.pb-swatch-input {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	margin: 0;
+	opacity: 0;
+	cursor: pointer;
+
+	&:checked + .pb-swatch-dot {
+		box-shadow: 0 0 0 2px var(--basalt-copy);
+	}
+
+	&:focus-visible + .pb-swatch-dot {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+.pb-swatch-dot {
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 50%;
+	border: 3px solid var(--basalt-plane);
+	background: var(--pb-c);
+	box-shadow: 0 0 0 1px var(--basalt-edge);
+	transition: box-shadow 130ms ease;
+}
+
+.pb-column-limit {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 11rem minmax(0, 1fr);
+	align-items: end;
+
+	& .pb-help {
+		margin: 0 0 0.3rem;
+	}
+
+	@media (max-width: 420px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Deleting a column asks where its cards go, in a picker centered under the question. */
+.pb-coldel-move {
+	width: 100%;
+	max-width: 20rem;
+	margin: 0 auto 1.1rem;
+	text-align: left;
+}
+
+/* The shortcuts list: a fixed-width column of keys, the action beside each. */
+.pb-keys {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+	}
+
+	& dt {
+		flex: 0 0 6.5rem;
+		font-weight: 400;
+	}
+
+	& dd {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* With reduced motion nothing slides, fades or tilts. */
+@media (prefers-reduced-motion: reduce) {
+	.pb-board .pb-col,
+	.pb-board .pb-card.basalt-sortable-item,
+	.pb-board-wrap::before,
+	.pb-board-wrap::after,
+	.pb-people-btn,
+	.pb-lane-chev,
+	.pb-card-more,
+	.pb-subs-bar .progress-bar {
+		transition: none;
+	}
+
+	.pb-board .pb-card.is-dragging {
+		rotate: none;
+	}
+}
+
+/* Printed, the board drops its controls and lets every column show. */
+@media print {
+	.pb-toolbar,
+	.pb-card-menu,
+	.pb-quick-open,
+	.pb-addcol,
+	.pb-col-menu,
+	.pb-board-wrap::before,
+	.pb-board-wrap::after {
+		display: none;
+	}
+
+	.pb-board {
+		overflow: visible;
+	}
+
+	.pb-board .pb-col,
+	.pb-board .pb-card.basalt-sortable-item {
+		transition: none;
+		animation: none;
+	}
+}

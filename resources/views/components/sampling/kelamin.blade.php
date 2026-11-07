@@ -1,6 +1,6 @@
 @props(['kelamin'])
 
 {{-- Label kelamin sampel memakai tag berwarna template; slot menggantikan teks bawaan. --}}
-<p class="mb-10">
-    <span @class(['dm-tag tag-transparented m-0', 'tag-warning' => $kelamin === 'jantan', 'tag-info' => $kelamin === 'betina', 'tag-success' => $kelamin === 'gabungan'])>{{ $slot->isEmpty() ? ucfirst($kelamin) : $slot }}</span>
+<p class="mb-2">
+    <span @class(['badge  m-0', 'bg-warning-subtle text-warning' => $kelamin === 'jantan', 'bg-info-subtle text-info' => $kelamin === 'betina', 'bg-success-subtle text-success' => $kelamin === 'gabungan'])>{{ $slot->isEmpty() ? ucfirst($kelamin) : $slot }}</span>
 </p>

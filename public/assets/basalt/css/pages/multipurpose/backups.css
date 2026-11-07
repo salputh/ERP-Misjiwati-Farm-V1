@@ -1,0 +1,1110 @@
+/* Backups screen. Every class here starts with .bk- and only arranges the
+   shared pieces from basalt.css (rings, steps, choice tiles, steppers,
+   segmented controls, the pager, drawer and dialogs). The night strip, the
+   storage split and the table rows are the only parts drawn from scratch. */
+
+/* Quiet text is the muted token pulled toward body copy, so it still clears
+   4.5:1 on light palettes and hovered rows; status inks blend the same way.
+   The drawer and dialogs sit outside the page wrapper and need them too. */
+.bk-page,
+.bk-drawer,
+.bk-restore-dialog,
+.bk-delete-dialog {
+	--bk-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--bk-ok-ink: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	--bk-warn-ink: color-mix(in srgb, var(--basalt-warning) 48%, var(--basalt-copy));
+	--bk-bad-ink: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+.bk-page {
+	--bk-line: var(--basalt-edge);
+}
+
+/* The storage bands and their swatches borrow the chart ramp in order. */
+.bk-tone-1 {
+	--bk-tone: var(--basalt-series-1);
+}
+.bk-tone-2 {
+	--bk-tone: var(--basalt-series-2);
+}
+.bk-tone-3 {
+	--bk-tone: var(--basalt-series-3);
+}
+.bk-tone-4 {
+	--bk-tone: var(--basalt-series-4);
+}
+
+/* A hidden attribute always wins over the display a block sets for itself. */
+.bk-field[hidden],
+.bk-pager[hidden],
+.bk-table-wrap[hidden],
+.bk-drawer-keep[hidden],
+.bk-restoring[hidden],
+.basalt-dialog-steps[hidden] {
+	display: none;
+}
+
+/* Cards fill the row until 1200px, then sit in pairs unless marked full. */
+.bk-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.bk-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.75rem;
+	}
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+}
+@media (min-width: 1200px) {
+	.bk-card {
+		grid-column: span 6;
+	}
+	.bk-card-full {
+		grid-column: span 12;
+	}
+}
+@media (max-width: 575.98px) {
+	.bk-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+/* Each card opens with a title and a line of description, any badge on the right. */
+.bk-card-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& .basalt-status {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+	}
+}
+.bk-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bk-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--bk-quiet);
+}
+
+/* Form labels, help lines and small headings read the same in every card. */
+.bk-label {
+	display: block;
+	margin: 0 0 0.5rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.bk-optional {
+	font-weight: 500;
+	color: var(--bk-quiet);
+}
+.bk-help {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	line-height: 1.45;
+	color: var(--bk-quiet);
+}
+.bk-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	color: var(--basalt-copy);
+}
+.bk-linkbtn {
+	padding: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--bk-quiet);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-copy);
+	}
+}
+
+/* "Back up now" puts the dial beside the form from tablet width up. */
+.bk-run {
+	display: grid;
+	gap: 2rem;
+	align-items: start;
+}
+@media (min-width: 768px) {
+	.bk-run {
+		gap: 2.5rem;
+		grid-template-columns: 13rem minmax(0, 1fr);
+	}
+}
+.bk-run-dial {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+.bk-run-ring {
+	--size: 168px;
+	--thickness: 12px;
+
+	& .basalt-ring-value {
+		font-size: 2.1rem;
+	}
+	& .basalt-ring-caption {
+		margin-top: 0.2rem;
+		font-size: 0.8rem;
+		color: var(--bk-quiet);
+	}
+}
+.bk-run-state {
+	max-width: 16rem;
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--bk-quiet);
+}
+
+/* The section tiles run two across, four across on wide screens. */
+.bk-run-choices {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+
+	& > legend {
+		grid-column: 1 / -1;
+		font-size: 0.8rem;
+		font-weight: 650;
+	}
+	& .basalt-choice {
+		padding: 1rem 0.6rem;
+	}
+}
+@media (min-width: 1200px) {
+	.bk-run-choices {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.bk-run-estimate {
+	margin: 0.85rem 0 0;
+	font-size: 0.8rem;
+	color: var(--bk-quiet);
+}
+.bk-run-error {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--bk-bad-ink);
+}
+.bk-run-row {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-top: 1.5rem;
+}
+.bk-run-name {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+.bk-run-go .btn {
+	min-height: calc(1.5em + 0.75rem + 2px);
+}
+.bk-run-demo {
+	margin: 1rem 0 0;
+}
+
+/* While a backup runs, a failed step swaps its number for a cross. */
+.bk-run-steps {
+	margin-bottom: 2rem;
+
+	& .basalt-steps-item.is-failed {
+		& .basalt-steps-dot {
+			border-color: var(--basalt-danger);
+			color: var(--bk-bad-ink);
+			background: var(--basalt-danger-soft);
+		}
+		& .basalt-steps-dot .bi {
+			display: block;
+		}
+		& .basalt-steps-num {
+			display: none;
+		}
+	}
+}
+.bk-run-line {
+	min-height: 1.5em;
+	margin: 0 0 1.25rem;
+	font-family: "Chivo Mono", ui-monospace, monospace;
+	font-size: 0.8rem;
+	/* Centered, so the status line and the buttons below it line up under the steps. */
+	text-align: center;
+	color: var(--bk-quiet);
+}
+.bk-run-alert {
+	margin-bottom: 1.25rem;
+}
+.bk-run-actions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+/* Thirty nights read as one row of colored bars under a ruled line. */
+.bk-nights {
+	margin-top: 2.25rem;
+	padding-top: 1.75rem;
+	border-top: 1px solid var(--bk-line);
+}
+.bk-nights-head {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.9rem;
+
+	& .bk-sub {
+		margin: 0;
+	}
+}
+.bk-legend {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.77rem;
+	color: var(--bk-quiet);
+	list-style: none;
+}
+.bk-legend li,
+.bk-split-legend li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.bk-dot {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 3px;
+}
+.bk-dot-ok {
+	background: var(--basalt-success);
+}
+.bk-dot-warn {
+	background: var(--basalt-warning);
+}
+.bk-dot-bad {
+	background: var(--basalt-danger);
+}
+.bk-nights-strip {
+	display: grid;
+	gap: 4px;
+	grid-template-columns: repeat(30, minmax(0, 1fr));
+}
+.bk-night {
+	min-width: 0;
+	height: 2.5rem;
+	padding: 0;
+	border: 0;
+	border-radius: 5px;
+	background: var(--bk-night);
+	cursor: pointer;
+	transition:
+		transform 170ms ease,
+		filter 170ms ease;
+
+	&:hover {
+		transform: scaleY(1.12);
+		filter: saturate(1.2);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-copy);
+		outline-offset: 2px;
+	}
+}
+.bk-night-ok {
+	--bk-night: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-plane));
+}
+.bk-night-warn {
+	--bk-night: var(--basalt-warning);
+}
+.bk-night-bad {
+	--bk-night: var(--basalt-danger);
+}
+.bk-nights-hint {
+	margin: 0.75rem 0 0;
+	font-size: 0.77rem;
+	color: var(--bk-quiet);
+}
+@media (max-width: 575.98px) {
+	.bk-nights-strip {
+		gap: 2px;
+	}
+	.bk-night {
+		height: 2rem;
+		border-radius: 3px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.bk-night {
+		transition: none;
+	}
+	.bk-night:hover {
+		transform: none;
+	}
+}
+
+/* The schedule form stacks its fields and pins the buttons to the bottom. */
+.bk-plan {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+	flex: 1 1 auto;
+}
+.bk-field {
+	min-width: 0;
+}
+.bk-keep {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+}
+.bk-keep-row {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--bk-line);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.bk-keep-label {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& span {
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--bk-quiet);
+	}
+}
+.bk-switches {
+	display: flex;
+	gap: 0.9rem;
+	flex-direction: column;
+
+	& .form-check-label {
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Three summary figures share one tinted panel, split by hairlines. */
+.bk-summary {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	border: 1px solid var(--bk-line);
+	border-radius: 12px;
+	background: var(--basalt-canvas);
+}
+.bk-summary-item {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 0.85rem 1rem;
+
+	& + .bk-summary-item {
+		border-left: 1px solid var(--bk-line);
+	}
+}
+.bk-summary-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--bk-quiet);
+}
+.bk-summary-value {
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.bk-summary {
+		grid-template-columns: 1fr;
+	}
+	.bk-summary-item + .bk-summary-item {
+		border-left: 0;
+		border-top: 1px solid var(--bk-line);
+	}
+	.bk-plan .basalt-segmented-option {
+		padding-inline: 0.4rem;
+		font-size: 0.8rem;
+		text-align: center;
+		white-space: normal;
+	}
+}
+.bk-plan-warn {
+	display: flex;
+	align-items: flex-start;
+	margin: -0.5rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.5;
+	color: var(--bk-warn-ink);
+}
+.bk-plan-foot {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: auto;
+}
+
+/* Storage: the ring and the headline figure wrap side by side. */
+.bk-room {
+	display: flex;
+	gap: 1.5rem 2rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.bk-room-ring {
+	--size: 132px;
+	--thickness: 11px;
+	flex-shrink: 0;
+
+	& .basalt-ring-caption {
+		color: var(--bk-quiet);
+	}
+}
+.bk-room-text {
+	flex: 1 1 14rem;
+	min-width: 0;
+}
+.bk-room-big {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.bk-room-of {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--bk-quiet);
+}
+.bk-room-note {
+	margin: 0.3rem 0 1rem;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--bk-quiet);
+}
+.bk-room-actions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}
+
+/* The split bar grows each band smoothly when the numbers change. */
+.bk-split {
+	margin-top: 2rem;
+}
+.bk-split-bar {
+	display: flex;
+	gap: 3px;
+	height: 0.75rem;
+	border-radius: 999px;
+	overflow: hidden;
+}
+.bk-split-seg {
+	flex-basis: 0;
+	min-width: 3px;
+	background: var(--bk-tone);
+	transition: flex-grow 500ms ease;
+}
+.bk-split-seg-free {
+	background: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+}
+.bk-split-legend {
+	display: flex;
+	gap: 0.5rem 1.4rem;
+	flex-wrap: wrap;
+	margin: 0.9rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--bk-quiet);
+	list-style: none;
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.bk-swatch {
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 3px;
+	background: var(--bk-tone);
+}
+.bk-swatch-free {
+	background: color-mix(in srgb, var(--basalt-copy) 14%, var(--basalt-plane));
+}
+@media (prefers-reduced-motion: reduce) {
+	.bk-split-seg {
+		transition: none;
+	}
+}
+
+.bk-chart {
+	margin-top: 2rem;
+}
+.bk-chart-box {
+	position: relative;
+	height: 240px;
+}
+
+/* The toolbar's search gives way first so the filters keep its row; it stops
+   growing at a comfortable width and spare room collects at the end. */
+.bk-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+
+	& .basalt-segmented {
+		max-width: 100%;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: none;
+	}
+}
+.bk-search {
+	position: relative;
+	flex: 1 1 13rem;
+	min-width: 11rem;
+	max-width: 20rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--bk-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.bk-sort {
+	width: auto;
+}
+/* Under tablet width the search owns the first row; on phones the filter
+   and the sort get a full row each as well. */
+@media (max-width: 767.98px) {
+	.bk-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+}
+@media (max-width: 575.98px) {
+	.bk-toolbar .basalt-segmented {
+		flex: 1 1 100%;
+	}
+	.bk-toolbar .basalt-segmented-option {
+		flex: 1 1 auto;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+		text-align: center;
+	}
+	.bk-sort {
+		flex: 1 1 100%;
+		width: 100%;
+	}
+}
+
+/* The table runs to the card edges, and its outer cells take back the card's
+   inset so the first column lines up with the title and the toolbar. */
+.bk-table-wrap {
+	margin: 0 -1.75rem;
+}
+.bk-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-hover-bg: var(--basalt-wash);
+	font-size: 0.875rem;
+
+	& thead th {
+		padding: 0.6rem 0.75rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--bk-quiet);
+	}
+	& td {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		border-bottom-color: var(--bk-line);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 1.75rem;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 1.75rem;
+	}
+	& tbody tr:last-child td {
+		border-bottom: 0;
+	}
+	& tbody tr:hover > td {
+		background: var(--basalt-wash);
+	}
+	& tbody tr.is-new > td {
+		animation: bk-flash 2.4s ease-out;
+	}
+}
+@keyframes bk-flash {
+	0%,
+	30% {
+		background: var(--basalt-hue-soft);
+	}
+	100% {
+		background: transparent;
+	}
+}
+
+/* The first cell is a button: the date above, the name or age below. */
+.bk-when {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 0;
+	border: 0;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover .bk-when-date {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.bk-when-date {
+	font-weight: 650;
+}
+.bk-when-sub {
+	font-size: 0.77rem;
+	color: var(--bk-quiet);
+}
+.bk-kind {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: var(--bk-quiet);
+	}
+}
+.bk-num {
+	font-family: "Chivo Mono", ui-monospace, monospace;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.bk-state {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.bk-pin {
+	border-radius: 4px;
+	font-size: 0.85rem;
+	color: var(--bk-quiet);
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.bk-actions {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+
+	& .btn-icon {
+		display: inline-grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+	}
+}
+.bk-dl.btn-loading {
+	display: inline-grid;
+}
+
+/* On phones each restore point folds into a small card: when and status on
+   the first line, kind and size quieter on the second, then the actions. */
+@media (max-width: 767.98px) {
+	.bk-table-wrap {
+		margin: 0;
+		overflow: visible;
+	}
+	.bk-table {
+		min-width: 0;
+	}
+	.bk-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.bk-table tbody tr {
+		display: grid;
+		gap: 0.3rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--bk-line);
+	}
+	.bk-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.bk-table tbody td,
+	.bk-table > :not(caption) > * > :first-child,
+	.bk-table > :not(caption) > * > :last-child {
+		display: block;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.bk-table tbody td:first-child {
+		grid-column: 1;
+		grid-row: 1;
+	}
+	.bk-table tbody td:nth-child(4) {
+		grid-column: 2;
+		grid-row: 1;
+		align-self: start;
+	}
+	.bk-table tbody td:nth-child(2) {
+		grid-column: 1;
+		grid-row: 2;
+		font-size: 0.8rem;
+	}
+	.bk-table tbody td.bk-num {
+		grid-column: 2;
+		grid-row: 2;
+		align-self: center;
+		text-align: right;
+	}
+	.bk-table tbody td:last-child {
+		grid-column: 1 / -1;
+		grid-row: 3;
+		margin-top: 0.4rem;
+	}
+	.bk-table tbody tr:hover > td {
+		background: transparent;
+	}
+	.bk-skel td:last-child .ms-auto {
+		margin-left: 0;
+	}
+}
+/* On a phone a backup keeps when it ran, how it went and its actions; the
+   kind and the size wait in its panel. */
+@media (max-width: 575.98px) {
+	.bk-table tbody tr {
+		row-gap: 0.75rem;
+	}
+	.bk-table tbody td:nth-child(2),
+	.bk-table tbody td.bk-num {
+		display: none;
+	}
+	.bk-table tbody td:last-child {
+		grid-row: 2;
+		margin-top: 0;
+	}
+}
+/* With motion reduced, a new row keeps a steady tint instead of fading out. */
+@media (prefers-reduced-motion: reduce) {
+	.bk-table tbody tr.is-new > td {
+		background: var(--basalt-hue-soft);
+		animation: none;
+	}
+}
+
+/* Placeholder rows hold the table's height until the first page arrives. */
+.bk-skel {
+	& td {
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: var(--basalt-pad-row-y);
+	}
+	& .basalt-skeleton {
+		display: block;
+	}
+}
+.bk-skel-a {
+	width: 9rem;
+}
+.bk-skel-b {
+	width: 6rem;
+	margin-top: 0.4rem;
+}
+.bk-skel-c {
+	width: 5rem;
+}
+.bk-skel-d {
+	width: 7rem;
+}
+
+.bk-empty {
+	margin: 0.5rem 0;
+}
+.bk-pager {
+	margin-top: 1.25rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--bk-line);
+}
+
+/* The details drawer: a tinted kind icon, then facts, contents and storage. */
+.bk-drawer-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.bk-drawer .offcanvas-body > * + .bk-sub {
+	margin-top: 1.75rem;
+}
+.bk-drawer-problem {
+	display: flex;
+	gap: 0.6rem;
+	margin-top: 1rem;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 12%, var(--basalt-plane));
+
+	& .bi {
+		margin-top: 0.1rem;
+		color: var(--bk-warn-ink);
+	}
+}
+.bk-facts {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: var(--basalt-pad-head) 0 0;
+
+	& div {
+		padding: 0.75rem 0.85rem;
+		border-radius: 12px;
+		border: 1px solid var(--basalt-edge);
+		background: var(--basalt-canvas);
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--bk-quiet);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* What the copy holds and where it is kept share one ruled list style. */
+.bk-inside,
+.bk-where {
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+}
+.bk-inside li,
+.bk-where li {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy-body);
+}
+.bk-inside li:last-child,
+.bk-where li:last-child {
+	border-bottom: 0;
+}
+.bk-inside .bi,
+.bk-where .bi {
+	color: var(--bk-quiet);
+}
+.bk-inside strong {
+	margin-left: auto;
+	font-family: "Chivo Mono", ui-monospace, monospace;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.bk-where .bk-ok {
+	color: var(--bk-ok-ink);
+}
+
+.bk-ref {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.bk-ref-code {
+	padding: 0.3rem 0.6rem;
+	border-radius: 8px;
+	border: 1px solid var(--basalt-edge);
+	font-family: "Chivo Mono", ui-monospace, monospace;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+.bk-drawer-keep {
+	margin-top: 1.5rem;
+}
+.bk-drawer-hint {
+	margin: 1.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--bk-quiet);
+}
+
+/* The restore dialog offers three scopes, one per row on phones. */
+.bk-scope {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	& .basalt-choice {
+		padding: 1.1rem 0.75rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.bk-scope {
+		grid-template-columns: 1fr;
+	}
+}
+.bk-impact {
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		padding: 0.8rem 1rem;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		color: var(--basalt-copy);
+	}
+	& li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& .bi {
+		margin-top: 0.1rem;
+		color: var(--bk-quiet);
+	}
+}
+.bk-restore-opts {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+
+	& .form-check-label {
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+.bk-restore-risk {
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: var(--bk-bad-ink);
+}
+
+/* Once it starts, the restore shows a title, a bar and the current stage. */
+.bk-restoring {
+	padding: 1rem 0 0.5rem;
+}
+.bk-restoring-title {
+	margin: 0 0 1rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.bk-restoring-bar {
+	height: 0.6rem;
+}
+.bk-restoring-line {
+	margin: 0.85rem 0 0;
+	font-size: 0.85rem;
+	color: var(--bk-quiet);
+}
+
+/* Printed pages keep the record and drop the controls and the motion. */
+@media print {
+	.bk-run-form,
+	.bk-run-actions,
+	.bk-actions,
+	.bk-toolbar,
+	.bk-pager,
+	.bk-room-actions {
+		display: none;
+	}
+	.bk-page * {
+		transition: none;
+		animation: none;
+	}
+}

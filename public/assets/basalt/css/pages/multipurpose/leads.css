@@ -1,0 +1,1442 @@
+/* Styles for leads.html, kept under the .eq- prefix. Header, tabs, custom
+   selects, pager, drawers, dialogs, choice cards, the segments bar, empty
+   states and avatars all come from basalt.css; this sheet places them and
+   draws what is unique here: the cards of people still waiting, the lead
+   list, what the side panel shows and the two cards under the list.
+   Colors are --basalt-* tokens blended with color-mix(), so every palette
+   and both modes keep their own hues, and since the drawers and dialogs
+   live outside the page wrapper they declare the same blends. */
+
+/* Local blends shared by the page, both drawers and the dialogs. Muted
+   text leans toward the body color to pass 4.5:1 on light palettes and
+   hovered rows; links do the same where the bare primary falls short. */
+.eq-page,
+.eq-drawer,
+.eq-add,
+.eq-modal {
+	--eq-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--eq-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--eq-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--eq-danger: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--eq-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+
+/* Every stage takes a step of the theme ramp for its pills and drawer
+   steps; a converted lead reads as success and a parked one as gray. */
+.eq-tone-new {
+	--eq-tone: var(--basalt-hue);
+}
+.eq-tone-contacted {
+	--eq-tone: var(--basalt-series-2);
+}
+.eq-tone-qualified {
+	--eq-tone: var(--basalt-series-4);
+}
+.eq-tone-trial {
+	--eq-tone: var(--basalt-series-8);
+}
+.eq-tone-converted {
+	--eq-tone: var(--basalt-success);
+}
+.eq-tone-notnow {
+	--eq-tone: var(--basalt-copy-muted);
+}
+
+/* The ranked source bars walk the ramp in order, one step per source. */
+.eq-series-1 {
+	--eq-tone: var(--basalt-series-1);
+}
+.eq-series-2 {
+	--eq-tone: var(--basalt-series-2);
+}
+.eq-series-3 {
+	--eq-tone: var(--basalt-series-3);
+}
+.eq-series-4 {
+	--eq-tone: var(--basalt-series-4);
+}
+.eq-series-5 {
+	--eq-tone: var(--basalt-series-5);
+}
+.eq-series-6 {
+	--eq-tone: var(--basalt-series-6);
+}
+
+/* Quiet second lines sit just under their main text. */
+.eq-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--eq-quiet);
+}
+.eq-sub-flat {
+	margin: 0;
+}
+
+.eq-optional {
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--eq-quiet);
+}
+
+.eq-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--eq-link);
+
+	&:hover,
+	&:focus-visible {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Fields sit on the card surface with the stronger edge, wherever they are. */
+.eq-page .form-control,
+.eq-page .form-select,
+.eq-add .form-control,
+.eq-modal .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.eq-page .form-control::placeholder,
+.eq-add .form-control::placeholder,
+.eq-modal .form-control::placeholder {
+	color: var(--eq-quiet);
+	opacity: 1;
+}
+
+.eq-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.eq-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--eq-quiet);
+}
+
+/* All three cards share the header padding, tighter on a phone. */
+.eq-queue.basalt-box > .card-body,
+.eq-list.basalt-box > .card-body,
+.eq-insight > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+
+@media (max-width: 575.98px) {
+	.eq-queue.basalt-box > .card-body,
+	.eq-list.basalt-box > .card-body,
+	.eq-insight > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Waiting for a first reply: a card per person, longest wait leading,
+   each tinted by how long it has waited (primary, amber, then red). */
+.eq-queue-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	& > div {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+
+.eq-queue-list {
+	margin: 0.75rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The top row: four weeks of leads as dots beside the people waiting
+   for a reply. From desktop width they split the row and end level. */
+.eq-top {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.eq-top {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Four weeks of leads
+   Three figures, then one dot per lead in its source's color, solid when
+   it became a deal. The keys under them pick a source out. */
+.eq-dots-card > .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.eq-figs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 2.25rem;
+	margin: 1.25rem 0 0;
+
+	& div {
+		display: flex;
+		flex-direction: column-reverse;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--eq-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 1.6rem;
+		font-weight: 800;
+		line-height: 1.15;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+.eq-dots-wrap {
+	position: relative;
+	margin-block: auto;
+	padding-top: 1.5rem;
+}
+.eq-dots {
+	display: grid;
+	gap: 6px;
+	grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+}
+.eq-dot {
+	aspect-ratio: 1;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	box-shadow: inset 0 0 0 2px var(--eq-tone);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		opacity 170ms ease,
+		transform 170ms ease;
+
+	&.is-won {
+		background: var(--eq-tone);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.eq-dots .eq-dot.is-hot {
+	transform: scale(1.3);
+}
+/* The note for one lead floats above its dot, inside the card. */
+.eq-dot-tip {
+	position: absolute;
+	top: calc(var(--tip-y, 0px) + 1.5rem);
+	left: var(--tip-x, 0px);
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-width: 11rem;
+	max-width: 15rem;
+	padding: 0.6rem 0.8rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	transform: translate(-50%, calc(-100% - 0.6rem));
+	pointer-events: none;
+
+	&.is-flip {
+		transform: translate(calc(-100% + 1rem), calc(-100% - 0.6rem));
+	}
+	&.is-start {
+		transform: translate(-1rem, calc(-100% - 0.6rem));
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.eq-dot-tip-meta {
+	color: var(--eq-quiet);
+}
+.eq-dot-tip-state {
+	margin-top: 0.2rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	&.is-won {
+		color: var(--basalt-hue);
+	}
+}
+.eq-dots.is-picking .eq-dot:not(.is-on) {
+	opacity: 0.16;
+}
+.eq-dots .eq-dot.is-on {
+	transform: scale(1.1);
+}
+.eq-keys {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	padding-top: 1.5rem;
+}
+.eq-key {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	& span {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--eq-tone);
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--eq-tone);
+		background: color-mix(in srgb, var(--eq-tone) 12%, var(--basalt-plane));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.eq-dot {
+		transition: none;
+	}
+}
+
+.eq-ask-fresh {
+	--eq-tone: var(--basalt-hue);
+}
+.eq-ask-warn {
+	--eq-tone: var(--basalt-warning);
+}
+.eq-ask-late {
+	--eq-tone: var(--basalt-danger);
+}
+
+/* A waiting lead: a plain row in the list, its wait shown by the pill. */
+.eq-ask {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.25rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	cursor: pointer;
+
+	&:first-child {
+		border-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+
+.eq-ask-who {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+
+	& .eq-ask-pill {
+		margin-left: auto;
+	}
+}
+.eq-ask-text {
+	min-width: 0;
+
+	& .eq-sub {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+/* A person's name links to their page from the card and from the list. */
+.eq-ask-name,
+.eq-who-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.eq-ask-name:hover,
+.eq-who-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.eq-ask-name:focus-visible,
+.eq-who-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* The wait pill and the stage pill are one shape with a leading dot;
+   each picks its own tint strength in both modes. */
+.eq-ask-pill,
+.eq-stage {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+}
+.eq-ask-pill::before,
+.eq-stage::before {
+	content: "";
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--eq-tone);
+}
+
+.eq-ask-pill {
+	color: color-mix(in srgb, var(--eq-tone) 38%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--eq-tone) 15%, var(--basalt-plane));
+}
+[data-bs-theme="dark"] .eq-ask-pill {
+	color: color-mix(in srgb, var(--eq-tone) 30%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--eq-tone) 22%, var(--basalt-plane));
+}
+
+/* What they wrote, cut off after two lines so the rows stay level. */
+.eq-ask-msg {
+	display: -webkit-box;
+	margin: 0.85rem 0 0;
+	overflow: hidden;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	color: var(--basalt-copy-body);
+}
+.eq-ask-foot {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+}
+.eq-ask-meta {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--eq-quiet);
+}
+.eq-ask-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.eq-queue-done {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 1.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--eq-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+	& .bi {
+		font-size: 1.1rem;
+		color: var(--basalt-success);
+	}
+}
+
+/* The five view tabs never wrap; on a phone the strip scrolls sideways
+   and fades on whichever side has more. */
+.eq-views .basalt-tabs-list .nav-link {
+	white-space: nowrap;
+}
+
+/* Search, two selects and a count share one wrapping row. */
+.eq-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	padding-top: var(--basalt-pad-head);
+}
+
+.eq-search {
+	position: relative;
+	flex: 1 1 11rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--eq-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+/* Each select is sized to fit its longest choice. */
+.eq-select {
+	flex: 0 0 auto;
+}
+.eq-select-owner {
+	width: 11.5rem;
+}
+.eq-select-source {
+	width: 12.5rem;
+}
+.eq-summary {
+	flex: 1 0 auto;
+	margin: 0;
+	font-size: 0.85rem;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--eq-quiet);
+}
+
+@media (max-width: 767.98px) {
+	.eq-search {
+		flex: 1 1 100%;
+	}
+	.eq-select {
+		flex: 1 1 0;
+		width: auto;
+		max-width: 12.5rem;
+	}
+	.eq-summary {
+		flex: 1 1 100%;
+		text-align: left;
+	}
+}
+
+/* The wrapper reaches out by the cell padding, so the first column
+   lines up with the card edge, the tabs and the search box above. */
+.eq-table-wrap {
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.eq-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--eq-quiet);
+	}
+}
+
+/* Header buttons that sort; the idle arrow stays faint until hovered. */
+.eq-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+[aria-sort] .eq-sort {
+	color: var(--basalt-copy);
+}
+.eq-sort-idle {
+	opacity: 0.55;
+}
+.eq-sort:hover .eq-sort-idle {
+	opacity: 1;
+}
+
+/* Rows open the lead; one just added or changed glows briefly. */
+.eq-row {
+	cursor: pointer;
+
+	&:hover {
+		background: var(--eq-row-hover);
+	}
+	&.is-fresh {
+		animation: eq-fresh 1.8s ease;
+	}
+}
+@keyframes eq-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.eq-col-who {
+	min-width: 15rem;
+}
+.eq-col-want {
+	width: 11.5rem;
+}
+.eq-col-fit {
+	width: 8rem;
+}
+.eq-col-stage {
+	width: 8.5rem;
+}
+.eq-col-owner {
+	width: 11.5rem;
+}
+.eq-col-touch {
+	width: 11rem;
+}
+.eq-col-menu {
+	width: 7.5rem;
+	text-align: right;
+}
+
+.eq-cell-main {
+	display: block;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.eq-col-want .eq-cell-main {
+	font-weight: 600;
+}
+.eq-col-want .eq-sub,
+.eq-col-touch .eq-sub {
+	white-space: nowrap;
+}
+
+/* The person cell pairs an avatar with the name and a company line. */
+.eq-who {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.eq-who-text {
+	min-width: 0;
+
+	& .eq-sub {
+		white-space: nowrap;
+	}
+}
+
+/* Fit is a short bar and a number, green, amber or gray by score. */
+.eq-fit {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.eq-fit-strong {
+	--eq-fit: var(--basalt-success);
+}
+.eq-fit-fair {
+	--eq-fit: var(--basalt-warning);
+}
+.eq-fit-weak {
+	--eq-fit: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-plane));
+}
+.eq-fit-bar {
+	position: relative;
+	width: 3.5rem;
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+}
+.eq-fit-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--w);
+	border-radius: inherit;
+	background: var(--eq-fit);
+}
+.eq-fit-val {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.eq-stage {
+	color: color-mix(in srgb, var(--eq-tone) 40%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--eq-tone) 14%, var(--basalt-plane));
+}
+[data-bs-theme="dark"] .eq-stage {
+	color: color-mix(in srgb, var(--eq-tone) 28%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--eq-tone) 22%, var(--basalt-plane));
+}
+
+/* A first reply that is running late turns the wait amber, then red. */
+.eq-wait-warn {
+	font-weight: 600;
+	color: var(--eq-warn);
+}
+.eq-wait-late {
+	font-weight: 600;
+	color: var(--eq-danger);
+}
+
+.eq-owner {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.875rem;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	&:hover span {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.eq-unassigned {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--eq-warn);
+}
+
+/* The row menu: a quiet button and items with a fixed icon column. */
+.eq-page .eq-menu-btn.btn-icon {
+	border-radius: 9px;
+	color: var(--eq-quiet);
+
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.eq-page .dropdown-item .bi {
+	width: 1rem;
+	margin-right: 0.5rem;
+	text-align: center;
+}
+.eq-page .dropdown-item.eq-danger-item {
+	color: var(--eq-danger);
+
+	&:hover,
+	&:focus {
+		color: var(--eq-danger);
+		background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+	}
+}
+
+/* When their columns drop out, the owner and then the stage move under
+   the person's name. */
+.eq-fold {
+	display: none;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.4rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--eq-quiet);
+
+	& .basalt-avatar {
+		width: 20px;
+		height: 20px;
+		font-size: 0.5rem;
+	}
+	& .eq-unassigned {
+		font-size: 0.8rem;
+	}
+}
+.eq-fold-owner {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.eq-fold-stage {
+	display: none;
+}
+
+@media (max-width: 1499.98px) {
+	.eq-col-owner {
+		display: none;
+	}
+	.eq-fold {
+		display: flex;
+	}
+	.eq-col-who {
+		min-width: 12.5rem;
+	}
+	.eq-col-want {
+		width: 10.5rem;
+	}
+	.eq-col-fit {
+		width: 7rem;
+	}
+	.eq-col-stage {
+		width: 8rem;
+	}
+	.eq-col-touch {
+		width: 10rem;
+	}
+}
+@media (max-width: 1299.98px) {
+	.eq-col-fit,
+	.eq-col-stage {
+		display: none;
+	}
+	.eq-fold-stage {
+		display: inline-flex;
+	}
+}
+@media (max-width: 1199.98px) {
+	.eq-table > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	.eq-table-wrap {
+		margin: 0 -0.45rem;
+	}
+	.eq-col-who {
+		min-width: 9.5rem;
+	}
+	.eq-who-text .eq-sub {
+		white-space: normal;
+	}
+}
+
+/* On a phone every row is a small stacked card with no header row, so
+   stage, interest and last touch each get a line of their own. */
+@media (max-width: 767.98px) {
+	.eq-table-wrap {
+		margin: 0;
+		overflow: visible;
+	}
+	.eq-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.eq-table,
+	.eq-table tbody {
+		display: block;
+	}
+	.eq-table tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who   menu"
+			"stage fit"
+			"want  touch";
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.eq-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.eq-table > :not(caption) > * > * {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.eq-table .eq-col-who {
+		grid-area: who;
+	}
+	.eq-table .eq-col-stage {
+		display: block;
+		grid-area: stage;
+		align-self: center;
+	}
+	.eq-table .eq-col-fit {
+		display: block;
+		grid-area: fit;
+		align-self: center;
+		text-align: right;
+	}
+	.eq-fold-stage {
+		display: none;
+	}
+	.eq-table .eq-col-want {
+		grid-area: want;
+	}
+	.eq-table .eq-col-touch {
+		grid-area: touch;
+		text-align: right;
+	}
+	.eq-table .eq-col-menu {
+		grid-area: menu;
+		justify-self: end;
+	}
+	.eq-who-text .eq-sub {
+		white-space: normal;
+	}
+}
+/* On a phone a row keeps the person, the company, the stage, the fit, the
+   plan and the last touch. The owner only shows when nobody has the lead,
+   and the yearly value and the note under the last touch wait in the
+   quick view. */
+@media (max-width: 575.98px) {
+	.eq-table .eq-fold:not(:has(.eq-unassigned)),
+	.eq-table :is(.eq-col-want, .eq-col-touch) .eq-sub {
+		display: none;
+	}
+}
+
+.eq-empty {
+	margin: 1.5rem 0 0.5rem;
+
+	&[hidden],
+	& [hidden] {
+		display: none;
+	}
+}
+
+/* Under the rows, a rule, the range shown on the left and pages on the right. */
+.eq-pager {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	padding-top: var(--basalt-pad-row-y);
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.eq-pager-meta {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--eq-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The two cards under the list stack until 1200px, then pair up and
+   end on the same line. */
+.eq-insights {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.eq-insights {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.eq-insight > .card-body {
+	display: flex;
+	flex-direction: column;
+}
+
+/* Sources ranked as bars, each with its count and the deals it led to. */
+.eq-bars {
+	display: grid;
+	gap: 1.1rem;
+	flex: 1 1 auto;
+	align-content: space-between;
+	margin: 1.5rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.eq-bar {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 9.5rem minmax(0, 1fr) 2.25rem 4.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+}
+.eq-bar-name {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.eq-bar-track {
+	position: relative;
+	height: 0.5rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+}
+.eq-bar-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--w);
+	border-radius: inherit;
+	background: var(--eq-tone);
+}
+.eq-bar-val {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.eq-bar-deals {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--eq-quiet);
+}
+
+@media (max-width: 575.98px) {
+	.eq-bar {
+		gap: 0.4rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas: "name val deals" "track track track";
+	}
+	.eq-bar-name {
+		grid-area: name;
+	}
+	.eq-bar-track {
+		grid-area: track;
+	}
+	.eq-bar-val {
+		grid-area: val;
+	}
+	.eq-bar-deals {
+		grid-area: deals;
+	}
+}
+
+/* The weekly chart: a two-swatch key above a canvas that fills the rest. */
+.eq-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 1.25rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.eq-legend-item {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+
+	&::before {
+		content: "";
+		width: 0.7rem;
+		height: 0.7rem;
+		border-radius: 3px;
+		background: var(--eq-tone);
+	}
+}
+.eq-legend-item-in {
+	--eq-tone: var(--basalt-series-2);
+}
+.eq-legend-item-won {
+	--eq-tone: var(--basalt-success);
+}
+
+.eq-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 15rem;
+	margin-top: 1rem;
+
+	/* Until Chart.js sizes it, the bare canvas may not push a narrow card wider. */
+	& > canvas {
+		max-width: 100%;
+	}
+}
+
+/* The lead panel's header; on a phone the avatar and the position count
+   give the name their room and only the arrows remain. */
+.eq-drawer .offcanvas-header {
+	gap: 0.9rem;
+}
+@media (max-width: 575.98px) {
+	.eq-drawer .offcanvas-header > .basalt-avatar,
+	.eq-drawer .basalt-drawer-pos {
+		display: none;
+	}
+}
+
+/* Their own message, set off by an inset bar like a quotation. */
+.eq-quote {
+	position: relative;
+	margin: 0;
+	padding: 1rem 1.1rem 1rem 1.35rem;
+	border-radius: 12px;
+	font-size: 0.92rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.85rem;
+		bottom: 0.85rem;
+		left: 0.5rem;
+		width: 3px;
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-plane));
+	}
+}
+.eq-quote-meta {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--eq-quiet);
+}
+
+.eq-reach {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 1rem 0 0;
+	padding: 0;
+	font-size: 0.85rem;
+	list-style: none;
+
+	& .bi {
+		margin-right: 0.4rem;
+	}
+}
+.eq-reach-city {
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: var(--eq-quiet);
+	}
+}
+
+/* Where the lead stands on its path; a parked lead grays the bar out. */
+.eq-steps-label {
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.75rem;
+
+	& .eq-sub {
+		margin: 0;
+	}
+}
+.eq-steps-bar {
+	--segments-tone: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+
+	&.is-parked {
+		--segments-tone: color-mix(in srgb, var(--basalt-copy-muted) 60%, var(--basalt-plane));
+	}
+}
+
+/* The fit note in the panel and the price summary in the convert dialog
+   are the same tinted box, spaced a little differently. */
+.eq-d-fit,
+.eq-sum {
+	display: flex;
+	align-items: flex-start;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+.eq-d-fit {
+	gap: 0.9rem;
+	margin: 1.25rem 0 0;
+
+	&[hidden] {
+		display: none;
+	}
+	& .eq-fit {
+		flex: none;
+		margin-top: 0.2rem;
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Plan, seats and yearly value as label and value rows; the total
+   trades its bottom rule for a stronger one above. */
+.eq-facts {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.eq-fact {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.eq-fact-label {
+	color: var(--eq-quiet);
+}
+.eq-fact-value {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.eq-fact-total {
+	margin-top: -1px;
+	border-bottom: 0;
+	border-top: 1px solid var(--basalt-edge-strong);
+
+	& .eq-fact-label {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& .eq-fact-value {
+		font-weight: 700;
+	}
+}
+
+.eq-d-owner {
+	max-width: 15rem;
+	margin-top: 1.25rem;
+}
+.eq-d-owner .form-label,
+.eq-add .form-label,
+.eq-modal .form-label {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* History reads as an icon tile beside each line, oldest at the top. */
+.eq-history {
+	display: grid;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.eq-act {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	align-items: start;
+}
+.eq-act-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	color: var(--eq-quiet);
+	background: var(--basalt-plane-alt);
+}
+.eq-act-text {
+	padding-top: 0.2rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+
+/* The New lead drawer is wider than the default and spaces its fields
+   evenly; a Bootstrap row in the stack spaces itself with its gutter. */
+.eq-add {
+	--bs-offcanvas-width: 480px;
+}
+.eq-field + .eq-field {
+	margin-top: 1.25rem;
+}
+.eq-field.row {
+	--bs-gutter-y: 1.25rem;
+}
+.eq-field + .row.eq-field {
+	margin-top: 0;
+}
+
+/* Dialog fields keep the same rhythm, minus the gutter a row already
+   pulls itself up by. */
+.eq-form-row + .eq-form-row {
+	margin-top: 1.25rem;
+}
+.eq-form-row + .row.eq-form-row {
+	margin-top: calc(1.25rem - var(--bs-gutter-y));
+}
+
+.eq-modal {
+	& fieldset {
+		min-width: 0;
+		margin-left: 0;
+		margin-right: 0;
+		padding-left: 0;
+		padding-right: 0;
+		border: 0;
+	}
+	& legend.form-label {
+		float: none;
+		width: auto;
+		font-size: 0.92rem;
+	}
+}
+
+.eq-plans {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 575.98px) {
+	.eq-plans {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.eq-addons {
+	padding-top: 0;
+}
+.eq-addons-list {
+	display: flex;
+	gap: 0.4rem 1.5rem;
+	flex-wrap: wrap;
+	padding-top: 0.4rem;
+
+	& .form-check {
+		margin: 0;
+	}
+}
+
+.eq-sum {
+	gap: 0.6rem;
+	margin: 1.5rem 0 0;
+
+	& > .bi {
+		margin-top: 0.1rem;
+		color: var(--eq-quiet);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.eq-modal .basalt-dialog-foot .btn {
+	white-space: nowrap;
+}
+
+/* Reasons for parking a lead are pill-shaped choices that wrap. */
+.eq-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.eq-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.3rem 0.8rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .eq-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:focus-visible:not(:checked) + .eq-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}

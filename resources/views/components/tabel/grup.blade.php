@@ -4,10 +4,10 @@
      Latar dipasang pada isi sel karena Bootstrap mewarnai ulang setiap sel tabel. --}}
 <tr {{ $attributes }}>
     <td colspan="{{ $kolom }}" class="p-0">
-        <div class="order-bg-opacity-primary px-20 py-10 fs-14 fw-500 color-primary">
+        <div class="bg-primary-subtle px-3 py-2 fw-medium text-primary">
             {{ $judul }}
             @if ($keterangan)
-                <span class="ms-2 fw-400 color-gray">{{ $keterangan }}</span>
+                <span class="ms-2 fw-normal text-body-secondary">{{ $keterangan }}</span>
             @endif
         </div>
     </td>

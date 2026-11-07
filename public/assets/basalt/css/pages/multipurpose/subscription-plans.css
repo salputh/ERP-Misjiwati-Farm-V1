@@ -1,0 +1,572 @@
+/* Basalt - Subscription Plans (subscription-plans.html)
+   The plans side by side, the add-ons under them, and a quick
+   view of one plan. Namespaced under .spl-*; every color is a
+   --basalt-* token, and --spl-tone is each plan's own chart-ramp
+   color, so palettes and dark mode carry through. */
+
+.spl-page,
+.spl-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so
+     it clears 4.5:1 on the lighter palettes and on tinted panels. */
+	--spl-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--spl-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--spl-track: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+	--spl-up: color-mix(in srgb, var(--basalt-success) 62%, var(--basalt-copy));
+	--spl-down: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+}
+.spl-tone {
+	--spl-tone-text: color-mix(in srgb, var(--spl-tone) 62%, var(--basalt-copy));
+}
+
+/* Section heading above the plan cards */
+.spl-section-head {
+	margin-bottom: 1rem;
+}
+.spl-section-title,
+.spl-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.spl-section-desc,
+.spl-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--spl-quiet);
+}
+
+/* Plan cards
+   Three across from 1280px, ending level. Below that each plan is
+   one row: price and what is included on the left, figures on the
+   right; on phones everything stacks. */
+.spl-plans {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@media (min-width: 1280px) {
+	.spl-plans {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+.spl-plan {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	height: 100%;
+	padding: var(--basalt-pad-head, 1.5rem) var(--basalt-pad-x, 1.5rem);
+	cursor: pointer;
+	transition:
+		border-color 0.2s ease,
+		box-shadow 0.2s ease,
+		transform 0.2s ease;
+}
+.spl-plan:hover {
+	border-color: color-mix(in srgb, var(--spl-tone) 45%, var(--basalt-edge));
+	box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--spl-tone) 60%, transparent);
+}
+.spl-plan.is-open {
+	border-color: color-mix(in srgb, var(--spl-tone) 60%, var(--basalt-edge));
+}
+@media (max-width: 575.98px) {
+	.spl-plan {
+		padding: 1.25rem var(--basalt-pad-x-narrow, 1rem);
+	}
+}
+
+.spl-plan-head {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+}
+.spl-plan-icon,
+.spl-addon-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: var(--spl-tone-text);
+	background: color-mix(in srgb, var(--spl-tone) 16%, var(--basalt-plane));
+}
+.spl-plan-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	word-break: normal;
+	overflow-wrap: normal;
+	color: var(--basalt-copy);
+}
+.spl-plan-name a {
+	border-radius: 4px;
+	text-decoration: none;
+	color: inherit;
+}
+.spl-plan-name a:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.spl-plan-name a:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.spl-plan-head .basalt-row-actions {
+	margin-right: -0.35rem;
+}
+
+.spl-plan-price {
+	display: flex;
+	gap: 0.1rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 1.35rem 0 0;
+}
+.spl-plan-amount {
+	font-size: 2.25rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.03em;
+	color: var(--basalt-copy);
+}
+.spl-plan-per {
+	font-size: 0.875rem;
+	color: var(--spl-quiet);
+}
+.spl-plan-yearly {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--spl-quiet);
+}
+.spl-plan-blurb {
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+.spl-includes {
+	margin: 1rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.spl-includes li {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	padding: 0.3rem 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.spl-includes .bi {
+	flex: none;
+	margin-top: 0.1rem;
+	color: var(--spl-tone-text);
+}
+
+/* The plan's figures sit at the bottom so the three cards line up. */
+.spl-plan-figs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.spl-fig {
+	min-width: 0;
+}
+.spl-fig dt {
+	font-size: 0.77rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--spl-quiet);
+}
+.spl-fig dd {
+	margin: 0.2rem 0 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.spl-share {
+	margin-top: 1.1rem;
+}
+.spl-share-bar {
+	height: 6px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--spl-track);
+}
+.spl-share-bar span {
+	display: block;
+	width: var(--spl-w, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--spl-tone);
+	transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.spl-share-text {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--spl-quiet);
+}
+.spl-change {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.spl-change-up {
+	color: var(--spl-up);
+}
+.spl-change-down {
+	color: var(--spl-down);
+}
+.spl-change-flat {
+	color: var(--spl-quiet);
+}
+
+/* Free spans the row below the three paid plans: it has no revenue to
+   compare, so it reads as a wide card rather than a fourth column. */
+@media (min-width: 1280px) {
+	.spl-plans-free {
+		grid-column: 1 / -1;
+	}
+}
+
+/* One plan per row between phone and three-across widths, and Free
+   laid out the same way once it spans the row. */
+@media (min-width: 640px) and (max-width: 1279.98px) {
+	.spl-plan {
+		display: grid;
+		column-gap: 2rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-areas: "head head" "price list" "blurb list" "figs figs";
+		grid-template-rows: auto auto 1fr auto;
+		align-items: start;
+	}
+	.spl-plan-head {
+		grid-area: head;
+	}
+	.spl-plan-pricebox {
+		grid-area: price;
+	}
+	.spl-plan-blurb {
+		grid-area: blurb;
+	}
+	.spl-includes {
+		grid-area: list;
+		margin-top: 1.35rem;
+	}
+	.spl-plan-bottom {
+		grid-area: figs;
+	}
+}
+@media (min-width: 1280px) {
+	.spl-plan-free {
+		display: grid;
+		column-gap: 1.5rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-areas: "head head head" "price list figs" "blurb list figs";
+		grid-template-rows: auto auto 1fr;
+		align-items: start;
+	}
+	.spl-plan-free .spl-plan-head {
+		grid-area: head;
+	}
+	.spl-plan-free .spl-plan-pricebox {
+		grid-area: price;
+	}
+	.spl-plan-free .spl-plan-blurb {
+		grid-area: blurb;
+	}
+	.spl-plan-free .spl-includes {
+		grid-area: list;
+		margin-top: 1.35rem;
+	}
+	.spl-plan-free .spl-plan-bottom {
+		grid-area: figs;
+		margin-top: 1.35rem;
+		padding-top: 0;
+	}
+}
+.spl-plan-bottom {
+	margin-top: auto;
+	padding-top: 1.5rem;
+}
+
+/* Add-ons */
+.spl-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head, 1.5rem) var(--basalt-pad-x, 1.5rem);
+}
+@media (max-width: 575.98px) {
+	.spl-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow, 1rem);
+	}
+}
+.spl-card-head {
+	margin-bottom: 1rem;
+}
+.spl-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.spl-table {
+	--bs-table-bg: transparent;
+}
+.spl-table > :not(caption) > * > * {
+	padding: 1rem 0.75rem;
+	border-bottom-color: var(--basalt-edge);
+}
+.spl-table thead th {
+	padding-top: 0;
+	padding-bottom: 0.8rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--spl-quiet);
+}
+.spl-table > :not(caption) > * > :first-child {
+	padding-left: 0;
+}
+.spl-table > :not(caption) > * > :last-child {
+	padding-right: 0;
+}
+.spl-table > tbody > tr:last-child > * {
+	border-bottom: 0;
+}
+.spl-addon {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.spl-addon-icon {
+	--spl-tone: var(--basalt-hue);
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+}
+.spl-addon-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.spl-addon-about {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--spl-quiet);
+}
+.spl-addon-price {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.spl-plan-pills {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.spl-pill {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.spl-pill::before {
+	content: "";
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--spl-tone);
+}
+.spl-num {
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.spl-num small {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+}
+/* Narrow screens keep the name, price and revenue; the plans go, and
+   the account count moves under the name. */
+.spl-addon-acc {
+	display: none;
+}
+@media (max-width: 767.98px) {
+	.spl-col-plans {
+		display: none;
+	}
+}
+@media (max-width: 575.98px) {
+	.spl-col-acc,
+	.spl-addon-about {
+		display: none;
+	}
+	.spl-addon-acc {
+		display: block;
+		margin-top: 0.1rem;
+		font-size: 0.8rem;
+		color: var(--spl-quiet);
+	}
+	.spl-addon-icon {
+		display: none;
+	}
+}
+@media (min-width: 1280px) {
+	.spl-plan-blurb {
+		min-height: calc(2 * 1.55em);
+	}
+}
+
+/* Quick view */
+.spl-drawer {
+	--bs-offcanvas-width: 460px;
+}
+/* The title takes focus when the panel opens, for screen readers; it
+   is not a control, so it shows no ring. */
+.spl-drawer .offcanvas-title:focus,
+.spl-drawer .offcanvas-title:focus-visible {
+	outline: 0;
+	box-shadow: none;
+}
+.spl-dsec + .spl-dsec {
+	margin-top: 1.75rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.spl-dfigs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+}
+.spl-dmoves {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.spl-dmoves li {
+	display: flex;
+	gap: 0.75rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.4rem 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.spl-dmoves small {
+	margin-left: 0.4rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--spl-quiet);
+}
+.spl-dmoves-v {
+	font-weight: 600;
+	white-space: nowrap;
+}
+.spl-dnet {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin: 0.6rem 0 0;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.spl-dnet strong {
+	color: var(--basalt-copy);
+}
+.spl-dlist {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.spl-dlist li {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.spl-dlist li:last-child {
+	border-bottom: 0;
+}
+.spl-dlist a {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--spl-link);
+}
+.spl-dlist a:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.spl-dlist a:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.spl-dlist small {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--spl-quiet);
+}
+.spl-dlist-mrr {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.spl-dnote {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--spl-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.spl-plan {
+		transition: none;
+	}
+	.spl-share-bar span {
+		transition: none;
+	}
+}

@@ -1,0 +1,839 @@
+/* Bootstrap's modal is the base of every dialog here; this partial points it
+   at the palette and then adds the dialog patterns in the order modals.html
+   demonstrates them. Scripts behind them (Basalt.dialog and the
+   [data-basalt-*] hooks) live in basalt.js and modals.js. The command
+   palette borrows the modal too, but its look belongs to the command menu. */
+
+$quiet-ink: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+$code-face: "Chivo Mono", monospace;
+$glide: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+/* Visitors who ask for less motion get each effect below switched off where it is declared. */
+@mixin motionless {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+/* A tone tinted into the copy color reads clearly on light and dark planes alike. */
+@function toned-ink($tone, $share: 82%) {
+	@return color-mix(in srgb, var(--basalt-#{$tone}) $share, var(--basalt-copy));
+}
+
+/* The base dialog: rounder corners, a deep shadow, an opaque tinted scrim, and
+   a small scale-in replacing Bootstrap's 50px drop from the top. */
+.modal {
+	--bs-modal-color: var(--basalt-copy-body);
+	--bs-modal-bg: var(--basalt-plane);
+	--bs-modal-border-color: var(--basalt-edge);
+	--bs-modal-border-radius: 18px;
+	--bs-modal-inner-border-radius: 17px;
+	--bs-modal-box-shadow: 0 32px 80px -28px var(--basalt-scrim), 0 4px 14px -6px var(--basalt-scrim);
+	--bs-modal-header-padding: 1.1rem 1.5rem;
+	--bs-modal-header-border-color: var(--basalt-edge);
+	--bs-modal-footer-border-color: var(--basalt-edge);
+	--bs-modal-padding: 1.5rem;
+	--bs-modal-footer-gap: 0.5rem;
+
+	&-content {
+		box-shadow: var(--bs-modal-box-shadow);
+	}
+	&-title {
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		color: var(--basalt-copy);
+	}
+	&-footer {
+		padding: 1.1rem 1.5rem 1.35rem;
+	}
+	&-backdrop {
+		--bs-backdrop-bg: var(--basalt-scrim);
+		--bs-backdrop-opacity: 1;
+	}
+}
+/* The dialog only appears after the backdrop has faded in, so that fade is cut short. */
+.modal-backdrop.fade {
+	transition-duration: 80ms;
+}
+.modal {
+	&.fade .modal-dialog {
+		transform: translateY(6px) scale(0.985);
+		transition: transform 170ms $glide;
+
+		@include motionless {
+			transition: none;
+		}
+	}
+	&.show .modal-dialog {
+		transform: none;
+	}
+	&.modal-static .modal-dialog {
+		transform: scale(1.02);
+	}
+}
+
+/* Typed confirmation: the destructive button waits until the exact phrase is
+   typed, and a thin bar fills as the letters match ([data-basalt-type-confirm]). */
+$verdicts: (
+	match: success,
+	wrong: danger,
+);
+
+.basalt-type-confirm {
+	--basalt-match: 0;
+
+	&-phrase {
+		padding: 0.05rem 0.4rem;
+		border-radius: 6px;
+		border: 1px solid var(--basalt-edge-strong);
+		font-family: $code-face;
+		font-size: 0.85em;
+		font-weight: 400;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+		user-select: all;
+	}
+	&-meter {
+		height: 4px;
+		margin-top: 0.6rem;
+		border-radius: 99px;
+		overflow: hidden;
+		background: var(--basalt-edge);
+
+		span {
+			display: block;
+			width: calc(var(--basalt-match, calc(var(--value, 0) / 100)) * 100%);
+			height: 100%;
+			border-radius: inherit;
+			background: var(--basalt-warning);
+			transition:
+				width 180ms ease,
+				background-color 180ms ease;
+
+			@include motionless {
+				transition: none;
+			}
+		}
+	}
+	&-state {
+		margin: 0.4rem 0 0;
+		font-size: 0.8rem;
+		color: $quiet-ink;
+	}
+
+	/* A full match turns bar and caption green; a wrong letter turns them red. */
+	@each $verdict, $tone in $verdicts {
+		&.is-#{$verdict} {
+			.basalt-type-confirm-meter span {
+				background: var(--basalt-#{$tone});
+			}
+			.basalt-type-confirm-state {
+				font-weight: 600;
+				color: toned-ink($tone, 62%);
+			}
+		}
+	}
+	&.is-wrong .form-control {
+		border-color: var(--basalt-danger);
+	}
+}
+
+/* The confirm dialog is built around one question: a toned icon, the question,
+   what will happen, then both answers stacked full width. Danger is the
+   default tone; the warning and primary modifiers soften it. */
+$confirm-tones: (
+	warning: var(--basalt-warning),
+	primary: var(--basalt-hue),
+);
+
+.basalt-modal-confirm .modal-dialog {
+	max-width: 420px;
+}
+.basalt-confirm {
+	--basalt-confirm-tone: var(--basalt-danger);
+	padding: 2rem 1.75rem 1.5rem;
+	text-align: center;
+
+	@each $name, $tone in $confirm-tones {
+		&-#{$name} {
+			--basalt-confirm-tone: #{$tone};
+		}
+	}
+	&-icon {
+		display: grid;
+		place-items: center;
+		width: 64px;
+		height: 64px;
+		margin: 0 auto 1rem;
+		border-radius: 50%;
+		font-size: 1.6rem;
+		color: color-mix(in srgb, var(--basalt-confirm-tone) 82%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-confirm-tone) 13%, var(--basalt-plane));
+		box-shadow: 0 0 0 8px color-mix(in srgb, var(--basalt-confirm-tone) 6%, transparent);
+	}
+	&-title {
+		margin: 0 0 0.4rem;
+		font-size: 1.2rem;
+		font-weight: 800;
+		letter-spacing: -0.01em;
+		color: var(--basalt-copy);
+	}
+	&-text {
+		max-width: 34ch;
+		margin: 0 auto 1.25rem;
+		font-size: 0.9rem;
+		text-wrap: pretty;
+		color: $quiet-ink;
+	}
+	&-list {
+		margin: 0 0 1.5rem;
+		padding: 0.6rem 0.9rem;
+		border-radius: 12px;
+		border: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+		text-align: left;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+		list-style: none;
+
+		li {
+			display: flex;
+			gap: 0.6rem;
+			align-items: center;
+			padding: 0.3rem 0;
+		}
+		.bi {
+			color: color-mix(in srgb, var(--basalt-confirm-tone) 82%, var(--basalt-copy));
+		}
+	}
+	&-actions {
+		display: grid;
+		gap: 0.5rem;
+	}
+	&-hint {
+		margin: 0.85rem 0 0;
+		font-size: 0.77rem;
+		color: $quiet-ink;
+	}
+}
+
+/* With [data-basalt-modal-guard] a form dialog refuses to close over unsaved
+   edits: it shakes once and this warning bar rises into its footer. */
+@keyframes basalt-guard-in {
+	from {
+		transform: translateY(6px);
+		opacity: 0;
+	}
+}
+@keyframes basalt-guard-shake {
+	25% {
+		transform: translateX(-5px);
+	}
+	75% {
+		transform: translateX(5px);
+	}
+}
+.basalt-modal-guard {
+	display: flex;
+	gap: 0.6rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.85rem 1.5rem;
+	border-top: 1px solid color-mix(in srgb, var(--basalt-warning) 45%, transparent);
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-warning-soft);
+	animation: basalt-guard-in 210ms $glide;
+
+	&[hidden] {
+		display: none;
+	}
+	> .bi {
+		font-size: 1.05rem;
+		color: toned-ink(warning, 60%);
+	}
+	&-text {
+		flex: 1;
+		min-width: 10rem;
+		margin: 0;
+		font-weight: 650;
+	}
+	.btn-outline-secondary {
+		background: var(--basalt-plane);
+	}
+	@include motionless {
+		animation: none;
+	}
+}
+.modal-content.is-guarding {
+	animation: basalt-guard-shake 320ms ease;
+
+	@include motionless {
+		animation: none;
+	}
+}
+
+/* A submit button carrying [data-busy-label] spins and swaps its label while
+   saving, and holds on to its own fill instead of fading to disabled gray. */
+.btn.is-busy {
+	cursor: progress;
+
+	.spinner-border {
+		width: 0.9rem;
+		height: 0.9rem;
+		margin-right: 0.4rem;
+		border-width: 0.14em;
+		vertical-align: -0.1em;
+		color: currentColor;
+	}
+}
+.btn-primary.is-busy:disabled {
+	--bs-btn-disabled-bg: var(--btn-fill);
+	--bs-btn-disabled-border-color: var(--btn-fill);
+	--bs-btn-disabled-color: var(--btn-ink);
+}
+
+/* After the work is done a dialog trades its parts for this state: a check
+   that draws its ring and tick, a title, a line and one button. It waits
+   [hidden] inside .modal-content until the script brings it forward. */
+@keyframes basalt-done-ring {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+@keyframes basalt-done-tick {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+.basalt-done {
+	padding: 2.5rem 1.75rem 2rem;
+	text-align: center;
+
+	&[hidden] {
+		display: none;
+	}
+	&-mark {
+		display: block;
+		width: 72px;
+		height: 72px;
+		margin: 0 auto 1rem;
+		color: toned-ink(success);
+
+		circle {
+			fill: color-mix(in srgb, var(--basalt-success) 12%, transparent);
+			stroke: currentColor;
+			stroke-width: 2;
+			stroke-dasharray: 151;
+			stroke-dashoffset: 151;
+			animation: basalt-done-ring 520ms $glide forwards;
+		}
+		path {
+			fill: none;
+			stroke: currentColor;
+			stroke-width: 3.5;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+			stroke-dasharray: 34;
+			stroke-dashoffset: 34;
+			animation: basalt-done-tick 360ms 380ms $glide forwards;
+		}
+		/* Held still, the check appears already drawn. */
+		@include motionless {
+			circle,
+			path {
+				stroke-dashoffset: 0;
+				animation: none;
+			}
+		}
+	}
+	&-title {
+		margin: 0 0 0.3rem;
+		outline: 0;
+		font-size: 1.2rem;
+		font-weight: 800;
+		color: var(--basalt-copy);
+	}
+	&-text {
+		max-width: 36ch;
+		margin: 0 auto 1.5rem;
+		font-size: 0.9rem;
+		color: $quiet-ink;
+	}
+}
+.modal-content.is-done > :not(.basalt-done) {
+	display: none;
+}
+
+/* A stepped dialog numbers its stages across the top. Each stage is done,
+   current (aria-current="step") or ahead, and the line leading into a stage
+   fills once the one before it is done ([data-basalt-dialog-steps]). */
+@keyframes basalt-step-in {
+	from {
+		transform: translateX(12px);
+		opacity: 0;
+	}
+}
+.basalt-dialog-steps {
+	display: flex;
+	margin: 0.25rem 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+.basalt-dialog-steps-item {
+	position: relative;
+	display: flex;
+	gap: 0.4rem;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	font-size: 0.77rem;
+	font-weight: 600;
+	text-align: center;
+	color: $quiet-ink;
+
+	/* Two stacked rails join neighbors: a gray track and a hue fill that grows over it. */
+	& + &::before,
+	& + &::after {
+		content: "";
+		position: absolute;
+		top: 15px;
+		right: calc(50% + 22px);
+		left: calc(-50% + 22px);
+		height: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge-strong);
+	}
+	& + &::after {
+		transform: scaleX(0);
+		transform-origin: left center;
+		background: var(--basalt-hue);
+		transition: transform 360ms $glide;
+	}
+	&.is-done + &::after {
+		transform: scaleX(1);
+	}
+	@include motionless {
+		& + &::after {
+			transition: none;
+		}
+	}
+}
+.basalt-dialog-steps-dot {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	border: 2px solid var(--basalt-edge-strong);
+	font-family: $code-face;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		background-color 200ms ease,
+		border-color 200ms ease,
+		box-shadow 200ms ease;
+
+	.bi {
+		display: none;
+		font-size: 0.95rem;
+	}
+	@include motionless {
+		transition: none;
+	}
+}
+.basalt-dialog-steps-item.is-done {
+	.basalt-dialog-steps-dot {
+		border-color: transparent;
+		color: var(--basalt-on-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	}
+	.basalt-dialog-steps-num {
+		display: none;
+	}
+	.basalt-dialog-steps-dot .bi {
+		display: block;
+	}
+}
+.basalt-dialog-steps-item[aria-current="step"] .basalt-dialog-steps-dot,
+.basalt-dialog-steps-item.is-current .basalt-dialog-steps-dot {
+	border-color: var(--basalt-hue);
+	color: var(--basalt-copy);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+}
+.basalt-dialog-steps-item.is-done,
+.basalt-dialog-steps-item[aria-current="step"],
+.basalt-dialog-steps-item.is-current {
+	color: var(--basalt-copy);
+}
+.basalt-dialog-steps-panel {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	animation: basalt-step-in 260ms $glide;
+
+	&[hidden] {
+		display: none;
+	}
+	@include motionless {
+		animation: none;
+	}
+}
+/* The review stage lists every answer as a label and value pair. */
+.basalt-dialog-steps-summary {
+	margin: 0 0 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+
+	div {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.7rem 1rem;
+	}
+	div + div {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	dt {
+		font-weight: 500;
+		font-size: 0.85rem;
+		color: $quiet-ink;
+	}
+	dd {
+		margin: 0;
+		font-weight: 650;
+		text-align: right;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The side sheet is a modal docked full height to the right edge, as wide as
+   --basalt-sheet-width; adding .basalt-modal-sheet-start docks it left. */
+.basalt-modal-sheet {
+	--basalt-sheet-width: 520px;
+
+	.modal-dialog {
+		width: 100%;
+		max-width: var(--basalt-sheet-width);
+		height: 100%;
+		margin: 0 0 0 auto;
+	}
+	&.fade .modal-dialog {
+		transform: translateX(100%);
+		transition: transform 240ms $glide;
+
+		@include motionless {
+			transition: none;
+		}
+	}
+	&.show .modal-dialog {
+		transform: none;
+	}
+	&.modal-static .modal-dialog {
+		transform: translateX(-8px);
+	}
+	.modal-content {
+		height: 100%;
+		max-height: 100%;
+		border-width: 0 0 0 1px;
+		border-radius: 20px 0 0 20px;
+	}
+	&-start {
+		.modal-dialog {
+			margin: 0 auto 0 0;
+		}
+		&.fade .modal-dialog {
+			transform: translateX(-100%);
+		}
+		&.show .modal-dialog {
+			transform: none;
+		}
+		.modal-content {
+			border-width: 0 1px 0 0;
+			border-radius: 0 20px 20px 0;
+		}
+	}
+}
+/* A phone sheet covers the whole screen, so rounded corners would only show gaps. */
+@media (max-width: 575.98px) {
+	.basalt-modal-sheet .modal-content {
+		border-radius: 0;
+	}
+}
+.basalt-sheet-head {
+	gap: 0.75rem;
+	align-items: flex-start;
+
+	.btn-close {
+		margin: 0;
+	}
+	.basalt-status {
+		margin-top: 0.2rem;
+	}
+	&-sub {
+		margin: 0.1rem 0 0;
+		font-size: 0.8rem;
+		color: $quiet-ink;
+	}
+}
+
+/* Used with .modal-fullscreen, the full-screen dialog swaps its header for an
+   app bar, and from 992px its body splits into work and settings columns. */
+@keyframes basalt-pulse {
+	50% {
+		opacity: 0.35;
+	}
+}
+.basalt-modal-full {
+	.modal-content {
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	.modal-body {
+		padding: 2rem 1.25rem;
+		background: var(--basalt-canvas);
+	}
+}
+.basalt-appbar {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.7rem 1.25rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+
+	&-heading {
+		display: flex;
+		gap: 0.1rem 0.9rem;
+		flex: 1;
+		flex-wrap: wrap;
+		align-items: baseline;
+		min-width: 0;
+	}
+	&-title {
+		max-width: 100%;
+		margin: 0;
+		overflow: hidden;
+		font-size: 1.05rem;
+		font-weight: 750;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	&-status {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+		font-size: 0.8rem;
+		color: $quiet-ink;
+
+		/* The cloud icon breathes while a save is in flight. */
+		&.is-saving .bi {
+			animation: basalt-pulse 1s ease-in-out infinite;
+
+			@include motionless {
+				animation: none;
+			}
+		}
+	}
+	&-actions {
+		display: flex;
+		gap: 0.5rem;
+		flex-shrink: 0;
+	}
+	&-close {
+		color: var(--basalt-copy);
+	}
+}
+.basalt-modal-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	max-width: 1120px;
+	margin: 0 auto;
+
+	@media (min-width: 992px) {
+		gap: 2rem;
+		grid-template-columns: minmax(0, 1fr) 320px;
+	}
+}
+.basalt-modal-main {
+	padding: 1.5rem;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+
+/* The lightbox pages through pictures on a wide stage: arrows at its sides, a
+   caption bar beneath and a thumbnail strip at the foot
+   ([data-basalt-lightbox-set], wired up in modals.js). */
+@keyframes basalt-slide-in {
+	from {
+		transform: translateX(28px) scale(0.98);
+		opacity: 0;
+	}
+}
+@keyframes basalt-slide-back {
+	from {
+		transform: translateX(-28px) scale(0.98);
+		opacity: 0;
+	}
+}
+.basalt-lightbox {
+	.modal-dialog {
+		max-width: min(1040px, calc(100vw - 2rem));
+	}
+	.modal-content {
+		overflow: hidden;
+	}
+
+	&-stage {
+		position: relative;
+		width: 100%;
+		max-height: 68vh;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: var(--basalt-canvas);
+	}
+	&-slide {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		animation: basalt-slide-in 320ms $glide;
+
+		&.is-back {
+			animation-name: basalt-slide-back;
+		}
+		> * {
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+		}
+		@include motionless {
+			animation: none;
+		}
+	}
+	&-nav {
+		position: absolute;
+		top: 50%;
+		z-index: 2;
+		display: grid;
+		place-items: center;
+		width: 46px;
+		height: 46px;
+		margin-top: -23px;
+		border-radius: 50%;
+		border: 1px solid var(--basalt-edge);
+		font-size: 1.1rem;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: 0 10px 24px -12px var(--basalt-scrim);
+		transition:
+			transform 170ms ease,
+			background-color 170ms ease;
+
+		&:hover {
+			transform: scale(1.06);
+			background: var(--basalt-wash);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 2px;
+		}
+		&-prev {
+			left: 1rem;
+		}
+		&-next {
+			right: 1rem;
+		}
+		@include motionless {
+			transition: none;
+		}
+	}
+	&-bar {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		padding: 0.9rem 1.25rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	&-caption {
+		display: flex;
+		gap: 0.1rem;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+
+		strong {
+			font-weight: 700;
+			color: var(--basalt-copy);
+		}
+		span {
+			font-size: 0.85rem;
+			color: $quiet-ink;
+		}
+	}
+	&-count {
+		font-family: $code-face;
+		font-size: 0.8rem;
+		white-space: nowrap;
+		color: $quiet-ink;
+	}
+	&-thumbs {
+		display: flex;
+		gap: 0.5rem;
+		padding: 0 1.25rem 1.1rem;
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+	&-thumb {
+		flex-shrink: 0;
+		width: 68px;
+		height: 48px;
+		padding: 0;
+		border-radius: 9px;
+		border: 2px solid transparent;
+		overflow: hidden;
+		background: none;
+		opacity: 0.6;
+		transition:
+			opacity 170ms ease,
+			border-color 170ms ease;
+
+		&:hover {
+			opacity: 1;
+		}
+		&[aria-current="true"] {
+			border-color: var(--basalt-hue);
+			opacity: 1;
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 2px;
+			opacity: 1;
+		}
+	}
+}
+/* Narrow screens get smaller arrows that sit closer to the edges. */
+@media (max-width: 575.98px) {
+	.basalt-lightbox-nav {
+		width: 38px;
+		height: 38px;
+		margin-top: -19px;
+	}
+	.basalt-lightbox-nav-prev {
+		left: 0.5rem;
+	}
+	.basalt-lightbox-nav-next {
+		right: 0.5rem;
+	}
+}

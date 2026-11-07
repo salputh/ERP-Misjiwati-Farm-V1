@@ -1,0 +1,755 @@
+/*
+ * Every progress pattern beyond the plain Bootstrap bar lives here, in the
+ * order progress.html shows them: a busy bar of unknown length, a bar
+ * measured against a target, a queue of files in flight, a half-ring gauge,
+ * rings nested one per goal, a setup checklist, numbered steps and a bar cut
+ * into blocks. The lone .basalt-ring is styled with the other UI patterns.
+ */
+
+/* Secondary lines across all of these patterns share one softened ink. */
+$faint-ink: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+/* Empty tracks are the surface tinted a little toward the text color. */
+$track-tint: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+/* Fills settle with a quick start and a long, soft landing. */
+$settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+/* A framed card: the queue and the checklist both sit in one. */
+@mixin framed-card {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+
+/* Anything that glides holds still for visitors who ask for less motion. */
+@mixin still {
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* A bare list that keeps only the spacing its caller hands it. */
+@mixin bare-list($margin, $padding) {
+	margin: $margin;
+	padding: $padding;
+	list-style: none;
+}
+
+/* A job of unknown length slides a short bar across the track for as long as
+   it runs. The markup leaves aria-valuenow off, so assistive tech hears
+   "busy" instead of a figure. */
+.progress.progress-indeterminate {
+	position: relative;
+
+	> .progress-bar {
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: 40%;
+		border-radius: inherit;
+		animation: basalt-indeterminate 1.4s cubic-bezier(0.45, 0, 0.35, 1) infinite;
+	}
+}
+@keyframes basalt-indeterminate {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(250%);
+	}
+}
+/* With motion turned down the bar fills the track and breathes in place,
+   which still reads as busy. */
+@media (prefers-reduced-motion: reduce) {
+	.progress.progress-indeterminate > .progress-bar {
+		width: 100%;
+		animation: basalt-indeterminate-calm 2s ease-in-out infinite;
+	}
+}
+@keyframes basalt-indeterminate-calm {
+	50% {
+		opacity: 0.45;
+	}
+}
+
+/* A goal bar runs to --goal-max (125% by default) so overshoot stays visible.
+   --value and --target are percentages of that scale, and is-met turns the
+   fill green once the target is passed. The legend flag repeats the target
+   mark as a short upright tick. */
+/* Defaults weigh nothing, so a value-N or target-N class always wins. */
+:where(.basalt-progress-goal) {
+	--value: 0;
+	--target: 80;
+}
+.basalt-progress-goal {
+	&.is-met .basalt-progress-goal-bar {
+		background: var(--basalt-success);
+	}
+}
+.basalt-progress-goal-track {
+	position: relative;
+	height: 0.75rem;
+	border-radius: 999px;
+	background: $track-tint;
+}
+.basalt-progress-goal-bar {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: calc(var(--value) * 1%);
+	max-width: 100%;
+	border-radius: inherit;
+	background: var(--basalt-hue);
+	transition:
+		width 0.7s $settle,
+		background-color 300ms ease;
+
+	@include still;
+}
+.basalt-progress-goal-mark {
+	position: absolute;
+	top: -0.3rem;
+	bottom: -0.3rem;
+	left: calc(var(--target) * 1%);
+	width: 3px;
+	margin-left: -1.5px;
+	border-radius: 3px;
+	background: var(--basalt-copy);
+}
+.basalt-progress-goal-foot {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	font-size: 0.77rem;
+	color: $faint-ink;
+}
+.basalt-progress-goal-flag {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+
+	&::before {
+		content: "";
+		width: 3px;
+		height: 0.8rem;
+		border-radius: 3px;
+		background: var(--basalt-copy);
+	}
+}
+
+/* The file queue lists uploads in flight. A summary with a ring heads it,
+   and each row carries an icon, the name over a status line, a stock
+   .progress and at most two icon buttons. Rows tint themselves through
+   --file-queue-tone. */
+.basalt-file-queue {
+	@include framed-card;
+}
+.basalt-file-queue-summary {
+	display: flex;
+	gap: 1rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.25rem 1.35rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+
+	.basalt-ring {
+		--size: 64px;
+		--thickness: 7px;
+	}
+	.basalt-ring-value {
+		font-size: 0.95rem;
+	}
+}
+.basalt-file-queue-headline {
+	flex: 1 1 12rem;
+	min-width: 0;
+}
+.basalt-file-queue-title {
+	margin: 0 0 0.1rem;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.basalt-file-queue-sub {
+	margin: 0;
+	font-size: 0.8rem;
+	color: $faint-ink;
+}
+.basalt-file-queue-tools {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.basalt-file-queue-list {
+	@include bare-list(0, 0.3rem 0);
+}
+
+.basalt-file-queue-item {
+	--file-queue-tone: var(--basalt-hue);
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.9rem 1.35rem;
+	transition:
+		opacity 200ms ease,
+		background-color 200ms ease;
+
+	& + & {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	.progress {
+		--bs-progress-height: 0.4rem;
+	}
+	.progress-bar {
+		background-color: var(--file-queue-tone);
+	}
+	@include still;
+}
+.basalt-file-queue-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--file-queue-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--file-queue-tone) 12%, var(--basalt-plane));
+}
+.basalt-file-queue-line {
+	display: flex;
+	gap: 0.1rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.4rem;
+}
+.basalt-file-queue-name {
+	min-width: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.basalt-file-queue-meta {
+	font-size: 0.77rem;
+	color: $faint-ink;
+}
+.basalt-file-queue-actions {
+	display: flex;
+	gap: 0.25rem;
+}
+.basalt-file-queue-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border: 1px solid transparent;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	transition:
+		background-color 150ms ease,
+		color 150ms ease,
+		border-color 150ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[hidden] {
+		display: none;
+	}
+	@include still;
+}
+
+/* Row states only swap the tone; a waiting row grays just its icon, and a
+   failed row also spells its status line out in red. */
+.basalt-file-queue-item.is-queued .basalt-file-queue-icon {
+	--file-queue-tone: var(--basalt-copy-muted);
+}
+@each $state, $tone in (paused: warning, done: success, error: danger) {
+	.basalt-file-queue-item.is-#{$state} {
+		--file-queue-tone: var(--basalt-#{$tone});
+	}
+}
+.basalt-file-queue-item.is-error .basalt-file-queue-meta {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.basalt-file-queue-item.is-leaving {
+	opacity: 0;
+}
+.basalt-file-queue-empty {
+	margin: 0;
+	padding: 2rem 1.35rem;
+	font-size: 0.875rem;
+	text-align: center;
+	color: $faint-ink;
+}
+
+/* Phones drop the icon column and tighten the padding. */
+@media (max-width: 575.98px) {
+	.basalt-file-queue-item {
+		gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		padding: 0.85rem 1rem;
+	}
+	.basalt-file-queue-icon {
+		display: none;
+	}
+	.basalt-file-queue-summary {
+		padding: 1.1rem 1rem;
+	}
+}
+
+/* The gauge is a half ring of colored zones with a needle that swings to
+   --value (0 to 100). The SVG draws the zone arcs with pathLength="100". */
+:where(.basalt-gauge) {
+	--value: 0;
+}
+.basalt-gauge {
+	position: relative;
+	width: min(100%, 280px);
+	margin: 0 auto;
+
+	svg {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+}
+.basalt-gauge-zone {
+	fill: none;
+	stroke-width: 16;
+}
+@each $zone, $tone in (low: success, mid: warning, high: danger) {
+	.basalt-gauge-zone-#{$zone} {
+		stroke: color-mix(in srgb, var(--basalt-#{$tone}) 70%, var(--basalt-plane));
+	}
+}
+.basalt-gauge-needle {
+	transform-box: view-box;
+	transform-origin: 100px 100px;
+	transform: rotate(calc(var(--value) * 1.8deg - 90deg));
+	transition: transform 900ms cubic-bezier(0.3, 1.3, 0.5, 1);
+
+	line {
+		stroke: var(--basalt-copy);
+		stroke-width: 4;
+		stroke-linecap: round;
+	}
+	circle {
+		fill: var(--basalt-copy);
+	}
+	@include still;
+}
+.basalt-gauge-hub {
+	fill: var(--basalt-plane);
+}
+.basalt-gauge-read {
+	margin-top: 0.75rem;
+	line-height: 1.15;
+	text-align: center;
+}
+.basalt-gauge-value {
+	display: block;
+	font-size: 1.9rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.basalt-gauge-caption {
+	font-size: 0.8rem;
+	color: $faint-ink;
+}
+.basalt-gauge-scale {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.25rem;
+	font-size: 0.71rem;
+	color: $faint-ink;
+}
+
+/* Nested rings show two to four goals at once. Every circle reads its own
+   --value (0 to 100) and --tone; the SVG fixes the radii, and a legend
+   beside it names them. */
+.basalt-rings {
+	--size: 208px;
+	--thickness: 9px;
+	position: relative;
+	flex-shrink: 0;
+	width: var(--size);
+	height: var(--size);
+
+	svg {
+		transform: rotate(-90deg);
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+}
+.basalt-rings-track,
+.basalt-rings-bar {
+	fill: none;
+	stroke-width: var(--thickness);
+}
+.basalt-rings-track {
+	stroke: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+}
+:where(.basalt-rings-bar) {
+	--value: 0;
+}
+.basalt-rings-bar {
+	stroke: var(--tone);
+	stroke-linecap: round;
+	stroke-dasharray: 100 100;
+	stroke-dashoffset: calc(100 - min(var(--value), 100));
+	transition:
+		stroke-dashoffset 900ms $settle,
+		opacity 200ms ease;
+
+	@include still;
+}
+.basalt-rings-center {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-content: center;
+	line-height: 1.1;
+	text-align: center;
+}
+.basalt-rings-value {
+	font-size: 1.35rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.basalt-rings-caption {
+	font-size: 0.71rem;
+	color: $faint-ink;
+}
+.basalt-rings.is-focus .basalt-rings-bar:not(.is-focus) {
+	opacity: 0.25;
+}
+
+/* The setup checklist puts a count and a bar above its items. Ticked items
+   take is-done, and the card takes is-complete when nothing is left. */
+.basalt-checklist {
+	@include framed-card;
+
+	&.is-complete .basalt-checklist-done {
+		display: flex;
+	}
+	&.is-complete .progress-bar {
+		background-color: var(--basalt-success);
+	}
+}
+.basalt-checklist-head {
+	padding: 1.1rem 1.25rem 1.1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+.basalt-checklist-title {
+	margin: 0 0 0.1rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.basalt-checklist-count {
+	margin: 0 0 0.75rem;
+	font-size: 0.8rem;
+	color: $faint-ink;
+}
+.basalt-checklist-list {
+	@include bare-list(0, 0.3rem 0);
+}
+.basalt-checklist-item {
+	padding: 0.5rem 1.25rem;
+	transition: background-color 150ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	.form-check {
+		display: flex;
+		gap: 0.7rem;
+		align-items: flex-start;
+		margin: 0;
+		padding-left: 0;
+	}
+	.form-check-input {
+		flex-shrink: 0;
+		float: none;
+		width: 1.1rem;
+		height: 1.1rem;
+		margin: 0.1rem 0 0;
+		cursor: pointer;
+	}
+	.form-check-label {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+		cursor: pointer;
+	}
+	@include still;
+}
+.basalt-checklist-hint {
+	display: block;
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: $faint-ink;
+}
+/* A finished item strikes through its title but leaves the hint alone. */
+.basalt-checklist-item.is-done .form-check-label > span:first-child {
+	text-decoration: line-through;
+	text-decoration-color: color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+	color: $faint-ink;
+}
+.basalt-checklist-done {
+	display: none;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	padding: 0.9rem 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	background: var(--basalt-success-soft);
+}
+
+/* Steps are numbered dots on a line that fills in as each one is finished.
+   Items take is-done or is-current (the latter with aria-current="step"),
+   and the row folds into a column once its box is under 34rem wide. */
+.basalt-steps {
+	container-type: inline-size;
+}
+.basalt-steps-list {
+	--steps-dot: 2.5rem;
+	--steps-fill: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	counter-reset: none;
+	@include bare-list(0, 0);
+	display: flex;
+}
+.basalt-steps-item {
+	position: relative;
+	display: flex;
+	gap: 0.7rem;
+	flex: 1 1 0;
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+	text-align: center;
+}
+/* Two pseudo-elements draw the link to the next step: ::before is the
+   track, and ::after is the fill that scales out once the step is done. */
+.basalt-steps-item:not(:last-child) {
+	&::before,
+	&::after {
+		content: "";
+		position: absolute;
+		top: calc(var(--steps-dot) / 2 - 2px);
+		right: calc(-50% + var(--steps-dot) / 2 + 0.5rem);
+		left: calc(50% + var(--steps-dot) / 2 + 0.5rem);
+		height: 4px;
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--basalt-copy) 10%, var(--basalt-plane));
+	}
+	&::after {
+		transform: scaleX(0);
+		transform-origin: left center;
+		background: var(--steps-fill);
+		transition: transform 450ms $settle;
+	}
+}
+.basalt-steps-item.is-done:not(:last-child)::after {
+	transform: scaleX(1);
+}
+.basalt-steps-dot {
+	position: relative;
+	z-index: 1;
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: var(--steps-dot);
+	height: var(--steps-dot);
+	border-radius: 50%;
+	border: 2px solid var(--basalt-edge-strong);
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: $faint-ink;
+	background: var(--basalt-plane);
+	transition:
+		background-color 250ms ease,
+		border-color 250ms ease,
+		color 250ms ease,
+		box-shadow 250ms ease;
+
+	.bi {
+		display: none;
+		font-size: 1.05rem;
+	}
+	@include still;
+}
+/* A done dot fills solid and trades its number for a tick; the current dot
+   keeps its number inside a soft halo. */
+.basalt-steps-item.is-done {
+	.basalt-steps-dot {
+		border-color: var(--steps-fill);
+		color: var(--basalt-on-hue);
+		background: var(--steps-fill);
+
+		.bi {
+			display: block;
+		}
+	}
+	.basalt-steps-num {
+		display: none;
+	}
+}
+.basalt-steps-item.is-current .basalt-steps-dot {
+	border-color: var(--steps-fill);
+	color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+	box-shadow: 0 0 0 5px color-mix(in srgb, var(--basalt-hue) 16%, transparent);
+}
+.basalt-steps-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 0 0.25rem;
+}
+.basalt-steps-label {
+	font-size: 0.875rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.basalt-steps-hint {
+	font-size: 0.77rem;
+	color: $faint-ink;
+}
+.basalt-steps-item:not(.is-done):not(.is-current) .basalt-steps-label {
+	font-weight: 600;
+	color: $faint-ink;
+}
+
+/* In a narrow box the steps stack, and the joining line turns vertical and
+   grows downward. */
+@container (max-width: 34rem) {
+	.basalt-steps-list {
+		gap: 1.1rem;
+		flex-direction: column;
+	}
+	.basalt-steps-item {
+		gap: 0.9rem;
+		flex-direction: row;
+		align-items: center;
+		text-align: left;
+	}
+	.basalt-steps-text {
+		padding: 0;
+	}
+	.basalt-steps-item:not(:last-child) {
+		&::before,
+		&::after {
+			top: calc(var(--steps-dot) - 0.1rem);
+			right: auto;
+			bottom: calc(-1.1rem - 0.1rem);
+			left: calc(var(--steps-dot) / 2 - 2px);
+			width: 4px;
+			height: auto;
+		}
+		&::after {
+			transform: scaleY(0);
+			transform-origin: center top;
+		}
+	}
+	.basalt-steps-item.is-done:not(:last-child)::after {
+		transform: scaleY(1);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-steps-item::after {
+		transition: none;
+	}
+}
+
+/* Segments split a bar into equal blocks for counts you tick off, such as
+   stamps, stages or seats. Filled blocks take is-on, and --segments-tone
+   recolors the whole bar. */
+.basalt-segments {
+	--segments-tone: var(--basalt-hue);
+	display: flex;
+	gap: 0.3rem;
+	height: 0.625rem;
+}
+.basalt-segments-block {
+	position: relative;
+	flex: 1 1 0;
+	border-radius: 999px;
+	overflow: hidden;
+	background: $track-tint;
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		transform: scaleX(0);
+		transform-origin: left center;
+		border-radius: inherit;
+		background: var(--segments-tone);
+		transition: transform 350ms $settle;
+
+		@include still;
+	}
+	&.is-on::after {
+		transform: scaleX(1);
+	}
+}
+.basalt-segments-lg {
+	gap: 0.4rem;
+	height: 1.1rem;
+}
+.basalt-segments-success {
+	--segments-tone: var(--basalt-success);
+}
+/* Stage names line up under their blocks, and the reached ones go bold. */
+.basalt-segments-labels {
+	@include bare-list(0.5rem 0 0, 0);
+	display: flex;
+	gap: 0.3rem;
+
+	li {
+		flex: 1 1 0;
+		min-width: 0;
+		font-size: 0.76rem;
+		color: $faint-ink;
+	}
+	li.is-on {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* On paper the queue loses its controls, and fills skip their transitions. */
+@media print {
+	.basalt-file-queue-tools,
+	.basalt-file-queue-actions {
+		display: none;
+	}
+	.basalt-steps-item::after,
+	.basalt-rings-bar,
+	.basalt-gauge-needle {
+		transition: none;
+	}
+}

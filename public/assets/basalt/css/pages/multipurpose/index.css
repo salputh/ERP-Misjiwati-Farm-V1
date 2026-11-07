@@ -1,0 +1,835 @@
+/* The home dashboard (index.html), every class under .db-*.
+   Colors come only from the --basalt-* tokens, so each palette, dark
+   mode, Neutral and Flat reach the figures, lists and charts alike;
+   index.js reads the same tokens when it paints the canvases. */
+
+.db-page {
+	/* Small gray text is the muted token leaned toward the body color, which
+     keeps it above 4.5:1 on the lighter palettes as well. */
+	--db-quiet: color-mix(in srgb, var(--basalt-copy-muted) 80%, var(--basalt-copy));
+	--db-line: var(--basalt-edge);
+
+	/* A canvas stays inside its box, even before a chart is drawn on it. */
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+}
+
+/* A tone class hands its chart color to whatever sits inside it. The
+   page keeps to the palette's violets: 1, 2, 4 and 7. */
+.db-tone-1 {
+	--db-tone: var(--basalt-series-1);
+}
+.db-tone-2 {
+	--db-tone: var(--basalt-series-2);
+}
+.db-tone-4 {
+	--db-tone: var(--basalt-series-4);
+}
+.db-tone-7 {
+	--db-tone: var(--basalt-series-7);
+}
+
+/* September's headline row ends level: the swiping panel takes a full
+   row until 1200px, then half the width beside the two other cards. */
+.db-glance {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 576px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	@media (min-width: 1200px) {
+		grid-template-columns: minmax(0, 5fr) repeat(2, minmax(0, 4fr));
+	}
+}
+.db-kpi {
+	display: flex;
+	flex-direction: column;
+	/* Whole pixels wide, so the chart at its foot (sized by Chart.js to whole
+	   pixels) reaches the card's edge in a column a fraction wider. */
+	width: round(down, 100%, 1px);
+	overflow: hidden;
+}
+.db-kpi-body {
+	position: relative;
+	padding: 1.5rem 1.5rem 0;
+}
+.db-kpi-head {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.db-kpi-label {
+	margin: 0;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--db-quiet);
+}
+.db-kpi-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--db-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--db-tone) 15%, var(--basalt-plane));
+
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--db-tone) 70%, var(--basalt-copy));
+	}
+}
+.db-kpi-value {
+	margin: 0.6rem 0 0;
+	font-size: 2rem;
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.db-kpi-change {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.6rem 0 0;
+	font-size: 0.81rem;
+	color: var(--db-quiet);
+}
+
+/* The headline panel is the colored one. Its words, icon and wave all take
+   the card's own text color: light on a deep primary in both modes (in
+   dark mode the primary is deepened toward the page's own dark). The flat color under the
+   gradient is the end nearer the text color, so contrast is measured
+   where it is weakest. */
+.db-kpi-lead {
+	--db-lead-from: color-mix(in srgb, var(--basalt-hue) 82%, var(--basalt-copy));
+	--db-lead-to: color-mix(in srgb, var(--basalt-hue) 46%, var(--basalt-copy));
+	border-color: transparent;
+	color: var(--basalt-plane);
+	background-color: var(--db-lead-from);
+	background-image: linear-gradient(135deg, var(--db-lead-from), var(--db-lead-to));
+
+	[data-bs-theme="dark"] & {
+		--db-lead-from: color-mix(in srgb, var(--basalt-hue) 52%, var(--basalt-plane));
+		--db-lead-to: color-mix(in srgb, var(--basalt-hue) 30%, var(--basalt-plane));
+		color: var(--basalt-copy);
+		background-color: var(--db-lead-from);
+		background-image: linear-gradient(135deg, var(--db-lead-from), var(--db-lead-to));
+	}
+	/* Mono's primary is a light gray in dark mode, which cannot be deepened
+     into a color, so its panel stays light with dark words. */
+	[data-bs-theme="dark"][data-basalt-palette="mono"] & {
+		--db-lead-from: var(--basalt-hue);
+		--db-lead-to: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-hue-deep));
+		color: var(--basalt-on-hue);
+		background-color: var(--db-lead-to);
+	}
+	[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+
+	/* Its one ornament is a soft disc behind the icon. The disc and the
+     change badge use the body text color, always the opposite of the
+     card's own, so both deepen the contrast rather than thin it. */
+	&::before {
+		content: "";
+		position: absolute;
+		top: -5.5rem;
+		right: -4.5rem;
+		width: 13rem;
+		height: 13rem;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+		pointer-events: none;
+	}
+}
+
+/* The headline panel slides between three months-at-a-glance. The track
+   holds the slides side by side, with a copy of the first at the end so
+   the loop runs on forward; each slide's art sits behind its words. */
+.db-hero {
+	min-height: 17rem;
+	overflow: hidden;
+	cursor: grab;
+	touch-action: pan-y;
+	user-select: none;
+
+	@media (min-width: 576px) {
+		grid-column: 1 / -1;
+	}
+	@media (min-width: 1200px) {
+		grid-column: auto;
+	}
+	&.is-dragging {
+		cursor: grabbing;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.db-hero-track {
+	position: relative;
+	display: flex;
+	height: 100%;
+
+	&.is-gliding {
+		transition: transform 0.6s cubic-bezier(0.22, 0.8, 0.24, 1);
+	}
+}
+.db-hero-slide {
+	position: relative;
+	flex: 0 0 100%;
+	min-height: 17rem;
+}
+.db-hero-copy {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	gap: 0.3rem;
+	max-width: 22rem;
+	padding: 1.5rem;
+}
+.db-hero-title {
+	margin: 0;
+	/* Room for the slide dots in the top corner. */
+	padding-right: 4rem;
+	font-size: 1.125rem;
+	font-weight: 700;
+}
+.db-hero-sub {
+	margin: 0;
+	font-size: 0.875rem;
+	opacity: 0.88;
+}
+.db-hero-group {
+	margin: 1.1rem 0 0.3rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.db-hero-chips {
+	display: grid;
+	gap: 0.6rem 1.4rem;
+	grid-template-columns: repeat(2, max-content);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		font-size: 0.875rem;
+		white-space: nowrap;
+	}
+}
+.db-hero-chip {
+	min-width: 3.25rem;
+	padding: 0.3rem 0.5rem;
+	border-radius: 6px;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.81rem;
+	font-weight: 600;
+	text-align: center;
+	background: color-mix(in srgb, currentColor 16%, transparent);
+}
+@media (max-width: 575.98px) {
+	.db-hero-tag {
+		display: none;
+	}
+}
+.db-hero-art {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 58%;
+	height: 100%;
+	pointer-events: none;
+
+	@media (min-width: 1200px) {
+		width: 48%;
+	}
+
+	@media (max-width: 575.98px) {
+		width: 100%;
+		opacity: 0.28;
+	}
+}
+.db-hero-dots {
+	position: absolute;
+	top: 1.5rem;
+	right: 1.5rem;
+	z-index: 2;
+	display: flex;
+	gap: 0.375rem;
+
+	& button {
+		width: 8px;
+		height: 8px;
+		padding: 0;
+		border: 0;
+		color: inherit;
+		border-radius: 4px;
+		background: color-mix(in srgb, currentColor 42%, transparent);
+		transition:
+			width 0.3s,
+			background-color 0.3s;
+	}
+	& button[aria-current="true"] {
+		width: 20px;
+		background: currentColor;
+	}
+	& button:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 2px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.db-hero-track.is-gliding,
+	.db-hero-dots button {
+		transition: none;
+	}
+}
+
+/* Each card's picture sits at its foot, so the pictures line up. */
+.db-kpi-spark {
+	position: relative;
+	box-sizing: content-box;
+	height: 72px;
+	margin-top: auto;
+	padding-top: 1rem;
+}
+
+/* The overdue card trades the picture for one bar split by lateness,
+   a key under it and a link through to the invoices. */
+.db-late {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	margin: auto 1.5rem 1.5rem;
+	padding-top: 1.1rem;
+}
+/* Each overdue invoice is its own rounded piece, as wide as its amount,
+   on a heat scale from due soon to long overdue; the gaps keep the pieces
+   apart, so one big invoice reads as one. */
+.db-late-bar {
+	display: flex;
+	gap: 4px;
+	height: 12px;
+}
+.db-late-part {
+	flex-basis: 0;
+	min-width: 8px;
+	border-radius: 4px;
+	box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent);
+	transition: filter 150ms ease;
+
+	&:hover {
+		filter: brightness(1.08);
+	}
+}
+/* The pieces follow the palette: the longer an invoice is overdue, the
+   deeper its share of the palette's own color, never a red or amber. */
+.db-late-part-soon {
+	background: color-mix(in srgb, var(--basalt-hue) 35%, var(--basalt-plane));
+}
+.db-late-part-late {
+	background: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-plane));
+}
+.db-late-part-over {
+	background: var(--basalt-hue);
+}
+.db-late-who {
+	margin: 0.1rem 0 0;
+}
+.db-late-link {
+	align-self: flex-start;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+/* On phones the headline cards pull their insides in to 1rem. */
+@media (max-width: 575.98px) {
+	.db-kpi-body {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+	.db-late {
+		margin-left: 1rem;
+		margin-right: 1rem;
+	}
+}
+
+/* Every other card shares one frame: a title with a line under it and
+   an optional link at the right, the body, then a quiet footnote that
+   settles at the bottom. */
+.db-card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem 1rem;
+	}
+}
+.db-card-head {
+	display: flex;
+	gap: 0.75rem 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div:first-child {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+.db-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.db-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--db-quiet);
+}
+.db-card-link {
+	flex-shrink: 0;
+	padding-top: 0.2rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+
+	&:hover {
+		text-decoration: underline;
+	}
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--basalt-hue) 75%, var(--basalt-copy));
+	}
+}
+.db-card-foot {
+	margin: auto 0 0;
+	padding-top: 1.25rem;
+	font-size: 0.81rem;
+	color: var(--db-quiet);
+}
+
+/* Today's tasks: a checkbox, the task with a link under it, and a pill
+   that says how pressing it is. A ticked task is struck through. */
+.db-todo {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.db-todo-item {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: start;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--db-line);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& .form-check-input {
+		margin: 0.2rem 0 0;
+		cursor: pointer;
+	}
+}
+.db-todo-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.db-todo-label {
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+.db-todo-meta {
+	font-size: 0.81rem;
+	text-decoration: none;
+	color: var(--db-quiet);
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+.db-todo-item.is-done .db-todo-label {
+	text-decoration: line-through;
+	color: var(--db-quiet);
+}
+
+/* A pill is tinted by its tone; the gray default stands in until one is set. */
+.db-pill {
+	--db-tone: var(--basalt-copy-muted);
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.5rem;
+	border-radius: 6px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.35;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--db-tone) 48%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--db-tone) 13%, transparent);
+
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--db-tone) 62%, var(--basalt-copy));
+	}
+}
+.db-pill-danger {
+	--db-tone: var(--basalt-danger);
+}
+.db-pill-warning {
+	--db-tone: var(--basalt-warning);
+}
+.db-pill-success {
+	--db-tone: var(--basalt-success);
+}
+.db-pill-info {
+	--db-tone: var(--basalt-info);
+}
+
+/* Revenue won and lost: two big totals with a color key each, then the
+   chart, which takes whatever height the card has left. */
+.db-flow-figures {
+	display: flex;
+	gap: 0.75rem 2.5rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.25rem;
+}
+.db-flow-figure {
+	& dt {
+		margin-bottom: 0.25rem;
+		font-size: 0.81rem;
+		font-weight: 400;
+		color: var(--db-quiet);
+	}
+	& dd {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		margin: 0;
+		font-size: 1.5rem;
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+		color: var(--basalt-copy);
+	}
+}
+.db-flow-up {
+	font-size: 0.85em;
+	color: color-mix(in srgb, var(--basalt-success) 80%, var(--basalt-copy));
+}
+.db-flow-key {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 3px;
+	background: var(--db-tone);
+}
+/* Lost matches its faded bars: the same hue at 40%. */
+.db-flow-faded .db-flow-key {
+	background: color-mix(in srgb, var(--db-tone) 40%, transparent);
+}
+.db-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 260px;
+}
+
+/* Revenue by plan: the ring holds the account count in its middle, and
+   the plans are listed under it. */
+.db-split {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+}
+.db-ring {
+	position: relative;
+	width: min(100%, 13rem);
+	aspect-ratio: 1;
+	margin: 0.25rem auto 1.5rem;
+}
+.db-ring-chart {
+	position: absolute;
+	inset: 0;
+}
+.db-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	pointer-events: none;
+}
+.db-ring-value {
+	font-size: 1.6rem;
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.db-ring-label {
+	margin-top: 0.25rem;
+	font-size: 0.81rem;
+	color: var(--db-quiet);
+}
+.db-plans {
+	margin: auto 0 0;
+	padding: 0;
+	list-style: none;
+}
+.db-plans-row {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--db-line);
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+.db-plans-key {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 50%;
+	background: var(--db-tone);
+}
+.db-plans-name,
+.db-plans-mrr {
+	display: flex;
+	flex-direction: column;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.db-plans-mrr {
+	align-items: flex-end;
+	font-variant-numeric: tabular-nums;
+}
+.db-plans-name small,
+.db-plans-mrr small {
+	margin-top: 0.1rem;
+	font-size: 0.81rem;
+	font-weight: 400;
+	color: var(--db-quiet);
+}
+
+/* While the card spans a whole row, on tablets, the ring moves beside
+   its list. */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.db-split {
+		display: grid;
+		gap: 2.5rem;
+		grid-template-columns: 13rem minmax(0, 1fr);
+		align-items: center;
+	}
+	.db-split .db-ring,
+	.db-split .db-plans {
+		margin: 0;
+	}
+	.db-split .db-plans-row:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+
+/* Trials ending soon. The table runs to the card's edges, so the head
+   and the footnote carry the side padding instead of the body. */
+.db-card-body-table {
+	padding-left: 0;
+	padding-right: 0;
+
+	& > .db-card-head,
+	& > .db-card-foot {
+		padding-left: 1.5rem;
+		padding-right: 1.5rem;
+	}
+}
+.db-card-foot-table {
+	padding-top: 1.25rem;
+}
+.db-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 1rem;
+		border-bottom-color: var(--db-line);
+		vertical-align: middle;
+	}
+
+	/* Half-width beside the tasks on narrower desktops, the middle
+	   columns sit a little closer so the table never scrolls. */
+	@media (min-width: 1400px) and (max-width: 1599.98px) {
+		& > :not(caption) > * > * {
+			padding-inline: 0.75rem;
+		}
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 1.5rem;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 1.5rem;
+	}
+	& thead th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-top: 1px solid var(--db-line);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--db-quiet);
+		background: var(--basalt-plane-alt);
+	}
+	& td {
+		white-space: nowrap;
+	}
+}
+.db-who {
+	display: inline-flex;
+	gap: 0.75rem;
+	align-items: center;
+	text-decoration: none;
+	color: inherit;
+}
+.db-who-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.db-who-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.db-who:hover .db-who-name {
+	text-decoration: underline;
+}
+.db-who-meta {
+	font-size: 0.81rem;
+	color: var(--db-quiet);
+}
+
+/* Seats in use read as a short meter beside the count. */
+.db-use {
+	display: inline-flex;
+	gap: 0.65rem;
+	align-items: center;
+}
+.db-use-bar {
+	width: 4rem;
+	height: 0.375rem;
+	border-radius: 99px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+
+	& > span {
+		display: block;
+		width: var(--share);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-series-1);
+	}
+
+	/* Beside the task list the trials table is half the width, so the
+	   seat count keeps its words and drops its bar. */
+	@media (min-width: 1400px) {
+		display: none;
+	}
+}
+
+/* On phones the table's edge padding drops to 1rem and cells may wrap. */
+@media (max-width: 575.98px) {
+	.db-card-body-table > .db-card-head,
+	.db-card-body-table > .db-card-foot {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+	.db-table > :not(caption) > * > :first-child {
+		padding-left: 1rem;
+	}
+	.db-table > :not(caption) > * > :last-child {
+		padding-right: 1rem;
+	}
+	.db-table td {
+		white-space: normal;
+	}
+}
+
+@keyframes db-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+/* AI suggestions beside the task list: the title carries the AI mark, a
+   row can be dismissed, and a suggestion added to today lands on the list
+   with a small sparkle and a short highlight. */
+.db-ideas-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.db-idea-drop {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	color: var(--basalt-copy-muted);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-copy);
+	}
+}
+.db-ideas-done {
+	padding: 2rem 0;
+	text-align: center;
+	color: var(--basalt-copy-muted);
+}
+.db-todo-ai {
+	margin-right: 0.3rem;
+	color: var(--basalt-hue);
+}
+.db-todo-item.is-new {
+	animation: db-todo-in 1.6s ease-out;
+}
+@keyframes db-todo-in {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.db-todo-item.is-new {
+		animation: none;
+	}
+}

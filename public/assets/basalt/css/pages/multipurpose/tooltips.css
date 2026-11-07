@@ -1,0 +1,948 @@
+/**
+ * Tooltips and popovers page (tooltips.html), namespaced under .tt-*.
+ * This file only lays out the page: the card grid, the kind pill, the
+ * folding snippets and the small sample screens each demo sits in. The
+ * tooltips, popovers and their variants are themed in basalt.css.
+ */
+
+.tt-page {
+	--tt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--tt-accent-text: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--tt-focus: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 40%, transparent);
+	margin-top: 2rem;
+	/* Attribute and option names quoted in the card copy read as code chips. */
+	& code {
+		padding: 0 0.3em;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 4px;
+		font-size: 0.85em;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* The kind chips and their count stack above the grid; neither is printed. */
+.tt-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+	@media print {
+		display: none;
+	}
+}
+.tt-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	& .tt-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.tt-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.tt-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--tt-quiet);
+}
+
+/* Cards fill the row until 1200px, then pair up; a full-width card and the
+   odd card left over at the end of a run take the whole row. */
+.tt-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.tt-card {
+	grid-column: span 12;
+	min-width: 0;
+	&.is-hidden {
+		display: none;
+		@media print {
+			display: block;
+		}
+	}
+}
+@media (min-width: 1200px) {
+	.tt-card {
+		grid-column: span 6;
+	}
+	.tt-card-full,
+	.tt-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A card is a column: head, demo, and the snippet pushed to the foot. The
+   block just above the snippet keeps clear of its rule. */
+.tt-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+.tt-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+/* The kind pill follows the title in the markup but is drawn above it. */
+.tt-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.tt-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tt-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tt-quiet);
+}
+.tt-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--tt-quiet);
+}
+
+/* The snippet folds behind a summary line, with its copy button pinned to
+   the top corner of the code; it is left out of print. */
+.tt-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+	@media print {
+		display: none;
+	}
+}
+.tt-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.tt-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* Pieces several demos share: the demo box, a wrapping row of buttons, a
+   note under a demo, the square icon button and the series tones. */
+.tt-demo {
+	position: relative;
+}
+.tt-row {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.tt-note {
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--tt-quiet);
+}
+.tt-icon-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	color: var(--tt-quiet);
+	background: transparent;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 0;
+		box-shadow: var(--tt-focus);
+	}
+	&[aria-expanded="true"] {
+		color: var(--tt-accent-text);
+		background: var(--basalt-hue-soft);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.tt-tone-1 {
+	color: color-mix(in srgb, var(--basalt-series-1) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-1) 16%, var(--basalt-plane));
+}
+.tt-tone-3 {
+	color: color-mix(in srgb, var(--basalt-series-3) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-3) 18%, var(--basalt-plane));
+}
+.tt-tone-5 {
+	color: color-mix(in srgb, var(--basalt-series-5) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-5) 18%, var(--basalt-plane));
+}
+.tt-tone-8 {
+	color: color-mix(in srgb, var(--basalt-series-8) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-8) 16%, var(--basalt-plane));
+}
+
+/* Placements: four buttons around a center mark, laid out as a compass. */
+.tt-compass {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 7rem));
+	grid-template-rows: repeat(3, auto);
+	align-items: center;
+	justify-content: center;
+	padding: 1.5rem 0;
+	& .btn {
+		width: 100%;
+	}
+}
+.tt-compass-top {
+	grid-column: 2;
+	grid-row: 1;
+}
+.tt-compass-left {
+	grid-column: 1;
+	grid-row: 2;
+}
+.tt-compass-mid {
+	display: inline-grid;
+	grid-column: 2;
+	grid-row: 2;
+	place-items: center;
+	height: 3rem;
+	font-size: 1.25rem;
+	color: var(--tt-quiet);
+}
+.tt-compass-right {
+	grid-column: 3;
+	grid-row: 2;
+}
+.tt-compass-bottom {
+	grid-column: 2;
+	grid-row: 3;
+}
+
+/* Tones: equal-width buttons with room above each for its pinned tooltip. */
+.tt-tones {
+	display: grid;
+	gap: 3.75rem 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+	padding-top: 3rem;
+	& .btn {
+		width: 100%;
+	}
+}
+.tt-switch {
+	margin: 1.25rem 0 0;
+	& .form-check-label {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* HTML tooltip: round initials buttons with a ring the card color. */
+.tt-avatars {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}
+.tt-avatar {
+	display: inline-grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	padding: 0;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	font-weight: 700;
+	font-size: 0.85rem;
+	&:focus-visible {
+		outline: 0;
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-hue);
+	}
+}
+
+/* A disabled button cannot take focus, so its wrapper carries the ring. */
+.tt-disabled-wrap {
+	display: inline-block;
+	border-radius: var(--bs-border-radius);
+	&:focus-visible {
+		outline: 0;
+		box-shadow: var(--tt-focus);
+	}
+}
+
+/* Shortcut tooltips: a formatting toolbar over a sample note that takes
+   the pressed styles. */
+.tt-toolbar {
+	display: inline-flex;
+	gap: 0.2rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	& .tt-icon-btn {
+		width: 2.25rem;
+		height: 2.25rem;
+		font-size: 1rem;
+		&[aria-pressed="true"] {
+			color: var(--tt-accent-text);
+			background: var(--basalt-hue-soft);
+		}
+	}
+}
+.tt-toolbar-sep {
+	width: 1px;
+	height: 1.25rem;
+	margin: 0 0.25rem;
+	background: var(--basalt-edge-strong);
+}
+.tt-editor {
+	margin-top: 0.85rem;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+	&.is-bold {
+		font-weight: 700;
+	}
+	&.is-italic {
+		font-style: italic;
+	}
+	&.is-under {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+
+/* Overflow tooltip: a width slider over a table whose first column is
+   as wide as the slider says. */
+.tt-range {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+	& .form-label {
+		margin: 0;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& .form-range {
+		flex: 1 1 10rem;
+		max-width: 16rem;
+	}
+	& output {
+		min-width: 3.5rem;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.77rem;
+		color: var(--tt-quiet);
+	}
+}
+.tt-trunc {
+	--tt-col: 190px;
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-size: 0.85rem;
+	background: var(--basalt-plane);
+	& th,
+	& td {
+		padding: 0.6rem 0.85rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& tbody tr:last-child td {
+		border-bottom: 0;
+	}
+	& thead th {
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		text-align: left;
+		color: var(--tt-quiet);
+		/* A narrow header ends in an ellipsis instead of breaking mid-word. */
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+.tt-trunc-col {
+	width: var(--tt-col);
+}
+.tt-trunc-col-stock {
+	width: 5.25rem;
+}
+.tt-trunc-name {
+	border-right: 1px solid var(--basalt-edge);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tt-trunc-origin {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+/* The stock figures sit right; in the header they keep the header's gray. */
+.tt-trunc .tt-trunc-stock {
+	text-align: right;
+	color: var(--basalt-copy-body);
+}
+.tt-trunc thead .tt-trunc-stock {
+	color: var(--tt-quiet);
+}
+
+/* Feedback tooltip: one bordered row per value, its copy button outlined. */
+.tt-copy-list {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.6rem 0.6rem 0.6rem 0.9rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 10px;
+		background: var(--basalt-plane);
+		& > span {
+			min-width: 0;
+		}
+	}
+	& .tt-icon-btn {
+		border-color: var(--basalt-edge-strong);
+		&.is-copied {
+			border-color: color-mix(in srgb, var(--basalt-success) 55%, transparent);
+			color: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+		}
+	}
+}
+.tt-copy-list-label {
+	display: block;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--tt-quiet);
+}
+.tt-copy-list-value {
+	display: block;
+	margin-top: 0.1rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.85rem;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* Confirm popover: a sample order whose lines fade out when removed, with
+   a dark undo strip under it. */
+.tt-lines {
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	list-style: none;
+}
+.tt-line {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.75rem 0.9rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	transition: opacity 210ms ease;
+	&:last-child {
+		border-bottom: 0;
+	}
+	&.is-leaving {
+		opacity: 0;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.tt-line-swatch {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 8px;
+	font-size: 0.95rem;
+}
+.tt-line-main {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.tt-line-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tt-line-meta {
+	display: block;
+	font-size: 0.75rem;
+	color: var(--tt-quiet);
+}
+.tt-line-price {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tt-lines-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+}
+.tt-lines-total {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.tt-undo {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.75rem;
+	padding: 0.5rem 0.6rem 0.5rem 0.9rem;
+	border-radius: 10px;
+	font-size: 0.8rem;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+	&[hidden] {
+		display: none;
+	}
+}
+.tt-undo-btn {
+	padding: 0.3rem 0.6rem;
+	border: 0;
+	border-radius: 6px;
+	font-weight: 700;
+	font-size: 0.8rem;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: inherit;
+	background: transparent;
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-plane) 14%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-plane);
+		outline-offset: 1px;
+		box-shadow: none;
+	}
+}
+.tt-empty-cart {
+	padding: 1.25rem;
+	font-size: 0.875rem;
+	text-align: center;
+	color: var(--tt-quiet);
+}
+
+/* Edit-in-place: a stock table whose values flash green when saved. */
+.tt-stock {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.85rem;
+	& th {
+		padding: 0 0.5rem 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		text-align: left;
+		color: var(--tt-quiet);
+	}
+	& td {
+		padding: 0.5rem 0.5rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		color: var(--basalt-copy-body);
+	}
+	& tr:last-child td {
+		border-bottom: 0;
+	}
+	& td:first-child {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& .tt-num {
+		text-align: right;
+		white-space: nowrap;
+	}
+	& th.tt-num {
+		text-align: right;
+	}
+}
+.tt-editable {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	& .tt-icon-btn {
+		width: 1.75rem;
+		height: 1.75rem;
+		font-size: 0.75rem;
+	}
+}
+.tt-editable-value {
+	padding: 0.1rem 0.3rem;
+	border-radius: 4px;
+	transition: background-color 600ms ease;
+	&.is-saved {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-success) 22%, var(--basalt-plane));
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* Toggletip: form fields that share a row while they fit, each label with
+   its info button beside it. */
+.tt-fields {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+.tt-field-label {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	margin-bottom: 0.4rem;
+	& .form-label {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.tt-inline-tip {
+	margin: 1.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Hover card: an activity list whose names are underlined in the accent. */
+.tt-activity {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	& li {
+		position: relative;
+		display: flex;
+		gap: 0.85rem;
+		align-items: flex-start;
+		padding: 0.85rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+		color: var(--basalt-copy-body);
+		&:first-child {
+			padding-top: 0;
+		}
+		&:last-child {
+			padding-bottom: 0;
+			border-bottom: 0;
+		}
+	}
+}
+.tt-activity-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 8px;
+	color: var(--tt-quiet);
+	background: var(--basalt-plane-alt);
+}
+.tt-activity-time {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.75rem;
+	color: var(--tt-quiet);
+}
+.tt-person {
+	border-radius: 3px;
+	font-weight: 650;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+	&:hover {
+		text-decoration-color: var(--basalt-hue);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+/* Tour: a small orders screen on a sunken panel; on phones the items
+   column drops out and the cells tighten. */
+.tt-tour-launch {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.tt-tour-status {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--tt-quiet);
+}
+.tt-mock {
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-canvas);
+	@media (max-width: 575.98px) {
+		padding: 0.75rem;
+	}
+}
+.tt-mock-bar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+.tt-mock-search {
+	position: relative;
+	flex: 1 1 14rem;
+	max-width: 20rem;
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.7rem;
+		transform: translateY(-50%);
+		font-size: 0.8rem;
+		color: var(--tt-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2rem;
+		background-color: var(--basalt-plane);
+	}
+}
+.tt-mock-filters {
+	display: inline-flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	padding: 0.2rem;
+	border-radius: 10px;
+}
+.tt-mini-chip {
+	padding: 0.3rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.tt-mock-export {
+	margin-left: auto;
+	@media (max-width: 575.98px) {
+		margin-left: 0;
+	}
+}
+.tt-mock-table {
+	width: 100%;
+	overflow: visible;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.8rem;
+	background: var(--basalt-plane);
+	& th {
+		padding: 0.6rem 0.85rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		text-align: left;
+		color: var(--tt-quiet);
+	}
+	& td {
+		padding: 0.7rem 0.85rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		vertical-align: middle;
+		color: var(--basalt-copy-body);
+	}
+	& tr:last-child td {
+		border-bottom: 0;
+	}
+	& td:first-child {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.77rem;
+		color: var(--basalt-copy);
+	}
+	& .tt-num {
+		text-align: right;
+	}
+	@media (max-width: 575.98px) {
+		& .tt-hide-sm {
+			display: none;
+		}
+		& th,
+		& td {
+			padding: 0.5rem 0.5rem;
+		}
+	}
+}
+/* A status pill tinted from its own tone, with a dot of the full color. */
+.tt-status {
+	--tt-tone: var(--basalt-hue);
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--tt-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tt-tone) 14%, var(--basalt-plane));
+	&::before {
+		content: "";
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--tt-tone);
+	}
+	@media (max-width: 575.98px) {
+		padding: 0.2rem 0.4rem;
+	}
+}
+.tt-status-pack {
+	--tt-tone: var(--basalt-warning);
+}
+.tt-status-ship {
+	--tt-tone: var(--basalt-hue);
+}
+.tt-status-done {
+	--tt-tone: var(--basalt-success);
+}

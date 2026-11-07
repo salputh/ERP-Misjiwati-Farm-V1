@@ -1,0 +1,996 @@
+/* Segments page styles (segments.html), all under the .cg- prefix.
+   Shared pieces such as the page head, status pills, selects, choice
+   cards, avatars, dialogs, the drawer and empty states come from
+   basalt.css. What lives here is the kind filter, the segment table,
+   the drawer's contents, the rule editor and the New segment dialog.
+   segment-details.css builds on top of this file. Colors are
+   always --basalt-* tokens blended with color-mix(), so every palette
+   and both modes carry through. */
+
+/* Helper tones shared by the page and its overlays. The muted text is
+   nudged toward body copy to keep 4.5:1 on pale palettes and hovered
+   rows; links get the same treatment because the bare primary falls
+   short in some light palettes. */
+.cg-page,
+.cg-drawer,
+.cg-new-dialog,
+.cg-delete-dialog {
+	--cg-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--cg-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--cg-danger: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--cg-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+
+.cg-quiet {
+	color: var(--cg-quiet);
+}
+
+/* A segment's accent is one of the palette's chart series, or the
+   danger and muted tokens for the two built-in suppressions. */
+.cg-tone-1 {
+	--cg-tone: var(--basalt-series-1);
+}
+.cg-tone-2 {
+	--cg-tone: var(--basalt-series-2);
+}
+.cg-tone-3 {
+	--cg-tone: var(--basalt-series-3);
+}
+.cg-tone-4 {
+	--cg-tone: var(--basalt-series-4);
+}
+.cg-tone-5 {
+	--cg-tone: var(--basalt-series-5);
+}
+.cg-tone-6 {
+	--cg-tone: var(--basalt-series-6);
+}
+.cg-tone-7 {
+	--cg-tone: var(--basalt-series-7);
+}
+.cg-tone-8 {
+	--cg-tone: var(--basalt-series-8);
+}
+.cg-tone-danger {
+	--cg-tone: var(--basalt-danger);
+}
+.cg-tone-muted {
+	--cg-tone: var(--basalt-copy-muted);
+}
+
+/* Kinds feed --stp-tone, so the filter tile and the table pill agree.
+   Count text leans harder toward body copy than a stock pill does,
+   since series 8 is pale in a few palettes. */
+.cg-kind-segment {
+	--stp-tone: var(--basalt-series-1);
+}
+.cg-kind-list {
+	--stp-tone: var(--basalt-series-8);
+}
+.cg-kind-suppression {
+	--stp-tone: var(--basalt-danger);
+}
+.basalt-status[class*="cg-kind--"],
+.cg-kind-count {
+	color: color-mix(in srgb, var(--stp-tone) 38%, var(--basalt-copy));
+}
+
+/* The rounded icon square tinted with the segment's accent. */
+.cg-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--cg-tone, var(--basalt-hue)) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cg-tone, var(--basalt-hue)) 15%, var(--basalt-plane));
+}
+.cg-icon-lg {
+	width: 2.85rem;
+	height: 2.85rem;
+	border-radius: 14px;
+	font-size: 1.25rem;
+}
+
+/* The one card on the page tightens its padding on phones. */
+.cg-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Kind tiles sit in their own size container, so the row follows the
+   card rather than the window: stacked when narrow, three across from
+   36rem, and without icons until there is room for them. */
+.cg-kinds {
+	container-type: inline-size;
+}
+.cg-kinds-grid {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@container (min-width: 36rem) {
+	.cg-kinds-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+@container (min-width: 36rem) and (max-width: 51.99rem) {
+	.cg-kind .cg-kind-icon {
+		display: none;
+	}
+}
+
+/* Each tile is a light wash of its kind with a slim bar inset on the
+   left. Pressing deepens the wash and colors the border, which already
+   marks the tile, so a pressed tile skips the focus ring. */
+.cg-kind {
+	position: relative;
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	width: 100%;
+	padding: 1rem 1.1rem 1rem 1.35rem;
+	border: 1px solid color-mix(in srgb, var(--stp-tone) 22%, var(--basalt-edge));
+	border-radius: 14px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--stp-tone) 7%, var(--basalt-plane));
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.9rem;
+		bottom: 0.9rem;
+		left: 0.5rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--stp-tone);
+	}
+	&:hover {
+		background: color-mix(in srgb, var(--stp-tone) 12%, var(--basalt-plane));
+	}
+	&[aria-pressed="true"] {
+		border-color: color-mix(in srgb, var(--stp-tone) 70%, var(--basalt-plane));
+		background: color-mix(in srgb, var(--stp-tone) 16%, var(--basalt-plane));
+	}
+	&:focus {
+		outline: 0;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.cg-kind-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--stp-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 16%, var(--basalt-plane));
+}
+.cg-kind-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cg-kind-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 650;
+	font-size: 0.95rem;
+}
+.cg-kind-count {
+	padding: 0.05rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	background: color-mix(in srgb, var(--stp-tone) 16%, var(--basalt-plane));
+}
+.cg-kind-desc {
+	font-size: 0.8rem;
+	color: var(--cg-quiet);
+}
+
+/* Search on the left, the running count and Show all on the right,
+   with a rule above to split them from the tiles. */
+.cg-toolbar {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-row-y);
+	padding: var(--basalt-pad-row-y) 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.cg-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--cg-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.cg-summary {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--cg-quiet);
+}
+.cg-showall {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font-weight: 600;
+	color: var(--cg-link);
+	background: none;
+
+	&[hidden] {
+		display: none;
+	}
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	&:focus {
+		outline: 0;
+	}
+}
+
+/* The wrapper's negative margin cancels the cells' side padding, so the
+   first column lines up with the tiles and the search box above. */
+.cg-table-wrap {
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.cg-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& thead th {
+		padding-top: 0.5rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--cg-quiet);
+	}
+}
+
+/* Sortable headers are bare buttons; an idle arrow stays faint until
+   the header is hovered or sorted. */
+.cg-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+}
+.cg-sort:hover,
+[aria-sort] .cg-sort {
+	color: var(--basalt-copy);
+}
+.cg-sort-idle {
+	opacity: 0.55;
+}
+.cg-sort:hover .cg-sort-idle {
+	opacity: 1;
+}
+
+/* A whole row is a link target, and a row just added flashes once. */
+.cg-row {
+	cursor: pointer;
+
+	&:hover {
+		background: var(--cg-row-hover);
+	}
+	&.is-fresh {
+		animation: cg-fresh 1.8s ease;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&.is-fresh {
+			animation: none;
+		}
+	}
+}
+@keyframes cg-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.cg-col-kind {
+	width: 8.75rem;
+}
+.cg-col-members {
+	width: 10rem;
+}
+.cg-col-used {
+	width: 12.5rem;
+}
+.cg-col-updated {
+	width: 7.5rem;
+	font-size: 0.85rem;
+	white-space: nowrap;
+}
+.cg-col-menu {
+	width: 7.5rem;
+	text-align: right;
+	white-space: nowrap;
+
+	& .basalt-row-actions,
+	& .dropdown {
+		display: inline-flex;
+		vertical-align: middle;
+	}
+	& .dropdown {
+		margin-left: 0.25rem;
+	}
+}
+
+/* Name cell: icon, then the name over its one-line description. */
+.cg-group {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.cg-group-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+}
+.cg-group-name {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font-weight: 650;
+	font-size: 0.95rem;
+	text-align: left;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+.cg-group-desc {
+	font-size: 0.8rem;
+	color: var(--cg-quiet);
+}
+/* Kind and size repeat under the name, but only once their own columns
+   have been dropped. */
+.cg-fold {
+	display: none;
+	gap: 0.3rem 0.65rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+}
+
+/* The member count is followed by a bar scaled to the biggest segment. */
+.cg-members {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.cg-members-n {
+	min-width: 2.25rem;
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.cg-bar {
+	position: relative;
+	flex: 1 1 auto;
+	max-width: 6.5rem;
+	height: 6px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--cg-tone) 14%, var(--basalt-plane-alt));
+
+	& > span {
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: var(--cg-share, 0%);
+		border-radius: inherit;
+		background: var(--cg-tone);
+	}
+}
+
+.cg-used {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.cg-used-more {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+}
+.cg-col-used > .cg-quiet {
+	font-size: 0.85rem;
+}
+
+/* The row's overflow menu and its items, with Delete in the danger hue. */
+.cg-page {
+	& .cg-menu.btn-icon {
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		color: var(--cg-quiet);
+	}
+	& .cg-menu.btn-icon:hover,
+	& .cg-menu.btn-icon[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	& .dropdown-item {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+	}
+	& .dropdown-item .bi {
+		width: 1rem;
+		text-align: center;
+	}
+	& .dropdown-item.cg-danger-item {
+		color: var(--cg-danger);
+	}
+	& .dropdown-item.cg-danger-item:hover,
+	& .dropdown-item.cg-danger-item:focus {
+		color: var(--cg-danger);
+		background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+	}
+}
+
+/* Keyboard focus draws the same ring on every bare control in the card. */
+.cg-kind[aria-pressed="false"]:focus-visible,
+.cg-showall:focus-visible,
+.cg-sort:focus-visible,
+.cg-group-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Columns drop by the card's width, since the sidebar eats 300px from
+   992px up. Used by goes first (the drawer lists those sends), then
+   Updated. */
+@media (max-width: 1399.98px) {
+	.cg-col-used {
+		display: none;
+	}
+}
+@media (min-width: 992px) and (max-width: 1149.98px), (max-width: 799.98px) {
+	.cg-col-updated {
+		display: none;
+	}
+}
+
+/* Below 768px a row turns into a compact card: name, kind and size on
+   the left, the actions on the right. */
+@media (max-width: 767.98px) {
+	.cg-table-wrap {
+		margin: 0;
+		overflow: visible;
+	}
+	.cg-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.cg-table,
+	.cg-table tbody {
+		display: block;
+	}
+	.cg-table tr {
+		display: grid;
+		gap: 0.5rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: start;
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.cg-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.cg-table > :not(caption) > * > * {
+		padding: 0;
+		border: 0;
+	}
+	.cg-col-kind,
+	.cg-col-members,
+	.cg-col-used,
+	.cg-col-updated {
+		display: none;
+	}
+	.cg-col-menu {
+		width: auto;
+	}
+	.cg-group {
+		align-items: flex-start;
+	}
+	.cg-fold {
+		display: flex;
+	}
+}
+
+/* The note under the table, and room around an empty result. */
+.cg-note {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	padding-top: var(--basalt-pad-row-y);
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--cg-quiet);
+}
+[data-cg-empty] {
+	padding: 1rem 0 1.5rem;
+}
+
+/* The quick-view drawer widens from 576px and splits its sections
+   with hairlines. */
+@media (min-width: 576px) {
+	.offcanvas.cg-drawer {
+		--bs-offcanvas-width: 33rem;
+	}
+}
+.cg-drawer {
+	& .offcanvas-header {
+		gap: 0.9rem;
+		align-items: flex-start;
+	}
+	& .basalt-drawer-sub {
+		display: flex;
+		gap: 0.4rem;
+		flex-direction: column;
+		align-items: flex-start;
+		margin-top: 0.3rem;
+	}
+	& .offcanvas-title:focus {
+		outline: 0;
+	}
+	& .basalt-drawer-section + .basalt-drawer-section {
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.cg-d-head {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+
+	& .basalt-drawer-legend {
+		margin: 0;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.cg-d-text {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.cg-d-text-quiet {
+	font-size: 0.8rem;
+	color: var(--cg-quiet);
+}
+.cg-d-text:last-child {
+	margin-bottom: 0;
+}
+
+/* Saved rules read as a short query, one condition per line. */
+.cg-rules {
+	margin: 0;
+	padding: 0.3rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+	list-style: none;
+
+	& > li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: baseline;
+		padding: 0.5rem 0;
+		font-size: 0.9rem;
+		color: var(--basalt-copy-body);
+	}
+	& > li + li {
+		border-top: 1px dashed var(--basalt-edge);
+	}
+}
+.cg-rules-join {
+	flex: none;
+	width: 3.25rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--cg-quiet);
+}
+.cg-rules-what strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+/* The editor keeps field, comparison and value on one line while all
+   three fit. It is a size container, so it folds the same way inside
+   the dialog and on a segment's page. */
+.cg-build {
+	container-type: inline-size;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cg-build-row {
+	display: grid;
+	gap: 0.5rem 0.5rem;
+	grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.6rem 0;
+
+	& + .cg-build-row {
+		border-top: 1px dashed var(--basalt-edge);
+	}
+}
+.cg-build-fields {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr) minmax(0, 1fr);
+}
+.cg-build-remove.btn-icon {
+	width: 2.1rem;
+	height: 2.1rem;
+	padding: 0;
+	font-size: 0.9rem;
+}
+.cg-build-error {
+	grid-column: 2 / -1;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--cg-danger);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cg-num {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+
+	& .form-control {
+		min-width: 0;
+	}
+}
+.cg-num-unit {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--cg-quiet);
+}
+@container (max-width: 40rem) {
+	.cg-build-row {
+		align-items: start;
+	}
+	.cg-build-row .cg-rules-join {
+		padding-top: 0.65rem;
+	}
+	.cg-build-fields {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+	.cg-build-fields > :first-child {
+		grid-column: 1 / -1;
+	}
+}
+/* At phone width each control gets a line, so no option is clipped. */
+@container (max-width: 22rem) {
+	.cg-build-fields {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.cg-build-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.75rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.cg-estimate {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: var(--cg-quiet);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Member and send lists share one row shape: a leading mark, a name
+   over a quiet line, and one value at the end. */
+.cg-mems,
+.cg-uses {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cg-mem,
+.cg-use {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.cg-uses > li:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.cg-mem-who,
+.cg-use-text,
+.cg-pick-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cg-mem-name,
+.cg-use-name {
+	border-radius: 4px;
+	overflow: hidden;
+	font-weight: 650;
+	font-size: 0.9rem;
+	text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cg-mem-name:hover,
+.cg-use-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--cg-link);
+}
+.cg-mem-sub {
+	overflow: hidden;
+	font-size: 0.77rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--cg-quiet);
+}
+.cg-mem-fact {
+	font-size: 0.85rem;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.cg-mems-more {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0.9rem 0 0;
+	font-size: 0.85rem;
+	color: var(--cg-quiet);
+
+	& a {
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		color: var(--cg-link);
+	}
+	& a:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+.cg-use-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	color: var(--cg-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* A checkable account row, used by the picker on a segment's page. */
+.cg-pick {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	padding: 0.7rem 0.25rem;
+	cursor: pointer;
+
+	& .form-check-input {
+		flex: none;
+		margin: 0;
+	}
+	&:hover {
+		background: var(--cg-row-hover);
+	}
+}
+.cg-pick-name {
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+
+/* New segment dialog: unboxed fieldsets with section-sized legends. */
+.cg-new-set {
+	min-width: 0;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	border: 0;
+
+	&[hidden] {
+		display: none;
+	}
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+.cg-new-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.75rem;
+	padding: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cg-new-fields {
+	margin-bottom: 1.5rem;
+}
+.cg-optional {
+	margin-left: 0.25rem;
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--cg-quiet);
+}
+.cg-kinds-pick {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+/* Color swatches: the radio is hidden and the picked dot gets a ring in
+   its own color; keyboard focus rings an unpicked dot in the primary. */
+.cg-swatches {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+
+	@media (max-width: 379.98px) {
+		display: grid;
+		grid-template-columns: repeat(4, 2rem);
+	}
+}
+.cg-swatch {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	cursor: pointer;
+
+	& input {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		opacity: 0;
+		pointer-events: none;
+	}
+	& > span {
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: 50%;
+		background: var(--cg-tone);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+		transition:
+			transform 130ms ease,
+			box-shadow 130ms ease;
+	}
+	&:hover > span {
+		transform: scale(1.08);
+	}
+	& input:checked + span {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--cg-tone);
+	}
+	& input:focus-visible:not(:checked) + span {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-hue);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		& > span {
+			transition: none;
+		}
+	}
+}
+
+.cg-del-text {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}

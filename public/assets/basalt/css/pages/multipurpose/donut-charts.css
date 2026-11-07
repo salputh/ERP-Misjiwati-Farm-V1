@@ -1,0 +1,514 @@
+/*
+ * donut-charts.html, every class prefixed .donuts-. Legends, hole labels and
+ * swatches take their colors from the --basalt-* tokens, the same ones
+ * donut-charts.js hands to the canvases, so both follow the active palette.
+ */
+
+/* Small gray text is pulled slightly toward body copy to keep 4.5:1 on the
+   lighter palettes; the track is the empty part of a ring, as on canvas. */
+.donuts-page {
+	--donuts-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--donuts-track: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+}
+
+/* Above the grid, a wrapping row of filter chips with the chart count at the end. */
+.donuts-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+
+	@media print {
+		display: none;
+	}
+}
+.donuts-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.donuts-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+/* The pressed chip takes the text color as its fill and the surface color for its label. */
+.donuts-chips .donuts-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.donuts-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--donuts-quiet);
+}
+
+/* Cards fill whole rows until 1200px, then pair up on twelve columns. */
+.donuts-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.donuts-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+
+		/* A printout shows every chart, whatever the chips say. */
+		@media print {
+			display: block;
+		}
+	}
+}
+/* Wide and narrow cards share a row 8 to 4; a filtered view uses plain
+   halves instead, and a card left alone at the end takes the full row. */
+@media (min-width: 1200px) {
+	.donuts-card {
+		grid-column: span 6;
+	}
+	.donuts-card-full,
+	.donuts-card-full-md {
+		grid-column: span 12;
+	}
+	.donuts-grid.is-filtered .donuts-card-full-md {
+		grid-column: span 6;
+	}
+	.donuts-card-wide {
+		grid-column: span 8;
+	}
+	.donuts-card-narrow {
+		grid-column: span 4;
+	}
+	.donuts-grid.is-filtered .donuts-card-wide,
+	.donuts-grid.is-filtered .donuts-card-narrow {
+		grid-column: span 6;
+	}
+	.donuts-grid.is-filtered .donuts-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Every card body is a column and its own size container, so the chart can
+   sink to the bottom and the inner layouts react to the card's width. */
+.donuts-card .card-body {
+	container-type: inline-size;
+}
+.donuts-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+/* The kind badge comes after the title in the source, so the title is read
+   first, but is shown above it and never shares its width. */
+.donuts-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.donuts-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.donuts-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--donuts-quiet);
+}
+.donuts-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--donuts-quiet);
+}
+
+/* A canvas not drawn yet must not push past its box; chart boxes set the
+   height and shrink a little on phones. */
+.donuts-card canvas {
+	display: block;
+	max-width: 100%;
+}
+.donuts-chart {
+	position: relative;
+	height: 260px;
+	margin-top: auto;
+
+	@media (max-width: 575.98px) {
+		height: 230px;
+	}
+}
+.donuts-chart-gauge {
+	height: 220px;
+	margin: auto 0;
+
+	@media (max-width: 575.98px) {
+		height: 190px;
+	}
+}
+
+/* Legends are HTML lists so long labels wrap rather than collide. */
+.donuts-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--donuts-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.donuts-key-dot {
+	flex-shrink: 0;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--donuts-c, var(--basalt-series-1));
+}
+.donuts-key-dot-track {
+	background: var(--donuts-track);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge-strong);
+}
+/* Numbered color classes point a swatch at the matching series color. */
+.donuts-c1 {
+	--donuts-c: var(--basalt-series-1);
+}
+.donuts-c2 {
+	--donuts-c: var(--basalt-series-2);
+}
+.donuts-c3 {
+	--donuts-c: var(--basalt-series-3);
+}
+.donuts-c4 {
+	--donuts-c: var(--basalt-series-4);
+}
+.donuts-c5 {
+	--donuts-c: var(--basalt-series-5);
+}
+.donuts-c6 {
+	--donuts-c: var(--basalt-series-6);
+}
+.donuts-c8 {
+	--donuts-c: var(--basalt-series-8);
+}
+
+/* Hole labels sit over the card surface, never over a slice, so they use
+   the card's ordinary text colors. */
+.donuts-chart-hole .donuts-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	pointer-events: none;
+}
+.donuts-center p {
+	margin: 0;
+}
+.donuts-center-label,
+.donuts-center-note {
+	font-size: 0.75rem;
+	color: var(--donuts-quiet);
+}
+.donuts-center-label {
+	max-width: 9rem;
+}
+.donuts-center-value {
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+
+/* The four progress tiles go two by two, turn sideways at 520px of card,
+   and line up in one divided row at 1000px. */
+.donuts-rings {
+	display: grid;
+	gap: 1.75rem 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@container (min-width: 1000px) {
+		gap: 1.25rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.donuts-ring {
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+
+	@container (min-width: 520px) {
+		gap: 1rem;
+		flex-direction: row;
+		align-items: center;
+	}
+	@container (min-width: 1000px) {
+		& + & {
+			padding-left: 1.25rem;
+			border-left: 1px solid var(--basalt-edge);
+		}
+	}
+}
+.donuts-ring-chart {
+	position: relative;
+	flex-shrink: 0;
+	width: 88px;
+	height: 88px;
+}
+.donuts-ring-value {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	pointer-events: none;
+}
+.donuts-ring-label {
+	margin: 0 0 0.1rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.donuts-ring-note {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--donuts-quiet);
+}
+
+/* The channel chart stands over its list, then beside it from 560px of card. */
+.donuts-split {
+	display: grid;
+	gap: 1.5rem;
+	margin-top: auto;
+
+	@container (min-width: 560px) {
+		gap: 2rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+		align-items: center;
+	}
+
+	& .donuts-chart {
+		margin-top: 0;
+	}
+}
+.donuts-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+/* Rows are buttons only so keyboard focus can light a slice; the pointer stays plain. */
+.donuts-list-row {
+	display: grid;
+	gap: 0.7rem;
+	grid-template-columns: auto minmax(0, 1fr) auto 3rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.6rem 0.5rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: default;
+	transition: background-color 170ms ease;
+
+	&:hover,
+	&.is-active {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.donuts-list-name {
+	font-weight: 500;
+	color: var(--basalt-copy);
+}
+.donuts-list-value {
+	font-variant-numeric: tabular-nums;
+}
+.donuts-list-share {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--donuts-quiet);
+}
+
+/* Two quarters side by side, each with a caption, smaller on phones. */
+.donuts-pair {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: auto 0;
+
+	& .donuts-chart {
+		height: 240px;
+
+		@media (max-width: 575.98px) {
+			height: 170px;
+		}
+	}
+	@media (max-width: 575.98px) {
+		& .donuts-center-value {
+			font-size: 1.1rem;
+		}
+	}
+}
+.donuts-pair-item {
+	min-width: 0;
+	margin: 0;
+}
+.donuts-pair-caption {
+	margin-top: 0.6rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-align: center;
+	color: var(--basalt-copy-body);
+}
+
+/* The cutout control is a label, a range that takes the free width, and its readout. */
+.donuts-slider {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	margin-bottom: 1rem;
+
+	& .form-range {
+		flex: 1;
+		min-width: 0;
+	}
+}
+.donuts-slider-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.donuts-slider-out {
+	min-width: 2.6rem;
+	font-size: 0.8rem;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--donuts-quiet);
+}
+
+/* Each card can fold out its Chart.js config; the arrow turns when open,
+   and the whole thing is left out of print. */
+.donuts-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	@media print {
+		display: none;
+	}
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+	}
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}

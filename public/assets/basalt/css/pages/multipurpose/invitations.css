@@ -1,0 +1,1194 @@
+/*
+ * The invitations page (invitations.html) and its drawer and dialogs.
+ * Every class here starts with .inv-; the header, tabs, segmented
+ * controls, selects, tag input, stepper, drop zone, drawer, dialogs,
+ * pager, empty states and status pills are basalt.css components that
+ * this file only places. Colors always come from --basalt-* tokens.
+ */
+
+/* Page-wide tones, defined on the page and on each surface that opens over it. */
+.whs-page,
+.whs-drawer,
+.whs-link-dialog,
+.whs-role-dialog {
+	/* Muted text leaned toward the body color, so small print stays above
+     4.5:1 on the pale palettes and over a hovered row. */
+	--whs-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* The bare primary falls under 4.5:1 in some light palettes, so links mix in the text color. */
+	--whs-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	/* Members fill with the primary, invitations with a second chart hue; no text sits on either. */
+	--whs-members: var(--basalt-hue);
+	--whs-waiting: var(--basalt-series-4);
+}
+
+/* Cards sit on a twelve-column grid: full width on phones, two across from 992px. */
+.whs-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.whs-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+@media (min-width: 992px) {
+	.whs-card {
+		grid-column: span 6;
+	}
+	.whs-card-full {
+		grid-column: span 12;
+	}
+}
+
+/* Each card body is a column with one inset that the table and link list reuse. */
+.whs-card.basalt-box .card-body {
+	--whs-inset: 1.75rem;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--whs-inset);
+}
+@media (max-width: 575.98px) {
+	.whs-card.basalt-box .card-body {
+		--whs-inset: 1.25rem;
+	}
+}
+
+/* The card head wraps its action under the title once the row gets narrow. */
+.whs-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+}
+.whs-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.whs-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--whs-quiet);
+}
+
+/* Help lines, secondary lines and the "optional" tag all use the quiet tone. */
+.whs-help,
+.whs-sub,
+.whs-optional {
+	color: var(--whs-quiet);
+}
+.whs-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+}
+.whs-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+}
+.whs-optional {
+	margin-left: 0.25rem;
+	font-weight: 400;
+	font-size: 0.8rem;
+}
+
+/* The load error card keeps a small inset around its empty state. */
+.whs-error {
+	padding: 1rem;
+}
+/* basalt.css makes every button in an empty state inline-flex, which would
+   set a loading button's stacked labels in a row; this one goes back to grid. */
+.whs-page .basalt-empty-actions .btn.btn-loading {
+	display: inline-grid;
+}
+
+/* Fields on the page and in its overlays take the card surface and a firmer edge. */
+.whs-page .form-control,
+.whs-page .form-select,
+.whs-drawer .form-control,
+.whs-link-dialog .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.whs-page .form-control::placeholder,
+.whs-drawer .form-control::placeholder,
+.whs-drawer .basalt-tags-input::placeholder,
+.whs-link-dialog .form-control::placeholder,
+.whs-link-dialog .basalt-tags-input::placeholder {
+	color: var(--whs-quiet);
+	opacity: 1;
+}
+
+/* Status tabs above the table; all three fit a phone without scrolling. */
+.whs-tabs {
+	display: block;
+	margin-bottom: 1.25rem;
+}
+@media (max-width: 575.98px) {
+	.whs-tabs.basalt-tabs .basalt-tabs-list .nav-link {
+		gap: 0.3rem;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+}
+
+/* The toolbar keeps search, role filter and count on one wrapping row. */
+.whs-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.75rem;
+}
+/* Search gives way first, so the filter holds its place, and it stops
+   growing at a readable width so the filter stays beside it. */
+.whs-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--whs-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.whs-select {
+	width: auto;
+	min-width: 11rem;
+}
+.whs-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--whs-quiet);
+}
+@media (max-width: 575.98px) {
+	.whs-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.whs-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+}
+
+/* Both tables are see-through and share the page's text and rule colors. */
+.whs-table,
+.whs-csv-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+}
+/* Column headings in both tables are small, quiet capitals. */
+.whs-table > thead th,
+.whs-csv-table thead th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--whs-quiet);
+}
+
+/* The invitation table bleeds to the card edges while its outer cells keep
+   the inset, so the first column lines up with the title and toolbar. */
+.whs-scroll {
+	position: relative;
+	margin: 0 calc(-1 * var(--whs-inset));
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.whs-table {
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--whs-inset);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--whs-inset);
+	}
+	& > thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		white-space: nowrap;
+	}
+}
+
+/* Fixed widths for the narrow columns; the person column takes what is left. */
+.whs-col-person {
+	min-width: 14rem;
+}
+.whs-col-role {
+	width: 10.5rem;
+	color: var(--basalt-copy);
+}
+.whs-col-by {
+	width: 10rem;
+}
+.whs-col-date {
+	width: 9rem;
+}
+.whs-col-act {
+	width: 1%;
+	text-align: right;
+	white-space: nowrap;
+}
+.whs-col-date .basalt-status + .whs-sub {
+	margin-top: 0.25rem;
+}
+
+/* Rows tint on hover, and a row that just changed glows once and fades. */
+.whs-row:not(.whs-row-ghost):hover > td {
+	background: var(--basalt-wash);
+}
+.whs-row.is-fresh > td {
+	animation: whs-fresh 2.4s ease-out;
+}
+@keyframes whs-fresh {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+	to {
+		background: transparent;
+	}
+}
+@media (prefers-reduced-motion: reduce), print {
+	.whs-row > td {
+		transition: none;
+	}
+	.whs-row.is-fresh > td {
+		animation: none;
+	}
+}
+
+/* The person cell: avatar, then the name over the address and team. */
+.whs-person {
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	min-width: 0;
+
+	& .basalt-avatar {
+		flex-shrink: 0;
+	}
+}
+.whs-person-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.whs-person-name {
+	font-weight: 600;
+	overflow-wrap: break-word;
+	color: var(--basalt-copy);
+}
+.whs-role-inline {
+	display: none;
+}
+.whs-outside {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+.whs-by {
+	color: var(--basalt-copy);
+}
+
+/* Row actions: Resend with a label, and quiet square icon buttons. */
+.whs-actions {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+
+	& .btn .bi {
+		margin-right: 0.3rem;
+	}
+}
+.whs-iconbtn {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-disabled-color: var(--whs-quiet);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: var(--basalt-edge);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The row menu: icons get a gap, and the destructive item reads red. */
+.whs-page .dropdown-item .bi {
+	margin-right: 0.5rem;
+}
+.whs-page .dropdown-item.whs-danger-item {
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+
+	&:hover,
+	&:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	}
+}
+
+/* Placeholder sizes live here, since the page writes no inline styles. */
+.whs-sk-avatar {
+	flex-shrink: 0;
+	width: 32px;
+	height: 32px;
+}
+.whs-sk-0,
+.whs-sk-1,
+.whs-sk-2 {
+	max-width: 100%;
+}
+.whs-sk-0 {
+	width: 12rem;
+}
+.whs-sk-1 {
+	width: 9rem;
+}
+.whs-sk-2 {
+	width: 14rem;
+}
+.whs-sk-short {
+	width: 6rem;
+}
+.whs-sk-tiny {
+	width: 4rem;
+}
+.whs-sk-btn {
+	width: 5.5rem;
+}
+.whs-sk-tile {
+	flex-shrink: 0;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+}
+.whs-row-ghost .whs-person-text {
+	gap: 0.3rem;
+}
+
+.whs-pager {
+	margin-top: 1rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* From tablet to desktop the role moves under the person, which leaves the
+   address one full line. */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.whs-table .whs-col-role {
+		display: none;
+	}
+	.whs-role-inline {
+		display: inline;
+	}
+	.whs-col-by {
+		width: 9rem;
+	}
+	.whs-col-date {
+		width: 8rem;
+	}
+}
+/* In the narrower part of that range Resend drops its label and keeps the icon. */
+@media (min-width: 768px) and (max-width: 1099.98px) {
+	.whs-actions .whs-act-label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.whs-actions .btn .bi {
+		margin-right: 0;
+	}
+}
+
+/* On phones each invitation is a small card: the person and status on the
+   first line (role under the address), one muted line of facts, then actions. */
+@media (max-width: 767.98px) {
+	.whs-scroll {
+		margin: 0;
+		overflow: visible;
+	}
+	.whs-table thead {
+		display: none;
+	}
+	.whs-table,
+	.whs-table tbody {
+		display: block;
+	}
+	.whs-table > tbody > tr {
+		display: grid;
+		gap: 0.5rem 1rem;
+		grid-template-columns: minmax(0, 1fr) 7rem;
+		grid-template-areas: "who when" "by by" "act act";
+		align-items: start;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.whs-table > tbody > tr > * {
+		display: block;
+		width: auto;
+		border: 0;
+	}
+	.whs-table > :not(caption) > * > *,
+	.whs-table > :not(caption) > * > :first-child,
+	.whs-table > :not(caption) > * > :last-child {
+		padding: 0;
+	}
+	.whs-table > tbody > tr > .whs-col-person {
+		grid-area: who;
+		min-width: 0;
+	}
+	.whs-table > tbody > tr > .whs-col-role {
+		display: none;
+	}
+	.whs-role-inline {
+		display: inline;
+	}
+	/* The status track has a fixed width, so it starts at the same spot on every card. */
+	.whs-table > tbody > tr > .whs-col-date {
+		grid-area: when;
+	}
+	.whs-table > tbody > tr > .whs-col-by {
+		grid-area: by;
+		padding-left: calc(32px + 0.7rem);
+		font-size: 0.8rem;
+		color: var(--whs-quiet);
+	}
+	.whs-table > tbody > tr > .whs-col-by::before {
+		content: attr(data-label) " by ";
+	}
+	.whs-table > tbody > tr > .whs-col-by > * {
+		display: inline;
+	}
+	.whs-table > tbody > tr > .whs-col-by .whs-by {
+		color: inherit;
+	}
+	.whs-table > tbody > tr > .whs-col-by .whs-sub::before {
+		content: " · ";
+	}
+	.whs-table > tbody > tr > .whs-col-act {
+		grid-area: act;
+		padding-left: calc(32px + 0.7rem);
+		text-align: left;
+	}
+	.whs-table > tbody > .basalt-empty-row {
+		display: block;
+		padding: 0;
+	}
+	.whs-table > tbody > .basalt-empty-row > td {
+		display: block;
+	}
+	.whs-row-ghost > td:not(.whs-col-person) {
+		display: none;
+	}
+}
+/* The smallest phones give the address the whole line, so the status drops
+   below it and still comes before the facts. */
+@media (max-width: 479.98px) {
+	.whs-table > tbody > tr {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "who" "when" "by" "act";
+	}
+	.whs-table > tbody > tr > .whs-col-date {
+		padding-left: calc(32px + 0.7rem);
+	}
+	.whs-table > tbody > tr > .whs-col-date > .whs-sub {
+		display: inline;
+		margin-left: 0.5rem;
+	}
+}
+
+/* The seats card: a large count, a two-part meter and its legend. */
+.whs-seats-big {
+	margin: 0 0 0.75rem;
+	color: var(--basalt-copy);
+
+	& .basalt-num {
+		font-size: 2rem;
+		font-weight: 700;
+		line-height: 1;
+	}
+}
+.whs-seats-of {
+	font-size: 0.9rem;
+	color: var(--whs-quiet);
+}
+.whs-meter {
+	display: flex;
+	height: 0.75rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+}
+.whs-meter-part {
+	display: block;
+	width: 0;
+	height: 100%;
+	transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.whs-meter-part-members {
+	background: var(--whs-members);
+}
+/* A thin card-colored seam keeps the two parts apart. */
+.whs-meter-part-pending {
+	border-left: 2px solid var(--basalt-plane);
+	background: var(--whs-waiting);
+}
+@media (prefers-reduced-motion: reduce), print {
+	.whs-meter-part {
+		transition: none;
+	}
+}
+.whs-legend {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0.85rem 0 1.25rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+/* The free-seat key is an outlined empty square; the filled keys drop the outline. */
+.whs-legend-key {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge-strong);
+}
+.whs-legend-key-members,
+.whs-legend-key-pending {
+	box-shadow: none;
+}
+.whs-legend-key-members {
+	background: var(--whs-members);
+}
+.whs-legend-key-pending {
+	background: var(--whs-waiting);
+}
+
+/* The seat note takes one tone and tints both its surface and its icon from it. */
+.whs-callout {
+	--whs-tone: var(--basalt-success);
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	margin-top: auto;
+	padding: 0.75rem 0.9rem;
+	border-radius: 10px;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--whs-tone) 10%, var(--basalt-plane));
+
+	& > .bi {
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--whs-tone) 60%, var(--basalt-copy));
+	}
+}
+.whs-callout-warning {
+	--whs-tone: var(--basalt-warning);
+}
+.whs-callout-danger {
+	--whs-tone: var(--basalt-danger);
+}
+
+/* The accept rate card: two figures, three outcome bars and the reminder switch. */
+.whs-rate {
+	display: flex;
+	gap: 1rem 2.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.25rem;
+}
+.whs-rate-stat[hidden] {
+	display: none;
+}
+.whs-rate-value {
+	margin: 0;
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--basalt-copy);
+}
+.whs-rate-label {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	color: var(--whs-quiet);
+}
+.whs-rate-bars {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+.whs-bar {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr) 2rem;
+	align-items: center;
+	font-size: 0.84rem;
+}
+.whs-bar-label {
+	color: var(--basalt-copy-body);
+}
+.whs-bar-track {
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+}
+.whs-bar-fill {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-success);
+	transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.whs-bar-waiting .whs-bar-fill {
+	background: var(--whs-waiting);
+}
+.whs-bar-expired .whs-bar-fill {
+	background: var(--basalt-danger);
+}
+@media (prefers-reduced-motion: reduce), print {
+	.whs-bar-fill {
+		transition: none;
+	}
+}
+.whs-bar-num {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.whs-remind {
+	margin: auto 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .form-check-label {
+		font-size: 0.875rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* Invite links: one ruled row per link with icon, details, usage and controls. */
+.whs-links {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.whs-link {
+	display: grid;
+	gap: 1rem 1.25rem;
+	grid-template-columns: auto minmax(0, 1fr) 10rem auto;
+	align-items: center;
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0.25rem;
+		border-top: 0;
+	}
+}
+.whs-link-icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--basalt-hue) 65%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+/* A link that is off or past its date shows a gray tile. */
+.whs-link-off .whs-link-icon,
+.whs-link-expired .whs-link-icon {
+	color: var(--whs-quiet);
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+}
+.whs-link-main {
+	display: grid;
+	gap: 0.3rem;
+	min-width: 0;
+}
+.whs-link-name {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.whs-link-url {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+
+	& .whs-iconbtn {
+		flex-shrink: 0;
+		width: 1.75rem;
+		height: 1.75rem;
+	}
+}
+/* The address stays on one line and trails off when the row is tight. */
+.whs-link-code {
+	min-width: 0;
+	overflow: hidden;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.whs-link-facts {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--whs-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+	}
+}
+.whs-link-uses {
+	display: grid;
+	gap: 0.3rem;
+}
+.whs-link-count {
+	margin: 0;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.whs-link-track {
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+}
+.whs-link-fill {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--whs-members);
+}
+.whs-link-full .whs-link-fill {
+	background: var(--basalt-warning);
+}
+.whs-link-acts {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+
+	& .form-check-label {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.whs-links-empty {
+	list-style: none;
+}
+.whs-link-ghost .whs-link-main {
+	gap: 0.5rem;
+}
+/* Below tablet width, usage and controls stack under the details column. */
+@media (max-width: 767.98px) {
+	.whs-link {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.whs-link-uses,
+	.whs-link-acts {
+		grid-column: 2;
+	}
+	.whs-link-acts {
+		justify-content: flex-start;
+	}
+}
+
+/* The invite drawer: a 500px panel whose body runs as one column. */
+.whs-drawer {
+	--bs-offcanvas-width: 500px;
+
+	& .offcanvas-body {
+		display: flex;
+		flex-direction: column;
+	}
+}
+.whs-mode {
+	margin-bottom: 1.25rem;
+}
+.whs-pane[hidden] {
+	display: none;
+}
+
+/* Address tags: struck through when they cannot be sent, amber when outside the domain. */
+.whs-tags {
+	align-content: flex-start;
+	min-height: 6rem;
+}
+.whs-drawer .basalt-tags-tag.whs-tag-bad {
+	text-decoration: line-through;
+	color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+.whs-drawer .basalt-tags-tag.whs-tag-warn {
+	color: color-mix(in srgb, var(--basalt-warning) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 16%, var(--basalt-plane));
+}
+
+/* The list of problems under the tags disappears when there are none. */
+.whs-checks {
+	display: grid;
+	gap: 0.3rem;
+	margin: 0.5rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	&:empty {
+		display: none;
+	}
+}
+.whs-check {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 600;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& > .bi {
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	}
+}
+.whs-check-bad > .bi {
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+/* Text buttons in the drawer read as underlined links. */
+.whs-linkbtn {
+	padding: 0;
+	font-size: 0.8rem;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	vertical-align: baseline;
+	color: var(--whs-link);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The CSV tab: the drop zone, then the file's review once one is added. */
+.whs-drop {
+	padding: 1.75rem 1rem;
+}
+.whs-drop[hidden],
+.whs-csv[hidden] {
+	display: none;
+}
+.whs-csv-head {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.whs-csv-file {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.whs-csv-sum {
+	margin: 0.5rem 0 0.75rem;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: none;
+	}
+}
+/* Only the drawer scrolls; this frame just clips the table to its rounded corners. */
+.whs-csv-scroll {
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	overflow: clip;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.whs-csv-table {
+	margin: 0;
+	font-size: 0.8rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.75rem;
+		vertical-align: middle;
+	}
+	& thead th {
+		background: var(--basalt-plane);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& tr.is-bad .whs-csv-email {
+		color: var(--whs-quiet);
+	}
+	/* Short columns stay on one line; the address takes the spare width and
+     wraps if it has to, so no label breaks in two. */
+	& > :not(caption) > * > :first-child {
+		width: 3rem;
+	}
+	& > :not(caption) > * > :nth-child(3),
+	& > :not(caption) > * > :nth-child(4) {
+		white-space: nowrap;
+	}
+	& .basalt-status {
+		white-space: nowrap;
+	}
+}
+.whs-csv-email {
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+/* In a phone-width drawer each row becomes a short stack (address, role,
+   check) beside its row number. */
+@media (max-width: 575.98px) {
+	.whs-csv-table thead {
+		display: none;
+	}
+	.whs-csv-table,
+	.whs-csv-table tbody {
+		display: block;
+	}
+	.whs-csv-table > tbody > tr {
+		display: grid;
+		gap: 0.3rem 0.75rem;
+		grid-template-columns: 2rem minmax(0, 1fr);
+		padding: 0.8rem 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.whs-csv-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.whs-csv-table > tbody > tr > * {
+		display: block;
+		grid-column: 2;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.whs-csv-table > tbody > tr > :first-child {
+		grid-column: 1;
+		grid-row: 1 / span 3;
+		width: auto;
+	}
+	.whs-csv-table > tbody > tr > :nth-child(3) {
+		color: var(--whs-quiet);
+	}
+}
+
+/* The amber box that asks for more seats when a send would go over the plan. */
+.whs-over {
+	margin-top: 1.25rem;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+	border: 1px solid color-mix(in srgb, var(--basalt-warning) 45%, transparent);
+	background: color-mix(in srgb, var(--basalt-warning) 10%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& .form-check-label {
+		font-size: 0.875rem;
+		color: var(--basalt-copy);
+	}
+}
+.whs-over-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+	}
+}
+.whs-over-text {
+	margin: 0 0 0.6rem;
+	font-size: 0.84rem;
+	color: var(--basalt-copy-body);
+}
+
+/* The new link dialog puts the fields beside a live preview, stacked below 768px. */
+.whs-linkform {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) 15rem;
+
+	& legend.form-label {
+		float: none;
+		width: auto;
+		font-size: 1rem;
+	}
+}
+@media (max-width: 767.98px) {
+	.whs-linkform {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.whs-linkform-preview {
+	align-self: start;
+	padding: 1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane-alt);
+}
+.whs-linkform-eyebrow {
+	margin: 0 0 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--whs-quiet);
+}
+.whs-linkform-url {
+	margin: 0 0 0.75rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.whs-linkform-facts {
+	display: grid;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.4rem;
+		align-items: flex-start;
+	}
+	& .bi {
+		margin-top: 0.1rem;
+		color: var(--whs-quiet);
+	}
+}
+.whs-linkform-warn {
+	display: flex;
+	gap: 0.4rem;
+	margin: 0.85rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-warning) 50%, var(--basalt-copy));
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The change role dialog lays its choices three across, two on phones. */
+.whs-roles {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 575.98px) {
+	.whs-roles {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.whs-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

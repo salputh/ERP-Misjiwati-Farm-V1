@@ -1,0 +1,1214 @@
+/*
+ * Orders (orders.html). Every class here starts with .ords-. The page head,
+ * cards, drawer frame, dialogs, choice cards, stepper, status pills, filter
+ * chips and empty state already come from basalt.css; this sheet adds the
+ * fulfillment strip, the week-grouped order list and the drawer's contents,
+ * using --basalt-* tokens for every color.
+ */
+
+/* Three page-wide shades: quiet text mixed toward the body color so it
+   passes 4.5:1 on pale palettes and hovered rows, links mixed the same way
+   because the bare primary falls short in some light palettes, and the
+   hairline color. */
+.ords-page {
+	--ords-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--ords-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--ords-line: var(--basalt-edge);
+
+	& .dropdown-item {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+	}
+}
+
+/* Each stage borrows a chart color (amber and red stay unused so no stage
+   looks like a warning) and delivery takes the success green. The strip,
+   the stage pills and the drawer's product tiles all read --stp-tone. */
+.ords-tone-1 {
+	--stp-tone: var(--basalt-series-1);
+}
+.ords-tone-2 {
+	--stp-tone: var(--basalt-series-2);
+}
+.ords-tone-3 {
+	--stp-tone: var(--basalt-series-3);
+}
+.ords-tone-4 {
+	--stp-tone: var(--basalt-series-4);
+}
+.ords-tone-7 {
+	--stp-tone: var(--basalt-series-7);
+}
+.ords-tone-8 {
+	--stp-tone: var(--basalt-series-8);
+}
+.ords-tone-success {
+	--stp-tone: var(--basalt-success);
+}
+.ords-tone-muted {
+	--stp-tone: var(--basalt-copy-faint);
+}
+
+/* Some chart colors are faint on light palettes, so pill text leans further toward the text color. */
+.basalt-status[class*="ords-tone-"] {
+	color: color-mix(in srgb, var(--stp-tone) 40%, var(--basalt-copy));
+}
+
+/* Both cards size their insides by their own width, not the window's. */
+.ords-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+
+.ords-cardhead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	& > div {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+	& > .btn {
+		white-space: nowrap;
+	}
+}
+
+.ords-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.ords-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--ords-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The stage strip: one tile per stage in a pale wash of its color, with a
+   bar of that color across the top, a big count, and a chevron pointing
+   on to the next tile. */
+.ords-flow {
+	display: grid;
+	gap: 1.1rem;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	list-style: none;
+}
+
+/* The belt: a rail under the tiles, one stretch per stage on the same
+   grid, with a dot per order on its way. The dots roll in when the page
+   opens and drift on the spot; delivered ones stack up at the end. */
+.ords-belt {
+	display: grid;
+	gap: 1.1rem;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	margin-top: calc(var(--basalt-pad-head) * -0.35);
+	padding: 0 var(--basalt-pad-x);
+}
+.ords-belt-stretch {
+	position: relative;
+	height: 1.75rem;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 50%;
+		right: -1.1rem;
+		left: 0;
+		height: 4px;
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--stp-tone) 18%, var(--basalt-plane));
+		transform: translateY(-50%);
+	}
+	&:last-child::before {
+		right: 0;
+	}
+}
+.ords-belt-dot {
+	position: absolute;
+	top: 50%;
+	left: var(--x);
+	width: 0.85rem;
+	height: 0.85rem;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--stp-tone);
+	cursor: default;
+	transform: translate(-50%, -50%);
+	transition: transform 170ms ease;
+
+	&:hover {
+		z-index: 1;
+		transform: translate(-50%, -50%) scale(1.45);
+	}
+	&.is-late {
+		background: var(--basalt-danger);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-danger) 22%, transparent);
+	}
+	&.is-held {
+		background: var(--basalt-warning);
+	}
+}
+.ords-belt-more {
+	position: absolute;
+	top: 50%;
+	right: 0;
+	padding: 0.05rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--stp-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 16%, var(--basalt-plane));
+	transform: translateY(-50%);
+}
+.ords-belt-note {
+	min-height: 1.4em;
+	margin: 0.3rem 0 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	font-size: 0.8rem;
+	color: var(--ords-quiet, var(--basalt-copy-muted));
+}
+@container (max-width: 1060px) {
+	.ords-belt,
+	.ords-belt-note {
+		display: none;
+	}
+}
+
+.ords-flow-item {
+	position: relative;
+	display: flex;
+	min-width: 0;
+
+	& + &::before {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: -0.8rem;
+		transform: translateY(-50%) rotate(45deg);
+		width: 0.4rem;
+		height: 0.4rem;
+		border-top: 2px solid var(--basalt-edge-strong);
+		border-right: 2px solid var(--basalt-edge-strong);
+	}
+}
+
+.ords-flow-btn {
+	position: relative;
+	display: grid;
+	gap: 0.2rem 0.65rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	grid-template-areas: "icon name" "count count" "meta meta";
+	align-items: center;
+	width: 100%;
+	padding: 1.1rem 1.1rem 1.05rem;
+	border: 1px solid color-mix(in srgb, var(--stp-tone) 24%, var(--ords-line));
+	border-radius: 14px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--stp-tone) 7%, var(--basalt-plane));
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	/* The bar sits inside the corners rather than following them. */
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 1.1rem;
+		left: 1.1rem;
+		height: 3px;
+		border-radius: 0 0 3px 3px;
+		background: var(--stp-tone);
+	}
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--stp-tone) 55%, var(--ords-line));
+		background: color-mix(in srgb, var(--stp-tone) 12%, var(--basalt-plane));
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	/* A pressed tile is already outlined, so it needs no extra focus ring. */
+	&[aria-pressed="true"] {
+		border-color: color-mix(in srgb, var(--stp-tone) 70%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--stp-tone) 16%, var(--basalt-plane));
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--stp-tone) 70%, var(--basalt-copy));
+
+		&:focus-visible {
+			outline: none;
+		}
+	}
+}
+
+.ords-flow-icon {
+	display: inline-grid;
+	grid-area: icon;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--stp-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 22%, var(--basalt-plane));
+}
+
+.ords-flow-name {
+	grid-area: name;
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ords-flow-count {
+	grid-area: count;
+	margin-top: 0.6rem;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.1;
+	color: color-mix(in srgb, var(--stp-tone) 50%, var(--basalt-copy));
+}
+.ords-flow-meta {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	grid-area: meta;
+	font-size: 0.8rem;
+	color: var(--ords-quiet);
+}
+.ords-flow-flag {
+	font-weight: 600;
+}
+
+/* Three tiles to a row on a mid-width card, two on a narrow one; a chevron never points across a line break. */
+@container (max-width: 1060px) {
+	.ords-flow {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.ords-flow-item:nth-child(3n + 1)::before {
+		display: none;
+	}
+}
+
+@container (max-width: 540px) {
+	.ords-flow {
+		gap: 0.6rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.ords-flow-item + .ords-flow-item::before {
+		display: none;
+	}
+	.ords-flow-btn {
+		padding: 0.85rem 0.9rem 0.9rem;
+	}
+	.ords-flow-count {
+		font-size: 1.4rem;
+	}
+}
+
+/* The toolbar: search first, then the two filters. */
+.ords-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0 var(--basalt-pad-x) 1.25rem;
+}
+
+/* Search grows only to a comfortable width so the filters can sit beside
+   it; short on room, the filters drop below, and on a narrow card every
+   control gets a line of its own. */
+.ords-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 13rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--ords-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+.ords-toolbar-select {
+	flex: 0 0 auto;
+	min-width: 11rem;
+}
+
+.ords-status {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0 var(--basalt-pad-x) 1rem;
+}
+
+.ords-status-text {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ords-quiet);
+}
+
+/* The bulk bar appears only while at least one order is ticked. */
+.ords-bulk {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 var(--basalt-pad-x) 1rem;
+	padding: 0.6rem 0.75rem 0.6rem 1rem;
+	border-radius: 12px;
+	background: var(--basalt-hue-soft);
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.ords-bulk-count {
+	margin-right: auto;
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.ords-bulk-clear {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--ords-link);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+@container (max-width: 560px) {
+	.ords-search,
+	.ords-toolbar-select {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.ords-toolbar-select {
+		max-width: 14rem;
+	}
+	.ords-bulk {
+		margin-left: var(--basalt-pad-x-narrow);
+		margin-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The order table. Cells align to the top, the outer cells line up with
+   the card's padding, and a heading row opens each week. */
+.ords-table-wrap {
+	border-top: 1px solid var(--ords-line);
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.ords-table {
+	--bs-table-bg: transparent;
+	--bs-table-hover-bg: var(--basalt-wash);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-color: var(--ords-line);
+		vertical-align: top;
+		color: var(--basalt-copy);
+	}
+
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: calc(var(--basalt-pad-x) - 0.5rem);
+	}
+
+	& thead th {
+		padding-top: 0.85rem;
+		padding-bottom: 0.85rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		vertical-align: middle;
+		color: var(--ords-quiet);
+	}
+
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& tbody tr[data-ords-id] {
+		cursor: pointer;
+	}
+
+	& tr.ords-week > th {
+		padding-top: 0.7rem;
+		padding-bottom: 0.7rem;
+		font-weight: 400;
+		background: var(--basalt-plane-alt);
+	}
+
+	& tbody tr[data-ords-id]:hover > *,
+	& tbody tr.is-selected > * {
+		background: var(--basalt-wash);
+	}
+
+	& :is(th, td).ords-col-check {
+		width: 1%;
+		padding-right: 0.25rem;
+	}
+	& :is(td, th).ords-col-check .form-check-input {
+		margin: 0.2rem 0 0;
+	}
+	& :is(th, td).ords-col-total {
+		text-align: right;
+		white-space: nowrap;
+	}
+	& td.ords-col-act {
+		width: 1%;
+	}
+	& td.ords-col-act > .basalt-row-actions {
+		margin-top: -0.3rem;
+	}
+}
+
+/* Week names and dates sit left, the week's count and value right. */
+.ords-week-inner {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.ords-week-name {
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ords-week-range {
+	margin-left: 0.6rem;
+	font-weight: 400;
+	color: var(--ords-quiet);
+}
+.ords-week-sum {
+	font-size: 0.8rem;
+	color: var(--ords-quiet);
+}
+
+.ords-col-order,
+.ords-col-stage,
+.ords-col-pay {
+	white-space: nowrap;
+}
+
+.ords-link {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--ords-link) 35%, transparent);
+	text-underline-offset: 0.2em;
+	color: var(--ords-link);
+
+	&:hover {
+		text-decoration-color: currentColor;
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+.ords-who {
+	display: flex;
+	gap: 0.65rem;
+	align-items: flex-start;
+	min-width: 0;
+
+	& > span:last-child {
+		min-width: 0;
+	}
+}
+
+/* Text pieces the rows and the drawer share. */
+.ords-strong {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ords-line {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.ords-sub {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--ords-quiet);
+}
+.ords-sub-strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ords-sub-warning,
+.ords-sub-danger {
+	font-weight: 600;
+}
+.ords-money {
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ords-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+}
+
+/* Warning and danger words are mixed toward the text color so they stay readable at small sizes. */
+.ords-cardhead-sub .ords-today-warning,
+.ords-flow-flag-warning,
+.ords-sub-warning {
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+.ords-cardhead-sub .ords-today-danger,
+.ords-flow-flag-danger,
+.ords-sub-danger,
+.ords-danger.dropdown-item {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+
+/* A shopper's name is a quiet link to their profile until hovered. */
+a.ords-name {
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		color: var(--ords-link);
+	}
+}
+
+/* Links inside running text are bold and take the link shade. */
+.ords-foot a,
+.ords-drawer .basalt-drawer-sub a,
+.ords-alert a,
+.ords-facts a {
+	font-weight: 600;
+	color: var(--ords-link);
+}
+.ords-foot a:hover,
+.ords-drawer .basalt-drawer-sub a:hover,
+.ords-alert a:hover,
+.ords-facts a:hover {
+	color: var(--basalt-copy);
+}
+.ords-alert a,
+.ords-facts a {
+	white-space: nowrap;
+}
+
+/* Below the table: the closing note, the empty state and the Show more bar (twenty older orders per press). */
+.ords-foot {
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--ords-line);
+	font-size: 0.8rem;
+	color: var(--ords-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.ords-empty {
+	padding: 2.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--ords-line);
+}
+
+.ords-more {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--ords-line);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.ords-more-text {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ords-quiet);
+}
+
+/* On a narrower card a row turns into a two-line record: order, customer
+   and total along the top, items, stage and payment below them. */
+@container (max-width: 1040px) {
+	.ords-table {
+		min-width: 0;
+	}
+	.ords-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.ords-table,
+	.ords-table tbody,
+	.ords-table tr,
+	.ords-table td {
+		display: block;
+		width: 100%;
+	}
+	.ords-table tbody tr {
+		display: grid;
+		gap: 0.9rem 1.25rem;
+		grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) 10rem auto;
+		grid-template-areas:
+			"check order account total act"
+			".     items stage   pay   .";
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--ords-line);
+	}
+	.ords-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.ords-table > :not(caption) > * > *,
+	.ords-table > :not(caption) > * > :first-child,
+	.ords-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.ords-table tbody tr[data-ords-id]:hover > *,
+	.ords-table tbody tr.is-selected > * {
+		background: none;
+	}
+	.ords-table tbody tr[data-ords-id]:hover,
+	.ords-table tbody tr.is-selected {
+		background: var(--basalt-wash);
+	}
+	.ords-table tbody tr.ords-week {
+		display: block;
+		padding: 0;
+		background: var(--basalt-plane-alt);
+	}
+	.ords-table tbody tr.ords-week > th {
+		display: block;
+		padding: 0.7rem var(--basalt-pad-x);
+		border-bottom: 1px solid var(--ords-line);
+	}
+	.ords-table td.ords-col-check {
+		grid-area: check;
+		width: auto;
+	}
+	.ords-table td.ords-col-order {
+		grid-area: order;
+	}
+	.ords-table td.ords-col-account {
+		grid-area: account;
+	}
+	.ords-table td.ords-col-items {
+		grid-area: items;
+	}
+	.ords-table :is(td.ords-col-stage, td.ords-col-pay, td.ords-col-total, td.ords-col-act) {
+		width: auto;
+	}
+	.ords-table td.ords-col-stage {
+		grid-area: stage;
+	}
+	/* The payment sits under the total and lines up on its right edge. */
+	.ords-table td.ords-col-pay {
+		grid-area: pay;
+		text-align: right;
+	}
+	.ords-table td.ords-col-total {
+		grid-area: total;
+	}
+	.ords-table td.ords-col-act {
+		grid-area: act;
+	}
+}
+
+/* Narrower still, the record takes four lines and the pills may wrap. */
+@container (max-width: 640px) {
+	.ords-table tbody tr {
+		gap: 0.85rem 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+		grid-template-areas:
+			"check order order act"
+			".     account account total"
+			".     items items items"
+			".     stage pay pay";
+	}
+	.ords-table td.ords-col-stage,
+	.ords-table td.ords-col-pay {
+		white-space: normal;
+	}
+}
+
+/* On a phone a row keeps what someone scanning orders acts on: the
+   number, the customer, the total and the two pills. The date, the city,
+   the items and the notes under the pills wait in the quick view. */
+@media (max-width: 575.98px) {
+	.ords-table tbody tr {
+		grid-template-areas:
+			"check order order act"
+			".     account account total"
+			".     stage pay pay";
+	}
+	.ords-table td.ords-col-items,
+	.ords-table :is(td.ords-col-order, td.ords-col-account, td.ords-col-stage, td.ords-col-pay) .ords-sub {
+		display: none;
+	}
+}
+
+/* On a narrow card every band of it moves to the slimmer side padding. */
+@container (max-width: 560px) {
+	.ords-cardhead,
+	.ords-toolbar,
+	.ords-status,
+	.ords-table tbody tr,
+	.ords-table tbody tr.ords-week > th,
+	.ords-foot,
+	.ords-empty,
+	.ords-more {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.ords-table tbody tr.ords-week {
+		padding: 0;
+	}
+}
+
+/* The quick-view drawer, from the status pills at the top down to the payment facts. */
+.ords-drawer {
+	--bs-offcanvas-width: 480px;
+
+	& .basalt-drawer-foot > .btn[hidden] {
+		display: none;
+	}
+}
+
+.ords-r-state {
+	margin-bottom: 1.5rem;
+}
+.ords-r-pills {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* An alert is marked by a short bar inset from its left edge, not by a border bent round the corners. */
+.ords-alert {
+	position: relative;
+	display: flex;
+	gap: 0.6rem;
+	margin: 1rem 0 0;
+	padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+	border-radius: 10px;
+	font-size: 0.84rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: 0.4rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--ords-alert-tone);
+	}
+
+	& .bi {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+		color: color-mix(in srgb, var(--ords-alert-tone) 55%, var(--basalt-copy));
+	}
+}
+
+.ords-alert-warning {
+	--ords-alert-tone: var(--basalt-warning);
+}
+.ords-alert-danger {
+	--ords-alert-tone: var(--basalt-danger);
+}
+
+/* Progress markers are filled and numbered, so none of them looks like a button. */
+.ords-steps,
+.ords-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.ords-step {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.4rem 0;
+	font-size: 0.875rem;
+
+	& + &::before {
+		content: "";
+		position: absolute;
+		top: -0.55rem;
+		left: calc(0.8rem - 1px);
+		width: 2px;
+		height: 0.9rem;
+		background: var(--ords-line);
+	}
+}
+
+.ords-step-mark {
+	display: inline-grid;
+	place-items: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 50%;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--ords-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+.ords-step-name {
+	color: var(--ords-quiet);
+}
+.ords-step-time {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--ords-quiet);
+}
+
+.ords-step.is-done {
+	& + .ords-step::before {
+		background: color-mix(in srgb, var(--basalt-success) 50%, var(--ords-line));
+	}
+	& .ords-step-mark {
+		font-size: 0.85rem;
+		color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+	}
+	& .ords-step-name {
+		color: var(--basalt-copy);
+	}
+}
+
+.ords-step.is-now {
+	& .ords-step-mark {
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+	& .ords-step-name {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& .ords-step-time {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Each product line: a colored tile, the name and price, the line total. */
+.ords-item {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--ords-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+
+.ords-item-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--stp-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 16%, var(--basalt-plane));
+}
+
+.ords-item-text {
+	min-width: 0;
+}
+
+/* Totals under the products, the last row ruled off and set bold. */
+.ords-sums {
+	margin: 0.8rem 0 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+		justify-content: space-between;
+		padding: 0.3rem 0;
+	}
+	& dt {
+		font-size: 0.875rem;
+		font-weight: 400;
+		color: var(--basalt-copy-body);
+	}
+	& dt .ords-sub {
+		margin-top: 0.1rem;
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.4;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+
+	& .ords-sums-total {
+		margin-top: 0.4rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--ords-line);
+
+		& dt {
+			font-weight: 700;
+			color: var(--basalt-copy);
+		}
+		& dd {
+			font-weight: 700;
+		}
+	}
+}
+
+/* Delivery and payment read as label and value pairs divided by hairlines. */
+.ords-facts {
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 6.5rem minmax(0, 1fr);
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--ords-line);
+	}
+
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-size: 0.875rem;
+		font-weight: 400;
+		color: var(--ords-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		line-height: 1.55;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+.ords-copy {
+	width: 1.75rem;
+	height: 1.75rem;
+	margin: -0.2rem 0 0 0.1rem;
+	vertical-align: middle;
+}
+
+/* The Ship and New order dialogs. Legends are set like ordinary field
+   labels instead of Bootstrap's oversized legend. */
+.ords-form-row {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+.ords-modal legend.form-label {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+}
+
+.ords-tile.basalt-choice-card {
+	align-items: center;
+	text-align: center;
+}
+.ords-speeds .ords-tile.basalt-choice-card {
+	align-items: flex-start;
+	text-align: left;
+}
+
+.ords-carriers {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	& .basalt-choice-card-title {
+		white-space: nowrap;
+	}
+}
+
+.ords-tracking {
+	max-width: 20rem;
+	font-family: "Chivo Mono", monospace;
+	text-transform: uppercase;
+
+	&::placeholder {
+		text-transform: none;
+	}
+}
+
+.ords-account-field :is(.basalt-select-trigger, .form-select) {
+	max-width: 22rem;
+}
+
+.ords-pick {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0 0 0.75rem;
+	padding: 0;
+	list-style: none;
+}
+
+.ords-pick-row {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+
+	& > :is(.form-select, .basalt-select-trigger) {
+		flex: 0 1 22rem;
+		min-width: 0;
+	}
+}
+
+.ords-pick-qty {
+	flex-shrink: 0;
+}
+.ords-pick-remove[hidden] {
+	display: none;
+}
+
+.ords-new-sum {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* On a phone the carriers stack as rows and each product picker takes the full width. */
+@media (max-width: 575.98px) {
+	.ords-carriers {
+		gap: 0.6rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.ords-carriers .ords-tile.basalt-choice-card {
+		gap: 0.85rem;
+		flex-direction: row;
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+	}
+	.ords-pick-row {
+		flex-wrap: wrap;
+	}
+	.ords-pick-row > :is(.form-select, .basalt-select-trigger) {
+		flex: 1 1 100%;
+	}
+}
+
+/* Hover fades are dropped for reduced motion and on paper, where the controls are dropped too. */
+@media (prefers-reduced-motion: reduce) {
+	.ords-flow-btn,
+	.ords-table tbody tr {
+		transition: none;
+	}
+}
+
+@media print {
+	.ords-toolbar,
+	.ords-status,
+	.ords-bulk,
+	.ords-col-check,
+	.ords-col-act,
+	.ords-cardhead > .btn {
+		display: none;
+	}
+	.ords-flow-btn,
+	.ords-table tbody tr {
+		transition: none;
+	}
+}

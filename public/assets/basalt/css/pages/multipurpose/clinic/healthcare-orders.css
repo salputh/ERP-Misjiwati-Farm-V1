@@ -1,0 +1,878 @@
+/* Basalt - Healthcare order lists (lab-orders-and-results.html,
+   prescriptions.html, referrals.html and visit-notes.html)
+   Namespaced under .hco-*
+   The list kit of the template's other directories (search, Filters menu,
+   applied chips, sortable heads, a running count), the quick view's
+   contents and the referral stages, laid over the cards and tables of
+   healthcare.css. Drawn by healthcare-orders.js. */
+
+.hc-page,
+.hco-drawer,
+.hco-modal {
+	--hco-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--hco-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+}
+
+/* The quick view sits outside the page root, so it takes the suite's link
+   and track colors here, with the same mixes as healthcare.css. */
+.hco-drawer {
+	--hc-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--hc-track: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+
+	& :is(dd, p) a:not([class]) {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--hc-link);
+
+		&:hover {
+			text-decoration: underline;
+			text-underline-offset: 3px;
+			color: var(--basalt-copy);
+		}
+	}
+}
+
+/* Status tabs sit under the card head, on the card's left edge. */
+.hco-tabs-row {
+	margin: 1.25rem var(--basalt-pad-x) 0;
+}
+.hco-views .basalt-tabs-list .nav-link {
+	white-space: nowrap;
+}
+
+/* Search, filters, applied chips and the count share one row. */
+.hco-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.5rem var(--basalt-pad-x);
+}
+.hco-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	@media (max-width: 767.98px) {
+		flex: 1 1 100%;
+	}
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		font-size: 0.95rem;
+		color: var(--hco-quiet);
+		transform: translateY(-50%);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.hco-applied {
+	flex: 0 1 auto;
+}
+.hco-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--hco-quiet);
+}
+
+/* The Filters button shows how many groups are narrowed and opens a small panel. */
+.hco-filter-btn.btn {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	background-color: var(--basalt-plane);
+}
+.hco-filter-btn.is-on {
+	border-color: var(--basalt-hue-border);
+	color: var(--basalt-copy);
+}
+.hco-filter-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.3rem;
+	height: 1.3rem;
+	margin-left: 0.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.hco-filter-panel.dropdown-menu {
+	width: min(25rem, calc(100vw - 2rem));
+	padding: 1.1rem 1.1rem 0.85rem;
+	border-radius: 14px;
+}
+.hco-filter-group {
+	min-width: 0;
+	margin: 0 0 1.1rem;
+	padding: 0;
+	border: 0;
+}
+.hco-filter-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--hco-quiet);
+}
+
+/* Each option is a radio dressed as a pill; the picked one takes the primary tint. */
+.hco-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.hco-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.24rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .hco-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:focus-visible:not(:checked) + .hco-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.hco-filter-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.hco-link.btn-link {
+	padding-left: 0;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+
+/* The tables: the room of the template's other lists, heads that never
+   wrap, and a whole row that opens the quick view. */
+.hco-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.hc-table.hco-table {
+	& td {
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: var(--basalt-pad-row-y);
+	}
+	& th {
+		white-space: nowrap;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+	}
+}
+.hco-row {
+	cursor: pointer;
+
+	&:hover {
+		background: var(--hco-row-hover);
+	}
+	&.is-fresh {
+		animation: hco-fresh 1.8s ease;
+	}
+}
+@keyframes hco-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+/* Sortable heads are bare buttons that borrow the head's type. */
+.hco-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+[aria-sort] .hco-sort {
+	color: var(--basalt-copy);
+}
+.hco-sort-idle {
+	opacity: 0.55;
+}
+.hco-sort:hover .hco-sort-idle {
+	opacity: 1;
+}
+
+/* Cells: a person as one link, a record's name in the accent, quiet times. */
+.hco-table .hc-person-link,
+.hco-table .hco-cell-link,
+.hco-col-when,
+.hco-col-how,
+.hco-col-why,
+.hco-col-to {
+	white-space: nowrap;
+}
+.hco-patient {
+	gap: 0.65rem;
+}
+.hco-cell-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.hco-col-by .hc-person-link,
+.hco-col-to .hc-person-link {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.hco-col-when {
+	color: var(--basalt-copy-body);
+}
+.hco-col-act {
+	width: 1%;
+	text-align: right;
+}
+.hco-table .hco-num {
+	text-align: right;
+	white-space: nowrap;
+}
+.hco-flag {
+	margin-left: 0.4rem;
+	font-size: 0.67rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-danger) 78%, var(--basalt-copy));
+}
+.hco-renew-actions {
+	display: inline-flex;
+	gap: 0.5rem;
+	white-space: nowrap;
+}
+
+/* Narrower cards drop the columns the quick view repeats, widest first. */
+@container (max-width: 64rem) {
+	.hco-table .hco-col-how {
+		display: none;
+	}
+}
+@container (max-width: 52rem) {
+	.hco-table .hco-col-by,
+	.hco-table .hco-col-to {
+		display: none;
+	}
+}
+@container (max-width: 40rem) {
+	.hco-table .hco-col-when,
+	.hco-table .hco-col-test,
+	.hco-table .hco-col-why,
+	.hco-table .hco-col-med + .hco-col-when {
+		display: none;
+	}
+	.hco-table .basalt-row-actions .btn-icon {
+		display: none;
+	}
+}
+
+/* On a phone each row reads as a short record: the patient with the one
+   figure that matters, what the record is (number, medicine, test or
+   reason) under them, then the status and the next step. Notes under a
+   pill or a figure, payers and what an invoice was for wait in the quick
+   view. */
+@container (max-width: 30rem) {
+	.hc-table.hco-table,
+	.hc-table.hco-table tbody {
+		display: block;
+	}
+	.hc-table.hco-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.hc-table.hco-table tbody tr {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.hc-table.hco-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.hc-table.hco-table > tbody > tr > td:nth-child(n) {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.hc-table.hco-table tr.basalt-empty-row td {
+		grid-column: 1 / -1;
+	}
+	.hco-table .hco-col-who {
+		grid-row: 1;
+		grid-column: 1;
+	}
+	.hco-table tr:not(:has(.hco-num)) .hco-col-who {
+		grid-column: 1 / -1;
+	}
+	.hco-table .hco-num {
+		grid-row: 1;
+		grid-column: 2;
+		font-weight: 600;
+	}
+	.hc-table.hco-table > tbody > tr > :is(.hco-col-id, .hco-col-med, .hco-col-test, .hco-col-why):nth-child(n) {
+		display: block;
+		grid-row: 2;
+		grid-column: 1 / -1;
+		margin-top: -0.6rem;
+		padding-left: 2.65rem;
+		font-size: 0.85rem;
+	}
+	.hco-table .hco-col-state {
+		grid-column: 1;
+	}
+	.hco-table .hco-col-act {
+		grid-column: 2;
+		width: auto;
+	}
+	.hco-table :is(.hco-col-extra, .hc-who-meta) {
+		display: none;
+	}
+}
+
+/* The stages as one plain card of four columns, each a button into the
+   list. Lab orders stand in it as tubes on a rack, capped in their tube
+   type's color; referrals as their patients' initials at the stage they
+   have reached. A stage with something waiting carries a live dot; late
+   tubes and stuck referrals wear a red ring. */
+.hco-stages {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 1px solid var(--basalt-edge);
+	border-radius: var(--basalt-radius-card, 14px);
+	list-style: none;
+	background: var(--basalt-plane);
+
+	& > li + li {
+		border-left: 1px solid var(--basalt-edge);
+	}
+}
+:where(.hco-stage) {
+	--tone: var(--basalt-hue);
+}
+.hco-stage {
+	display: grid;
+	gap: 0.15rem;
+	align-content: start;
+	width: 100%;
+	height: 100%;
+	padding: 1.2rem 1.5rem 1.35rem;
+	border: 0;
+	text-align: left;
+	color: inherit;
+	background: transparent;
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--tone) 5%, transparent);
+	}
+	&[aria-pressed="true"] {
+		box-shadow: inset 0 -3px 0 var(--tone);
+		background: color-mix(in srgb, var(--tone) 6%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.hco-stage-name {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.hco-stage-value {
+	font-size: 2rem;
+	font-weight: 750;
+	line-height: 1.2;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.hco-stage-meta {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.hco-live {
+	--dot: var(--basalt-danger);
+	position: relative;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--dot);
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
+		background: var(--dot);
+		animation: hco-ping 1.8s ease-out infinite;
+	}
+	&.is-calm {
+		--dot: var(--basalt-warning);
+	}
+}
+@keyframes hco-ping {
+	0% {
+		opacity: 0.6;
+		transform: scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(2.6);
+	}
+}
+@media (max-width: 991.98px) {
+	.hco-stages {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* The quick view: one figure, a fact list, the steps of a referral. */
+.hco-d-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.hco-d-figure {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	margin: 0 0 1rem;
+
+	& b {
+		font-size: 1.75rem;
+		font-weight: 750;
+		line-height: 1;
+		color: var(--basalt-copy);
+	}
+	& span:not(.hc-pill) {
+		font-size: 0.9rem;
+		color: var(--hco-quiet);
+	}
+	& .hc-pill {
+		align-self: center;
+		margin-left: 0.5rem;
+	}
+}
+.hco-d-note {
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.hco-d-state {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.hco-d-quote {
+	margin: 0 0 0.75rem;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.hco-d-more {
+	display: inline-flex;
+	align-items: center;
+	margin-top: 0.85rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--hc-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+.hco-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		align-items: center;
+		padding: 0.75rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--hco-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+/* A referral's four steps: a filled number, or a check once done. */
+.hco-steps {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.hco-step {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+	align-items: center;
+	font-size: 0.875rem;
+	color: var(--hco-quiet);
+}
+.hco-step-mark {
+	display: grid;
+	place-items: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--hco-quiet);
+	background: var(--hc-track);
+}
+.hco-step-when {
+	font-size: 0.8rem;
+}
+.hco-step.is-done {
+	color: var(--basalt-copy-body);
+
+	& .hco-step-mark {
+		color: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-success) 18%, var(--basalt-plane));
+	}
+}
+.hco-step.is-now {
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& .hco-step-mark {
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+}
+
+/* Dialogs: rows of fields with room between them. */
+.hco-form-row + .hco-form-row {
+	margin-top: 1.25rem;
+}
+fieldset.hco-form-row {
+	min-width: 0;
+	margin-bottom: 0;
+	padding: 0;
+	border: 0;
+
+	& legend {
+		float: none;
+		font-size: inherit;
+	}
+}
+.hco-optional {
+	font-weight: 400;
+	color: var(--hco-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hco-row,
+	.hco-chip,
+	.hco-stage {
+		transition: none;
+	}
+	.hco-row.is-fresh,
+	.hco-live::after {
+		animation: none;
+	}
+}
+
+/* Waiting on the doctor: one row per doctor with results they have not
+   opened, how many, and a reminder. */
+.hco-unseen {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x) var(--basalt-pad-x);
+	list-style: none;
+}
+.hco-unseen-row {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	padding: 0.6rem 0.75rem 0.6rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+}
+.hco-unseen-count {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& b {
+		font-size: 1rem;
+		color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+	}
+}
+.hco-unseen-none {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 65%, var(--basalt-copy));
+}
+
+/* An invoice number: plain and semibold, it is not a link. */
+.hco-id {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Lab orders: a tube per order, standing on the rack's rail. */
+.hco-rack {
+	display: flex;
+	gap: 0.45rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	min-height: 3.6rem;
+	margin-top: 1rem;
+	padding-bottom: 0.35rem;
+	border-bottom: 3px solid color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+}
+.hco-tube {
+	--cap: #f0b429;
+	--fill: #b3172a;
+	position: relative;
+	width: 1.05rem;
+	height: 3.2rem;
+	overflow: visible;
+	border: 1.5px solid color-mix(in srgb, var(--basalt-copy) 22%, transparent);
+	border-top: 0;
+	border-radius: 0 0 0.55rem 0.55rem;
+	background: linear-gradient(
+		to top,
+		var(--fill) 58%,
+		color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane)) 58%
+	);
+
+	/* The cap. */
+	&::before {
+		content: "";
+		position: absolute;
+		top: -0.6rem;
+		left: -0.22rem;
+		right: -0.22rem;
+		height: 0.65rem;
+		border-radius: 3px 3px 1px 1px;
+		background: var(--cap);
+	}
+	/* The glass's shine. */
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0.2rem;
+		bottom: 0.45rem;
+		left: 0.18rem;
+		width: 0.16rem;
+		border-radius: 1px;
+		background: color-mix(in srgb, #fff 55%, transparent);
+	}
+	&.is-late {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-danger);
+	}
+	:root[data-basalt-gradients="off"] & {
+		background: var(--fill);
+	}
+}
+/* Tube cap colors as labs use them; urine is the one that is not blood. */
+.hco-tube.cap-lavender {
+	--cap: #8e6fe0;
+}
+.hco-tube.cap-blue {
+	--cap: #3d9be0;
+}
+.hco-tube.cap-gray {
+	--cap: #9aa3ad;
+}
+.hco-tube.cap-yellow {
+	--cap: #f2c230;
+	--fill: #f6d55c;
+}
+
+/* Referrals: each patient's initials at the stage the referral reached. */
+.hco-relay {
+	display: flex;
+	gap: 0.35rem;
+	flex-wrap: wrap;
+	min-height: 2.2rem;
+	margin-top: 1rem;
+}
+.hco-face {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--tone) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+
+	&.is-late {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-danger);
+	}
+}
+
+/* Money by age on Patient Billing and Insurance Claims: plain figure
+   cards, the label beside an icon in the group's tone, the amount, how
+   many it holds and a bar per item, the newest solid. */
+.hco-ages {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.hco-age.card {
+	display: grid;
+	gap: 0.1rem;
+	grid-template-columns: minmax(0, 1fr);
+	padding: 1.2rem 1.5rem;
+}
+.hco-age-head {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-bottom: 0.4rem;
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--hco-quiet);
+
+	& .bi {
+		font-size: 1rem;
+		color: var(--tone);
+	}
+}
+.hco-age-value {
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.hco-age-note {
+	font-size: 0.81rem;
+	color: var(--hco-quiet);
+}
+.hco-age-bars {
+	display: flex;
+	gap: 3px;
+	align-items: flex-end;
+	height: 2.25rem;
+	margin-top: 0.75rem;
+}
+.hco-age-bar {
+	flex: 1;
+	max-width: 1.25rem;
+	height: calc(var(--value, 8) * 1%);
+	border-radius: 2px 2px 1px 1px;
+	background: color-mix(in srgb, var(--tone) 45%, var(--basalt-plane));
+
+	&.is-now {
+		background: var(--tone);
+	}
+}

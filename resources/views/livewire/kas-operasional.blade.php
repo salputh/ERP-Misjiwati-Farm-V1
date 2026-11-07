@@ -5,20 +5,20 @@
 
         @if ($pesan)
             <div class="col-12">
-                <x-peringatan warna="success" bisaDitutup="true" class="mb-25">{{ $pesan }}</x-peringatan>
+                <x-peringatan warna="success" bisaDitutup="true" class="mb-4">{{ $pesan }}</x-peringatan>
             </div>
         @endif
         @error('transaksi_hapus')
             <div class="col-12">
-                <x-peringatan warna="danger" bisaDitutup="true" class="mb-25">{{ $message }}</x-peringatan>
+                <x-peringatan warna="danger" bisaDitutup="true" class="mb-4">{{ $message }}</x-peringatan>
             </div>
         @enderror
 
         @if ($this->buku)
         {{-- Identitas laporan --}}
-        <div class="col-12 mb-25">
-            <div class="card card-default card-md">
-                <div class="card-body">
+        <div class="col-12 mb-4">
+            <section class="card basalt-box db-card">
+<div class="db-card-body">
                     <x-info class="mb-0">
                         <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
                         <x-info.butir label="Kandang">{{ $kandang->nama }}</x-info.butir>
@@ -26,20 +26,21 @@
                         <x-info.butir label="Masa transaksi">{{ $this->buku['mulai']->translatedFormat('j F') }} s/d {{ $this->buku['selesai']->translatedFormat('j F Y') }}</x-info.butir>
                         <x-info.butir label="Transaksi">@angka($this->buku['ringkasan']['jumlah_masuk']) dana masuk, @angka($this->buku['ringkasan']['jumlah_keluar']) pengeluaran</x-info.butir>
                     </x-info>
-                </div>
-            </div>
+                
+</div>
+</section>
         </div>
 
         {{-- Angka utama --}}
-        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->buku['ringkasan']['masuk'])" label="Dana operasional masuk" ikon="uil-arrow-circle-down" warna="primary">
+        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->buku['ringkasan']['masuk'])" label="Dana operasional masuk" ikon="bi-arrow-down-circle" warna="primary">
             <small>Rp @angka($this->buku['ringkasan']['masuk']) dari @angka($this->buku['ringkasan']['jumlah_masuk']) kali setoran</small>
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->buku['ringkasan']['keluar'])" label="Dana operasional keluar" ikon="uil-arrow-circle-up" warna="warning">
+        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->buku['ringkasan']['keluar'])" label="Dana operasional keluar" ikon="bi-arrow-up-circle" warna="warning">
             <small>Rp @angka($this->buku['ringkasan']['keluar']) dari @angka($this->buku['ringkasan']['jumlah_keluar']) transaksi</small>
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->buku['ringkasan']['selisih'])" label="Selisih dana" ikon="uil-balance-scale" :warna="$this->buku['ringkasan']['selisih'] < 0 ? 'danger' : 'success'">
+        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->buku['ringkasan']['selisih'])" label="Selisih dana" ikon="bi-calculator" :warna="$this->buku['ringkasan']['selisih'] < 0 ? 'danger' : 'success'">
             @if ($this->buku['ringkasan']['selisih'] < 0)
                 <small>kurang Rp @angka(abs($this->buku['ringkasan']['selisih']))</small>
                 @else
@@ -47,7 +48,7 @@
                 @endif
         </x-dashboard.kartu>
 
-        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->buku['ringkasan']['biaya'])" label="Total biaya operasional" ikon="uil-receipt" warna="info">
+        <x-dashboard.kartu lebar="col-xxl-3 col-sm-6" :nilai="\App\Support\Format::juta($this->buku['ringkasan']['biaya'])" label="Total biaya operasional" ikon="bi-receipt-cutoff" warna="info">
             <small>Rp @angka($this->buku['ringkasan']['biaya']) tanpa pinjaman</small>
         </x-dashboard.kartu>
 
@@ -56,14 +57,14 @@
             <div class="row h-100">
                 <x-kas.dana :dana="$this->buku['dana']" :total="$this->buku['ringkasan']['masuk']" />
 
-                <x-rhpp.rincian judul="Selisih dana" lebar="col-xxl-12 col-lg-6 rincian-kas">
+                <x-rhpp.rincian judul="Selisih dana" lebar="col-xxl-12 col-lg-6">
                     <x-rhpp.baris label="Dana operasional masuk" :angka="$this->buku['ringkasan']['masuk']" :satuan="\App\Support\Format::angka($this->buku['ringkasan']['jumlah_masuk']).' kali setoran'" />
                     <x-rhpp.baris label="Dana operasional keluar" :angka="$this->buku['ringkasan']['keluar']" :satuan="\App\Support\Format::angka($this->buku['ringkasan']['jumlah_keluar']).' transaksi'" />
                     <x-rhpp.baris label="Selisih dana (masuk − keluar)" :angka="$this->buku['ringkasan']['selisih']" :satuan="$this->buku['ringkasan']['selisih'] < 0 ? 'dana kurang' : 'dana tersisa'" kurung sorot />
                     <x-slot:catatan>Angka dalam kurung berarti pengeluaran melebihi dana yang masuk.</x-slot:catatan>
                 </x-rhpp.rincian>
 
-                <x-rhpp.rincian judul="Total biaya operasional" lebar="col-xxl-12 col-lg-6 rincian-kas">
+                <x-rhpp.rincian judul="Total biaya operasional" lebar="col-xxl-12 col-lg-6">
                     <x-rhpp.baris label="Dana operasional keluar" :angka="$this->buku['ringkasan']['keluar']" :satuan="\App\Support\Format::angka($this->buku['ringkasan']['jumlah_keluar']).' transaksi'" />
                     @foreach ($this->buku['pinjaman'] as $pinjaman)
                     <x-rhpp.baris label="Dikurangi {{ $pinjaman['kategori']->label() }}" :angka="$pinjaman['jumlah']" :satuan="\App\Support\Format::angka($pinjaman['transaksi']).' transaksi'" />
@@ -106,15 +107,15 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-group mb-25">
-                            <label for="kas-tanggal" class="il-gray fs-14 fw-500 align-center mb-10">Tanggal</label>
+                        <div class="mb-3 mb-4">
+                            <label for="kas-tanggal" class="form-label fw-medium mb-2">Tanggal</label>
                             <x-pilih-tanggal id="kas-tanggal" ukuran="medium" :nilai="$tanggal" :nonaktif="$this->periode->tertutup()" :kesalahan="$errors->has('tanggal')" x-on:tanggal-dipilih="$wire.set('tanggal', $event.detail)" />
                             @error('tanggal')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group mb-25">
-                            <label class="il-gray fs-14 fw-500 align-center mb-10">Kategori</label>
+                        <div class="mb-3 mb-4">
+                            <label class="form-label fw-medium mb-2">Kategori</label>
                             <x-pilih bentuk="isian" nama="Kategori transaksi" :label="$isiKategoriBaru ? '+ Kategori baru' : ($this->kategoriTerpilih?->label() ?? 'Pilih kategori')" :kesalahan="$errors->has('kategoriTransaksi')" :nonaktif="$this->periode->tertutup()">
                                 @foreach (\App\Enums\KategoriKas::cases() as $pilihan)
                                     @if ($pilihan->masuk() || $this->bolehCatatPengeluaran)

@@ -1,29 +1,29 @@
 <div class="container-fluid">
     <div class="row">
         <x-breadcrumb judul="Data karyawan" :jejak="['Master data', 'Karyawan']">
-            <x-tombol.kepala ikon="las la-plus" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-karyawan">Tambah karyawan</x-tombol.kepala>
+            <x-tombol.kepala ikon="bi bi-plus-lg" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-karyawan">Tambah karyawan</x-tombol.kepala>
         </x-breadcrumb>
 
         @if ($pesan)
             <div class="col-12">
-                <x-peringatan warna="success" class="mb-25">{{ $pesan }}</x-peringatan>
+                <x-peringatan warna="success" class="mb-4">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
         @error('karyawan_hapus')
             <div class="col-12">
-                <x-peringatan warna="danger" bisaDitutup="true" class="mb-25">{{ $message }}</x-peringatan>
+                <x-peringatan warna="danger" bisaDitutup="true" class="mb-4">{{ $message }}</x-peringatan>
             </div>
         @enderror
 
         @if ($this->daftar)
             {{-- Jumlah karyawan seluruhnya dan per kandang --}}
-            <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka($this->daftar['total']).' orang'" label="Seluruh karyawan" ikon="uil-users-alt" warna="primary">
+            <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka($this->daftar['total']).' orang'" label="Seluruh karyawan" ikon="bi-people" warna="primary">
                 <small>{{ $this->daftar['rincian'] }}</small>
             </x-dashboard.kartu>
 
             @foreach ($this->daftar['kandang'] as $kandang)
-                <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka($kandang['jumlah']).' orang'" :label="$kandang['nama']" ikon="uil-home" :warna="$loop->odd ? 'info' : 'secondary'">
+                <x-dashboard.kartu lebar="col-lg-4 col-sm-6" :nilai="\App\Support\Format::angka($kandang['jumlah']).' orang'" :label="$kandang['nama']" ikon="bi-house" :warna="$loop->odd ? 'info' : 'secondary'">
                     <small>{{ $kandang['rincian'] }}</small>
                 </x-dashboard.kartu>
             @endforeach
@@ -33,7 +33,7 @@
             <x-kosong judul="Belum ada karyawan">
                 Daftar ini berisi ABK dan joker tiap kandang, orang yang sama dengan penerima slip di Payroll ABK.
                 <x-slot:aksi>
-                    <x-tombol ikon="uil-plus" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-karyawan">Tambah karyawan</x-tombol>
+                    <x-tombol ikon="bi-plus-lg" wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-karyawan">Tambah karyawan</x-tombol>
                 </x-slot:aksi>
             </x-kosong>
         @endif
@@ -53,8 +53,8 @@
                 <x-masukan id="karyawan-nama" label="Nama karyawan" maxlength="150" wire:model="nama" :kesalahan="$errors->first('nama')" placeholder="Masukkan nama karyawan" autocomplete="off" />
             </div>
             <div class="col-md-6">
-                <div class="form-group mb-25">
-                    <label class="il-gray fs-14 fw-500 align-center mb-10">Jabatan</label>
+                <div class="mb-3 mb-4">
+                    <label class="form-label fw-medium mb-2">Jabatan</label>
                     <x-pilih bentuk="isian" nama="Jabatan karyawan" :label="\App\Enums\Jabatan::tryFrom($jabatan)?->label() ?? 'Pilih jabatan'" :kesalahan="$errors->has('jabatan')">
                         @foreach (\App\Enums\Jabatan::cases() as $pilihan)
                             <button type="button" wire:click="$set('jabatan', '{{ $pilihan->value }}')" @class(['dropdown-item', 'active' => $jabatan === $pilihan->value])>{{ $pilihan->label() }}</button>
@@ -64,8 +64,8 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="form-group mb-25">
-                    <label class="il-gray fs-14 fw-500 align-center mb-10">Kandang</label>
+                <div class="mb-3 mb-4">
+                    <label class="form-label fw-medium mb-2">Kandang</label>
                     <x-pilih bentuk="isian" nama="Kandang tempat bertugas" :label="$this->daftarKandang->firstWhere('id', $kandangId)?->nama ?? 'Belum ditempatkan'" :kesalahan="$errors->has('kandangId')">
                         @foreach ($this->daftarKandang as $pilihan)
                             <button type="button" wire:click="$set('kandangId', {{ $pilihan->id }})" @class(['dropdown-item', 'active' => $kandangId === $pilihan->id])>{{ $pilihan->nama }}</button>
@@ -79,7 +79,7 @@
                 <x-masukan id="karyawan-keterangan" label="Keterangan" maxlength="255" wire:model="keterangan" :kesalahan="$errors->first('keterangan')" placeholder="Contoh: ketua ABK" keterangan="Boleh dikosongkan." autocomplete="off" />
             </div>
             <div class="col-12">
-                <h6 class="fs-14 fw-500 mb-15">Nilai bawaan slip gaji</h6>
+                <h6 class="fw-medium mb-3">Nilai bawaan slip gaji</h6>
             </div>
             <div class="col-md-4">
                 <x-masukan.ribuan id="karyawan-gaji-pokok" properti="gajiPokok" teks label="Gaji pokok (Rp)" :kesalahan="$errors->first('gajiPokok')" wire:key="karyawan-gaji-pokok-{{ $karyawanId ?? 'baru' }}" />
@@ -91,7 +91,7 @@
                 <x-masukan id="karyawan-tanggal-gajian" tipe="number" min="1" max="31" step="1" label="Tanggal gajian" wire:model="tanggalGajian" :kesalahan="$errors->first('tanggalGajian')" placeholder="Contoh: 25" />
             </div>
             <div class="col-12">
-                <small class="d-block mb-25 fs-13 color-light">Terisi otomatis di slip gaji baru karyawan ini dan boleh diubah per slip. Gaji pokok tidak dipakai ABK yang ikut bagi hasil. Kosongkan bila tidak ada nilai bawaan.</small>
+                <small class="d-block mb-4 small text-body-secondary">Terisi otomatis di slip gaji baru karyawan ini dan boleh diubah per slip. Gaji pokok tidak dipakai ABK yang ikut bagi hasil. Kosongkan bila tidak ada nilai bawaan.</small>
             </div>
         </div>
 

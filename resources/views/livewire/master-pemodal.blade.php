@@ -1,35 +1,35 @@
-<div class="col-12 mb-25">
+<div class="col-12 mb-4">
     <x-kartu judul="Daftar pemodal" subjudul="Kelola pemodal dan porsi tetapnya pada tiap kandang. Jumlah porsi per kandang tidak boleh melebihi 100%." badan="p-0">
         <x-slot:ekstra>
             <x-tombol wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-pemodal">Tambah pemodal</x-tombol>
         </x-slot:ekstra>
 
-        {{-- Tabel template (HexaDash: Basic Table, Basic Usage) --}}
-        <div class="table4 p-25">
+        {{-- Tabel template  --}}
+        <div class="tabel-data">
             @if ($pesan)
                 <x-peringatan warna="success">{{ $pesan }}</x-peringatan>
             @endif
 
             <div class="table-responsive">
-                <table class="table mb-0">
+                <table class="table mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">No.</span></th>
-                            <th><span class="userDatatable-title">Nama pemodal</span></th>
+                        <tr>
+                            <th>No.</th>
+                            <th>Nama pemodal</th>
                             @foreach ($this->kandangs as $kandang)
-                                <th class="text-end"><span class="userDatatable-title">Porsi {{ $kandang->nama }}</span></th>
+                                <th class="text-end">Porsi {{ $kandang->nama }}</th>
                             @endforeach
-                            <th class="text-end"><span class="userDatatable-title">Aksi</span></th>
+                            <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->daftar as $pemodal)
                             <tr wire:key="pemodal-{{ $pemodal->id }}">
-                                <td><div class="userDatatable-content">{{ $loop->iteration }}</div></td>
-                                <td><div class="userDatatable-content fw-500">{{ $pemodal->nama }}</div></td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td><div class="fw-medium">{{ $pemodal->nama }}</div></td>
                                 @foreach ($this->kandangs as $kandang)
                                     <td class="text-end">
-                                        <div class="userDatatable-content">
+                                        <div>
                                             @if ($pemodal->porsiDi($kandang) !== null)
                                                 {{ \App\Support\Format::persen($pemodal->porsiDi($kandang)) }}
                                             @else
@@ -47,7 +47,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ 3 + $this->kandangs->count() }}" class="text-center color-light">Belum ada pemodal.</td>
+                                <td colspan="{{ 3 + $this->kandangs->count() }}" class="text-center text-body-secondary">Belum ada pemodal.</td>
                             </tr>
                         @endforelse
                     </tbody>

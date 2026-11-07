@@ -1,0 +1,607 @@
+/* Basalt - Infinite scroll table page
+   Namespaced under .tinf-*
+   One Bootstrap .table in the normal page flow. Rows are
+   added in batches as the window scrolls; the header row
+   pins under the top bar. This file sets the table's
+   variables from the --basalt-* tokens and styles the
+   toolbar, placeholder rows, the end line and the back to
+   top button. On phones each row becomes a small card. */
+
+.tinf-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--tinf-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--tinf-bone: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+	--tinf-bone-hi: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+}
+
+/* Rows are added above the footer while the reader sits at the bottom.
+   Scroll anchoring would then scroll the window along to keep the footer
+   in place, so the reader never sees the new rows and the end of the table
+   never leaves the window. On this page the window stays where it is. */
+:root:has(.tinf-page) {
+	overflow-anchor: none;
+}
+
+/* Card */
+.tinf-card.basalt-box .card-body {
+	--tinf-inset: 1.75rem;
+	padding: var(--tinf-inset);
+}
+.tinf-card-head {
+	margin-bottom: 1.5rem;
+}
+.tinf-card-title {
+	margin: 0 0 0.3rem;
+	border-radius: 4px;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tinf-card-title:focus {
+	outline: none;
+}
+.tinf-card-title:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.tinf-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tinf-quiet);
+}
+
+/* Toolbar */
+.tinf-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.tinf-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 11rem;
+	max-width: 28rem;
+}
+.tinf-search .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--tinf-quiet);
+	pointer-events: none;
+}
+.tinf-search .form-control {
+	padding-left: 2.4rem;
+}
+.tinf-select {
+	width: auto;
+	min-width: 9rem;
+}
+.tinf-page .form-control,
+.tinf-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.tinf-page .form-control:focus,
+.tinf-page .form-select:focus-visible {
+	border-color: var(--basalt-hue);
+}
+.tinf-page .form-control::placeholder {
+	color: var(--tinf-quiet);
+	opacity: 1;
+}
+.tinf-count {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--tinf-quiet);
+}
+
+/* The table */
+/* Separate borders so the pinned header paints as one solid block; with
+   collapsed borders the rows scrolling underneath show through its seams. */
+.tinf-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	margin-bottom: 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 0.875rem;
+}
+.tinf-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.75rem;
+}
+/* Header cells: short uppercase labels, muted, over a firm rule. */
+.tinf-table > thead > tr > th {
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--tinf-quiet);
+}
+.tinf-table > thead,
+.tinf-table > thead > tr > th {
+	--bs-table-bg: var(--basalt-plane);
+	background-color: var(--bs-table-bg);
+}
+.tinf-table > tbody:not(.tinf-bones) > tr:last-child > * {
+	border-bottom-width: 0;
+}
+.tinf-table td {
+	white-space: nowrap;
+}
+/* The items column takes whatever width is left and clips the first
+   product name, so the table never runs wider than the card. */
+.tinf-col-items {
+	width: 100%;
+}
+.tinf-table td.tinf-col-items {
+	max-width: 0;
+}
+.tinf-clip {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tinf-strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tinf-sub {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--tinf-quiet);
+}
+.tinf-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+/* Sortable header: a plain button that takes the header's own type. */
+.tinf-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+}
+.tinf-sort:hover {
+	color: var(--basalt-copy);
+}
+.tinf-sort:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.tinf-sort .bi {
+	font-size: 0.7rem;
+	opacity: 0.5;
+}
+th[aria-sort="ascending"] .tinf-sort,
+th[aria-sort="descending"] .tinf-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort="ascending"] .tinf-sort .bi,
+th[aria-sort="descending"] .tinf-sort .bi {
+	opacity: 1;
+}
+/* In a right-aligned column the arrow leads, so the label lines up with the figures. */
+.text-end > .tinf-sort {
+	flex-direction: row-reverse;
+}
+
+/* Avatar initials */
+.tinf-person {
+	display: inline-flex;
+	gap: 0.7rem;
+	align-items: center;
+}
+.tinf-avatar {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+}
+
+/* Status pills: a soft tint of the tone with a dot. The text is the tone
+   pulled toward the body text, so it reads on the tint in every palette. */
+.tinf-page .basalt-status {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--stp-tone) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 14%, var(--basalt-plane));
+}
+.tinf-page .basalt-status::before {
+	content: "";
+	flex: none;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--stp-tone);
+}
+
+/* Search hits */
+.tinf-mark {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 30%, transparent);
+}
+
+/* Empty state */
+.tinf-empty {
+	padding: 2.5rem 1rem;
+	text-align: center;
+	white-space: normal;
+}
+.tinf-empty-title {
+	margin: 0 0 0.25rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tinf-empty-text {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--tinf-quiet);
+}
+
+/* A batch asked for from the keyboard hands focus to its first row. */
+.tinf-table > tbody > tr:focus {
+	outline: none;
+}
+.tinf-table > tbody > tr:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: -2px;
+}
+
+/* Placeholder rows while a batch loads */
+.tinf-bones > tr > td {
+	padding-top: 1.1rem;
+	padding-bottom: 1.1rem;
+}
+.tinf-bone {
+	display: block;
+	width: var(--tinf-w, 70%);
+	min-width: 2.5rem;
+	height: 0.7rem;
+	border-radius: 4px;
+	background: linear-gradient(90deg, var(--tinf-bone) 0%, var(--tinf-bone-hi) 50%, var(--tinf-bone) 100%);
+	background-size: 200% 100%;
+	animation: tinf-shimmer 1.2s ease-in-out infinite;
+}
+.text-end > .tinf-bone {
+	margin-left: auto;
+}
+@keyframes tinf-shimmer {
+	from {
+		background-position: 100% 0;
+	}
+	to {
+		background-position: -100% 0;
+	}
+}
+
+/* Under the table */
+/* The marker the observer watches; it has no size of its own. */
+.tinf-sentinel {
+	height: 1px;
+}
+/* Keyboard route to the next batch: out of sight until it takes focus. */
+.tinf-more:not(:focus-visible) {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	clip-path: inset(50%);
+}
+.tinf-more {
+	/* Focus draws a button in its hover colors; keep the label at full text
+     color so it reads on every palette. */
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	display: block;
+	margin: 1rem auto 0;
+}
+.tinf-more[hidden] {
+	display: none;
+}
+.tinf-end {
+	margin: 1.25rem 0 0;
+	padding-top: 1.25rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+	font-size: 0.85rem;
+	text-align: center;
+	color: var(--tinf-quiet);
+}
+
+/* Back to top */
+.tinf-top {
+	position: fixed;
+	right: 1.5rem;
+	bottom: calc(1.5rem + var(--tinf-lift, 0px));
+	z-index: 1020;
+	display: inline-grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	padding: 0;
+	border-radius: 50%;
+	border: 1px solid var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.tinf-top:hover {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.tinf-top:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.tinf-top[hidden] {
+	display: none;
+}
+
+/* Layout follows the card's width
+   The card body is a size container, so the table switches layout on the
+   room it actually has: the sidebar takes 300px from 992px up, which a
+   viewport query cannot see. */
+.tinf-card .card-body {
+	container: tinf-card / inline-size;
+}
+
+/* Wide: six columns. There is no scrolling wrapper round the table,
+   because one would stop the header sticking to the window.
+   infinite-scroll-table.js measures the top bar and sets --tinf-top to its
+   height, so the header row pins right under it. */
+@container tinf-card (min-width: 48rem) {
+	/* The table runs to the card's edges; its outer cells keep the card
+     inset, so the first column starts on the title's line. */
+	.tinf-table {
+		width: calc(100% + 2 * var(--tinf-inset));
+		margin-inline: calc(-1 * var(--tinf-inset));
+	}
+	.tinf-table > :not(caption) > * > :first-child {
+		padding-left: var(--tinf-inset);
+	}
+	.tinf-table > :not(caption) > * > :last-child {
+		padding-right: var(--tinf-inset);
+	}
+	.tinf-table > thead {
+		position: sticky;
+		top: var(--tinf-top, 0px);
+		z-index: 2;
+		box-shadow:
+			0 1px 0 var(--basalt-edge-strong),
+			0 12px 24px -18px var(--basalt-scrim);
+	}
+	/* Fixed widths, so the columns hold still while the placeholder rows
+     show; the items column takes what is left. */
+	.tinf-col-id {
+		width: 5rem;
+	}
+	.tinf-col-customer {
+		width: 12rem;
+	}
+	.tinf-col-date {
+		width: 7.5rem;
+	}
+	.tinf-col-status {
+		width: 10.5rem;
+	}
+	.tinf-col-total {
+		width: 6rem;
+	}
+}
+
+/* Narrow: every order becomes a small card. Six columns would need a
+   sideways scroll, so the cells stack and the header row stays as a strip
+   of sort buttons. */
+@container tinf-card (max-width: 47.99rem) {
+	/* Hover tints cells one by one, which leaves stripes on a stacked row. */
+	.tinf-table {
+		--bs-table-hover-bg: transparent;
+	}
+	.tinf-table,
+	.tinf-table > thead,
+	.tinf-table > tbody {
+		display: block;
+		width: 100%;
+	}
+	.tinf-table > thead > tr {
+		display: flex;
+		gap: 0.5rem 1rem;
+		flex-wrap: wrap;
+		padding: 0 0 0.65rem;
+		border-bottom: 1px solid var(--basalt-edge-strong);
+	}
+	.tinf-table > thead > tr > th {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.tinf-table > thead > tr > th.text-end > .tinf-sort {
+		flex-direction: row;
+	}
+
+	.tinf-table > tbody > tr {
+		display: grid;
+		gap: 0.4rem 1rem;
+		/* A fixed right track, so the status badges and dates start on one
+       line from card to card. */
+		grid-template-columns: minmax(0, 1fr) 8.5rem;
+		grid-template-areas:
+			"customer total"
+			"items status"
+			"id date";
+		align-items: center;
+		padding: 0.9rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.tinf-table > tbody:not(.tinf-bones) > tr:last-child {
+		border-bottom: 0;
+	}
+	.tinf-table > tbody > tr > td {
+		display: block;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+	}
+	.tinf-table > tbody > tr > .tinf-col-customer {
+		grid-area: customer;
+	}
+	.tinf-table > tbody > tr > .tinf-col-total {
+		grid-area: total;
+	}
+	.tinf-table > tbody > tr > .tinf-col-items {
+		grid-area: items;
+		width: auto;
+		max-width: none;
+	}
+	.tinf-table > tbody > tr > .tinf-col-status {
+		grid-area: status;
+		justify-self: start;
+	}
+	.tinf-table > tbody > tr > .tinf-col-id {
+		grid-area: id;
+	}
+	.tinf-table > tbody > tr > .tinf-col-date {
+		grid-area: date;
+		font-size: 0.8rem;
+		text-align: left;
+		color: var(--tinf-quiet);
+	}
+	.tinf-table > tbody > tr > .tinf-col-date .tinf-sub {
+		display: inline;
+	}
+	.tinf-table > tbody > tr > .tinf-col-items .tinf-sub {
+		display: none;
+	}
+	/* Stacked cards have room to wrap a long product name instead of
+     cutting it off. */
+	.tinf-table > tbody > tr > .tinf-col-items {
+		white-space: normal;
+	}
+	.tinf-table > tbody > tr > .tinf-col-items .tinf-clip {
+		overflow: visible;
+		white-space: normal;
+	}
+	.tinf-table > tbody > tr > .tinf-empty {
+		grid-column: 1 / -1;
+		padding: 2rem 0;
+	}
+	.tinf-bones > tr > td {
+		padding: 0.3rem 0;
+	}
+}
+
+/* With a little more room the stacked card spreads over four columns. */
+@container tinf-card (min-width: 32rem) and (max-width: 47.99rem) {
+	.tinf-table > tbody > tr {
+		column-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1.2fr) 4.5rem minmax(0, 1fr) 9.5rem;
+		grid-template-areas:
+			"customer items items total"
+			"customer id date status";
+	}
+	.tinf-table > tbody > tr > .tinf-col-date {
+		text-align: left;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.tinf-card.basalt-box .card-body {
+		--tinf-inset: 1.25rem;
+	}
+	.tinf-search {
+		flex: 1 1 100%;
+		max-width: none;
+	}
+	.tinf-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	.tinf-count {
+		flex: 1 1 100%;
+		margin-left: 0;
+		white-space: normal;
+	}
+	.tinf-top {
+		right: 1rem;
+		bottom: calc(1rem + var(--tinf-lift, 0px));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tinf-bone {
+		animation: none;
+	}
+}
+@media print {
+	.tinf-toolbar,
+	.tinf-more,
+	.tinf-top,
+	.tinf-bones {
+		display: none;
+	}
+	.tinf-table > thead {
+		position: static;
+	}
+}
+
+/* Disabled buttons
+   Bootstrap fades a disabled button and, on outline buttons, uses a fixed
+   gray; both drop the label under 4.5:1. A muted but readable label on a
+   faint fill says "not now" in every palette. Same rule on every table page. */
+:root .tinf-page .btn:disabled,
+:root .tinf-page .btn.disabled {
+	--bs-btn-disabled-opacity: 1;
+	--bs-btn-disabled-color: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--bs-btn-disabled-bg: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+	--bs-btn-disabled-border-color: var(--basalt-edge);
+	opacity: 1;
+}

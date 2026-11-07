@@ -1,0 +1,204 @@
+/* The appearance panel that assets/basalt/js/theme-picker.js drops into the page:
+   palette chips in a grid, then segmented switches. It is fixed to the
+   viewport instead of the header, which lets it clear the sticky chrome on
+   every page without any page having to provide a positioning context. */
+$narrow: 480px;
+
+.basalt-appearance {
+	position: fixed;
+	top: calc(var(--basalt-header-h) + 8px);
+	right: 16px;
+	z-index: 1055;
+	width: 320px;
+	max-width: calc(100vw - 32px);
+	max-height: calc(100vh - var(--basalt-header-h) - 24px);
+	padding: 14px;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	overflow-y: auto;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+
+	&[hidden] {
+		display: none;
+	}
+
+	/* On a phone the panel spans the screen, inset a little from both edges. */
+	@media (max-width: $narrow) {
+		right: 8px;
+		left: 8px;
+		width: auto;
+	}
+}
+
+/* Title on the left, close button on the right. */
+.basalt-appearance-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+.basalt-appearance-title {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.basalt-appearance-close {
+	padding: 2px;
+	border: 0;
+	border-radius: 6px;
+	line-height: 1;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* Each section opens with a small uppercase caption. */
+.basalt-appearance-section + .basalt-appearance-section {
+	margin-top: 14px;
+}
+.basalt-appearance-label {
+	display: block;
+	margin-bottom: 7px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-faint);
+}
+
+/* Palette chips sit three to a row, two on a phone. */
+.basalt-appearance-grid {
+	display: grid;
+	gap: 10px 6px;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* A chip is the palette's color dot over its name. The dot is the whole
+   mark: no frame around it, and the choice gets a ring with a gap. */
+.basalt-appearance-chip {
+	display: flex;
+	gap: 6px;
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+	padding: 4px;
+	border: 0;
+	border-radius: 10px;
+	text-align: center;
+	color: var(--basalt-copy-muted);
+	background: transparent;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 0;
+
+		.basalt-appearance-sw {
+			outline-color: var(--basalt-hue);
+			outline-style: dashed;
+		}
+	}
+	&[aria-checked="true"] {
+		color: var(--basalt-copy);
+
+		.basalt-appearance-sw {
+			outline-color: var(--basalt-hue);
+		}
+	}
+}
+.basalt-appearance-sw {
+	display: flex;
+	flex: none;
+	width: 2rem;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	overflow: hidden;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+	transition: outline-color 0.15s ease;
+
+	i {
+		flex: 1;
+	}
+}
+.basalt-appearance-name {
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	overflow-wrap: anywhere;
+}
+.basalt-appearance-note {
+	font-weight: 500;
+	color: var(--basalt-copy-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-appearance-sw {
+		transition: none;
+	}
+}
+
+/* Segmented switches: a soft track as wide as its options, each option as
+   wide as its words; the chosen option sits on it as a raised pill. */
+.basalt-appearance-seg {
+	display: inline-flex;
+	max-width: 100%;
+	gap: 2px;
+	padding: 3px;
+	border-radius: 12px;
+	background: var(--basalt-wash);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge);
+
+	button {
+		display: inline-flex;
+		gap: 5px;
+		flex: none;
+		align-items: center;
+		justify-content: center;
+		padding: 6px 12px;
+		border: 0;
+		border-radius: 9px;
+		font-size: 0.8rem;
+		font-weight: 500;
+		white-space: nowrap;
+		color: var(--basalt-copy-muted);
+		background: transparent;
+		cursor: pointer;
+		transition:
+			color 150ms ease,
+			background-color 150ms ease,
+			box-shadow 150ms ease;
+
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 1px;
+		}
+		&[aria-pressed="true"] {
+			font-weight: 700;
+			color: var(--basalt-copy);
+			background: var(--basalt-plane);
+			box-shadow:
+				0 1px 2px color-mix(in srgb, var(--basalt-copy) 12%, transparent),
+				0 0 0 1px var(--basalt-edge);
+		}
+		[data-bs-theme="dark"] &[aria-pressed="true"] {
+			background: color-mix(in srgb, var(--basalt-copy) 12%, var(--basalt-plane));
+			box-shadow: 0 1px 3px color-mix(in srgb, var(--basalt-canvas) 70%, transparent);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		button {
+			transition: none;
+		}
+	}
+}

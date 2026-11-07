@@ -1,0 +1,1275 @@
+/*
+ * deal-details.html: everything about one deal on a single screen.
+ * Classes here carry the .dv- prefix and sit on top of basalt.css, which
+ * already supplies the hero, cards, ring, segmented switch, choice tiles,
+ * avatars and toasts. What this sheet adds is the deal's own layout and a
+ * hue per stage, plan and attachment, drawn from the theme ramp through
+ * color-mix() so every palette and both modes stay in tune.
+ */
+
+/* Quiet text, links and the three status inks lean toward the body color,
+   which keeps them above 4.5:1 even in the palest palettes. */
+.dv-page,
+.dv-modal {
+	--dv-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--dv-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--dv-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--dv-danger: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--dv-success: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+}
+
+/* A tone class hands one ramp color to whatever wears it. These must stay
+   ahead of .dv-fact, whose own default tone is meant to win. */
+.dv-tone-1 {
+	--dv-tone: var(--basalt-series-1);
+}
+.dv-tone-2 {
+	--dv-tone: var(--basalt-series-2);
+}
+.dv-tone-3 {
+	--dv-tone: var(--basalt-series-3);
+}
+.dv-tone-4 {
+	--dv-tone: var(--basalt-series-4);
+}
+.dv-tone-5 {
+	--dv-tone: var(--basalt-series-5);
+}
+.dv-tone-6 {
+	--dv-tone: var(--basalt-series-6);
+}
+.dv-tone-7 {
+	--dv-tone: var(--basalt-series-7);
+}
+.dv-tone-8 {
+	--dv-tone: var(--basalt-series-8);
+}
+.dv-tone-won {
+	--dv-tone: var(--basalt-success);
+}
+.dv-tone-lost {
+	--dv-tone: var(--basalt-danger);
+}
+
+/* Small print, eyebrow labels and inline links recur in every card. */
+.dv-note {
+	display: block;
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 400;
+	line-height: 1.45;
+	color: var(--dv-quiet);
+}
+.dv-label {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--dv-quiet);
+}
+.dv-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--dv-link);
+
+	&:hover,
+	&:focus-visible {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Inputs sit on the card surface, and menu entries keep a gap after their icon. */
+.dv-page {
+	& .form-control,
+	& .form-select {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+	& .form-control::placeholder {
+		color: var(--dv-quiet);
+		opacity: 1;
+	}
+	& .dropdown-item .bi {
+		margin-right: 0.6rem;
+	}
+	& .dropdown-item.dv-danger-item {
+		color: var(--dv-danger);
+
+		&:hover,
+		&:focus {
+			color: var(--dv-danger);
+			background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+		}
+	}
+}
+
+/* The hero holds the company block on the left and the actions on the
+   right, both resting on the same bottom line. */
+.basalt-hero-detail.dv-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.dv-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.dv-who {
+	display: flex;
+	gap: 1.1rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.dv-who-text {
+	min-width: 0;
+}
+
+/* The company mark is a rounded square of initials tinted by its tone. */
+.dv-logo {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 3.5rem;
+	height: 3.5rem;
+	border-radius: 16px;
+	font-size: 1.1rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--dv-tone) 30%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--dv-tone) 24%, var(--basalt-plane));
+	background-image: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--dv-tone) 36%, var(--basalt-plane)),
+		transparent 70%
+	);
+
+	[data-bs-theme="dark"] & {
+		color: var(--basalt-copy);
+		background-color: color-mix(in srgb, var(--dv-tone) 30%, var(--basalt-plane));
+		background-image: linear-gradient(
+			135deg,
+			transparent 30%,
+			color-mix(in srgb, var(--dv-tone) 18%, var(--basalt-plane))
+		);
+	}
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+}
+
+/* Under the title, the stage, the kind and the deal number read as pills. */
+.dv-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+.dv-tag {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.65rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+/* An open stage gets its hue and a leading dot, matching the Deals list. */
+.dv-stage-pill {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--dv-tone) 40%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--dv-tone) 14%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--dv-tone);
+	}
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--dv-tone) 28%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--dv-tone) 22%, var(--basalt-plane));
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.dv-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.dv-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.dv-logo {
+		width: 3rem;
+		height: 3rem;
+		border-radius: 14px;
+		font-size: 1rem;
+	}
+}
+
+/* A won or lost deal explains itself in one slim banner above the cards. */
+.dv-notice {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		flex: none;
+	}
+}
+.dv-notice-success {
+	border-color: color-mix(in srgb, var(--basalt-success) 36%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--basalt-success) 9%, var(--basalt-plane));
+
+	& > .bi {
+		color: var(--dv-success);
+	}
+}
+.dv-notice-danger {
+	border-color: color-mix(in srgb, var(--basalt-danger) 32%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--basalt-danger) 7%, var(--basalt-plane));
+
+	& > .bi {
+		color: var(--dv-danger);
+	}
+}
+
+/* Cards stack in one column until 1200px. From there the standing card
+   spans the full width and the rest pair up seven to five, with each
+   pair stretched to the same height. */
+.dv-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.dv-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.dv-card-stand {
+		grid-column: span 12;
+	}
+	.dv-card-wide {
+		grid-column: span 7;
+	}
+	.dv-card-narrow {
+		grid-column: span 5;
+	}
+}
+
+/* Every card body is a column, so footers can drop to the bottom edge. */
+.dv-card {
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	}
+}
+@media (max-width: 575.98px) {
+	.dv-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.dv-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+
+		&[hidden] {
+			display: none;
+		}
+	}
+}
+.dv-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+}
+.dv-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--dv-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.dv-sub {
+	margin: 1.5rem 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--dv-quiet);
+}
+.dv-foot-link {
+	align-self: flex-start;
+	margin-top: auto;
+	padding-top: 1.25rem;
+	font-size: 0.875rem;
+}
+
+/* The standing card washes in the current stage's hue (the script sets
+   its tone class), leads with the yearly value, lines up the close date,
+   the odds and the owner beside it, and ends on the stage track. */
+.dv-card-stand {
+	background-image:
+		radial-gradient(60rem 18rem at 0% 0%, color-mix(in srgb, var(--dv-tone) 11%, transparent), transparent 70%),
+		radial-gradient(
+			40rem 16rem at 100% 0%,
+			color-mix(in srgb, var(--basalt-series-2) 8%, transparent),
+			transparent 70%
+		);
+
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+	& .card-body {
+		container-type: inline-size;
+	}
+}
+.dv-stand {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-bottom: 2rem;
+}
+@container (min-width: 1020px) {
+	.dv-stand {
+		gap: 2rem;
+		grid-template-columns: 15rem minmax(0, 1fr);
+		align-items: center;
+	}
+}
+.dv-worth-value {
+	display: flex;
+	gap: 0.1rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0.3rem 0 0.3rem;
+	font-size: clamp(2rem, 1.6rem + 1.2vw, 2.6rem);
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.dv-worth-per {
+	font-size: 1rem;
+	font-weight: 600;
+	letter-spacing: 0;
+	color: var(--dv-quiet);
+}
+
+/* Three fact tiles, each a picture on the left and its text on the right. */
+.dv-facts-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+}
+.dv-fact {
+	--dv-tone: var(--basalt-series-1);
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-content: center;
+	min-width: 0;
+	padding: 1.1rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	background-color: var(--basalt-plane);
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--dv-tone) 10%, transparent), transparent 65%);
+
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+	& > * {
+		grid-column: 2;
+		min-width: 0;
+	}
+	& dd {
+		margin: 0;
+	}
+	/* The picture, 3.25rem square, fills the first column beside all three lines. */
+	& > .dv-fact-visual {
+		grid-column: 1;
+		grid-row: 1 / span 3;
+		align-self: center;
+	}
+	& .dv-note {
+		white-space: nowrap;
+	}
+}
+.dv-fact-value {
+	margin: 0.3rem 0 0.1rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	line-height: 1.25;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+/* The close date appears as a tiny tear-off calendar page. */
+.dv-cal {
+	display: grid;
+	grid-template-rows: auto 1fr;
+	width: 3.25rem;
+	height: 3.25rem;
+	border: 1px solid color-mix(in srgb, var(--dv-tone) 30%, var(--basalt-edge));
+	border-radius: 12px;
+	overflow: hidden;
+	text-align: center;
+	background: var(--basalt-plane);
+}
+.dv-cal-month {
+	padding: 0.1rem 0;
+	font-size: 0.62rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--dv-tone) 35%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--dv-tone) 22%, var(--basalt-plane));
+}
+.dv-cal-day {
+	display: grid;
+	place-items: center;
+	font-size: 1.1rem;
+	font-weight: 750;
+	line-height: 1;
+	color: var(--basalt-copy);
+}
+.basalt-avatar.dv-fact-avatar {
+	width: 3.25rem;
+	height: 3.25rem;
+	font-size: 1rem;
+}
+.dv-ring {
+	--size: 52px;
+	--thickness: 6px;
+	--ring-tone: var(--dv-tone);
+	flex: none;
+
+	& .basalt-ring-value {
+		font-size: 0.8rem;
+	}
+	&.is-empty .basalt-ring-bar {
+		visibility: hidden;
+	}
+}
+.dv-note-late {
+	font-weight: 600;
+	color: var(--dv-danger);
+}
+/* A person link underlines only the name, never the avatar beside it. */
+.dv-person-link {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	max-width: 100%;
+	border-radius: 6px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	& span:last-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	&:hover span:last-child,
+	&:focus-visible span:last-child {
+		text-decoration: underline;
+	}
+}
+/* In a narrow card the three tiles merge into one box with ruled rows. */
+@container (max-width: 779.98px) {
+	.dv-facts-row {
+		gap: 0;
+		grid-template-columns: minmax(0, 1fr);
+		border: 1px solid var(--basalt-edge);
+		border-radius: 14px;
+		background: color-mix(in srgb, var(--basalt-plane) 82%, transparent);
+	}
+	.dv-fact {
+		padding: 0.9rem 1rem;
+		border: 0;
+		border-radius: 0;
+		background: none;
+	}
+	.dv-fact + .dv-fact {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	.dv-fact-value {
+		margin-top: 0.3rem;
+	}
+}
+
+/* The stage track runs down the card by default and turns sideways once
+   the card is wide enough for five columns. */
+.dv-steps {
+	display: grid;
+	margin: 0;
+	padding: 1.5rem 0 0;
+	border-top: 1px solid var(--basalt-edge);
+	list-style: none;
+}
+.dv-step {
+	--dv-trail-from: scaleY(0);
+	--dv-trail-origin: top;
+	position: relative;
+	display: grid;
+	column-gap: 0.9rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr);
+	align-content: start;
+	padding-bottom: 1.25rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	/* The connector to the next stop, painted in the stage hue once passed. */
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.6rem;
+		bottom: 0.3rem;
+		left: calc(1.125rem - 1.5px);
+		width: 3px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+	&.is-done:not(:last-child)::before {
+		background: color-mix(in srgb, var(--dv-tone) 70%, var(--basalt-plane));
+	}
+	/* A passed connector grows out of its marker the first time the stops
+	   are on screen, each one a beat behind the one before. */
+	.dv-steps.is-waiting &.is-done:not(:last-child)::before {
+		transform: var(--dv-trail-from);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.dv-steps.is-drawing &.is-done:not(:last-child)::before {
+			transform-origin: var(--dv-trail-origin);
+			animation: dv-trail-grow 600ms ease-out calc(var(--dv-trail-at, 0) * 300ms) both;
+		}
+	}
+}
+.dv-step-marker {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--dv-quiet);
+	background: var(--basalt-plane-alt);
+
+	.dv-step.is-done & {
+		font-size: 1rem;
+		color: color-mix(in srgb, var(--dv-tone) 45%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--dv-tone) 22%, var(--basalt-plane));
+	}
+	.dv-step.is-now & {
+		color: color-mix(in srgb, var(--dv-tone) 38%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--dv-tone) 24%, var(--basalt-plane));
+		box-shadow:
+			0 0 0 2px var(--dv-tone),
+			0 0 0 7px color-mix(in srgb, var(--dv-tone) 16%, transparent);
+	}
+	.dv-step.is-stopped & {
+		color: var(--dv-danger);
+		background: color-mix(in srgb, var(--basalt-danger) 16%, var(--basalt-plane));
+	}
+	/* The stop that just changed gives one short pop. */
+	.dv-step.is-fresh & {
+		animation: dv-pop 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+.dv-step-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.dv-step-label {
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	.dv-step.is-todo & {
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+	.dv-step.is-now & {
+		color: color-mix(in srgb, var(--dv-tone) 45%, var(--basalt-copy));
+	}
+}
+.dv-step-when {
+	font-size: 0.8rem;
+	color: var(--dv-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+@keyframes dv-trail-grow {
+	from {
+		transform: var(--dv-trail-from);
+	}
+}
+@keyframes dv-pop {
+	0% {
+		transform: scale(0.6);
+	}
+	60% {
+		transform: scale(1.12);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+@container (min-width: 560px) {
+	.dv-steps {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+	.dv-step {
+		--dv-trail-from: scaleX(0);
+		--dv-trail-origin: left;
+		row-gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr);
+		padding-bottom: 0;
+	}
+	.dv-step:not(:last-child)::before {
+		top: calc(1.125rem - 1.5px);
+		right: 0.6rem;
+		bottom: auto;
+		left: 2.85rem;
+		width: auto;
+		height: 3px;
+	}
+	.dv-step-text {
+		padding-top: 0;
+		padding-right: 0.75rem;
+	}
+}
+
+/* The plain lists below drop the browser's bullets and indents. */
+.dv-todo,
+.dv-people,
+.dv-timeline,
+.dv-files {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Next steps: a checkbox, the task and its due date on each ruled row,
+   with the add form pinned to the bottom of the card. */
+.dv-todo-item {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	& .form-check-input {
+		width: 1.1rem;
+		height: 1.1rem;
+		margin: 0;
+		cursor: pointer;
+	}
+}
+.dv-todo-text {
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+	cursor: pointer;
+
+	.dv-todo-item.is-done & {
+		text-decoration: line-through;
+		color: var(--dv-quiet);
+	}
+}
+.dv-due {
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--dv-quiet);
+}
+.dv-due-soon {
+	color: var(--dv-warn);
+}
+.dv-due-late {
+	color: var(--dv-danger);
+}
+.dv-todo-add {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: minmax(0, 1fr) 10.5rem auto;
+	align-items: start;
+	margin-top: auto;
+	padding-top: 1.25rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+@media (max-width: 575.98px) {
+	.dv-todo-add {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.dv-todo-add-what {
+		grid-column: 1 / -1;
+	}
+}
+
+/* People: avatar, name and role, their part in the deal, then contact buttons. */
+.dv-person {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+	align-items: center;
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.dv-person-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.dv-person-name {
+	border-radius: 4px;
+	font-size: 0.9rem;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover,
+	&:focus-visible {
+		text-decoration: underline;
+	}
+}
+.dv-part {
+	padding: 0.1rem 0.6rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.dv-person-reach {
+	display: flex;
+	gap: 0.1rem;
+}
+@media (max-width: 389.98px) {
+	.dv-person {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+	.dv-part {
+		display: none;
+	}
+}
+
+/* What it covers: today's plan, an arrow, the plan after signing, then the
+   priced lines and a row of perk chips. */
+.dv-move {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: stretch;
+}
+.dv-plan {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1rem 1.1rem;
+	border: 1px solid color-mix(in srgb, var(--dv-tone) 30%, var(--basalt-edge));
+	border-radius: 14px;
+	background-color: var(--basalt-plane);
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--dv-tone) 14%, transparent), transparent 70%);
+
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+}
+.dv-plan-when {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--dv-quiet);
+}
+.dv-plan-name {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--dv-tone) 40%, var(--basalt-copy));
+
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--dv-tone) 30%, var(--basalt-copy));
+	}
+}
+.dv-plan-price {
+	margin-top: 0.5rem;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.dv-plan-per {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--dv-quiet);
+}
+.dv-move-arrow {
+	display: grid;
+	place-items: center;
+	font-size: 1.2rem;
+	color: var(--dv-quiet);
+}
+@media (max-width: 575.98px) {
+	.dv-move {
+		gap: 0.4rem;
+	}
+	.dv-plan {
+		padding: 0.85rem 0.9rem;
+	}
+}
+/* On the very narrowest phones the tiles stack and the arrow points down. */
+@media (max-width: 359.98px) {
+	.dv-move {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.dv-move-arrow {
+		transform: rotate(90deg);
+	}
+}
+.dv-lines {
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.dv-line {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: 0.9rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.dv-line-what {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.dv-line-amt {
+	font-size: 1rem;
+	font-weight: 700;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	& .dv-note {
+		text-align: right;
+	}
+}
+.dv-adds {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dv-add {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.4rem 0.8rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--dv-tone) 38%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--dv-tone) 13%, var(--basalt-plane));
+
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--dv-tone) 26%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--dv-tone) 20%, var(--basalt-plane));
+	}
+}
+
+/* Details read as a two-column list until Edit swaps in the form. */
+.dv-facts {
+	margin: 0;
+
+	&[hidden] {
+		display: none;
+	}
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 8.5rem minmax(0, 1fr);
+		align-items: center;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		padding-top: 0;
+	}
+	& > div:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dt {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--dv-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--basalt-copy);
+	}
+}
+.dv-edit[hidden] {
+	display: none;
+}
+.dv-edit-row + .dv-edit-row {
+	margin-top: 1.25rem;
+}
+.dv-edit-seats {
+	max-width: 8rem;
+}
+.dv-edit-date {
+	max-width: 12rem;
+}
+.dv-edit-select-owner {
+	max-width: 14rem;
+}
+.dv-edit-select-source {
+	max-width: 13rem;
+}
+.dv-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--dv-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.dv-edit-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* Activity: the note box on a tinted panel, then a timeline whose icons
+   take a tone from the kind of event. */
+.dv-log {
+	margin-bottom: 1.5rem;
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+}
+.dv-log-kind {
+	margin-bottom: 0.75rem;
+}
+.dv-log-text {
+	min-height: 4.25rem;
+	resize: vertical;
+}
+.dv-log-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.dv-event {
+	position: relative;
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr);
+	padding-bottom: 1.25rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.5rem;
+		bottom: 0.25rem;
+		left: calc(1.125rem - 1px);
+		width: 2px;
+		background: var(--basalt-edge);
+	}
+	/* A freshly logged entry slides in from just above. */
+	&.is-fresh {
+		animation: dv-in 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+.dv-event-icon {
+	--dv-tone: var(--basalt-copy-muted);
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--dv-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--dv-tone) 14%, var(--basalt-plane));
+
+	:is(.dv-event-envelope, .dv-event-email) & {
+		--dv-tone: var(--basalt-series-1);
+	}
+	.dv-event-eye & {
+		--dv-tone: var(--basalt-series-2);
+	}
+	:is(.dv-event-chat, .dv-event-note) & {
+		--dv-tone: var(--basalt-series-5);
+	}
+	:is(.dv-event-call, .dv-event-calendar, .dv-event-display) & {
+		--dv-tone: var(--basalt-series-3);
+	}
+	.dv-event-pen & {
+		--dv-tone: var(--basalt-series-6);
+	}
+	:is(.dv-event-stage, .dv-event-arrow, .dv-event-flag) & {
+		--dv-tone: var(--basalt-series-4);
+	}
+	:is(.dv-event-signed, .dv-event-check) & {
+		--dv-tone: var(--basalt-success);
+	}
+	:is(.dv-event-lost, .dv-event-x) & {
+		--dv-tone: var(--basalt-danger);
+	}
+}
+.dv-event-text {
+	min-width: 0;
+	padding-top: 0.3rem;
+	font-size: 0.9rem;
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+
+	& .dv-note {
+		margin-top: 0.2rem;
+	}
+}
+@keyframes dv-in {
+	from {
+		transform: translateY(-6px);
+		opacity: 0;
+	}
+}
+
+/* Files: a typed icon, the name and its size, and a download button per
+   row; the drop zone below accepts more. */
+.dv-file {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.dv-file-icon {
+	--dv-tone: var(--basalt-info);
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--dv-tone) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--dv-tone) 14%, var(--basalt-plane));
+}
+.dv-file-icon-danger {
+	--dv-tone: var(--basalt-danger);
+}
+.dv-file-icon-success {
+	--dv-tone: var(--basalt-success);
+}
+.dv-file-icon-image {
+	--dv-tone: var(--basalt-series-5);
+}
+.dv-file-text,
+.dv-drop-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.dv-file-name {
+	overflow: hidden;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.dv-drop {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin-top: auto;
+	padding: 1rem 1.1rem;
+	border: 1.5px dashed var(--basalt-edge-strong);
+	border-radius: 14px;
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	.dv-files + & {
+		margin-top: 1.25rem;
+	}
+	&:hover,
+	&.is-over {
+		border-color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-edge));
+		background: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane));
+	}
+	/* The real file input is hidden, so its keyboard focus shows on the zone. */
+	.dv-card-files:has(input[type="file"]:focus-visible) & {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.dv-drop-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1.1rem;
+	color: var(--dv-link);
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.dv-drop-title {
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+/* The lost dialog offers its reasons as a grid of choice tiles. */
+.dv-reasons {
+	--basalt-choice-min: 11rem;
+
+	& > legend {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Motion is decoration only; reduced-motion users and paper get none of
+   it, and print also drops every control that cannot be used on paper. */
+@media (prefers-reduced-motion: reduce) {
+	.dv-step.is-fresh .dv-step-marker,
+	.dv-event.is-fresh {
+		animation: none;
+	}
+}
+@media print {
+	.dv-head .basalt-hero-actions,
+	.dv-todo-add,
+	.dv-log,
+	.dv-drop,
+	.dv-edit-foot {
+		display: none;
+	}
+	.dv-step-marker,
+	.dv-event {
+		transition: none;
+		animation: none;
+	}
+}

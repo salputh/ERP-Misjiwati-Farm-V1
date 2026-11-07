@@ -4,8 +4,8 @@
         <x-breadcrumb judul="Rekapitulasi hasil pemeliharaan peternak" :jejak="['Keuangan', 'RHPP']">
             @if ($this->periode)
                 <div class="d-flex gap-2" data-lewati-ekspor x-data="eksporHalaman('#halaman-rhpp', {{ \Illuminate\Support\Js::from($this->namaBerkasEkspor) }})">
-                    <x-tombol.kepala warna="white" ikon="uil uil-file-download" x-on:click="simpanPdf()" x-bind:disabled="sibuk">Ekspor PDF</x-tombol.kepala>
-                    <x-tombol.kepala warna="white" ikon="uil uil-image-download" x-on:click="simpan()" x-bind:disabled="sibuk">Ekspor PNG</x-tombol.kepala>
+                    <x-tombol.kepala warna="white" ikon="bi bi-file-earmark-arrow-down" x-on:click="simpanPdf()" x-bind:disabled="sibuk">Ekspor PDF</x-tombol.kepala>
+                    <x-tombol.kepala warna="white" ikon="bi bi-image" x-on:click="simpan()" x-bind:disabled="sibuk">Ekspor PNG</x-tombol.kepala>
                 </div>
             @endif
         </x-breadcrumb>
@@ -13,16 +13,16 @@
 
         @if ($pesan)
             <div class="col-12">
-                <x-peringatan warna="success" class="mb-25">{{ $pesan }}</x-peringatan>
+                <x-peringatan warna="success" class="mb-4">{{ $pesan }}</x-peringatan>
             </div>
         @endif
 
         @if ($this->periode)
-            {{-- Tab lembar RHPP (HexaDash: Project, project-tap) --}}
+            {{-- Tab lembar RHPP  --}}
             <div class="col-12">
-                <div class="project-top-wrapper project-top-progress d-flex justify-content-between flex-wrap mt-n10 mb-15">
-                    <div class="project-tap global-shadow my-10">
-                        <ul class="nav px-1" role="tablist" aria-label="Lembar RHPP">
+                <div class="project-top-wrapper d-flex justify-content-between flex-wrap mt-n2 mb-3">
+                    <div class="my-2">
+                        <ul class="nav nav-pills nav-sm" role="tablist" aria-label="Lembar RHPP">
                             @foreach (['simulasi' => 'Simulasi', 'bagi-hasil' => 'Bagi Hasil Simulasi', 'real' => 'Real', 'sapronak' => 'Sapronak'] as $kunci => $label)
                                 <li class="nav-item">
                                     <a
@@ -39,17 +39,18 @@
                 </div>
             </div>
 
-            <div class="col-12 mb-25">
-                <div class="card card-default card-md">
-                    <div class="card-body">
+            <div class="col-12 mb-4">
+                <section class="card basalt-box db-card">
+<div class="db-card-body">
                         <x-info>
                             <x-info.butir label="Inti">PT. Indojaya Agrinusa</x-info.butir>
                             <x-info.butir label="Farm">Misjiwati / K0242</x-info.butir>
                             <x-info.butir label="Kandang">{{ $this->periode->kandangPeriode->sortBy('kandang.nama')->pluck('kandang.nama')->join(', ', ' dan ') }}</x-info.butir>
                             <x-info.butir label="DOC masuk">{{ $this->periode->tanggal_chick_in->translatedFormat('j F Y') }}</x-info.butir>
                         </x-info>
-                    </div>
-                </div>
+                    
+</div>
+</section>
             </div>
 
             @if ($tab === 'simulasi')
@@ -125,17 +126,17 @@
         } }}">
         
             @if ($modeKunci === 'buka')
-                <p class="fs-13 color-light">Masukkan password admin untuk membuka kembali dokumen RHPP real periode ini.</p>
+                <p class="small text-body-secondary">Masukkan password admin untuk membuka kembali dokumen RHPP real periode ini.</p>
                 <x-masukan id="rhpp-sandi-buka" label="Password admin" tipe="password" wire:model="sandiAdmin" :kesalahan="$errors->first('sandiAdmin')" />
             @elseif ($modeKunci === 'ganti')
-                <p class="fs-13 color-light">Password admin dipakai membuka kunci RHPP real. Simpan baik-baik: tanpa password ini dokumen yang dikunci tidak dapat dibuka dari aplikasi.</p>
+                <p class="small text-body-secondary">Password admin dipakai membuka kunci RHPP real. Simpan baik-baik: tanpa password ini dokumen yang dikunci tidak dapat dibuka dari aplikasi.</p>
                 @if ($this->sandiRhppTeratur)
                     <x-masukan id="rhpp-sandi-lama" label="Password lama" tipe="password" wire:model="sandiAdminLama" :kesalahan="$errors->first('sandiAdminLama')" />
                 @endif
                 <x-masukan id="rhpp-sandi-baru" label="Password baru" tipe="password" wire:model="sandiAdmin" :kesalahan="$errors->first('sandiAdmin')" />
                 <x-masukan id="rhpp-sandi-baru-ulang" label="Ulangi password baru" tipe="password" wire:model="sandiAdminUlang" :kesalahan="$errors->first('sandiAdminUlang')" />
             @else
-                <p class="fs-13 color-light">
+                <p class="small text-body-secondary">
                     @if ($this->sandiRhppTeratur)
                         Dokumen RHPP real akan dikunci sehingga tidak dapat diubah. Masukkan password admin untuk mengunci.
                     @else

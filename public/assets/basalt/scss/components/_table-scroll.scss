@@ -1,0 +1,6 @@
+/* Wrappers that let a wide table slide sideways stay put vertically: row
+   borders and focus rings poke out by a pixel and would otherwise summon a
+   second, useless scrollbar. */
+.table-responsive {
+	overflow-y: hidden;
+}

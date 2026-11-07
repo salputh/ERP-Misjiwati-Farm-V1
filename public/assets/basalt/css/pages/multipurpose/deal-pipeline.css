@@ -1,0 +1,1055 @@
+/* Styles for the deal board on deal-pipeline.html, all under .sp-*.
+   basalt.css supplies the page header, the board grid, sortable cards,
+   selects, the drawer, dialogs, choice cards, empty states and avatars.
+   What is left for this file: the lanes, the deal cards, the lost list and
+   the deal panel. Colors are --basalt-* tokens passed through color-mix(),
+   so every palette and mode keeps its own hues. The panel and the dialogs
+   live outside the page container and therefore carry the mixes too. */
+
+.sp-page,
+.sp-drawer,
+.sp-modal {
+	/* The muted token is pulled toward the body color so small gray text
+     clears 4.5:1 on the lighter palettes and on tinted lanes; links get the
+     same treatment because the primary alone falls short on a few of them. */
+	--sp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--sp-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--sp-ok: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	--sp-warn: color-mix(in srgb, var(--basalt-warning) 40%, var(--basalt-copy));
+	--sp-danger: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+
+.sp-quiet {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--sp-quiet);
+}
+
+.sp-optional {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--sp-quiet);
+}
+
+.sp-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--sp-link);
+
+	&:hover,
+	&:focus-visible {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+
+.sp-page {
+	& .form-control,
+	& .form-select {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+
+	& .form-control::placeholder {
+		color: var(--sp-quiet);
+		opacity: 1;
+	}
+}
+
+/* A select hugs its longest option instead of stretching. */
+.form-select.sp-select {
+	width: auto;
+	max-width: 100%;
+}
+
+/* The toolbar holds the search, two selects and the summary line; on a
+   phone the search takes a full row and the summary drops under. */
+.sp-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+
+	@media (max-width: 575.98px) {
+		& .form-select.sp-select {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+	}
+}
+
+.sp-search {
+	position: relative;
+	flex: 1 1 15.5rem;
+	min-width: 15.5rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--sp-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+
+	@media (max-width: 575.98px) {
+		flex: 1 1 100%;
+	}
+}
+
+.sp-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--sp-quiet);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+
+	@media (max-width: 575.98px) {
+		flex: 1 1 100%;
+		margin: 0;
+	}
+}
+
+/* Four lanes side by side when there is room, two by two on a tablet and
+   one at a time, picked from a select, on a phone. Lanes in one row stretch
+   to the same height so the row ends level. */
+.sp-board-wrap {
+	container: sp-board / inline-size;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.sp-board.basalt-board {
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+
+	@container sp-board (max-width: 62rem) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	@container sp-board (max-width: 34rem) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@container sp-board (max-width: 34rem) {
+	.sp-col:not(.is-phone) {
+		display: none;
+	}
+	.sp-board-wrap .sp-phone-stage {
+		display: flex;
+	}
+}
+
+.sp-phone-stage {
+	display: none;
+	gap: 0.75rem;
+	align-items: center;
+	margin-bottom: 1rem;
+
+	& .form-select.sp-select {
+		flex: 1 1 auto;
+	}
+}
+
+.sp-phone-stage-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Each lane carries its stage color in --sp-tone; Won takes the success
+   token. */
+.sp-col {
+	--sp-tone: var(--basalt-series-1);
+	/* Small text in the lane head, pulled toward the body color so it
+     holds its contrast on the lane's tinted ground. */
+	--sp-head-quiet: color-mix(in srgb, var(--basalt-copy-muted) 45%, var(--basalt-copy));
+	padding: 1rem;
+
+	& .basalt-board-head {
+		margin-bottom: 0.4rem;
+	}
+	& .basalt-board-title {
+		font-size: 1rem;
+	}
+}
+
+.sp-col-1 {
+	--sp-tone: var(--basalt-series-1);
+}
+.sp-col-2 {
+	--sp-tone: var(--basalt-series-2);
+}
+.sp-col-3 {
+	--sp-tone: var(--basalt-series-3);
+}
+.sp-col-won {
+	--sp-tone: var(--basalt-success);
+}
+
+/* Each lane opens with its name and count, the lane total, and a half
+   ring in the stage color filled to the stage's odds; Won's ring is full
+   with a check. The head sits on the lane itself, so it never reads as
+   a card to drag. */
+.sp-col-head {
+	position: relative;
+	margin-bottom: 1rem;
+	padding: 0.25rem 0.25rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& .basalt-board-head {
+		justify-content: flex-start;
+		padding-right: 4.75rem;
+	}
+}
+.sp-gauge {
+	position: absolute;
+	top: 0.3rem;
+	right: 0.25rem;
+	width: 4.4rem;
+	height: auto;
+	overflow: visible;
+}
+.sp-gauge-track,
+.sp-gauge-fill {
+	fill: none;
+	stroke-width: 8;
+	stroke-linecap: round;
+}
+.sp-gauge-track {
+	stroke: color-mix(in srgb, var(--sp-tone) 16%, var(--basalt-plane));
+}
+.sp-gauge-fill {
+	stroke: var(--sp-tone);
+	transition: stroke-dashoffset 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+	.sp-gauge-fill {
+		transition: none;
+	}
+}
+.sp-gauge-text {
+	font-size: 13px;
+	font-weight: 800;
+	text-anchor: middle;
+	fill: var(--basalt-copy);
+}
+.sp-gauge-check {
+	fill: none;
+	stroke: var(--sp-tone);
+	stroke-width: 3.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* After a drop, the change in a lane's value floats up beside the total
+   and fades. */
+.sp-change {
+	position: absolute;
+	top: 3.5rem;
+	right: 0.25rem;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	white-space: nowrap;
+	pointer-events: none;
+	animation: sp-change-rise 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+	&.is-up {
+		color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+	}
+	&.is-down {
+		color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+	}
+}
+@keyframes sp-change-rise {
+	0% {
+		opacity: 0;
+		transform: translateY(0.5rem);
+	}
+	18%,
+	70% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	100% {
+		opacity: 0;
+		transform: translateY(-0.75rem);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.sp-change {
+		display: none;
+	}
+}
+
+.sp-col-totals {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	margin: 0;
+}
+
+.sp-col-sum {
+	font-size: 1.6rem;
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+
+.sp-col-per {
+	margin-left: 0.3rem;
+	font-size: 0.77rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	color: var(--sp-head-quiet);
+}
+
+.sp-col-note {
+	font-size: 0.77rem;
+	color: var(--sp-head-quiet);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+.sp-list.basalt-sortable {
+	gap: 0.65rem;
+	min-height: 6rem;
+}
+
+/* A deal card: company tile and name on top, the title under it, then a
+   footer with the value, the close date and the owner's avatar. */
+.sp-card.basalt-sortable-item {
+	gap: 0;
+	flex-direction: column;
+	align-items: stretch;
+	container: sp-card / inline-size;
+	padding: 0.95rem 1rem 0.9rem;
+	cursor: grab;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		box-shadow: 0 4px 14px -8px var(--basalt-scrim);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+
+	@media print {
+		transition: none;
+	}
+}
+
+.sp-card .sp-logo {
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.71rem;
+}
+
+.sp-card-top {
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+}
+
+/* In a narrow lane the tile and the two icons share the first line and the
+   company name takes the full width under them. */
+@container sp-card (max-width: 15rem) {
+	.sp-card-top {
+		display: grid;
+		gap: 0.6rem 0.7rem;
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.sp-card-company {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+	.sp-card-open {
+		justify-self: end;
+	}
+	.sp-card-foot {
+		gap: 0.4rem 0.5rem;
+		flex-wrap: wrap;
+	}
+}
+
+.sp-card-company {
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	font-size: 0.9rem;
+	font-weight: 650;
+	line-height: 1.35;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+	}
+
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+a.sp-card-company {
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Quick view and full page sit quietly in the card's top-right corner. */
+.sp-card-open {
+	gap: 0;
+	align-self: flex-start;
+	margin: -0.35rem 0 0 auto;
+
+	& .btn-icon {
+		width: 30px;
+		height: 30px;
+		font-size: 0.95rem;
+	}
+}
+
+.sp-card-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 0.65rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.4;
+	color: var(--sp-quiet);
+}
+
+.sp-card-foot {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin-top: 0.85rem;
+	padding-top: 0.75rem;
+	border-top: 1px dashed var(--basalt-edge);
+}
+
+.sp-card-value {
+	font-size: 0.9rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.sp-card-owner {
+	display: inline-flex;
+	margin-left: auto;
+}
+
+.sp-card-won.basalt-sortable-item {
+	background: color-mix(in srgb, var(--basalt-success) 5%, var(--basalt-plane));
+}
+
+.sp-new-pill {
+	flex: none;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-series-4) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-4) 14%, var(--basalt-plane));
+}
+
+/* The close date, toned when it is near, late or already won. */
+.sp-due {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--sp-quiet);
+
+	& .bi {
+		font-size: 0.77rem;
+	}
+}
+
+.sp-due-soon,
+.sp-due-late,
+.sp-due-won {
+	font-weight: 600;
+}
+.sp-due-soon {
+	color: var(--sp-warn);
+}
+.sp-due-late {
+	color: var(--sp-danger);
+}
+.sp-due-won {
+	color: var(--sp-ok);
+}
+
+/* Nothing matched the search, or there are no deals at all. */
+.sp-noresults {
+	padding: 3rem 1rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.sp-empty {
+	padding: 3.5rem 1.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The lost list: a header row that stays, and rows that unfold under it. */
+.sp-lost.basalt-box {
+	margin-top: 1.5rem;
+}
+.sp-lost[hidden] {
+	display: none;
+}
+
+.sp-lost-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 1.25rem var(--basalt-pad-x, 1.5rem);
+
+	& .btn {
+		white-space: nowrap;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow, 1rem);
+		padding-right: var(--basalt-pad-x-narrow, 1rem);
+	}
+}
+
+.sp-lost-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: var(--sp-danger);
+	background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+}
+
+.sp-lost-text {
+	flex: 1;
+	min-width: 0;
+}
+
+.sp-lost-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.sp-lost-sub {
+	margin: 0.1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--sp-quiet);
+}
+
+.sp-lost-list {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x, 1.5rem) 0.5rem;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow, 1rem);
+		padding-right: var(--basalt-pad-x-narrow, 1rem);
+	}
+}
+
+/* A lost row is a five-column grid on a desk and folds into three lines
+   of named areas under 992px. */
+.sp-lost-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) 6rem 11rem 11rem auto;
+	align-items: center;
+	padding: 1.1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	cursor: pointer;
+
+	@media (max-width: 991.98px) {
+		gap: 0.6rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "who value" "reason reason" "owner reopen";
+	}
+}
+
+.sp-lost-name {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+	}
+
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.sp-lost-value {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+.sp-lost-reason {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.sp-lost-owner {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	color: var(--basalt-copy-body);
+}
+
+.sp-lost-reopen.btn {
+	white-space: nowrap;
+}
+
+.sp-lost-acts {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+@media (max-width: 991.98px) {
+	.sp-lost-who {
+		grid-area: who;
+	}
+	.sp-lost-value {
+		grid-area: value;
+	}
+	.sp-lost-reason {
+		gap: 0.6rem;
+		flex-direction: row;
+		grid-area: reason;
+		align-items: center;
+
+		& .sp-quiet {
+			margin: 0;
+		}
+	}
+	.sp-lost-owner {
+		grid-area: owner;
+	}
+	.sp-lost-acts {
+		grid-area: reopen;
+	}
+}
+
+.sp-reason {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+.sp-reason-lost {
+	display: inline-block;
+	margin-bottom: 0.5rem;
+	border-color: color-mix(in srgb, var(--basalt-danger) 30%, var(--basalt-edge));
+	color: var(--sp-danger);
+	background: color-mix(in srgb, var(--basalt-danger) 9%, var(--basalt-plane));
+}
+
+/* The deal panel. On a phone the name gets the whole first line, the tile
+   goes and the arrows move under the heading. */
+.sp-drawer {
+	&.offcanvas {
+		--bs-offcanvas-width: 480px;
+	}
+
+	& .dropdown-item.sp-danger-item {
+		color: var(--sp-danger);
+
+		&:hover,
+		&:focus {
+			color: var(--sp-danger);
+			background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+		}
+	}
+
+	@media (max-width: 575.98px) {
+		&.offcanvas {
+			--bs-offcanvas-width: min(400px, 92vw);
+		}
+
+		& .offcanvas-header {
+			row-gap: 0.75rem;
+			flex-wrap: wrap;
+		}
+
+		& .sp-logo {
+			display: none;
+		}
+		& .basalt-drawer-heading {
+			flex: 1 1 0;
+		}
+
+		& .basalt-drawer-nav {
+			flex-basis: 100%;
+			order: 3;
+		}
+	}
+
+	/* Comes after the phone rules on purpose: its gap also sets the row gap
+     there. */
+	& .offcanvas-header {
+		gap: 0.9rem;
+	}
+}
+
+.sp-logo {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--avatar-tone, var(--basalt-hue)) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--avatar-tone, var(--basalt-hue)) 15%, var(--basalt-plane));
+}
+
+/* Stage progress as numbered, filled markers joined by a rule, so nothing
+   in it reads as clickable. */
+.sp-steps {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+
+.sp-step {
+	position: relative;
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+
+	& + &::before {
+		content: "";
+		position: absolute;
+		top: 0.8rem;
+		right: calc(50% + 1.1rem);
+		left: calc(-50% + 1.1rem);
+		height: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+
+	&.is-done + &::before,
+	&.is-done + &.is-current::before {
+		background: var(--basalt-hue);
+	}
+}
+
+/* A filled rule grows from the step before it the first time a deal is on
+   screen, each one a beat behind the one before. */
+.sp-steps.is-waiting .sp-step.is-done + .sp-step::before {
+	transform: scaleX(0);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.sp-steps.is-drawing .sp-step.is-done + .sp-step::before {
+		transform-origin: left;
+		animation: sp-trail-grow 600ms ease-out both;
+	}
+	.sp-steps.is-drawing .sp-step.is-done + .sp-step:nth-child(3)::before {
+		animation-delay: 300ms;
+	}
+	.sp-steps.is-drawing .sp-step.is-done + .sp-step:nth-child(4)::before {
+		animation-delay: 600ms;
+	}
+	@keyframes sp-trail-grow {
+		from {
+			transform: scaleX(0);
+		}
+	}
+}
+
+.sp-step-mark {
+	display: grid;
+	place-items: center;
+	width: 1.65rem;
+	height: 1.65rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--sp-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+.sp-step.is-done .sp-step-mark {
+	color: var(--sp-link);
+	background: var(--basalt-hue-soft);
+}
+
+.sp-step.is-current .sp-step-mark {
+	color: var(--sp-link);
+	background: var(--basalt-plane);
+	box-shadow: inset 0 0 0 2px var(--basalt-hue);
+}
+
+.sp-step-name {
+	font-size: 0.77rem;
+	color: var(--sp-quiet);
+}
+
+.sp-step.is-current .sp-step-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.sp-d-lead {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+.sp-d-lead-line {
+	display: block;
+}
+
+.sp-d-next {
+	margin: 0;
+	padding: 0.8rem 1rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+
+/* Details as a two-column list: label on the left, value on the right. */
+.sp-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 8.5rem minmax(0, 1fr);
+		align-items: center;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+	}
+
+	& dt {
+		font-weight: 500;
+		color: var(--sp-quiet);
+	}
+
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+
+	& .sp-due {
+		margin-left: 0.3rem;
+	}
+}
+
+.sp-owner {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover span {
+		text-decoration: underline;
+	}
+}
+
+.sp-activity {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sp-act {
+	display: flex;
+	gap: 0.8rem;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+
+.sp-act-text {
+	min-width: 0;
+	color: var(--basalt-copy);
+}
+
+/* The two dialogs: new deal and mark as lost. */
+.sp-form-row {
+	margin-bottom: 1.25rem;
+}
+
+.sp-modal {
+	& legend.form-label {
+		float: none;
+		margin-bottom: 0.5rem;
+		font-size: inherit;
+		line-height: inherit;
+	}
+
+	& .basalt-segmented .basalt-segmented-option {
+		white-space: nowrap;
+	}
+}
+
+.sp-kinds {
+	gap: 0.75rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.sp-reasons {
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Icon-and-label tiles center their content. */
+.sp-tile.basalt-choice-card {
+	gap: 0.5rem;
+	align-items: center;
+	padding: 1rem 0.75rem;
+	text-align: center;
+}
+
+.sp-tile .basalt-choice-card-title {
+	font-size: 0.85rem;
+}
+
+.sp-tile-icon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: var(--sp-link);
+	background: var(--basalt-plane-alt);
+}
+
+.sp-error {
+	margin-top: 0.4rem;
+	font-size: 0.8rem;
+	color: var(--sp-danger);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.sp-new-sum {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0;
+	padding: 0.7rem 0.9rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	& > .bi {
+		color: var(--sp-quiet);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Paper gets the board and the lost list, not the controls. */
+@media print {
+	.sp-toolbar,
+	.sp-phone-stage,
+	.sp-lost-reopen {
+		display: none;
+	}
+}

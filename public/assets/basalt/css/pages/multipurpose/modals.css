@@ -1,0 +1,1356 @@
+/*
+ * Styles for modals.html only, all under the .md- prefix: the kind
+ * filter, the card grid, the still pictures of each dialog, the snippets
+ * and the small pieces the sample dialogs use. The dialogs' own skin is in
+ * basalt.css. Every color is a --basalt-* token, and the mixes below hold
+ * small text at 4.5:1 in each palette, light or dark.
+ */
+
+.md-page,
+.md-dialogs {
+	/* Muted text leaned toward the body color so it stays readable small. */
+	--md-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* The primary hue darkened for use as text; the token itself is a fill. */
+	--md-accent-text: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+}
+
+.md-page {
+	margin-top: 2rem;
+}
+
+/* Inline code and keycaps look the same on the page and inside the dialogs. */
+.md-page code,
+.md-dialogs code {
+	padding: 0 0.3em;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px;
+	font-size: 0.85em;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+.md-page kbd,
+.md-dialogs kbd {
+	display: inline-block;
+	min-width: 1.5rem;
+	padding: 0.05rem 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-bottom-width: 2px;
+	border-radius: 6px;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.7rem;
+	line-height: 1.4;
+	text-align: center;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+/* Every clickable tile on the page shares one focus ring. */
+.md-chip:focus-visible,
+.md-try:focus-visible,
+.md-ruler-bar:focus-visible,
+.md-fs-opt:focus-visible,
+.md-person:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* The kind filter: a row of chips with the running total under it. */
+.md-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+	@media print {
+		display: none;
+	}
+}
+.md-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .md-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+.md-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.md-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--md-quiet);
+}
+
+/* A twelve-column grid; cards take the full row until 1200px, then pair. */
+.md-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.md-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+	& .card-body > :nth-last-child(2) {
+		margin-bottom: 1.75rem;
+	}
+}
+@media (min-width: 1200px) {
+	.md-card {
+		grid-column: span 6;
+	}
+	.md-card-full,
+	.md-card.is-alone {
+		grid-column: span 12;
+	}
+}
+@media print {
+	.md-card.is-hidden {
+		display: block;
+	}
+}
+.md-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+
+/* The title comes first in the markup for reading order; reversing the
+   column lifts the kind label above it on screen. */
+.md-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.md-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.md-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--md-quiet);
+}
+.md-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--md-quiet);
+}
+
+/* Stages are dotted trays; the command card's live palette sits on one too. */
+.md-stage,
+.md-cmd-live {
+	background:
+		radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--basalt-copy) 12%, transparent) 1px, transparent 0) 0
+			0 / 16px 16px,
+		var(--basalt-canvas);
+}
+
+/* Each stage holds a still copy of real dialog markup, hidden from screen
+   readers; the buttons below it open the working dialog. */
+.md-stage {
+	position: relative;
+	display: grid;
+	place-items: center;
+	min-height: 250px;
+	padding: 1.75rem 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+}
+.md-stage-note {
+	min-height: 0;
+	padding: 1.5rem;
+}
+.md-stage-frame {
+	padding: 1.5rem;
+}
+.md-launch {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.25rem;
+	@media print {
+		display: none;
+	}
+}
+
+/* A still dialog sits outside any .modal, so it sets Bootstrap's modal
+   variables itself and tightens the spacing to fit the tray. */
+.md-peek {
+	--bs-modal-color: var(--basalt-copy-body);
+	--bs-modal-bg: var(--basalt-plane);
+	--bs-modal-border-width: 1px;
+	--bs-modal-border-color: var(--basalt-edge);
+	--bs-modal-border-radius: 18px;
+	--bs-modal-inner-border-radius: 17px;
+	--bs-modal-header-padding: 1rem 1.25rem;
+	--bs-modal-header-border-width: 1px;
+	--bs-modal-header-border-color: var(--basalt-edge);
+	--bs-modal-footer-border-width: 1px;
+	--bs-modal-footer-border-color: var(--basalt-edge);
+	--bs-modal-padding: 1.5rem;
+	--bs-modal-footer-gap: 0.5rem;
+	--bs-modal-title-line-height: 1.4;
+	width: 100%;
+	max-width: 380px;
+	pointer-events: none;
+	user-select: none;
+
+	& .modal-content {
+		box-shadow:
+			0 24px 48px -24px var(--basalt-scrim),
+			0 2px 6px -2px var(--basalt-scrim);
+	}
+	& .modal-title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& .modal-footer {
+		padding: 1.1rem 1.5rem 1.35rem;
+	}
+	& .basalt-dialog-head {
+		padding: 1.1rem 1.25rem 0.6rem;
+	}
+	& .basalt-dialog-head-title {
+		font-size: 1rem;
+	}
+	& .basalt-dialog-body {
+		padding: 0.5rem 1.25rem 1rem;
+	}
+	& .basalt-dialog-foot {
+		padding: 0.75rem 1.25rem 0.9rem;
+	}
+	& .btn {
+		padding: 0.3rem 0.8rem;
+		font-size: 0.8rem;
+	}
+	& .basalt-confirm {
+		padding: 1.5rem 1.25rem 1.25rem;
+	}
+	& .basalt-confirm-icon {
+		width: 52px;
+		height: 52px;
+		margin-bottom: 0.75rem;
+		font-size: 1.3rem;
+	}
+	& .basalt-confirm-text {
+		margin-bottom: 1rem;
+	}
+	& .basalt-modal-guard {
+		padding: 0.7rem 1.25rem;
+	}
+	& .basalt-modal-guard .btn {
+		padding: 0.25rem 0.6rem;
+		font-size: 0.75rem;
+	}
+}
+.md-peek-wide {
+	max-width: 520px;
+}
+/* Stopped halfway, so the picture shows what holding the button does. */
+.md-peek-hold {
+	--basalt-hold: 0.55;
+}
+.md-peek-split {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	padding-top: 1.1rem;
+
+	/* On phones the form and its preview stack, so the banner reads on one line. */
+	@media (max-width: 575.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	& .basalt-preview-panel {
+		padding: 0.75rem;
+		border-radius: 12px;
+	}
+}
+
+/* Fields in the pictures are plain text and spans dressed as inputs. */
+.md-fake {
+	min-height: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+}
+.md-fake-label {
+	margin: 1rem 0 0.4rem;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.md-fake-choices {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+
+	& span {
+		padding: 0.3rem 0.65rem;
+		border-radius: 8px;
+		border: 1px solid var(--basalt-edge-strong);
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		background: var(--basalt-plane);
+	}
+	& .is-on {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 9%, var(--basalt-plane));
+	}
+}
+.md-fake-choices-sm {
+	margin-top: 0.6rem;
+}
+
+/* Some dialog types are about where they sit, so their picture is a tiny
+   screen: a page of gray bars, a scrim, and the dialog's outline on top. */
+.md-frame {
+	position: relative;
+	width: 100%;
+	max-width: 460px;
+	aspect-ratio: 16 / 10;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge-strong);
+	overflow: hidden;
+	font-size: 0.71rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	box-shadow: 0 20px 40px -26px var(--basalt-scrim);
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: var(--basalt-scrim);
+	}
+}
+.md-frame-full::after {
+	content: none;
+}
+.md-frame-page {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	padding: 1rem;
+
+	& span {
+		height: 0.5rem;
+		border-radius: 99px;
+		background: var(--basalt-plane-alt);
+	}
+	& span:nth-child(1) {
+		width: 40%;
+		height: 0.8rem;
+	}
+	& span:nth-child(2) {
+		width: 85%;
+	}
+	& span:nth-child(3) {
+		width: 70%;
+	}
+	& span:nth-child(4) {
+		width: 78%;
+	}
+	& span:nth-child(5) {
+		width: 55%;
+	}
+}
+.md-frame-sheet,
+.md-frame-box {
+	position: absolute;
+	z-index: 2;
+	background: var(--basalt-plane);
+	box-shadow: 0 10px 30px -10px var(--basalt-scrim);
+}
+
+/* The side sheet slides in from the right edge once, on load. */
+.md-frame-sheet {
+	top: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	width: 58%;
+	padding: 0.85rem 0.9rem;
+	border-left: 1px solid var(--basalt-edge);
+	border-radius: 12px 0 0 12px;
+	animation: md-sheet-in 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+	& .basalt-status {
+		padding: 0.1rem 0.4rem;
+		font-size: 0.65rem;
+	}
+	@media print {
+		animation: none;
+	}
+}
+@keyframes md-sheet-in {
+	from {
+		transform: translateX(100%);
+	}
+}
+.md-frame-sheet-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+
+	& strong {
+		font-size: 0.85rem;
+		color: var(--basalt-copy);
+	}
+}
+.md-frame-line {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: space-between;
+	margin: 0;
+	color: var(--basalt-copy);
+}
+.md-frame-rows {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	margin-top: 0.3rem;
+
+	& span {
+		height: 0.5rem;
+		border-radius: 99px;
+		background: var(--basalt-plane-alt);
+	}
+	& span:nth-child(2) {
+		width: 80%;
+	}
+	& span:nth-child(3) {
+		width: 60%;
+	}
+}
+.md-frame-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: auto;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		padding: 0.2rem 0.5rem;
+		font-size: 0.67rem;
+	}
+}
+
+/* The centered box; the tall variant scrolls its body under a fading mask. */
+.md-frame-box {
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	width: 56%;
+	padding: 0.85rem 0.9rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+
+	& strong {
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+	}
+	& span {
+		color: var(--basalt-copy-body);
+	}
+}
+.md-frame-box-tall {
+	gap: 0.5rem;
+	height: 84%;
+
+	& em {
+		align-self: flex-end;
+		padding: 0.1rem 0.6rem;
+		border-radius: 6px;
+		font-style: normal;
+		font-weight: 600;
+		color: var(--basalt-on-hue);
+		background: var(--md-btn-fill, color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy)));
+	}
+}
+.md-frame-scroller {
+	display: flex;
+	gap: 0.4rem;
+	flex: 1;
+	flex-direction: column;
+	padding: 0.4rem 0;
+	border-block: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+	mask-image: linear-gradient(to bottom, #000 70%, transparent);
+
+	& span {
+		flex-shrink: 0;
+		height: 0.4rem;
+		border-radius: 99px;
+		background: var(--basalt-plane-alt);
+		animation: md-scroll 3.2s ease-in-out infinite alternate;
+	}
+	& span:nth-child(even) {
+		width: 80%;
+	}
+}
+@keyframes md-scroll {
+	to {
+		transform: translateY(-1.2rem);
+	}
+}
+
+/* The full-screen editor: an app bar over a main column and a side column. */
+.md-frame-bar {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.5rem 0.75rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy);
+
+	& strong {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		font-size: 0.77rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	& .btn {
+		padding: 0.1rem 0.5rem;
+		font-size: 0.66rem;
+	}
+}
+.md-frame-saved {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	color: var(--md-quiet);
+}
+.md-frame-cols {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) 34%;
+	height: calc(100% - 2.4rem);
+	padding: 0.75rem;
+	background: var(--basalt-canvas);
+}
+.md-frame-main,
+.md-frame-aside {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	padding: 0.7rem;
+	border-radius: 8px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+.md-frame-main span,
+.md-frame-aside span {
+	height: 0.5rem;
+	border-radius: 99px;
+	background: var(--basalt-plane-alt);
+}
+.md-frame-main span:nth-child(1) {
+	height: 1.4rem;
+	border-radius: 6px;
+}
+.md-frame-main span:nth-child(2) {
+	height: 3rem;
+	border-radius: 6px;
+}
+.md-frame-aside span {
+	height: 1.1rem;
+	border-radius: 6px;
+}
+
+/* Snippets fold away under a summary line pinned to the card's foot. */
+.md-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+	@media print {
+		display: none;
+	}
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.md-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.md-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* The size card: one bar per width, each bar as long as its dialog. */
+.md-ruler {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.md-ruler-bar {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	width: max(var(--share, 100%), 13rem);
+	max-width: 100%;
+	padding: 0.75rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-hue-border);
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		transform 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+	}
+}
+.md-ruler-px {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.75rem;
+	font-weight: 400;
+	color: var(--basalt-copy-body);
+}
+
+/* The full-screen card: a tile per breakpoint, class name over its reach. */
+.md-fs {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+.md-fs-opt {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 0.8rem 0.95rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-wash);
+	}
+}
+.md-page .md-fs-opt code {
+	font-size: 0.71rem;
+}
+
+/* A side note with an icon, and a numbered flow joined by short rules. */
+.md-note {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	max-width: 40ch;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		font-size: 1.1rem;
+		color: var(--md-accent-text);
+	}
+}
+.md-flow {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	list-style: none;
+
+	& li {
+		position: relative;
+		display: flex;
+		gap: 0.65rem;
+		align-items: center;
+	}
+	& li + li::before {
+		content: "";
+		position: absolute;
+		top: -1rem;
+		left: calc(0.8rem - 1px);
+		width: 2px;
+		height: 1rem;
+		background: var(--basalt-edge-strong);
+	}
+	& span {
+		display: inline-grid;
+		place-items: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 50%;
+		border: 1px solid var(--basalt-edge-strong);
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.75rem;
+		background: var(--basalt-plane);
+	}
+}
+
+/* The varying-content card: one tile per person, each opening the same
+   message dialog with their name in it. */
+.md-people {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+}
+.md-person {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 1.1rem 0.75rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		transform 170ms ease,
+		box-shadow 170ms ease;
+
+	&:hover {
+		transform: translateY(-2px);
+		border-color: var(--basalt-hue);
+		box-shadow: 0 12px 24px -18px var(--basalt-scrim);
+	}
+}
+.md-person-av {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	margin-bottom: 0.3rem;
+	border-radius: 50%;
+	border: 2px solid color-mix(in srgb, var(--md-av) 55%, transparent);
+	font-weight: 700;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--md-av) 22%, var(--basalt-plane));
+}
+.md-person-av-1 {
+	--md-av: var(--basalt-series-1);
+}
+.md-person-av-2 {
+	--md-av: var(--basalt-series-3);
+}
+.md-person-av-3 {
+	--md-av: var(--basalt-series-5);
+}
+.md-person-name {
+	font-weight: 650;
+	font-size: 0.9rem;
+}
+.md-person-role {
+	font-size: 0.77rem;
+	color: var(--md-quiet);
+}
+
+/* The lightbox card: three thumbnails a row, two on phones. */
+.md-gallery {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	@media (max-width: 575.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.md-gallery-item {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 12px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: zoom-in;
+
+	& .md-photo {
+		aspect-ratio: 4 / 3;
+		border-radius: 12px;
+		transition:
+			transform 210ms ease,
+			box-shadow 210ms ease;
+	}
+	&:hover .md-photo {
+		transform: translateY(-2px);
+		box-shadow: 0 14px 26px -18px var(--basalt-scrim);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.md-gallery-name {
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+
+/* Product photos are drawn: a two-color gradient with a glyph in the middle. */
+.md-photo {
+	--md-a: var(--basalt-series-1);
+	--md-b: var(--basalt-series-2);
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	font-size: 2.25rem;
+	color: color-mix(in srgb, var(--basalt-plane) 88%, transparent);
+	background:
+		radial-gradient(120% 90% at 20% 15%, color-mix(in srgb, var(--basalt-plane) 45%, transparent), transparent 60%),
+		linear-gradient(135deg, var(--md-a), var(--md-b));
+}
+.md-photo-2 {
+	--md-a: var(--basalt-series-3);
+	--md-b: var(--basalt-series-4);
+}
+.md-photo-3 {
+	--md-a: var(--basalt-series-5);
+	--md-b: var(--basalt-series-3);
+}
+.md-photo-4 {
+	--md-a: var(--basalt-series-2);
+	--md-b: var(--basalt-series-6);
+}
+.md-photo-5 {
+	--md-a: var(--basalt-series-4);
+	--md-b: var(--basalt-series-1);
+}
+.md-photo-6 {
+	--md-a: var(--basalt-series-6);
+	--md-b: var(--basalt-series-5);
+}
+:root[data-basalt-gradients="off"] .md-photo {
+	background: var(--md-a);
+}
+.basalt-lightbox-slide .md-photo {
+	font-size: clamp(3rem, 10vw, 6rem);
+}
+.basalt-lightbox-thumb .md-photo {
+	font-size: 1.1rem;
+}
+
+/* The command card: tips and shortcuts on the left, a live palette on the
+   right once there is room for both. */
+.md-cmd {
+	display: grid;
+	gap: 1.75rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+	@media (min-width: 992px) {
+		gap: 2.5rem;
+		grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+	}
+}
+.md-cmd-side {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.md-cmd-lead {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 2;
+	color: var(--basalt-copy-body);
+}
+.md-try {
+	padding: 0.1rem 0.4rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 6px;
+	font: inherit;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+}
+.md-keys {
+	display: grid;
+	gap: 0.5rem;
+	width: 100%;
+	margin: 0;
+	font-size: 0.8rem;
+
+	& div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 6.5rem 1fr;
+		align-items: center;
+	}
+	& dt {
+		font-weight: 400;
+	}
+	& dd {
+		margin: 0;
+		color: var(--md-quiet);
+	}
+}
+.md-cmd-result {
+	width: 100%;
+	margin: 0;
+	padding: 0.6rem 0.8rem;
+	border-radius: 10px;
+	border: 1px dashed var(--basalt-edge-strong);
+	font-size: 0.85rem;
+	color: var(--md-quiet);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.md-cmd-live {
+	padding: 1.25rem;
+	border-radius: 18px;
+	border: 1px solid var(--basalt-edge);
+
+	& .basalt-command {
+		--basalt-command-height: 340px;
+		box-shadow: 0 24px 48px -28px var(--basalt-scrim);
+	}
+}
+
+/* Inside the sample dialogs: an invalid field keeps its plain look and only
+   the ring turns red. */
+.md-dialogs .form-control.is-invalid {
+	padding-right: 0.75rem;
+	background-image: none;
+
+	&:focus {
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-danger) 22%, transparent);
+	}
+}
+
+/* Small text pieces the dialogs share. */
+.md-small {
+	font-size: 0.85rem;
+	color: var(--md-quiet);
+}
+.md-count {
+	margin: 0;
+	font-variant-numeric: tabular-nums;
+}
+.md-upper {
+	text-transform: uppercase;
+}
+.md-sub {
+	margin: 1.5rem 0 0.6rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--md-quiet);
+}
+.md-terms {
+	& .md-sub:first-child {
+		margin-top: 0;
+	}
+	& p {
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* Order facts as a two-column grid of tiles, then line items under them. */
+.md-facts {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+
+	& div {
+		padding: 0.75rem 0.85rem;
+		border-radius: 12px;
+		border: 1px solid var(--basalt-edge);
+		background: var(--basalt-canvas);
+	}
+	& dt {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--md-quiet);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.md-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.9rem;
+		color: var(--basalt-copy);
+	}
+	& em {
+		font-style: normal;
+		color: var(--md-quiet);
+	}
+}
+
+/* A shipping timeline. Markers are solid dots, never rings, so a step
+   cannot be mistaken for a radio button; finished steps show a check. */
+.md-timeline {
+	position: relative;
+	margin: 0;
+	padding: 0 0 0 1.4rem;
+	list-style: none;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.4rem;
+		bottom: 0.4rem;
+		left: 0.4rem;
+		width: 2px;
+		background: var(--basalt-edge-strong);
+	}
+	& li {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		padding: 0 0 0.9rem;
+		font-size: 0.88rem;
+	}
+	& li::before {
+		content: "";
+		position: absolute;
+		top: 0.3rem;
+		left: -1.3rem;
+		width: 0.85rem;
+		height: 0.85rem;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-plane);
+		background: var(--basalt-edge-strong);
+		box-shadow: 0 0 0 1px var(--basalt-edge-strong);
+	}
+	& li.is-done::before {
+		content: "\F26E";
+		display: grid;
+		place-items: center;
+		border-color: var(--basalt-success);
+		font: normal 0.6rem/1 "bootstrap-icons";
+		color: var(--basalt-plane);
+		background: var(--basalt-success);
+		box-shadow: none;
+	}
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& span {
+		font-size: 0.8rem;
+		color: var(--md-quiet);
+	}
+}
+
+.md-tags {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+
+	& span {
+		padding: 0.3rem 0.7rem;
+		border-radius: 999px;
+		border: 1px solid var(--basalt-hue-border);
+		font-size: 0.77rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+}
+
+/* Bordered panels stack with a gap; address choices run full width. */
+.md-panel {
+	padding: 1.1rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+
+	& + .md-panel {
+		margin-top: 1rem;
+	}
+}
+.md-panel-title {
+	margin: 0 0 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.md-addrs {
+	--basalt-choice-min: 100%;
+}
+.md-addr {
+	gap: 0.25rem 0.6rem;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	text-align: left;
+
+	& .basalt-choice-hint {
+		flex-basis: 100%;
+		padding-left: 1.75rem;
+		font-size: 0.8rem;
+		color: var(--md-quiet);
+	}
+}
+.md-addr-name {
+	font-weight: 650;
+}
+
+/* The split dialog previews its banner, in one of three moods, over a
+   sketch of the shop front. */
+.md-banner {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	padding: 0.5rem 0.8rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	transition:
+		background-color 200ms ease,
+		color 200ms ease;
+}
+.md-banner-calm {
+	border: 1px solid var(--basalt-hue-border);
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.md-banner-bold {
+	border: 1px solid var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.md-banner-alert {
+	border: 1px solid color-mix(in srgb, var(--basalt-warning) 50%, transparent);
+	color: var(--basalt-copy);
+	background: var(--basalt-warning-soft);
+}
+.md-shop {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+}
+.md-shop-nav {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+
+	& strong {
+		margin-right: auto;
+	}
+	& span {
+		width: 2rem;
+		height: 0.4rem;
+		border-radius: 99px;
+		background: var(--basalt-plane-alt);
+	}
+}
+.md-shop-grid {
+	display: grid;
+	gap: 0.4rem;
+	grid-template-columns: repeat(3, 1fr);
+
+	& span {
+		aspect-ratio: 1;
+		border-radius: 8px;
+		background: var(--basalt-plane-alt);
+	}
+}
+
+/* A single line in the bottom corner confirms what a demo dialog did. */
+.md-flash {
+	position: fixed;
+	right: 1.5rem;
+	bottom: 1.5rem;
+	z-index: 1090;
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	max-width: calc(100vw - 3rem);
+	padding: 0.75rem 1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 18px 40px -20px var(--basalt-scrim);
+	animation: md-flash-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	&[hidden] {
+		display: none;
+	}
+	& .bi {
+		font-size: 1.1rem;
+		color: color-mix(in srgb, var(--basalt-success) 75%, var(--basalt-copy));
+	}
+	@media print {
+		display: none;
+	}
+}
+@keyframes md-flash-in {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+
+/* With reduced motion nothing on the page slides, lifts or fades. */
+@media (prefers-reduced-motion: reduce) {
+	.md-chip,
+	.md-code summary .bi,
+	.md-ruler-bar,
+	.md-person,
+	.md-fs-opt,
+	.md-gallery-item .md-photo,
+	.md-banner {
+		transition: none;
+	}
+	.md-frame-sheet,
+	.md-frame-scroller span,
+	.md-flash {
+		animation: none;
+	}
+	.md-person:hover {
+		transform: none;
+	}
+}

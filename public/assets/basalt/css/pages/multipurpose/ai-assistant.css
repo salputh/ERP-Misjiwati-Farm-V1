@@ -1,0 +1,639 @@
+/* Basalt - AI Assistant (ai-assistant.html)
+   Namespaced under .ai-*
+   Built from shared parts: the Headers component, status pills, the
+   side panel (offcanvas) and toasts. This file lays out the recent
+   chats beside the conversation and styles the messages, suggested
+   questions, answer charts and tables, and the composer.
+
+   The conversation is part of the page, not a box that scrolls on its
+   own: it grows as messages come in, and the composer stays at the
+   bottom of the window while it does.
+
+   Three type sizes: the section title (--basalt-fs-section), body
+   text (--ai-fs-body) and one small size (--ai-fs-small). */
+
+.ai-page,
+.ai-rail {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on every palette and on hovered rows. */
+	--ai-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* Primary as text: on its own it is under 4.5:1 in a few light palettes. */
+	--ai-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--ai-line: var(--basalt-edge);
+	--ai-fs-body: 0.9rem;
+	--ai-fs-small: 0.77rem;
+	--ai-rail-w: 17rem;
+}
+
+/* The card: two columns from 1200px */
+.ai-app {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	/* Tall enough that the composer starts near the bottom of the window. */
+	min-height: max(32rem, calc(100vh - var(--basalt-header-h) - 12rem));
+}
+@media (min-width: 1200px) {
+	.ai-app {
+		grid-template-columns: var(--ai-rail-w) minmax(0, 1fr);
+	}
+}
+
+/* Recent chats */
+.ai-rail {
+	--bs-offcanvas-bg: var(--basalt-plane);
+	--bs-offcanvas-width: 19rem;
+	color: var(--basalt-copy);
+}
+.ai-side {
+	height: 100%;
+	padding: 1.25rem 1rem;
+	border-right: 1px solid var(--ai-line);
+}
+@media (min-width: 1200px) {
+	/* The list stays in view while a long conversation scrolls by. */
+	.ai-side-stick {
+		position: sticky;
+		top: calc(var(--basalt-header-h) + 1rem);
+	}
+}
+@media (max-width: 1199.98px) {
+	.ai-side {
+		padding: 1.25rem;
+		border-right: 0;
+	}
+}
+.ai-side-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0 0.5rem 0.75rem;
+}
+.ai-side-title {
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ai-chats {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ai-chat {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.6rem 0.7rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: var(--ai-fs-body);
+	text-align: start;
+	color: var(--basalt-copy-body);
+	background: transparent;
+}
+.ai-chat > .bi {
+	flex: none;
+	font-size: 0.95rem;
+	color: var(--ai-quiet);
+}
+.ai-chat:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.ai-chat:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.ai-chat[aria-current="true"] {
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+}
+.ai-chat[aria-current="true"] > .bi {
+	color: var(--ai-link);
+}
+.ai-chat-title {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ai-chat-when {
+	flex: none;
+	font-size: var(--ai-fs-small);
+	font-weight: 400;
+	color: var(--ai-quiet);
+}
+
+/* The conversation */
+.ai-convo {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.ai-convo-head {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 1.25rem var(--basalt-pad-x);
+	border-bottom: 1px solid var(--ai-line);
+}
+.ai-convo-title {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ai-convo-title:focus {
+	outline: 0;
+}
+.ai-convo-chats {
+	flex: none;
+	white-space: nowrap;
+}
+.ai-convo-demo {
+	flex: none;
+	font-size: var(--ai-fs-small);
+}
+@media (min-width: 1200px) {
+	.ai-convo-chats {
+		display: none;
+	}
+}
+
+.ai-feed {
+	display: flex;
+	gap: 1.75rem;
+	flex: 1;
+	flex-direction: column;
+	padding: 1.75rem var(--basalt-pad-x) 1.5rem;
+	font-size: var(--ai-fs-body);
+}
+@media (max-width: 575.98px) {
+	.ai-feed {
+		padding-inline: var(--basalt-pad-x-narrow);
+	}
+	.ai-convo-head {
+		padding-inline: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Empty chat: suggested questions */
+.ai-empty {
+	width: 100%;
+	max-width: 44rem;
+	margin: auto;
+	padding: 1.5rem 0;
+	text-align: center;
+}
+.ai-empty-mark {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 1rem;
+	border-radius: 14px;
+	font-size: 1.35rem;
+	color: var(--ai-link);
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.ai-empty-title {
+	margin: 0 0 0.4rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ai-empty-desc {
+	max-width: 30rem;
+	margin: 0 auto 1.75rem;
+	color: var(--ai-quiet);
+}
+
+.ai-suggest {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0;
+	text-align: start;
+	list-style: none;
+}
+@media (min-width: 576px) {
+	.ai-suggest {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.ai-suggest-btn {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	padding: 0.8rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	font-size: var(--ai-fs-body);
+	text-align: start;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+}
+.ai-suggest-btn:hover {
+	border-color: color-mix(in srgb, var(--ai-tone) 50%, var(--basalt-edge-strong));
+	background: var(--basalt-wash);
+}
+.ai-suggest-btn:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.ai-suggest-btn:disabled {
+	opacity: 0.6;
+}
+.ai-suggest-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 8px;
+	color: color-mix(in srgb, var(--ai-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ai-tone) 14%, var(--basalt-plane));
+}
+.ai-suggest-text {
+	min-width: 0;
+}
+/* Inside an answer: the same questions, a little tighter. */
+.ai-suggest-compact {
+	margin: 0.25rem 0 1rem;
+}
+.ai-suggest-compact .ai-suggest-btn {
+	padding: 0.6rem 0.75rem;
+}
+.ai-suggest-compact .ai-suggest-icon {
+	width: 1.75rem;
+	height: 1.75rem;
+}
+
+/* Messages */
+.ai-msg {
+	scroll-margin: calc(var(--basalt-header-h) + 1rem) 0 8rem;
+}
+.ai-msg-user {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-end;
+	max-width: min(36rem, 85%);
+	margin-left: auto;
+}
+.ai-msg-bubble {
+	padding: 0.7rem 1rem;
+	border-radius: 14px 14px 4px 14px;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+}
+.ai-msg-time {
+	font-size: var(--ai-fs-small);
+	color: var(--ai-quiet);
+}
+
+.ai-msg-bot {
+	display: flex;
+	gap: 0.85rem;
+	align-items: flex-start;
+	max-width: 46rem;
+}
+.ai-msg-mark {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: var(--ai-link);
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+}
+.ai-msg-body {
+	flex: 1;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.ai-msg-bot.is-new .ai-msg-body {
+	animation: ai-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes ai-in {
+	from {
+		transform: translateY(6px);
+		opacity: 0;
+	}
+}
+
+.ai-answer {
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.ai-answer p {
+	margin: 0 0 0.85rem;
+}
+.ai-answer strong {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ai-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--ai-link);
+}
+.ai-link:hover {
+	text-decoration: underline;
+}
+
+.ai-msg-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.1rem;
+}
+.ai-msg-source {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	font-size: var(--ai-fs-small);
+	color: var(--ai-quiet);
+}
+.ai-msg-source .ai-link {
+	font-weight: 600;
+}
+.ai-msg-at {
+	white-space: nowrap;
+}
+/* On phones the time is left to the question above, so the source stays on one line. */
+@media (max-width: 575.98px) {
+	.ai-msg-at {
+		display: none;
+	}
+}
+.ai-msg-tools {
+	display: flex;
+	gap: 0.1rem;
+	flex: none;
+	margin-left: auto;
+}
+.ai-tool.btn-icon {
+	color: var(--ai-quiet);
+}
+.ai-tool.btn-icon:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+
+/* Writing: three dots that rise in turn. */
+.ai-typing {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	height: 2rem;
+	padding: 0 0.85rem;
+	border-radius: 10px;
+	background: var(--basalt-wash);
+}
+.ai-typing i {
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--ai-quiet);
+	animation: ai-dot 1.1s ease-in-out infinite;
+}
+.ai-typing i:nth-of-type(2) {
+	animation-delay: 170ms;
+}
+.ai-typing i:nth-of-type(3) {
+	animation-delay: 0.3s;
+}
+@keyframes ai-dot {
+	0%,
+	60%,
+	100% {
+		transform: none;
+		opacity: 0.45;
+	}
+	30% {
+		transform: translateY(-3px);
+		opacity: 1;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.ai-typing i {
+		opacity: 0.7;
+		animation: none;
+	}
+	.ai-msg-bot.is-new .ai-msg-body {
+		animation: none;
+	}
+}
+
+/* Answer charts and tables */
+.ai-figure {
+	margin: 0.25rem 0 1rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--ai-line);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+}
+.ai-figure-title {
+	margin: 0 0 0.6rem;
+	font-size: var(--ai-fs-small);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ai-figure-chart {
+	position: relative;
+	width: 100%;
+}
+.ai-figure-chart-hbar {
+	height: calc(var(--ai-rows, 3) * 2.6rem + 2rem);
+}
+.ai-figure-chart-line {
+	height: 11rem;
+}
+
+.ai-figure-table {
+	padding: 1rem 0 0.25rem;
+}
+.ai-figure-table .ai-figure-title {
+	padding: 0 1.1rem;
+}
+.ai-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.ai-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	font-size: var(--ai-fs-body);
+}
+.ai-table th,
+.ai-table td {
+	padding: 0.5rem 1.1rem;
+	border-bottom-color: var(--ai-line);
+	white-space: nowrap;
+	vertical-align: middle;
+}
+.ai-table th {
+	font-size: var(--ai-fs-small);
+	font-weight: 600;
+	color: var(--ai-quiet);
+}
+.ai-table td {
+	font-variant-numeric: tabular-nums;
+}
+.ai-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+.ai-table tbody tr[data-ai-href] {
+	cursor: pointer;
+}
+.ai-table tbody tr[data-ai-href]:hover > * {
+	--bs-table-bg-state: var(--basalt-wash);
+}
+.ai-table .basalt-status {
+	font-size: var(--ai-fs-small);
+}
+
+/* Composer */
+.ai-composer {
+	position: sticky;
+	bottom: 0;
+	z-index: 2;
+	padding: 0.9rem var(--basalt-pad-x) 1rem;
+	border-top: 1px solid var(--ai-line);
+	border-radius: 0 0 var(--bs-card-border-radius) 0;
+	background: var(--basalt-plane);
+}
+@media (max-width: 1199.98px) {
+	.ai-composer {
+		border-bottom-left-radius: var(--bs-card-border-radius);
+	}
+}
+@media (max-width: 575.98px) {
+	.ai-composer {
+		padding-inline: var(--basalt-pad-x-narrow);
+	}
+}
+.ai-composer-box {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-end;
+	padding: 0.4rem 0.4rem 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+}
+.ai-composer-box:focus-within {
+	border-color: var(--basalt-hue-border);
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 16%, transparent);
+}
+.ai-composer-input {
+	flex: 1;
+	min-width: 0;
+	min-height: 2rem;
+	padding: 0.3rem 0;
+	border: 0;
+	overflow: hidden;
+	font-size: var(--ai-fs-body);
+	line-height: 1.45;
+	color: var(--basalt-copy);
+	background: transparent;
+	resize: none;
+}
+.ai-composer-input::placeholder {
+	color: var(--ai-quiet);
+	opacity: 1;
+}
+.ai-composer-input:focus,
+.ai-composer-input:focus-visible {
+	outline: 0;
+	box-shadow: none;
+}
+.ai-composer-send.btn {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border-radius: 8px;
+}
+.ai-composer-note {
+	display: flex;
+	gap: 0.4rem;
+	align-items: flex-start;
+	margin: 0.5rem 0 0;
+	font-size: var(--ai-fs-small);
+	color: var(--ai-quiet);
+}
+.ai-composer-note .bi {
+	flex: none;
+	margin-top: 0.1rem;
+}
+
+/* Phones
+   The answer takes the full width, and each table drops the column it
+   can do without, so every row stays on one line without scrolling. */
+@media (max-width: 575.98px) {
+	.ai-msg-bot {
+		gap: 0;
+	}
+	.ai-msg-bot:not(.ai-msg-typing) > .ai-msg-mark {
+		display: none;
+	}
+	.ai-msg-typing {
+		gap: 0.6rem;
+	}
+	.ai-figure {
+		padding-inline: 0.85rem;
+	}
+	.ai-figure-table {
+		padding-inline: 0;
+	}
+	.ai-figure-table .ai-figure-title {
+		padding: 0 0.75rem;
+	}
+	.ai-table th,
+	.ai-table td {
+		padding: 0.5rem 0.4rem;
+	}
+	.ai-table th:first-child,
+	.ai-table td:first-child {
+		max-width: 9.5rem;
+		padding-left: 0.75rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.ai-table th:last-child,
+	.ai-table td:last-child {
+		padding-right: 0.75rem;
+	}
+	.ai-table .ai-col-wide {
+		display: none;
+	}
+}

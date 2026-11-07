@@ -30,3 +30,14 @@ Thumbs.db
 /template-hexadash
 /*.pdf
 /WORKFLOW.md
+
+# Demo local files - jangan commit
+.env.demo
+/database/database-demo.sqlite
+/DEMO-SETUP.md
+/DEMO-CHECKLIST.md
+/DEMO-RINGKASAN.md
+
+# Template UI mentah (dokumentasi dan halaman contoh), bukan bagian aplikasi.
+/basalt
+/storage/framework/phpstan

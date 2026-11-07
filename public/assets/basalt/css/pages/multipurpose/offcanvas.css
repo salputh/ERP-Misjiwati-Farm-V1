@@ -1,0 +1,1203 @@
+/**
+ * Basalt: the Offcanvas page (offcanvas.html), everything under .oc-*.
+ * Covers the chips, the card grid, the little pictures each card shows,
+ * the code samples, the working demos and the bits inside the panels.
+ * The panel skin itself and the data-basalt-* panel kinds are shared
+ * and sit in basalt.css. Colors come from the --basalt-* tokens; the
+ * color-mix steps keep the small gray text readable in every palette.
+ */
+
+/* The cards and the panels after <main> share two text tones. */
+.oc-page,
+.oc-drawers {
+	--oc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--oc-accent-text: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+}
+.oc-page {
+	margin-top: 2rem;
+}
+
+/* Inline code and key caps appear in the card copy and in the drawers. */
+.oc-page code,
+.oc-drawers code {
+	padding: 0 0.3em;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px;
+	font-size: 0.85em;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+.oc-page kbd,
+.oc-drawers kbd {
+	display: inline-block;
+	min-width: 1.5rem;
+	padding: 0.05rem 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-bottom-width: 2px;
+	border-radius: 6px;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.7rem;
+	line-height: 1.4;
+	text-align: center;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+/* The chip row filters the grid; the pressed chip goes dark. */
+.oc-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.oc-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.oc-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.oc-chips .oc-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.oc-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--oc-quiet);
+}
+
+/* Twelve columns. Every card takes the row until 1200px; from there cards
+   pair up, and a card the script marks alone, or a full-width card,
+   spans the row on its own. */
+.oc-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.oc-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.oc-card {
+		grid-column: span 6;
+	}
+	.oc-card-full,
+	.oc-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A card is a column: heading, then the demo, then the code sample pinned
+   to the bottom. The heading's kind tag sits above the title. */
+.oc-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem;
+	}
+}
+.oc-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.oc-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.oc-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.oc-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--oc-quiet);
+}
+.oc-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--oc-quiet);
+}
+
+/* The code sample is a <details> whose summary turns its chevron when
+   open; the Copy button floats over the top right of the <pre>. */
+.oc-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.oc-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.oc-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* The stage is a dotted board a picture sits on; a note-only stage is
+   allowed to be short. The launch row holds the buttons under it. */
+.oc-stage {
+	position: relative;
+	display: grid;
+	place-items: center;
+	min-height: 250px;
+	padding: 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+	background:
+		radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--basalt-copy) 12%, transparent) 1px, transparent 0) 0
+			0 / 16px 16px,
+		var(--basalt-canvas);
+}
+.oc-stage-note {
+	min-height: 0;
+}
+.oc-launch {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.25rem;
+}
+.oc-note {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	max-width: 40ch;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		font-size: 1.1rem;
+		color: var(--oc-accent-text);
+	}
+}
+
+/* The gray lines standing in for text inside every picture are pills. */
+.oc-phone-page span,
+.oc-widthpic-page span,
+.oc-compass-screen span,
+.oc-widthpic-drawer > span:not(.oc-widthpic-edge) {
+	height: 0.5rem;
+	border-radius: 99px;
+	background: var(--basalt-plane-alt);
+}
+
+/* Edge placement: a compass with a screen in the middle and one button
+   on each side. Below 576px the buttons go two by two around it. */
+.oc-compass {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-rows: auto minmax(150px, auto) auto;
+	align-items: center;
+	justify-items: center;
+	padding: 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background:
+		radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--basalt-copy) 12%, transparent) 1px, transparent 0) 0
+			0 / 16px 16px,
+		var(--basalt-canvas);
+}
+.oc-compass-screen {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	grid-column: 2;
+	grid-row: 2;
+	width: 100%;
+	height: 100%;
+	min-height: 150px;
+	padding: 1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+
+	& span {
+		width: 70%;
+	}
+	& span:first-child {
+		width: 40%;
+		height: 0.75rem;
+	}
+}
+.oc-compass-edge {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.4rem 0.85rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-hue-border);
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	& .bi {
+		color: var(--oc-accent-text);
+	}
+	&:hover {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+	}
+}
+.oc-compass-edge-top {
+	grid-column: 2;
+	grid-row: 1;
+}
+.oc-compass-edge-start {
+	grid-column: 1;
+	grid-row: 2;
+}
+.oc-compass-edge-end {
+	grid-column: 3;
+	grid-row: 2;
+}
+.oc-compass-edge-bottom {
+	grid-column: 2;
+	grid-row: 3;
+}
+@media (max-width: 575.98px) {
+	.oc-compass {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-rows: auto;
+	}
+	.oc-compass-screen {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+	.oc-compass-edge-top {
+		grid-column: 1 / -1;
+		grid-row: 1;
+	}
+	.oc-compass-edge-start {
+		grid-column: 1;
+		grid-row: 3;
+	}
+	.oc-compass-edge-end {
+		grid-column: 2;
+		grid-row: 3;
+	}
+	.oc-compass-edge-bottom {
+		grid-column: 1 / -1;
+		grid-row: 4;
+	}
+}
+
+/* Chips, customer rows and compass buttons share one focus ring. */
+.oc-chip:focus-visible,
+.oc-cust:focus-visible,
+.oc-compass-edge:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Resizable drawer: a page with a drawer whose width breathes in and
+   out, the grab edge marked on its left. */
+.oc-widthpic {
+	position: relative;
+	width: 100%;
+	max-width: 400px;
+	height: 200px;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge-strong);
+	overflow: hidden;
+	font-size: 0.75rem;
+	background: var(--basalt-plane);
+}
+.oc-widthpic-page {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	padding: 1rem;
+
+	& span {
+		width: 45%;
+	}
+}
+.oc-widthpic-drawer {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	width: 45%;
+	padding: 0.85rem;
+	border-left: 1px solid var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: -14px 0 28px -22px var(--basalt-scrim);
+	animation: oc-width 4s ease-in-out infinite alternate;
+}
+.oc-widthpic-edge {
+	position: absolute;
+	top: 50%;
+	left: -3px;
+	width: 6px;
+	height: 36px;
+	margin-top: -18px;
+	border-radius: 6px;
+	background: var(--basalt-hue);
+}
+@keyframes oc-width {
+	from {
+		width: 42%;
+	}
+	to {
+		width: 70%;
+	}
+}
+
+/* Push drawer: the folder list beside a small inbox. The push layout
+   itself is a shared component. */
+.oc-mailbar {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy);
+
+	& .btn {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.oc-mail {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.8rem;
+		align-items: center;
+		padding: 0.75rem 1rem;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& li + li {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& li > span:nth-child(2) {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+	}
+	& small {
+		overflow: hidden;
+		font-weight: 400;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--oc-quiet);
+	}
+}
+.oc-mail-time {
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--oc-quiet);
+}
+.oc-folders .nav-link {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.5rem 0.7rem;
+	border-radius: 9px;
+	font-size: 0.88rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&.active {
+		font-weight: 650;
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+	& span {
+		margin-left: auto;
+		font-size: 0.75rem;
+		font-variant-numeric: tabular-nums;
+		color: var(--oc-quiet);
+	}
+	&.active span {
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* Responsive offcanvas: a shell with the category column on the left
+   from 992px up, and a product grid beside it. */
+.oc-shell {
+	display: flex;
+	gap: 1rem;
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-canvas);
+}
+@media (min-width: 992px) {
+	.oc-shell-side {
+		flex-shrink: 0;
+		width: 170px;
+	}
+	.oc-shell-side .offcanvas-body {
+		padding: 0;
+		background: transparent;
+	}
+}
+.oc-shell-main {
+	flex: 1;
+	min-width: 0;
+}
+.oc-shell-grid {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+
+	& span {
+		display: flex;
+		gap: 0.4rem;
+		flex-direction: column;
+		align-items: center;
+		padding: 1rem 0.5rem;
+		border-radius: 12px;
+		border: 1px solid var(--basalt-edge);
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-align: center;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+	}
+	& .bi {
+		font-size: 1.3rem;
+		color: var(--oc-accent-text);
+	}
+}
+
+/* Bottom sheet: a phone whose sheet rises to its second stop and back. */
+.oc-phone {
+	position: relative;
+	width: 200px;
+	height: 250px;
+	border-radius: 26px;
+	border: 6px solid var(--basalt-copy);
+	overflow: hidden;
+	font-size: 0.71rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: var(--basalt-scrim);
+	}
+}
+.oc-phone-page {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	padding: 1rem;
+
+	& span:nth-child(1) {
+		width: 50%;
+		height: 0.75rem;
+	}
+	& span:nth-child(3) {
+		width: 70%;
+	}
+}
+.oc-phone-sheet {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 2;
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	height: 62%;
+	padding: 0.5rem 0.8rem 0.8rem;
+	border-radius: 16px 16px 0 0;
+	background: var(--basalt-plane);
+	animation: oc-snap 4.5s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+
+	& p {
+		display: flex;
+		justify-content: space-between;
+		margin: 0;
+		padding: 0.25rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& em {
+		font-style: normal;
+		font-weight: 700;
+	}
+}
+.oc-phone-grip {
+	align-self: center;
+	width: 34px;
+	height: 4px;
+	margin-bottom: 0.3rem;
+	border-radius: 4px;
+	background: var(--basalt-edge-strong);
+}
+.oc-phone-btn {
+	margin-top: auto;
+	padding: 0.3rem;
+	border-radius: 8px;
+	font-weight: 700;
+	text-align: center;
+	color: var(--basalt-on-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+}
+@keyframes oc-snap {
+	0%,
+	15% {
+		height: 62%;
+	}
+	35%,
+	65% {
+		height: 88%;
+	}
+	85%,
+	100% {
+		height: 62%;
+	}
+}
+
+/* Filter drawer demo: the toolbar with the applied chips, then the
+   order list. Rows animate in as the filters change. */
+.oc-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+
+	& .basalt-applied {
+		flex: 1;
+		min-width: 0;
+	}
+	@media (max-width: 575.98px) {
+		& .basalt-applied {
+			flex-basis: 100%;
+			order: 3;
+		}
+	}
+}
+.oc-toolbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--oc-quiet);
+}
+.oc-orders {
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+	list-style: none;
+}
+.oc-order {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 4.5rem minmax(0, 1fr) auto 6.5rem;
+	align-items: center;
+	padding: 0.8rem 1.1rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+	animation: oc-row-in 260ms ease both;
+
+	& + .oc-order {
+		border-top: 1px solid var(--basalt-edge);
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+.oc-order-id {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	color: var(--oc-quiet);
+}
+.oc-order-who {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	font-weight: 600;
+}
+.oc-order-total {
+	font-weight: 600;
+	text-align: right;
+}
+@keyframes oc-row-in {
+	from {
+		transform: translateY(4px);
+		opacity: 0;
+	}
+}
+/* Below 768px an order is two columns: id and name left, status and
+   total right. */
+@media (max-width: 767.98px) {
+	.oc-order {
+		gap: 0.3rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.oc-order-id {
+		grid-column: 1;
+	}
+	.oc-order-who {
+		grid-column: 1;
+	}
+	.oc-order .basalt-status {
+		grid-column: 2;
+		grid-row: 1;
+		justify-self: end;
+	}
+	.oc-order-total {
+		grid-column: 2;
+		grid-row: 2;
+	}
+}
+.oc-none {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 2.5rem 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 14px;
+	text-align: center;
+	color: var(--oc-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+	& .bi {
+		font-size: 1.6rem;
+	}
+	& p {
+		margin: 0;
+	}
+}
+
+/* The second line under an order, a customer or a pick is quiet. */
+.oc-order-who small,
+.oc-cust-name small,
+.oc-pick-name small {
+	font-weight: 400;
+	font-size: 0.77rem;
+	color: var(--oc-quiet);
+}
+
+/* Record drawer demo: the customer list. The row whose record is open
+   carries a colored bar on its left. */
+.oc-custs {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.oc-cust {
+	position: relative;
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.7rem 0.9rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	text-align: left;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&.is-current {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	}
+	&.is-current::before {
+		content: "";
+		position: absolute;
+		top: 0.7rem;
+		bottom: 0.7rem;
+		left: -1px;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-hue);
+	}
+	& > .bi {
+		color: var(--oc-quiet);
+	}
+}
+.oc-cust-name {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+
+/* Initials in a ring. The tone number picks a chart color; the large
+   size is for the drawer header. */
+.oc-av {
+	--oc-tone: var(--basalt-series-1);
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	border: 2px solid color-mix(in srgb, var(--oc-tone) 55%, transparent);
+	font-size: 0.77rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--oc-tone) 22%, var(--basalt-plane));
+}
+.oc-av-2 {
+	--oc-tone: var(--basalt-series-3);
+}
+.oc-av-3 {
+	--oc-tone: var(--basalt-series-5);
+}
+.oc-av-4 {
+	--oc-tone: var(--basalt-series-2);
+}
+.oc-av-5 {
+	--oc-tone: var(--basalt-series-6);
+}
+.oc-av-lg {
+	width: 48px;
+	height: 48px;
+	font-size: 0.95rem;
+}
+
+/* Drill-in drawer: two menu panels, the second sliding in over the
+   first again and again. It starts mid-cycle so the picture reads at
+   once. */
+.oc-drillpic {
+	position: relative;
+	width: 100%;
+	max-width: 380px;
+	height: 210px;
+}
+.oc-drillpic-panel {
+	position: absolute;
+	inset: 0 auto 0 0;
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	width: 50%;
+	padding: 0.9rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 16px 32px -24px var(--basalt-scrim);
+
+	& span {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.4rem 0.5rem;
+		border-radius: 8px;
+	}
+	& span:first-of-type {
+		background: var(--basalt-hue-soft);
+	}
+	& .bi {
+		font-size: 0.7rem;
+		color: var(--oc-quiet);
+	}
+}
+.oc-drillpic-head {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.4rem;
+	padding: 0 0.5rem;
+}
+.oc-drillpic-panel-2 {
+	top: 18px;
+	bottom: -18px;
+	left: 44%;
+	width: 56%;
+	animation: oc-drill 4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+	animation-delay: -1.2s;
+
+	& span:first-of-type {
+		background: var(--basalt-hue-soft);
+	}
+}
+@keyframes oc-drill {
+	0%,
+	12% {
+		transform: translateX(40%);
+		opacity: 0;
+	}
+	30%,
+	80% {
+		transform: none;
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(40%);
+		opacity: 0;
+	}
+}
+
+/* The confirmation sits fixed bottom right, above the panels. */
+.oc-flash {
+	position: fixed;
+	right: 1.5rem;
+	bottom: 1.5rem;
+	z-index: 1090;
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	max-width: calc(100vw - 3rem);
+	padding: 0.75rem 1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 18px 40px -20px var(--basalt-scrim);
+	animation: oc-flash-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	&[hidden] {
+		display: none;
+	}
+	& .bi {
+		font-size: 1.1rem;
+		color: color-mix(in srgb, var(--basalt-success) 75%, var(--basalt-copy));
+	}
+}
+@keyframes oc-flash-in {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+
+/* What the panels themselves contain. The plain placement panels carry
+   a line of body text; the filter drawer a compact choice row. */
+.oc-body-text {
+	color: var(--basalt-copy-body);
+}
+.oc-seg {
+	--basalt-choice-min: 70px;
+}
+
+/* The record drawer: a status line, a two-column fact sheet, then the
+   email and the last orders under small uppercase headings. */
+.oc-sub {
+	margin: 1.5rem 0 0.6rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--oc-quiet);
+}
+.oc-facts {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 1rem 0 0;
+
+	& div {
+		padding: 0.75rem 0.85rem;
+		border-radius: 12px;
+		border: 1px solid var(--basalt-edge);
+		background: var(--basalt-canvas);
+	}
+	& dt {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--oc-quiet);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.oc-email {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.oc-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.88rem;
+		color: var(--basalt-copy);
+	}
+	& em {
+		font-style: normal;
+		color: var(--oc-quiet);
+	}
+	& li span:last-child {
+		color: var(--oc-quiet);
+	}
+}
+.oc-hint {
+	margin: 1.25rem 0 0;
+	font-size: 0.8rem;
+	color: var(--oc-quiet);
+}
+
+/* The bottom sheet: a list of products with a stepper each, and the
+   running total in the foot. */
+.oc-picks {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.oc-pick {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.7rem 0;
+
+	& + .oc-pick {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.oc-pick-img {
+	--oc-a: var(--basalt-series-1);
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--oc-a) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--oc-a) 20%, var(--basalt-plane));
+}
+.oc-tone-2 {
+	--oc-a: var(--basalt-series-3);
+}
+.oc-tone-3 {
+	--oc-a: var(--basalt-series-5);
+}
+.oc-tone-4 {
+	--oc-a: var(--basalt-series-2);
+}
+.oc-pick-name {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+
+	& label {
+		cursor: default;
+	}
+}
+.oc-total {
+	margin: 0 auto 0 0;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+/* The resizable drawer: service interval cards, two across once the
+   drawer is wide enough. */
+.oc-intervals {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@container basalt-drawer (min-width: 520px) {
+	.oc-intervals {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.oc-interval {
+	padding: 0.9rem 1rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+
+	& h3 {
+		margin: 0 0 0.1rem;
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& p {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+	}
+	& .oc-interval-every {
+		margin: 0.1rem 0 0.2rem;
+		font-family: "Chivo Mono", monospace;
+		font-size: 1.1rem;
+		color: var(--basalt-copy);
+	}
+	& .oc-interval-time {
+		display: flex;
+		gap: 0.3rem;
+		align-items: center;
+		margin-top: 0.3rem;
+		color: var(--oc-quiet);
+	}
+}
+
+/* With reduced motion the pictures hold still and rows appear in place. */
+@media (prefers-reduced-motion: reduce) {
+	.oc-chip,
+	.oc-code summary .bi,
+	.oc-cust,
+	.oc-compass-edge {
+		transition: none;
+	}
+	.oc-order,
+	.oc-flash,
+	.oc-drillpic-panel-2,
+	.oc-phone-sheet,
+	.oc-widthpic-drawer {
+		animation: none;
+	}
+}
+
+/* On paper every card prints, without chips, buttons or code. */
+@media print {
+	.oc-filter,
+	.oc-code,
+	.oc-launch,
+	.oc-flash {
+		display: none;
+	}
+	.oc-card.is-hidden {
+		display: block;
+	}
+}

@@ -1,0 +1,71 @@
+/* Bootstrap's toned .alert, restyled for every page. The richer
+   .basalt-alert layouts, banners and alert groups are in _alert-types.scss
+   and load only where a page uses them. */
+
+/* Bootstrap's own .alert, rebuilt on a single tone per color. Its text is the
+   tone met halfway by the body copy, which keeps 4.5:1 on the tinted fill in
+   every palette where the bare status color would not. */
+.alert {
+	--basalt-alert-tone: var(--basalt-hue);
+	--basalt-alert-ink: color-mix(in srgb, var(--basalt-alert-tone) 50%, var(--basalt-copy));
+	--basalt-alert-tint: color-mix(in srgb, var(--basalt-alert-tone) 9%, var(--basalt-plane));
+	--bs-alert-bg: var(--basalt-alert-tint);
+	--bs-alert-color: var(--basalt-alert-ink);
+	--bs-alert-border-color: color-mix(in srgb, var(--basalt-alert-tone) 30%, var(--basalt-plane));
+	--bs-alert-link-color: var(--basalt-alert-ink);
+	--bs-alert-border-radius: 12px;
+	font-size: 0.9rem;
+	line-height: 1.5;
+
+	.alert-heading {
+		margin-bottom: 0.4rem;
+		font-size: 1rem;
+		font-weight: 650;
+	}
+	hr {
+		margin: 0.85rem 0;
+		border-color: currentColor;
+		opacity: 0.2;
+	}
+	.alert-link {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+	> ul {
+		padding-left: 1.2rem;
+	}
+}
+
+/* The color classes only pick the tone; secondary borrows muted copy. */
+$alert-tones: (
+	primary: hue,
+	success: success,
+	danger: danger,
+	warning: warning,
+	info: flare,
+	secondary: copy-muted,
+);
+@each $name, $token in $alert-tones {
+	.alert.alert-#{$name} {
+		--basalt-alert-tone: var(--basalt-#{$token});
+	}
+}
+
+/* Light trades the tint for the quiet alternate surface. */
+.alert.alert-light {
+	--basalt-alert-tone: var(--basalt-copy-muted);
+	--bs-alert-bg: var(--basalt-plane-alt);
+	--bs-alert-color: var(--basalt-copy-body);
+	--bs-alert-border-color: var(--basalt-edge);
+	--bs-alert-link-color: var(--basalt-copy);
+}
+
+/* Dark flips the page around: dark on a light theme, light on a dark one. */
+.alert.alert-dark {
+	--basalt-alert-tone: var(--basalt-copy);
+	--basalt-alert-ink: var(--basalt-plane);
+	--bs-alert-bg: var(--basalt-copy);
+	--bs-alert-color: var(--basalt-plane);
+	--bs-alert-border-color: var(--basalt-copy);
+	--bs-alert-link-color: var(--basalt-plane);
+}

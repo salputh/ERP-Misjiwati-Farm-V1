@@ -1,0 +1,172 @@
+/**
+ * Spot illustrations, .basalt-illo: inline SVGs whose shapes are colored
+ * by class, so a drawing repaints itself with the palette and the theme.
+ * Any ancestor can set --basalt-tone to swap the lead color. The empty
+ * states and the card types draw with these classes.
+ */
+
+/* The lead color, and the lighter and darker shades taken from it. Each
+   one comes as a fill class and as a matching stroke-* class. */
+$illo-tone: var(--basalt-tone, var(--basalt-hue));
+$illo-shades: (
+	tone: $illo-tone,
+	deep: color-mix(in srgb, #{$illo-tone} 62%, var(--basalt-copy)),
+	soft: color-mix(in srgb, #{$illo-tone} 30%, var(--basalt-plane)),
+	paper: var(--basalt-plane),
+);
+
+.basalt-illo {
+	display: block;
+	width: 100%;
+	height: auto;
+	overflow: visible;
+}
+
+@each $shade, $paint in $illo-shades {
+	.basalt-illo-#{$shade} {
+		fill: $paint;
+	}
+}
+
+.basalt-illo-ink {
+	fill: var(--basalt-copy);
+}
+.basalt-illo-mute {
+	fill: var(--basalt-edge-strong);
+}
+.basalt-illo-shadow {
+	fill: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+}
+
+/* Outlined shapes: a sheet of paper, a magnifier lens, a sparkle, chart
+   axes, a dashed placeholder and a dashed trail. */
+.basalt-illo-card {
+	fill: var(--basalt-plane);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1.5;
+}
+
+.basalt-illo-glass {
+	fill: color-mix(in srgb, $illo-tone 14%, var(--basalt-plane));
+	stroke: $illo-tone;
+	stroke-width: 6;
+}
+
+.basalt-illo-spark {
+	fill: color-mix(in srgb, $illo-tone 45%, var(--basalt-plane));
+}
+
+.basalt-illo-axis {
+	fill: none;
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 2;
+	stroke-linecap: round;
+}
+
+.basalt-illo-ghost {
+	fill: color-mix(in srgb, $illo-tone 6%, transparent);
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1.5;
+	stroke-dasharray: 4 3;
+}
+
+.basalt-illo-dash {
+	opacity: 0.55;
+	fill: none;
+	stroke: $illo-tone;
+	stroke-width: 2.5;
+	stroke-dasharray: 5 5;
+	stroke-linecap: round;
+}
+
+/* Line work: every stroke-* class draws an unfilled, round-ended line,
+   colored by shade and weighted by the width classes after it. */
+[class*="basalt-illo-stroke-"] {
+	fill: none;
+	stroke-width: 7;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+@each $shade, $paint in $illo-shades {
+	.basalt-illo-stroke-#{$shade} {
+		stroke: $paint;
+	}
+}
+
+@each $weight, $width in (wide: 15, thick: 9, thin: 3) {
+	.basalt-illo-stroke-#{$weight} {
+		stroke-width: $width;
+	}
+}
+
+/* Supporting colors c1 to c4 borrow chart series 2 to 5. */
+@for $step from 1 through 4 {
+	.basalt-illo-c#{$step} {
+		fill: var(--basalt-series-#{$step + 1});
+	}
+}
+
+/* Hovering an empty state makes its floating piece bob gently. */
+.basalt-empty:hover .basalt-illo-float {
+	animation: basalt-float 2.4s ease-in-out infinite;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+
+@keyframes basalt-float {
+	50% {
+		transform: translateY(-4px);
+	}
+}
+
+/* A check mark that draws itself and a burst of confetti around it. Both
+   show finished by default; once a script adds .is-armed they wait hidden
+   until .is-in arrives, then play with staggered delays. */
+.basalt-illo-draw {
+	stroke-dasharray: 1;
+	stroke-dashoffset: 0;
+}
+.basalt-illo-burst > * {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.is-armed:not(.is-in) {
+	.basalt-illo-draw {
+		stroke-dashoffset: 1;
+	}
+	.basalt-illo-burst > * {
+		transform: scale(0.2) translateY(10px);
+		opacity: 0;
+	}
+}
+
+.is-armed {
+	.basalt-illo-draw {
+		transition: stroke-dashoffset 500ms cubic-bezier(0.6, 0, 0.3, 1) 250ms;
+	}
+
+	.basalt-illo-burst {
+		> * {
+			transition:
+				opacity 400ms ease 700ms,
+				transform 600ms cubic-bezier(0.3, 1.6, 0.5, 1) 700ms;
+		}
+		> :nth-child(2n) {
+			transition-delay: 780ms;
+		}
+		> :nth-child(3n) {
+			transition-delay: 860ms;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.basalt-illo-draw,
+		.basalt-illo-burst > * {
+			transition: none;
+		}
+	}
+}

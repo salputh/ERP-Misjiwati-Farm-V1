@@ -28,8 +28,8 @@ class AksiDataTest extends TestCase
 
         $this->assertStringContainsString('wire:loading.class="lapisan-memuat--tampil"', $html);
         $this->assertStringContainsString('wire:target="simpan, hapus"', $html);
-        $this->assertStringContainsString('dm-spin-dots spin-md', $html);
-        $this->assertSame(4, substr_count($html, 'spin-dot badge-dot dot-primary'));
+        $this->assertStringContainsString('spinner-border text-primary', $html);
+        $this->assertStringContainsString('role="status"', $html);
         $this->assertStringContainsString('Menyimpan laporan harian', $html);
         $this->assertStringNotContainsString('lapisan-memuat--cepat', $html);
 
@@ -40,11 +40,11 @@ class AksiDataTest extends TestCase
     {
         $html = Blade::render('<x-konfirmasi id="konfirmasi-uji" judul="Hapus data ini?" aksi="hapus" tombol="Ya, hapus" warna="danger" memuat="mintaHapus">Tidak bisa dikembalikan.</x-konfirmasi>');
 
-        $this->assertStringContainsString('class="modal-info-confirmed modal fade" id="konfirmasi-uji"', $html);
+        $this->assertStringContainsString('class="modal fade" id="konfirmasi-uji"', $html);
         $this->assertStringContainsString('Hapus data ini?', $html);
         $this->assertStringContainsString('Tidak bisa dikembalikan.', $html);
         $this->assertSame(1, substr_count($html, 'wire:click="hapus"'));
-        $this->assertMatchesRegularExpression('/class="btn btn-danger btn-sm"\s+data-bs-dismiss="modal"\s+wire:click="hapus"\s+wire:loading.attr="disabled" wire:target="mintaHapus"/', $html);
+        $this->assertMatchesRegularExpression('/class="btn btn-danger"\s+data-bs-dismiss="modal"\s+wire:click="hapus"\s+wire:loading.attr="disabled" wire:target="mintaHapus"/', $html);
         $this->assertStringContainsString('data-bs-dismiss="modal">Batal</button>', $html);
         // Selama isi modal disiapkan, spinner menggantikan isinya.
         $this->assertStringContainsString('wire:loading wire:target="mintaHapus"', $html);
@@ -134,7 +134,7 @@ class AksiDataTest extends TestCase
                 ->assertOk()
                 ->assertSee('lapisan-memuat', false)
                 ->assertSee($sasaran, false)
-                ->assertSee('dm-spin-dots spin-md', false);
+                ->assertSee('spinner-border text-primary', false);
         }
     }
 }

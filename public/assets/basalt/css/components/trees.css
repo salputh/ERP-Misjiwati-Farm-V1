@@ -1,0 +1,1006 @@
+/* Compiles to assets/basalt/css/components/trees.css, linked after basalt.css by
+   the pages that use it. */
+/* A file-and-folder tree that follows the ARIA tree pattern (tree, treeitem,
+   group). assets/basalt/js/components/trees.js gives it roving focus, type-to-find, selection, tri-state
+   checkboxes, filtering, folders that load on demand, rename in place and
+   drag-to-move; Basalt.tree is its handle. tree-and-sortable.html shows
+   every mode, and the docs, knowledge base and file manager reuse it. */
+/* The panel and the status line share one sunken fill and one hairline. */
+/* Rows that animate keep still for visitors who ask for less motion. */
+/* The panel is a sunken well that a tree can sit in. */
+.basalt-tree-panel {
+	min-width: 0;
+	padding: 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--basalt-canvas) 55%, var(--basalt-plane));
+}
+
+/* Every level drops the list bullets and steps in by one indent, with a thin
+   guide line running down the left of each open folder. Keyboard focus rings
+   the row alone, never the whole subtree beneath it. */
+.basalt-tree {
+	--basalt-tree-indent: 1.4rem;
+	--basalt-tree-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--basalt-tree-accent: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	position: relative;
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+}
+.basalt-tree ul {
+	position: relative;
+	margin: 0;
+	padding: 0 0 0 var(--basalt-tree-indent);
+	list-style: none;
+}
+.basalt-tree ul::before {
+	content: "";
+	position: absolute;
+	top: 0.1rem;
+	bottom: 0.3rem;
+	left: calc(var(--basalt-tree-indent) / 2 + 0.3rem);
+	border-left: 1px solid var(--basalt-edge-strong);
+}
+.basalt-tree [role="group"][hidden] {
+	display: none;
+}
+.basalt-tree [role="treeitem"] {
+	outline: 0;
+}
+.basalt-tree [role="treeitem"]:focus-visible {
+	box-shadow: none;
+}
+.basalt-tree [role="treeitem"]:focus-visible > .basalt-tree-row {
+	box-shadow: inset 0 0 0 2px var(--basalt-hue);
+}
+.basalt-tree [role="treeitem"][hidden] {
+	display: none;
+}
+
+/* A row is one line of grip, caret, box, icon, name and figures. */
+.basalt-tree-row {
+	position: relative;
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-height: 2.15rem;
+	padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 130ms ease,
+		color 130ms ease;
+	-webkit-user-select: none;
+}
+.basalt-tree-row:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tree-row {
+		transition: none;
+	}
+}
+
+/* Folders read a shade heavier; the selected row takes the hue and its
+   quiet parts follow along. */
+.basalt-tree [aria-expanded] > .basalt-tree-row {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.basalt-tree [aria-selected="true"] > .basalt-tree-row {
+	font-weight: 600;
+	color: var(--basalt-tree-accent);
+	background: var(--basalt-hue-soft);
+}
+.basalt-tree [aria-selected="true"] > .basalt-tree-row .basalt-tree-meta,
+.basalt-tree [aria-selected="true"] > .basalt-tree-row .basalt-tree-icon {
+	color: inherit;
+}
+
+/* The grip shows on hover or focus, and always where there is no hover. */
+.basalt-tree-grip {
+	flex-shrink: 0;
+	width: 0.8rem;
+	margin-right: -0.25rem;
+	font-size: 0.8rem;
+	color: var(--basalt-tree-quiet);
+	opacity: 0;
+	cursor: grab;
+	transition: opacity 130ms ease;
+	touch-action: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tree-grip {
+		transition: none;
+	}
+}
+@media print {
+	.basalt-tree-grip {
+		display: none;
+	}
+}
+
+.basalt-tree-row:hover .basalt-tree-grip,
+.basalt-tree [role="treeitem"]:focus-visible > .basalt-tree-row .basalt-tree-grip {
+	opacity: 1;
+}
+
+@media (hover: none) {
+	.basalt-tree-grip {
+		opacity: 1;
+	}
+}
+/* Folders get a caret that turns when open; files get a blank of the same size. */
+.basalt-tree-caret,
+.basalt-tree-spacer {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	font-size: 0.71rem;
+	color: var(--basalt-tree-quiet);
+}
+
+.basalt-tree-caret .bi {
+	transition: transform 170ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tree-caret .bi {
+		transition: none;
+	}
+}
+
+.basalt-tree [aria-expanded="true"] > .basalt-tree-row .basalt-tree-caret .bi {
+	transform: rotate(90deg);
+}
+
+/* The checkbox is drawn from tokens, so its mark always matches on-hue. */
+.basalt-tree-check {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.05rem;
+	height: 1.05rem;
+	border: 1.5px solid color-mix(in srgb, var(--basalt-copy-muted) 70%, transparent);
+	border-radius: 5px;
+	background: var(--basalt-plane);
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tree-check {
+		transition: none;
+	}
+}
+
+/* A ticked box draws its check from two borders; a half-ticked one draws a bar. */
+.basalt-tree [aria-checked="true"] > .basalt-tree-row .basalt-tree-check,
+.basalt-tree [aria-checked="mixed"] > .basalt-tree-row .basalt-tree-check {
+	border-color: var(--basalt-hue);
+	background: var(--basalt-hue);
+}
+.basalt-tree [aria-checked="true"] > .basalt-tree-row .basalt-tree-check::after {
+	content: "";
+	transform: translateY(-1px) rotate(45deg);
+	width: 0.3rem;
+	height: 0.56rem;
+	border: solid var(--basalt-on-hue);
+	border-width: 0 2px 2px 0;
+}
+.basalt-tree [aria-checked="mixed"] > .basalt-tree-row .basalt-tree-check::after {
+	content: "";
+	width: 0.5rem;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--basalt-on-hue);
+}
+
+.basalt-tree-icon {
+	flex-shrink: 0;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--basalt-tree-quiet);
+}
+
+.basalt-tree-icon-folder {
+	color: var(--basalt-hue);
+}
+
+.basalt-tree-label {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+/* A folder's tally pill pushes right; any figure after it sits beside it. */
+.basalt-tree-count {
+	margin-left: auto;
+	padding: 0.05rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.7rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+
+.basalt-tree-meta {
+	margin-left: auto;
+	padding-left: 0.75rem;
+	font-size: 0.75rem;
+	font-weight: 400;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-tree-quiet);
+}
+
+.basalt-tree-count + .basalt-tree-meta {
+	margin-left: 0;
+}
+
+/* Search hits are marked in a pale warning tint. */
+.basalt-tree mark {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 30%, var(--basalt-plane));
+}
+
+/* An open folder with nothing in it says so; the script adds .is-empty. */
+.basalt-tree [role="group"].is-empty::after {
+	content: "Empty folder";
+	display: block;
+	padding: 0.3rem 0.6rem 0.3rem 2rem;
+	font-size: 0.77rem;
+	font-style: italic;
+	color: var(--basalt-tree-quiet);
+}
+
+/* While a lazy folder loads it shows shimmering bars; if loading fails the
+   row turns red and offers a retry. */
+.basalt-tree-skeleton {
+	padding: 0.3rem 0.6rem 0.3rem 2rem;
+}
+.basalt-tree-skeleton span {
+	display: block;
+	height: 0.6rem;
+	border-radius: 999px;
+	background: linear-gradient(
+		90deg,
+		var(--basalt-plane-alt) 0%,
+		var(--basalt-wash) 50%,
+		var(--basalt-plane-alt) 100%
+	);
+	background-size: 200% 100%;
+	animation: basalt-tree-shimmer 1.2s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tree-skeleton span {
+		animation: none;
+	}
+}
+.basalt-tree-skeleton:nth-child(2) span {
+	width: 72%;
+}
+.basalt-tree-skeleton:nth-child(3) span {
+	width: 55%;
+}
+
+@keyframes basalt-tree-shimmer {
+	to {
+		background-position: -200% 0;
+	}
+}
+.basalt-tree-row-error,
+.basalt-tree-row-error:hover {
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+
+.basalt-tree-retry {
+	margin-left: auto;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-decoration: underline;
+}
+
+/* Renaming swaps the label for a compact field that fills the row. */
+.basalt-tree-rename.form-control {
+	flex: 1;
+	min-width: 8rem;
+	height: 1.75rem;
+	padding: 0.1rem 0.4rem;
+	font-size: 0.85rem;
+}
+
+/* During a drag the whole tree shows the closed hand and hover stops
+   painting; the dragged item fades and the target folder is outlined. */
+.basalt-tree.is-dragging,
+.basalt-tree.is-dragging .basalt-tree-row {
+	cursor: grabbing;
+}
+.basalt-tree.is-dragging .basalt-tree-row:hover {
+	background: transparent;
+}
+.basalt-tree [role="treeitem"].is-dragged > .basalt-tree-row {
+	opacity: 0.4;
+}
+
+.basalt-tree-row.is-drop-inside {
+	background: var(--basalt-hue-soft);
+	box-shadow: inset 0 0 0 1.5px var(--basalt-hue);
+}
+
+/* The drop line marks where an item lands between rows, a ring at its start. */
+.basalt-tree-drop {
+	position: absolute;
+	z-index: 2;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--basalt-hue);
+	pointer-events: none;
+}
+.basalt-tree-drop::before {
+	content: "";
+	position: absolute;
+	top: -3px;
+	left: -4px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	border: 2px solid var(--basalt-hue);
+	background: var(--basalt-plane);
+}
+
+/* The ghost is a pill carrying the item's name that follows the pointer. */
+.basalt-tree-ghost {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1085;
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.4rem 0.75rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	pointer-events: none;
+}
+
+/* A dropped item flashes once in its new place. */
+.basalt-tree [role="treeitem"].is-moved > .basalt-tree-row {
+	animation: basalt-tree-flash 1.2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tree [role="treeitem"].is-moved > .basalt-tree-row {
+		animation: none;
+	}
+}
+
+@keyframes basalt-tree-flash {
+	0%,
+	30% {
+		background: var(--basalt-hue-soft);
+	}
+	100% {
+		background: transparent;
+	}
+}
+/* Keyboard users move items with the buttons beside the tree, and the status
+   line reports each move. */
+.basalt-tree-tools {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+@media print {
+	.basalt-tree-tools {
+		display: none;
+	}
+}
+
+.basalt-tree-status {
+	display: flex;
+	gap: 0.65rem;
+	align-items: baseline;
+	padding: 0.75rem 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-size: 0.8rem;
+	background: color-mix(in srgb, var(--basalt-canvas) 55%, var(--basalt-plane));
+}
+.basalt-tree-status > .bi {
+	flex-shrink: 0;
+	color: var(--basalt-hue);
+}
+.basalt-tree-status .btn {
+	flex-shrink: 0;
+}
+
+.basalt-tree-status-text {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	color: var(--basalt-copy-body);
+}
+
+/* Printed trees lose their motion along with the drag handles. */
+@media print {
+	.basalt-tree-row {
+		transition: none;
+		animation: none;
+	}
+}
+/**
+ * Drag-to-reorder lists and the kanban board built from them. Any list, list
+ * group or tile grid marked [data-basalt-sortable] can be rearranged with a
+ * pointer or from the keyboard (assets/basalt/js/components/trees.js, Basalt.sortable); lists that
+ * share a data-basalt-sortable-group pass items between each other, and
+ * .basalt-board is simply a row of such lists. tree-and-sortable.html shows
+ * every variant.
+ */
+/* Rows that line their pieces up across the middle with a set gap. */
+/* Handles, rank chips and dots are squares, sized with one number. */
+/* The list keeps no bullets or indent; free-standing cards get a gap
+   between them, while a list group stays flush. */
+.basalt-sortable {
+	--basalt-sortable-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.basalt-sortable[data-basalt-sortable-whole] > .basalt-sortable-item {
+	cursor: grab;
+}
+
+.list-group.basalt-sortable {
+	gap: 0;
+}
+
+/* Items outside a list group draw their own card; inside one, they only
+   pull their text closer to the handle. */
+.basalt-sortable-item {
+	min-width: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	position: relative;
+}
+.basalt-sortable-item:not(.list-group-item) {
+	padding: 0.7rem 0.9rem 0.7rem 0.4rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+}
+.basalt-sortable-item:not(.list-group-item):hover {
+	border-color: var(--basalt-edge-strong);
+}
+
+.list-group-item.basalt-sortable-item {
+	--bs-list-group-color: var(--basalt-copy-body);
+	padding-left: 0.4rem;
+}
+
+.basalt-sortable {
+	/* The grip is the drag source, and it turns solid while the keyboard
+      holds the item. */
+}
+.basalt-sortable-handle {
+	color: var(--basalt-sortable-quiet);
+	background: transparent;
+	width: 1.9rem;
+	height: 1.9rem;
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	cursor: grab;
+	transition:
+		background-color 130ms ease,
+		color 130ms ease;
+	touch-action: none;
+}
+.basalt-sortable-handle:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.basalt-sortable-handle:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+	box-shadow: none;
+}
+.basalt-sortable-handle[aria-pressed="true"] {
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.basalt-sortable-main {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+}
+.basalt-sortable-title {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.basalt-sortable-sub {
+	font-size: 0.8rem;
+	color: var(--basalt-sortable-quiet);
+}
+.basalt-sortable-end {
+	flex-shrink: 0;
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--basalt-sortable-quiet);
+}
+.basalt-sortable {
+	/* The position number in a mono face, on a soft round chip. */
+}
+.basalt-sortable-rank {
+	font-size: 0.76rem;
+	font-weight: 600;
+	font-family: "Chivo Mono", monospace;
+	color: color-mix(in srgb, var(--basalt-hue) 58%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+	width: 1.75rem;
+	height: 1.75rem;
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	border-radius: 50%;
+}
+
+/* A keyboard pick-up rings the item and lifts it over its neighbors. */
+.basalt-sortable-item.is-grabbed {
+	z-index: 2;
+	border-color: var(--basalt-hue);
+	box-shadow:
+		0 0 0 3px var(--basalt-hue-border),
+		var(--basalt-card-shadow);
+}
+
+.list-group-item.basalt-sortable-item.is-grabbed {
+	z-index: 3;
+}
+
+/* A pointer drag pins the item to the cursor while a dashed slot holds its
+   place in the list. */
+.basalt-sortable-item.is-dragging {
+	position: fixed;
+	z-index: 1085;
+	margin: 0;
+	border-color: var(--basalt-hue);
+	box-shadow: var(--basalt-card-shadow);
+	cursor: grabbing;
+	pointer-events: none;
+}
+
+.list-group-item.basalt-sortable-item.is-dragging {
+	border: 1px solid var(--basalt-hue);
+	border-radius: 10px;
+}
+
+.basalt-sortable-placeholder {
+	flex-shrink: 0;
+	border: 1.5px dashed var(--basalt-hue);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-hue-soft) 60%, transparent);
+	list-style: none;
+}
+.list-group > .basalt-sortable-placeholder {
+	border-radius: 0;
+}
+
+/* A dropped item glows once so the eye can find where it landed. */
+.basalt-sortable-item.is-moved {
+	animation: basalt-sortable-flash 1s ease;
+}
+
+@keyframes basalt-sortable-flash {
+	0%,
+	25% {
+		box-shadow: 0 0 0 3px var(--basalt-hue-border);
+	}
+	100% {
+		box-shadow: 0 0 0 0 transparent;
+	}
+}
+/* For the length of a drag the whole page shows the closed hand and
+   nothing gets text-selected. */
+body.basalt-is-sorting,
+body.basalt-is-sorting * {
+	cursor: grabbing;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+/* Tiles: two across on phones, three from the small breakpoint up, each
+   with its grip tucked into the top corner. */
+.basalt-sortable-grid {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 576px) {
+	.basalt-sortable-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+.basalt-sortable-tile.basalt-sortable-item {
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-height: 7rem;
+	padding: 1rem;
+}
+.basalt-sortable-tile .basalt-sortable-handle {
+	width: 1.7rem;
+	height: 1.7rem;
+	position: absolute;
+	top: 0.4rem;
+	right: 0.4rem;
+}
+.basalt-sortable-tile .basalt-sortable-sub {
+	padding-right: 1.6rem;
+}
+
+.basalt-sortable-value {
+	font-size: 1.35rem;
+	font-weight: 750;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+
+/* The board lays sortable lists side by side as columns that all share one
+   group. Each column header carries a count, and the column warns once the
+   count runs past its limit. */
+.basalt-board {
+	--basalt-board-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.basalt-board-col {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 0.9rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--basalt-canvas) 60%, var(--basalt-plane));
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+}
+.basalt-board-col.is-over {
+	border-color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue-soft) 55%, var(--basalt-canvas));
+}
+.basalt-board-col.is-over-limit {
+	border-color: color-mix(in srgb, var(--basalt-danger) 55%, transparent);
+}
+
+.basalt-board-head {
+	margin-bottom: 0.8rem;
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+}
+.basalt-board-title {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.basalt-board {
+	/* Column dots cycle through three series colors. */
+}
+.basalt-board-dot {
+	background: var(--basalt-series-5);
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+}
+.basalt-board-col:nth-child(3n + 2) .basalt-board-dot {
+	background: var(--basalt-series-1);
+}
+.basalt-board-col:nth-child(3n + 3) .basalt-board-dot {
+	background: var(--basalt-series-3);
+}
+.basalt-board-count {
+	padding: 0.12rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 600;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+.basalt-board-col.is-over-limit .basalt-board-count {
+	border-color: color-mix(in srgb, var(--basalt-danger) 40%, transparent);
+	color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+}
+
+/* Inside a column the list stretches to the floor, and an empty one shows
+   a dashed drop zone with a hint. */
+.basalt-board-col .basalt-sortable {
+	flex: 1;
+	min-height: 5.5rem;
+}
+.basalt-board-col .basalt-sortable.is-empty {
+	align-items: center;
+	justify-content: center;
+	border: 1.5px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+}
+.basalt-board-col .basalt-sortable.is-empty::after {
+	content: "Drop cards here";
+	font-size: 0.8rem;
+	color: var(--basalt-board-quiet);
+}
+
+/* Cards top-align their content, since the title can run to two lines. */
+.basalt-board-card.basalt-sortable-item {
+	align-items: flex-start;
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+}
+
+.basalt-board-body {
+	display: flex;
+	gap: 0.1rem;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.1rem;
+}
+.basalt-board-ref {
+	font-size: 0.71rem;
+	font-family: "Chivo Mono", monospace;
+	color: var(--basalt-board-quiet);
+}
+.basalt-board-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.basalt-board-meta {
+	font-size: 0.77rem;
+	color: var(--basalt-board-quiet);
+}
+.basalt-board-tag {
+	flex-shrink: 0;
+	align-self: flex-start;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+/* Tag tones: a soft fill with ink mixed from the tone toward the text color. */
+.basalt-board-tag-warning {
+	color: color-mix(in srgb, var(--basalt-warning) 38%, var(--basalt-copy));
+	background: var(--basalt-warning-soft);
+}
+
+.basalt-board-tag-success {
+	color: color-mix(in srgb, var(--basalt-success) 42%, var(--basalt-copy));
+	background: var(--basalt-success-soft);
+}
+
+/* Reduced motion: hovers, drags and drops happen without easing or glow. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-sortable-item,
+	.basalt-sortable-handle,
+	.basalt-board-col {
+		transition: none;
+	}
+	.basalt-sortable-item.is-moved {
+		animation: none;
+	}
+}
+/* On paper the grips mean nothing and nothing should be mid-animation. */
+@media print {
+	.basalt-sortable-handle {
+		display: none;
+	}
+	.basalt-sortable-item,
+	.basalt-board-col {
+		transition: none;
+		animation: none;
+	}
+}
+/* The transfer list pairs two checkable list groups, each with a filter box,
+   around a column of buttons that carry the ticked rows from one side to the
+   other. It appears on tree-and-sortable.html and is driven by the
+   [data-basalt-transfer] handler in assets/basalt/js/components/trees.js. */
+/* Side by side on wide screens; below the md breakpoint the panes stack and
+   the move buttons turn into a row with their arrows pointing down. */
+.basalt-transfer {
+	--basalt-transfer-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: stretch;
+}
+@media (max-width: 767.98px) {
+	.basalt-transfer {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.basalt-transfer-pane {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+
+/* Each pane opens with a select-all box, its name and a running count. */
+.basalt-transfer-head {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.8rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+
+/* Both kinds of checkbox, select-all and per row, sit flush and never shrink. */
+.basalt-transfer-head .form-check-input,
+.basalt-transfer-list .list-group-item .form-check-input {
+	flex-shrink: 0;
+	margin: 0;
+}
+
+.basalt-transfer-title {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.basalt-transfer-count {
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--basalt-transfer-quiet);
+}
+
+/* The filter field carries its magnifier inside the left padding. */
+.basalt-transfer-search {
+	position: relative;
+	padding: 0.6rem 0.75rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.basalt-transfer-search .form-control {
+	padding-left: 2rem;
+}
+.basalt-transfer-search .bi {
+	position: absolute;
+	top: 50%;
+	left: 1.4rem;
+	transform: translateY(-50%);
+	font-size: 0.8rem;
+	color: var(--basalt-transfer-quiet);
+	pointer-events: none;
+}
+
+/* The list scrolls past sixteen rem; a ticked row stays tinted, and a row that
+   just arrived flashes the same tint before it fades. */
+.basalt-transfer-list {
+	--bs-list-group-bg: var(--basalt-plane);
+	--bs-list-group-color: var(--basalt-copy-body);
+	--bs-list-group-border-color: var(--basalt-edge);
+	--bs-list-group-item-padding-x: 1rem;
+	--bs-list-group-item-padding-y: 0.6rem;
+	min-height: 10rem;
+	max-height: 16rem;
+	overflow-y: auto;
+}
+.basalt-transfer-list .list-group-item {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	font-size: 0.875rem;
+	cursor: pointer;
+	transition: background-color 130ms ease;
+}
+.basalt-transfer-list .list-group-item:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.basalt-transfer-list .list-group-item:has(.form-check-input:checked) {
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.basalt-transfer-list .list-group-item.is-moved {
+	animation: basalt-transfer-in 900ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.basalt-transfer-list .list-group-item {
+		transition: none;
+	}
+	.basalt-transfer-list .list-group-item.is-moved {
+		animation: none;
+	}
+}
+
+@keyframes basalt-transfer-in {
+	0%,
+	30% {
+		background: var(--basalt-hue-soft);
+	}
+	100% {
+		background: transparent;
+	}
+}
+.basalt-transfer-empty {
+	margin: 0;
+	padding: 1.5rem 1rem;
+	font-size: 0.8rem;
+	text-align: center;
+	color: var(--basalt-transfer-quiet);
+}
+
+/* The move buttons are useless on paper, so print leaves them out. */
+.basalt-transfer-moves {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	justify-content: center;
+}
+@media (max-width: 767.98px) {
+	.basalt-transfer-moves {
+		flex-direction: row;
+		justify-content: center;
+	}
+	.basalt-transfer-moves .bi {
+		transform: rotate(90deg);
+		display: inline-block;
+	}
+}
+@media print {
+	.basalt-transfer-moves {
+		display: none;
+	}
+}

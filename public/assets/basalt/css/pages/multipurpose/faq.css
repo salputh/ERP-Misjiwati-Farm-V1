@@ -1,0 +1,1105 @@
+/**
+ * Styles for faq.html alone: the tinted search desk, the two-column layout
+ * with its topic rail, the answer rows that unfold, the vote strip under
+ * each answer, the "Ask the team" dialog and the corner notices. Classes
+ * are .qa-*, script hooks are [data-qa-*]. Every width here is read from
+ * the page's own column, so the rail folds away whether the main menu is
+ * open or not.
+ */
+
+.faq {
+	container-type: inline-size;
+	container-name: faq;
+}
+
+/* A topic borrows one of the palette's chart colors, so every palette and
+   both schemes recolor it. Hue 7, the muted text color, is "Something else". */
+[data-qa-hue="1"] {
+	--qa-hue: var(--basalt-series-1);
+}
+[data-qa-hue="2"] {
+	--qa-hue: var(--basalt-series-2);
+}
+[data-qa-hue="3"] {
+	--qa-hue: var(--basalt-series-3);
+}
+[data-qa-hue="4"] {
+	--qa-hue: var(--basalt-series-4);
+}
+[data-qa-hue="5"] {
+	--qa-hue: var(--basalt-series-5);
+}
+[data-qa-hue="6"] {
+	--qa-hue: var(--basalt-series-6);
+}
+[data-qa-hue="7"] {
+	--qa-hue: var(--basalt-copy-muted);
+}
+[data-qa-hue="8"] {
+	--qa-hue: var(--basalt-series-8);
+}
+
+/* Small caps heading over the topic list. */
+.qa-label {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-muted);
+}
+
+/* The desk at the top wears the tinted wash from the Headers component;
+   it is the page's only gradient and goes plain when gradients are off.
+   Text sitting on the wash is a step stronger so it reads in every palette. */
+.qa-desk {
+	display: grid;
+	gap: 1.5rem;
+	margin-bottom: 1.75rem;
+	padding: clamp(1.25rem, 3.5cqi, 2.25rem);
+	border-radius: 22px;
+	border: 1px solid var(--basalt-edge);
+	background-color: color-mix(in srgb, var(--basalt-hero-g1) 11%, var(--basalt-plane));
+	background-image: linear-gradient(
+		120deg,
+		color-mix(in srgb, var(--basalt-hero-g1) 13%, var(--basalt-plane)),
+		color-mix(in srgb, var(--basalt-hero-g2) 9%, var(--basalt-plane)) 60%,
+		color-mix(in srgb, var(--basalt-hero-g3) 10%, var(--basalt-plane))
+	);
+
+	:root[data-basalt-gradients="off"] & {
+		background-color: var(--basalt-plane);
+		background-image: none;
+	}
+	& .qa-eyebrow {
+		color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	}
+	& .qa-ask-key,
+	& .qa-label {
+		color: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	}
+}
+
+.qa-eyebrow {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-hue);
+	background: var(--basalt-plane);
+}
+
+.qa-desk-title {
+	margin: 0.75rem 0 0.4rem;
+	font-size: clamp(1.6rem, 4.2cqi, 2.3rem);
+	font-weight: 800;
+	line-height: 1.1;
+	letter-spacing: -0.03em;
+	color: var(--basalt-copy);
+}
+
+.qa-desk-lead {
+	max-width: 36rem;
+	margin: 0 0 1.25rem;
+	color: var(--basalt-copy-body);
+}
+
+/* The search box: a magnifier on the left, the "/" hint on the right.
+   The hint leaves once the box is focused or holds a query, and the clear
+   button then moves in to the usual inset. */
+.qa-ask {
+	position: relative;
+	max-width: 40rem;
+}
+
+.qa-ask-icon {
+	position: absolute;
+	top: 50%;
+	left: 1.1rem;
+	transform: translateY(-50%);
+	font-size: 1.05rem;
+	color: var(--basalt-copy-muted);
+	pointer-events: none;
+}
+
+.qa-ask-input {
+	width: 100%;
+	height: 56px;
+	padding: 0 3rem 0 2.9rem;
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 1.02rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+
+	&::placeholder {
+		color: var(--basalt-copy-muted);
+	}
+	&:focus {
+		border-color: var(--basalt-hue);
+		outline: none;
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+	}
+	&::-webkit-search-cancel-button {
+		width: 1.3rem;
+		height: 1.3rem;
+	}
+	.qa-ask.has-query & {
+		padding-right: 1.1rem;
+	}
+}
+
+.qa-ask-key {
+	position: absolute;
+	top: 50%;
+	right: 1rem;
+	transform: translateY(-50%);
+	min-width: 1.6rem;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.75rem;
+	font-family: inherit;
+	text-align: center;
+	color: var(--basalt-copy-muted);
+	background: var(--basalt-canvas);
+	pointer-events: none;
+
+	.qa-ask:focus-within &,
+	.qa-ask.has-query & {
+		display: none;
+	}
+}
+
+/* Below the desk: one column on a narrow page, where the rail dissolves
+   and the topics sit above the answers; from 760px of column width the
+   topics take a column of their own and, given the height, stay in view
+   while the page scrolls (nothing scrolls inside it). */
+.qa-layout {
+	display: grid;
+	gap: 1.5rem;
+
+	@container faq (min-width: 760px) {
+		row-gap: 1.5rem;
+		column-gap: 2rem;
+		grid-template-columns: 290px minmax(0, 1fr);
+		align-items: start;
+	}
+}
+
+.qa-rail {
+	display: contents;
+}
+
+.qa-topics {
+	order: 0;
+
+	@container faq (min-width: 760px) {
+		grid-column: 1;
+		grid-row: 1;
+
+		@media (min-height: 720px) {
+			position: sticky;
+			top: calc(var(--basalt-header-h, 72px) + 1rem);
+		}
+	}
+}
+
+.qa-answers {
+	order: 1;
+	min-width: 0;
+
+	@container faq (min-width: 760px) {
+		grid-column: 2;
+		grid-row: 1;
+	}
+}
+
+/* The topic list wraps as chips on a narrow page and stacks in the wide
+   rail, where the chips lose their outline until lit. */
+.qa-topics-list {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	@container faq (min-width: 760px) {
+		gap: 0.1rem;
+		flex-direction: column;
+		flex-wrap: nowrap;
+	}
+}
+
+.qa-topics-link {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.3rem 0.6rem 0.3rem 0.4rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		opacity 170ms ease,
+		border-color 170ms ease;
+
+	@container faq (min-width: 760px) {
+		border-color: transparent;
+		background: none;
+	}
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	.faq &.is-active {
+		border-color: color-mix(in srgb, var(--qa-hue) 30%, transparent);
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--qa-hue) 9%, var(--basalt-plane));
+
+		/* The filled count leans toward the text color so the number stays readable on light hues. */
+		& .qa-topics-count {
+			color: var(--basalt-plane);
+			background: color-mix(in srgb, var(--qa-hue) 45%, var(--basalt-copy));
+		}
+	}
+	&.is-empty {
+		opacity: 0.45;
+
+		& .qa-topics-count {
+			background: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.qa-topics-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 9px;
+	font-size: 0.85rem;
+	color: var(--qa-hue);
+	background: color-mix(in srgb, var(--qa-hue) 14%, transparent);
+}
+
+.qa-topics-name {
+	flex: 1;
+	min-width: 0;
+}
+
+.qa-topics-count {
+	min-width: 1.5rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	text-align: center;
+	color: var(--basalt-copy-muted);
+	background: var(--basalt-canvas);
+}
+
+/* Two buttons close the rail: ask the team, or go to the Help Desk. */
+.qa-help {
+	display: grid;
+	gap: 0.5rem;
+	margin-top: 1.25rem;
+}
+
+/* A topic section: its heading row, then the answers in one bordered
+   list. Sections fade up in turn when the page is first drawn. */
+.qa-topic {
+	scroll-margin-top: calc(var(--basalt-header-h, 64px) + 1rem);
+	margin-bottom: 1.75rem;
+
+	&:last-of-type {
+		margin-bottom: 0;
+	}
+	&.is-hidden {
+		display: none;
+	}
+	.faq.is-entering & {
+		animation: qa-in 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+		animation-delay: calc(var(--qa-i, 0) * 60ms);
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+
+@keyframes qa-in {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+
+.qa-topic-head {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	margin-bottom: 0.65rem;
+}
+
+.qa-topic-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 11px;
+	color: var(--qa-hue);
+	background: color-mix(in srgb, var(--qa-hue) 14%, transparent);
+}
+
+.qa-topic-title {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+}
+
+.qa-topic-count {
+	margin-left: auto;
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-muted);
+}
+
+.qa-topic-list {
+	border-radius: 16px;
+	border: 1px solid var(--basalt-edge);
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+
+/* One answer. A colored bar grows down its left edge while it is open,
+   and an answer reached from a link glows for a moment. .is-instant,
+   set by the script for one frame, switches off every transition of the
+   row so a jump lands on the finished height. */
+.qa-q {
+	position: relative;
+	scroll-margin-top: calc(var(--basalt-header-h, 64px) + 1rem);
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		border-top: 0;
+	}
+	&.is-hidden {
+		display: none;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		transform: scaleY(0);
+		width: 3px;
+		background: var(--qa-hue);
+		transition: transform 240ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+	&.is-open::before {
+		transform: scaleY(1);
+	}
+	&.is-instant::before {
+		transition: none;
+	}
+	&.is-flash {
+		animation: qa-flash 1400ms ease-out;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+
+@keyframes qa-flash {
+	0%,
+	30% {
+		background: color-mix(in srgb, var(--qa-hue) 12%, var(--basalt-plane));
+	}
+	100% {
+		background: var(--basalt-plane);
+	}
+}
+
+.qa-q-head {
+	margin: 0;
+	font-size: inherit;
+}
+
+/* The question line is one wide button; on phones it hugs the narrow inset. */
+.qa-q-toggle {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	width: 100%;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border: 0;
+	font-size: 0.93rem;
+	font-weight: 600;
+	line-height: 1.4;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+.qa-q-text {
+	flex: 1;
+	min-width: 0;
+}
+
+.qa-q-chevron {
+	flex-shrink: 0;
+	color: var(--basalt-copy-muted);
+	transition: transform 240ms ease;
+
+	.qa-q.is-open & {
+		transform: rotate(180deg);
+		color: var(--qa-hue);
+	}
+	.qa-q.is-instant & {
+		transition: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* The answer opens by animating the row's grid height. While shut it is
+   also invisible, which keeps it out of the tab order and the
+   accessibility tree; the visibility switch is delayed on the way shut so
+   the text does not vanish before the row has closed. */
+.qa-q-panel {
+	display: grid;
+	visibility: hidden;
+	grid-template-rows: 0fr;
+	transition:
+		grid-template-rows 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+		visibility 0s linear 280ms;
+
+	.qa-q.is-open & {
+		visibility: visible;
+		grid-template-rows: 1fr;
+		transition:
+			grid-template-rows 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+			visibility 0s linear 0s;
+	}
+	.qa-q.is-instant & {
+		transition: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+
+		.qa-q.is-open & {
+			transition: none;
+		}
+	}
+}
+
+.qa-q-inner {
+	min-height: 0;
+	padding: 0 var(--basalt-pad-x);
+	overflow: hidden;
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+.qa-q-short {
+	margin: 0 0 0.3rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.qa-q-detail {
+	max-width: 62ch;
+	margin: 0 0 0.85rem;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+
+/* Under the answer: which plans it applies to and when it was last checked. */
+.qa-q-meta {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.9rem;
+	font-size: 0.75rem;
+	color: var(--basalt-copy-muted);
+}
+
+.qa-q-plans {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+
+.qa-plan {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+.qa-q-checked {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+
+	& .bi {
+		color: var(--basalt-success);
+	}
+}
+
+/* Did this answer it? Yes and No are pills that fill when pressed, the
+   count beside them flashes green on a Yes, and Copy link sits at the end. */
+.qa-vote {
+	display: flex;
+	gap: 0.5rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.7rem 0 1rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+	font-size: 0.8rem;
+}
+
+.qa-vote-ask {
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+
+.qa-vote-btn {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-hue);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-pressed="true"][data-qa-vote-yes] {
+		border-color: var(--basalt-success);
+		color: var(--basalt-copy);
+		background: var(--basalt-success-soft);
+
+		& .bi {
+			color: var(--basalt-success);
+		}
+	}
+	&[aria-pressed="true"][data-qa-vote-no] {
+		border-color: var(--basalt-warning);
+		color: var(--basalt-copy);
+		background: var(--basalt-warning-soft);
+	}
+}
+
+.qa-vote-count {
+	color: var(--basalt-copy-muted);
+
+	&.is-bumped {
+		animation: qa-bump 420ms ease-out;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+
+@keyframes qa-bump {
+	40% {
+		color: var(--basalt-success);
+	}
+}
+
+.qa-vote-copy {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	margin-left: auto;
+	padding: 0.2rem 0.4rem;
+	border: 0;
+	border-radius: 8px;
+	font-weight: 600;
+	color: var(--basalt-copy-muted);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-hue);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+	}
+}
+
+/* After a No: the box that asks what was missing, with reason pills and a
+   way to reach a person. It takes the full width of the vote row. */
+.qa-follow {
+	flex-basis: 100%;
+	padding: 0.75rem 0.85rem;
+	border-radius: 12px;
+	background: var(--basalt-canvas);
+	animation: qa-in 260ms ease-out both;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+
+.qa-follow-q {
+	margin: 0 0 0.5rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.qa-follow-reasons {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.65rem;
+}
+
+.qa-follow-reason {
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.77rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&:hover {
+		border-color: var(--basalt-hue);
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.qa-follow-row {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.qa-follow-thanks {
+	color: var(--basalt-copy-muted);
+}
+
+/* A matched search word inside an answer. */
+.faq mark.qa-hit {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: inherit;
+	background: color-mix(in srgb, var(--basalt-warning) 32%, transparent);
+}
+
+/* Shown in place of the answers when a search finds nothing. */
+.qa-none {
+	padding: 2.25rem 1.5rem;
+	border-radius: 18px;
+	border: 1px dashed var(--basalt-edge-strong);
+	text-align: center;
+	background: var(--basalt-plane);
+}
+
+.qa-none-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 52px;
+	height: 52px;
+	margin-bottom: 0.75rem;
+	border-radius: 16px;
+	font-size: 1.35rem;
+	color: var(--basalt-hue);
+	background: var(--basalt-hue-soft);
+}
+
+.qa-none-title {
+	margin: 0 0 0.3rem;
+	font-size: 1.05rem;
+	font-weight: 800;
+	overflow-wrap: anywhere;
+}
+
+.qa-none-text {
+	max-width: 26rem;
+	margin: 0 auto 1.1rem;
+	font-size: 0.88rem;
+	color: var(--basalt-copy-muted);
+}
+
+.qa-none-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+/* The Ask the team dialog, top to bottom: head with its icon, the scrolling
+   body of fields, and a foot that carries the reply estimate and the buttons. */
+.qa-dialog {
+	& .modal-content {
+		border: 1px solid var(--basalt-edge);
+		border-radius: 22px;
+		overflow: hidden;
+		background: var(--basalt-plane);
+	}
+	& .form-control {
+		border-radius: 10px;
+	}
+}
+
+.qa-dialog-form {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	max-height: 100%;
+}
+
+.qa-dialog-head {
+	display: flex;
+	gap: 0.875rem;
+	align-items: flex-start;
+	padding: 1.35rem 1.5rem 0.75rem;
+
+	& .btn-close {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+}
+
+.qa-dialog-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 14px;
+	font-size: 1.2rem;
+	color: var(--basalt-hue);
+	background: var(--basalt-hue-soft);
+}
+
+.qa-dialog-title {
+	margin: 0 0 0.1rem;
+	font-size: 1.1rem;
+	font-weight: 800;
+}
+
+.qa-dialog-sub {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-muted);
+}
+
+.qa-dialog-body {
+	padding: 0.75rem 1.5rem 1.5rem;
+	overflow-y: auto;
+}
+
+/* Phones get a narrower inset for the head and body; the foot's own
+   padding, set further down, still has the last word there. */
+@media (max-width: 767.98px) {
+	.qa-dialog-head,
+	.qa-dialog-body,
+	.qa-dialog-foot {
+		padding-left: 1.1rem;
+		padding-right: 1.1rem;
+	}
+}
+
+.qa-dialog-label {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0 0 0.75rem;
+	padding: 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.qa-dialog-set {
+	min-width: 0;
+	margin: 0 0 var(--basalt-pad-head);
+	padding: 0;
+	border: 0;
+}
+
+/* Under the question: the too-short note on the left, the character count on the right. */
+.qa-dialog-hint {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin-top: 0.3rem;
+	font-size: 0.75rem;
+
+	& .invalid-feedback {
+		margin: 0;
+
+		&:not([hidden]) {
+			display: block;
+		}
+	}
+}
+
+.qa-dialog-chars {
+	margin-left: auto;
+	white-space: nowrap;
+	color: var(--basalt-copy-muted);
+}
+
+/* The tiles are the shared .basalt-choice. Topic tiles take their topic's
+   color and shrink a little so four fit across, two on a phone. */
+.qa-dialog-topics {
+	gap: 0.4rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	& .basalt-choice {
+		--basalt-choice-tone: var(--qa-hue);
+		min-height: 68px;
+		padding: 0.5rem 0.3rem;
+		font-size: 0.76rem;
+		line-height: 1.2;
+		color: var(--basalt-copy-body);
+
+		&:has(input:checked) {
+			color: var(--basalt-copy);
+		}
+		& > .bi {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 1.4rem;
+			height: 1.4rem;
+			font-size: 1.05rem;
+		}
+	}
+}
+
+/* Urgency and reply tiles: the icon on the left, centered against the name
+   and the hint beside it, each of which keeps to one line. */
+.qa-dialog-urgency {
+	gap: 0.4rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	@media (max-width: 619.98px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.qa-dialog-reply {
+	gap: 0.4rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-bottom: 0.6rem;
+
+	@media (max-width: 459.98px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.qa-choice {
+	display: grid;
+	gap: 0 0.6rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-content: center;
+	padding: 0.5rem 0.7rem;
+	line-height: inherit;
+	text-align: left;
+	white-space: nowrap;
+
+	& > .bi {
+		grid-row: span 2;
+		align-self: center;
+		font-size: 1.05rem;
+	}
+	&:not(:has(.basalt-choice-hint)) > .bi {
+		grid-row: auto;
+	}
+}
+
+.qa-dialog-email[hidden] {
+	display: none;
+}
+
+.qa-dialog-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.1rem 1.5rem 1.35rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+.qa-dialog-eta {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: var(--basalt-hue);
+	}
+}
+
+.qa-dialog-buttons {
+	display: flex;
+	gap: 0.5rem;
+	margin-left: auto;
+}
+
+/* Notices stack in the bottom right corner. Each slides up on arrival and
+   out to the right when its time is up; a finished action turns the bar
+   and the icon green. */
+.qa-toast-region {
+	position: fixed;
+	right: 1.25rem;
+	bottom: 1.25rem;
+	left: auto;
+	z-index: 1090;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	max-width: min(360px, calc(100vw - 2rem));
+}
+
+.qa-toast {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	padding: 0.7rem 0.85rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	animation: qa-toast-in 0.25s ease-out;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: -1px;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-hue);
+	}
+	& .bi {
+		margin-top: 1px;
+		font-size: 1.05rem;
+		color: var(--basalt-hue);
+	}
+	&.is-out {
+		animation: qa-toast-out 0.2s ease-in forwards;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+
+		&.is-out {
+			animation: none;
+		}
+	}
+}
+
+.qa-toast-done {
+	&::before {
+		background: var(--basalt-success);
+	}
+	& .bi {
+		color: var(--basalt-success);
+	}
+}
+
+@keyframes qa-toast-in {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+@keyframes qa-toast-out {
+	to {
+		transform: translateX(20px);
+		opacity: 0;
+	}
+}

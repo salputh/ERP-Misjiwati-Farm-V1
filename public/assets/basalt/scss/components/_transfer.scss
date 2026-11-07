@@ -1,0 +1,167 @@
+/* The transfer list pairs two checkable list groups, each with a filter box,
+   around a column of buttons that carry the ticked rows from one side to the
+   other. It appears on tree-and-sortable.html and is driven by the
+   [data-basalt-transfer] handler in assets/basalt/js/components/trees.js. */
+
+$stack-below: 767.98px;
+$hairline: 1px solid var(--basalt-edge);
+
+/* Side by side on wide screens; below the md breakpoint the panes stack and
+   the move buttons turn into a row with their arrows pointing down. */
+.basalt-transfer {
+	--basalt-transfer-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: stretch;
+
+	@media (max-width: $stack-below) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.basalt-transfer-pane {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	border: $hairline;
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+
+/* Each pane opens with a select-all box, its name and a running count. */
+.basalt-transfer-head {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.8rem 1rem;
+	border-bottom: $hairline;
+}
+
+/* Both kinds of checkbox, select-all and per row, sit flush and never shrink. */
+.basalt-transfer-head .form-check-input,
+.basalt-transfer-list .list-group-item .form-check-input {
+	flex-shrink: 0;
+	margin: 0;
+}
+
+.basalt-transfer-title {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.basalt-transfer-count {
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--basalt-transfer-quiet);
+}
+
+/* The filter field carries its magnifier inside the left padding. */
+.basalt-transfer-search {
+	position: relative;
+	padding: 0.6rem 0.75rem;
+	border-bottom: $hairline;
+
+	.form-control {
+		padding-left: 2rem;
+	}
+
+	.bi {
+		position: absolute;
+		top: 50%;
+		left: 1.4rem;
+		transform: translateY(-50%);
+		font-size: 0.8rem;
+		color: var(--basalt-transfer-quiet);
+		pointer-events: none;
+	}
+}
+
+/* The list scrolls past sixteen rem; a ticked row stays tinted, and a row that
+   just arrived flashes the same tint before it fades. */
+.basalt-transfer-list {
+	--bs-list-group-bg: var(--basalt-plane);
+	--bs-list-group-color: var(--basalt-copy-body);
+	--bs-list-group-border-color: var(--basalt-edge);
+	--bs-list-group-item-padding-x: 1rem;
+	--bs-list-group-item-padding-y: 0.6rem;
+	min-height: 10rem;
+	max-height: 16rem;
+	overflow-y: auto;
+
+	.list-group-item {
+		display: flex;
+		gap: 0.65rem;
+		align-items: center;
+		font-size: 0.875rem;
+		cursor: pointer;
+		transition: background-color 130ms ease;
+
+		&:hover {
+			color: var(--basalt-copy);
+			background: var(--basalt-wash);
+		}
+
+		&:has(.form-check-input:checked) {
+			color: var(--basalt-copy);
+			background: var(--basalt-hue-soft);
+		}
+
+		&.is-moved {
+			animation: basalt-transfer-in 900ms ease;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+
+			&.is-moved {
+				animation: none;
+			}
+		}
+	}
+}
+
+@keyframes basalt-transfer-in {
+	0%,
+	30% {
+		background: var(--basalt-hue-soft);
+	}
+	100% {
+		background: transparent;
+	}
+}
+
+.basalt-transfer-empty {
+	margin: 0;
+	padding: 1.5rem 1rem;
+	font-size: 0.8rem;
+	text-align: center;
+	color: var(--basalt-transfer-quiet);
+}
+
+/* The move buttons are useless on paper, so print leaves them out. */
+.basalt-transfer-moves {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	justify-content: center;
+
+	@media (max-width: $stack-below) {
+		flex-direction: row;
+		justify-content: center;
+
+		.bi {
+			transform: rotate(90deg);
+			display: inline-block;
+		}
+	}
+
+	@media print {
+		display: none;
+	}
+}

@@ -1,0 +1,353 @@
+/* Basalt - Polar area charts page
+   Namespaced under .polars-*
+   Every color comes from the --basalt-* tokens, so the
+   legends and swatches follow the palette the same way the
+   canvases do (polar-charts.js reads the same tokens). */
+
+.polars-page {
+	/* Small gray text: the muted token pulled a little toward the body
+     color, so it clears 4.5:1 on the lighter palettes too. */
+	--polars-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+}
+
+/* The header subtitle. Bootstrap's text-body-secondary is just under 4.5:1
+   on the page background in Verdant, Mono and Pastel Pop light. */
+
+/* Filter row */
+.polars-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+}
+.polars-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.polars-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.polars-chip:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.polars-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.polars-chips .polars-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.polars-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--polars-quiet);
+}
+
+/* Grid */
+.polars-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.polars-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+/* A chart that has not drawn yet keeps the browser's 300px canvas width;
+   never let it push a narrow card, or the page, wider than the screen. */
+.polars-card canvas {
+	display: block;
+	max-width: 100%;
+}
+.polars-card.is-hidden {
+	display: none;
+}
+/* Below 1200px every chart takes the whole row; pairs start at desktop width. */
+@media (min-width: 1200px) {
+	.polars-card {
+		grid-column: span 6;
+	}
+	.polars-card-full {
+		grid-column: span 12;
+	}
+	/* The last card of a filtered set that would sit alone in its row. */
+	.polars-grid.is-filtered .polars-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Card */
+.polars-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+/* The chart kind sits above the title (it comes after it in the markup, so
+   the title is read first) and never competes with it for width. */
+.polars-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.polars-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.polars-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--polars-quiet);
+}
+.polars-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--polars-quiet);
+}
+
+/* Chart boxes */
+.polars-chart {
+	position: relative;
+	height: 300px;
+	margin-top: auto;
+}
+@media (max-width: 575.98px) {
+	.polars-chart {
+		height: 270px;
+	}
+}
+
+/* Two polars side by side, drawn to the same scale. */
+.polars-pair {
+	display: grid;
+	gap: 1.75rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: auto;
+}
+@media (min-width: 576px) {
+	.polars-pair {
+		gap: 1.5rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.polars-pair-head {
+	display: flex;
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+.polars-pair-name {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.polars-pair-value {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--polars-quiet);
+}
+.polars-pair .polars-chart {
+	margin-top: 0;
+}
+
+/* A chart with its legend beside it rather than under it. */
+.polars-side {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: center;
+	margin-top: auto;
+}
+@media (min-width: 576px) {
+	.polars-side {
+		gap: 1.5rem;
+		grid-template-columns: minmax(0, 1fr) minmax(9.5rem, auto);
+	}
+}
+.polars-side .polars-chart {
+	margin-top: 0;
+}
+.polars-list {
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	list-style: none;
+}
+.polars-list li {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.4rem 0;
+	color: var(--basalt-copy-body);
+}
+.polars-list li + li {
+	border-top: 1px solid var(--basalt-edge);
+}
+.polars-list-value {
+	margin-left: auto;
+	padding-left: 1rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--polars-quiet);
+}
+
+/* Legend (HTML, so it wraps instead of colliding) */
+.polars-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--polars-quiet);
+	list-style: none;
+}
+.polars-key li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.polars-key-dot {
+	flex-shrink: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 3px;
+	background: var(--polars-c, var(--basalt-series-1));
+}
+.polars-key-dot-soft {
+	background: color-mix(in srgb, var(--polars-c, var(--basalt-series-1)) 32%, transparent);
+}
+.polars-key-ring {
+	width: 18px;
+	height: 0;
+	border-top: 2px dashed var(--basalt-copy);
+}
+.polars-c1 {
+	--polars-c: var(--basalt-series-1);
+}
+.polars-c2 {
+	--polars-c: var(--basalt-series-2);
+}
+.polars-c3 {
+	--polars-c: var(--basalt-series-3);
+}
+.polars-c4 {
+	--polars-c: var(--basalt-series-4);
+}
+.polars-c5 {
+	--polars-c: var(--basalt-series-5);
+}
+.polars-c6 {
+	--polars-c: var(--basalt-series-6);
+}
+.polars-c7 {
+	--polars-c: var(--basalt-series-7);
+}
+.polars-c8 {
+	--polars-c: var(--basalt-series-8);
+}
+
+/* Start angle picker (sits above its chart) */
+.polars-picker {
+	margin-bottom: 1rem;
+}
+.polars-picker .polars-chip {
+	padding: 0.3rem 0.75rem;
+	font-size: 0.77rem;
+}
+
+/* Config snippet */
+.polars-code {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.polars-code summary {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+}
+.polars-code summary::-webkit-details-marker {
+	display: none;
+}
+.polars-code summary:hover {
+	color: var(--basalt-copy);
+}
+.polars-code summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.polars-code summary .bi {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.polars-code[open] summary .bi {
+	transform: rotate(90deg);
+}
+.polars-code pre {
+	margin: 0.75rem 0 0;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	overflow-x: auto;
+	overflow-y: hidden;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.polars-chip,
+	.polars-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.polars-filter,
+	.polars-code {
+		display: none;
+	}
+	.polars-card.is-hidden {
+		display: block;
+	}
+}

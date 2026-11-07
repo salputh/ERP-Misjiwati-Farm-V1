@@ -1,0 +1,620 @@
+/* Basalt - Teams
+   Namespaced under .tm-*
+   The team cards, the team drawer and its two dialogs. The
+   header, segmented control, status pills, avatars, drawer,
+   dialogs, styled select, empty state and toasts are the
+   shared components. */
+
+.tm-page,
+.tm-layer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on the card's tinted top. */
+	--tm-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--tm-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--tm-danger-text: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	--tm-track: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+}
+
+/* One color per team, from the palette's chart colors, and the next
+   color along for the far end of its card's cover. */
+.tm-tone-1 {
+	--tm-tone: var(--basalt-series-1);
+}
+.tm-tone-2 {
+	--tm-tone: var(--basalt-series-2);
+}
+.tm-tone-3 {
+	--tm-tone: var(--basalt-series-3);
+}
+.tm-tone-4 {
+	--tm-tone: var(--basalt-series-4);
+}
+.tm-tone-5 {
+	--tm-tone: var(--basalt-series-5);
+}
+.tm-tone-6 {
+	--tm-tone: var(--basalt-series-6);
+}
+.tm-tone-7 {
+	--tm-tone: var(--basalt-series-7);
+}
+.tm-tone-8 {
+	--tm-tone: var(--basalt-series-8);
+}
+
+.tm-icon {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+	color: color-mix(in srgb, var(--tm-tone, var(--basalt-hue)) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tm-tone, var(--basalt-hue)) 16%, var(--basalt-plane));
+}
+
+/* Small uppercase label over a card's part. */
+.tm-label {
+	margin: 0 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--tm-quiet);
+}
+
+/* Gray buttons keep their label contrast. */
+.tm-page .btn-outline-secondary,
+.tm-layer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+}
+.tm-page .btn,
+.tm-layer .btn {
+	white-space: nowrap;
+}
+
+/* Toolbar
+   Search first, the switch right beside it, the count at the end. On a
+   phone the search takes its own row and the switch goes under it. */
+.tm-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.tm-search {
+	position: relative;
+	flex: 1 1 16rem;
+	max-width: 28rem;
+}
+.tm-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.9rem;
+	transform: translateY(-50%);
+	color: var(--tm-quiet);
+	pointer-events: none;
+}
+.tm-search .form-control {
+	padding-left: 2.5rem;
+}
+.tm-toolbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--tm-quiet);
+}
+@media (max-width: 575.98px) {
+	.tm-search {
+		flex-basis: 100%;
+	}
+	.tm-toolbar-count {
+		margin-left: 0;
+	}
+}
+
+/* Team cards
+   Rows of equal cards that end level: three across on a wide page, two
+   on a mid-sized one and one on a phone. */
+.tm-list {
+	container-type: inline-size;
+}
+.tm-grid {
+	display: grid;
+	gap: 0.75rem;
+}
+.tm-grid-empty {
+	grid-column: 1 / -1;
+	padding: 2rem 0;
+}
+
+/* One wide row per team: who it is, its people, its live projects, what
+   is next, then the actions. Narrower lists fold the row into two
+   columns, then one. */
+.tm-card.basalt-box {
+	position: relative;
+	display: grid;
+	gap: 1rem 2rem;
+	grid-template-columns: minmax(14rem, 1.15fr) minmax(8rem, 0.55fr) minmax(14rem, 1.35fr) minmax(10rem, 0.85fr) auto;
+	align-items: start;
+	padding: 1.25rem 1.5rem;
+	overflow: hidden;
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+}
+.tm-card.basalt-box:hover {
+	border-color: color-mix(in srgb, var(--tm-tone) 40%, var(--basalt-edge));
+}
+.tm-card.is-new {
+	animation: tm-new 1.6s ease;
+}
+@keyframes tm-new {
+	from {
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--tm-tone) 35%, transparent);
+	}
+}
+
+/* Who the team is: the icon, the name over its lead, and a line about it. */
+.tm-card-main {
+	display: grid;
+	gap: 0.1rem 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	min-width: 0;
+}
+.tm-card .tm-icon {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+	background: color-mix(in srgb, var(--tm-tone) 14%, var(--basalt-plane));
+}
+.tm-card-name {
+	min-width: 0;
+}
+.tm-card-actions {
+	grid-column: -2;
+	grid-row: 1;
+	align-self: start;
+}
+.tm-card-title {
+	min-width: 0;
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	line-height: 1.3;
+}
+.tm-card-title a {
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.tm-card-title a:hover {
+	text-decoration: underline;
+	color: var(--tm-link);
+}
+.tm-card-lead {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--tm-quiet);
+}
+.tm-card-about {
+	grid-column: 1 / -1;
+	margin: 0.6rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+.tm-card-people {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.tm-card .basalt-avatar-group .basalt-avatar {
+	border: 2px solid var(--basalt-plane);
+}
+.tm-card-more {
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--tm-quiet);
+}
+.tm-card-count {
+	flex-basis: 100%;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--tm-quiet);
+}
+
+/* Live projects and next up each sit in their own column, split from the
+   one before by a hairline. */
+.tm-card-block,
+.tm-card-foot {
+	align-self: stretch;
+	padding-left: 2rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+/* Each live project: its name and status, then a slim bar of tasks done
+   in the team's color. */
+.tm-card-projects {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tm-card-project {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+.tm-card-project a {
+	min-width: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.tm-card-project a:hover {
+	text-decoration: underline;
+	color: var(--tm-link);
+}
+.tm-card-project .basalt-status {
+	flex-shrink: 0;
+}
+.tm-card-projects .tm-bar {
+	display: block;
+	height: 5px;
+}
+.tm-card-none {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--tm-quiet);
+}
+
+@container (max-width: 58rem) {
+	.tm-card.basalt-box {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+	}
+	.tm-card-main {
+		grid-column: 1 / 3;
+	}
+	.tm-card-people {
+		grid-column: 1 / -1;
+	}
+	.tm-card-block {
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+@container (max-width: 40rem) {
+	.tm-card.basalt-box {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.tm-card-main {
+		grid-column: 1;
+	}
+	.tm-card-block,
+	.tm-card-foot {
+		grid-column: 1 / -1;
+		padding: 1rem 0 0;
+		border-top: 1px solid var(--basalt-edge);
+		border-left: 0;
+	}
+}
+.tm-card-foot .tm-label {
+	margin-bottom: 0.5rem;
+}
+.tm-next {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tm-when {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--tm-quiet);
+}
+.tm-when.is-late {
+	font-weight: 600;
+	color: var(--tm-danger-text);
+}
+
+@media (max-width: 575.98px) {
+	.tm-card.basalt-box {
+		padding: 1.25rem var(--basalt-pad-x-narrow, 1rem);
+	}
+}
+
+/* Drawer */
+.tm-drawer {
+	--bs-offcanvas-width: 480px;
+}
+.tm-drawer .offcanvas-header {
+	gap: 0.9rem;
+	align-items: flex-start;
+}
+.tm-drawer .offcanvas-body {
+	padding: 1.5rem;
+}
+/* On a phone the count and the team's icon give their room to the name;
+   the arrows stay. */
+@container basalt-drawer (max-width: 420px) {
+	.tm-drawer .basalt-drawer-pos,
+	.tm-drawer .offcanvas-header > .tm-icon {
+		display: none;
+	}
+}
+.tm-d-section + .tm-d-section {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.tm-d-subhead {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.tm-d-subhead .tm-d-sub {
+	margin: 0;
+}
+.tm-d-sub {
+	margin: 0 0 1rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tm-d-summary {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.tm-layer :where(a:not(.btn)) {
+	color: var(--tm-link);
+}
+
+/* People: face, name and job title, then a pill for the lead or an
+   invite. */
+.tm-d-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tm-d-person {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.8rem 0;
+}
+.tm-d-person + .tm-d-person {
+	border-top: 1px solid var(--basalt-edge);
+}
+.tm-d-person:first-child {
+	padding-top: 0;
+}
+.tm-d-person-text a {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.tm-d-person-text a:hover {
+	text-decoration: underline;
+	color: var(--tm-link);
+}
+.tm-d-person-title {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--tm-quiet);
+}
+
+/* Projects: name and status, a slim bar in the team's color, one muted
+   line of where it stands. */
+.tm-d-projects {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tm-d-project-top {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+}
+.tm-d-project-top a {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.tm-d-project-top a:hover {
+	text-decoration: underline;
+	color: var(--tm-link);
+}
+.tm-d-project-top .basalt-status {
+	flex-shrink: 0;
+}
+.tm-d-project-bar {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-top: 0.6rem;
+}
+.tm-bar {
+	position: relative;
+	flex: 1 1 auto;
+	height: 6px;
+	border-radius: 6px;
+	overflow: hidden;
+	background: var(--tm-track);
+}
+.tm-bar-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--tm-pct, 0%);
+	border-radius: inherit;
+	background: var(--tm-tone, var(--basalt-hue));
+}
+.tm-d-project-pct {
+	flex-shrink: 0;
+	width: 2.6rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.tm-d-project-when {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	color: var(--tm-quiet);
+}
+.tm-d-none {
+	font-size: 0.875rem;
+	color: var(--tm-quiet);
+}
+
+/* Team dialog */
+.tm-field {
+	margin-bottom: 1.25rem;
+}
+.tm-select {
+	max-width: 18rem;
+}
+.tm-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--tm-danger-text);
+}
+.tm-swatches {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.tm-swatches legend {
+	float: none;
+	font-size: inherit;
+}
+.tm-swatches-row {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}
+.tm-swatch {
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	background: var(--tm-tone);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+	cursor: pointer;
+	transition: transform 0.12s ease;
+}
+.tm-swatch:hover {
+	transform: scale(1.08);
+}
+/* The picked color wears a ring; that ring is also its focus marker. */
+.btn-check:checked + .tm-swatch {
+	box-shadow:
+		0 0 0 2px var(--basalt-plane),
+		0 0 0 4px var(--tm-tone);
+}
+.btn-check:focus-visible:not(:checked) + .tm-swatch {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Add people dialog
+   The form sits between the dialog's frame and its body, so it passes the
+   height on and only the list of people scrolls. */
+.tm-add-form {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.tm-search-dialog {
+	max-width: none;
+	margin-bottom: 1rem;
+}
+.tm-pick {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tm-pick li + li {
+	border-top: 1px solid var(--basalt-edge);
+}
+.tm-pick-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin: 0 -0.5rem;
+	padding: 0.8rem 0.5rem;
+	border-radius: 10px;
+	cursor: pointer;
+}
+.tm-pick-row:hover {
+	background: var(--basalt-wash);
+}
+.tm-pick-row .form-check-input {
+	flex-shrink: 0;
+	margin: 0;
+}
+.tm-pick-text {
+	min-width: 0;
+}
+.tm-pick-name {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tm-pick-title {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--tm-quiet);
+}
+.tm-pick-empty {
+	padding: 1rem 0;
+}
+.tm-add-count {
+	margin: 0;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--tm-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tm-card.is-new {
+		animation: none;
+	}
+	.tm-card.basalt-box,
+	.tm-swatch {
+		transition: none;
+	}
+}

@@ -1,0 +1,929 @@
+/*
+ * Subscription book, subscriptions.html. All page classes start with
+ * .sbs- and cover the tier tiles, the subscription list and what goes
+ * inside the quick view; the header, cards, tabs, pills, pager, empty
+ * state and drawer frame are shared components from basalt.css.
+ * Colors are --basalt-* tokens blended with color-mix(), so every
+ * palette and mode keeps its own hues. The drawer lives outside the page
+ * wrapper, which is why it declares the same blends.
+ */
+
+/* The quiet gray sits partway toward the body color so small text holds
+   4.5:1 on pale palettes and hovered rows; the link color does the same
+   because the primary alone falls short in a few light palettes. */
+.sbs-page,
+.sbs-drawer {
+	--sbs-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--sbs-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--sbs-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	--sbs-row-on: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+/* Each tier borrows a hue from the chart ramp so its tile and its tags in
+   the list agree. Text set in that hue leans toward the copy color and
+   keeps 4.5:1 in every palette. */
+.sbs-tone-starter {
+	--sbs-tone: var(--basalt-series-3);
+}
+.sbs-tone-growth {
+	--sbs-tone: var(--basalt-series-1);
+}
+.sbs-tone-enterprise {
+	--sbs-tone: var(--basalt-series-8);
+}
+:is(.sbs-tone-starter, .sbs-tone-growth, .sbs-tone-enterprise) {
+	--sbs-tone-ink: color-mix(in srgb, var(--sbs-tone) 45%, var(--basalt-copy));
+}
+
+.sbs-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--sbs-link);
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.sbs-page {
+	& :is(.form-control, .form-select) {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+	& .form-control::placeholder {
+		color: var(--sbs-quiet);
+		opacity: 1;
+	}
+}
+:is(.sbs-page, .sbs-drawer) .btn {
+	white-space: nowrap;
+}
+.sbs-page .btn-outline-secondary {
+	background-color: var(--basalt-plane);
+}
+
+/* Card padding and heading shared by the tiles card and the list card. */
+.sbs-card.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.sbs-card-head {
+	margin-bottom: 1.5rem;
+}
+.sbs-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sbs-card-desc {
+	max-width: 72ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--sbs-quiet);
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Three equal revenue cards on the plain card surface; the tier's hue
+   shows only in its name, its line and the edge of the one picked. Each
+   one is a button that filters the list to its tier. They stack once the
+   window drops below 992px. */
+.sbs-plans {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	@media (max-width: 991.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.sbs-tile {
+	display: flex;
+}
+.sbs-tile-btn {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	container: sbs-tile / inline-size;
+	width: 100%;
+	padding: 1.2rem 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	font: inherit;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease,
+		transform 170ms ease;
+	&:hover {
+		transform: translateY(-1px);
+		border-color: color-mix(in srgb, var(--sbs-tone) 55%, var(--basalt-edge));
+		box-shadow: 0 10px 24px -18px var(--basalt-scrim);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	/* The tier the list is narrowed to wears a firmer edge in its hue. */
+	&[aria-pressed="true"] {
+		border-color: var(--sbs-tone);
+		box-shadow: inset 0 0 0 1px var(--sbs-tone);
+	}
+	&[aria-pressed="true"]:focus-visible {
+		outline: 0;
+	}
+	/* Stacked on a phone, every tile gets shorter to pull the list up. */
+	@media (max-width: 575.98px) {
+		padding: 1rem 1.1rem;
+	}
+}
+.sbs-tile-top {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.sbs-tile-name {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--sbs-tone-ink);
+}
+.sbs-tile-price {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--sbs-quiet);
+}
+.sbs-tile-value {
+	margin-top: 0.6rem;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+	@media (max-width: 575.98px) {
+		margin-top: 0.4rem;
+		font-size: 1.5rem;
+	}
+}
+.sbs-tile-unit {
+	font-size: 0.85rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	color: var(--sbs-quiet);
+}
+.sbs-tile-change {
+	display: flex;
+	gap: 0 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--sbs-tone-ink);
+}
+.sbs-tile-foot {
+	display: flex;
+	gap: 0 0.3rem;
+	flex-wrap: wrap;
+	margin-top: 0.75rem;
+	font-size: 0.8rem;
+	color: var(--sbs-quiet);
+	@media (max-width: 575.98px) {
+		margin-top: 0.5rem;
+	}
+}
+/* Phrases never break inside. In a slim tile each phrase takes its own
+   line and the separating dots disappear. */
+:is(.sbs-tile-change, .sbs-tile-foot) > span {
+	white-space: nowrap;
+}
+@container sbs-tile (max-width: 15rem) {
+	.sbs-tile-change {
+		display: grid;
+		grid-template-columns: auto 1fr;
+	}
+	.sbs-tile-foot {
+		flex-direction: column;
+	}
+	.sbs-tile-change > span {
+		grid-column: 2;
+	}
+	.sbs-tile-dot {
+		display: none;
+	}
+}
+
+/* The tier's year: a thin line over a faint fill that wipes in from the
+   left when the tiles first come into view, one tile after another. */
+.sbs-spark {
+	display: block;
+	width: 100%;
+	height: 3rem;
+	margin-top: 1rem;
+	overflow: visible;
+	color: var(--sbs-tone);
+	clip-path: inset(-4px -4px -4px 0);
+	@media (max-width: 575.98px) {
+		height: 2rem;
+		margin-top: 0.6rem;
+	}
+}
+.sbs-spark-area {
+	opacity: 0.14;
+	fill: currentColor;
+}
+.sbs-spark-line {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.25;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	vector-effect: non-scaling-stroke;
+}
+
+/* The ripple: each card lifts a little and its edge lights in its plan's
+   hue, one after another. */
+.sbs-plans.is-waving .sbs-tile-btn {
+	animation: sbs-wave 640ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.sbs-plans.is-waving .sbs-tile:nth-child(2) .sbs-tile-btn {
+	animation-delay: 90ms;
+}
+.sbs-plans.is-waving .sbs-tile:nth-child(3) .sbs-tile-btn {
+	animation-delay: 180ms;
+}
+@keyframes sbs-wave {
+	35% {
+		border-color: var(--sbs-tone);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--sbs-tone) 18%, transparent);
+		transform: translateY(-6px);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.sbs-plans.is-waving .sbs-tile-btn {
+		animation: none;
+	}
+}
+
+/* On narrow screens the tab pills wrap to a second line rather than
+   scroll, so no tab is hidden. Counts use the font's natural figures,
+   since its tabular ones spread "2,204" too wide. */
+:is(.sbs-views .basalt-tabs-count, .sbs-pager .basalt-pager-range) {
+	font-variant-numeric: normal;
+}
+.sbs-views .basalt-tabs-list {
+	row-gap: 0.4rem;
+	flex-wrap: wrap;
+	overflow: visible;
+	& .nav-link {
+		white-space: nowrap;
+	}
+}
+
+/* Search, the two filters and the result count share one wrapping row. */
+.sbs-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 1.25rem 0 0.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.sbs-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 12rem;
+	max-width: 28rem;
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--sbs-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+	@media (max-width: 767.98px) {
+		flex: 1 1 100%;
+	}
+}
+/* A select is only as wide as its longest option. */
+.sbs-select.form-select {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 9.5rem;
+	@media (max-width: 767.98px) {
+		flex: 1 1 0;
+		min-width: 0;
+		max-width: 14rem;
+	}
+}
+.sbs-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--sbs-quiet);
+	@media (max-width: 767.98px) {
+		flex: 1 1 100%;
+		margin: 0.25rem 0 0;
+	}
+}
+
+/* The table is widened by the cells' side padding, so the first column
+   lines up with the card title and the search box. */
+.sbs-table-wrap {
+	position: relative;
+	container: sbs-list / inline-size;
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+	&[hidden] {
+		display: none;
+	}
+}
+.sbs-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--sbs-quiet);
+	}
+}
+.sbs-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	[aria-sort] & {
+		color: var(--basalt-copy);
+	}
+}
+.sbs-sort-idle {
+	opacity: 0.55;
+}
+.sbs-sort:hover .sbs-sort-idle {
+	opacity: 1;
+}
+
+/* Column widths, left to right. Money and the row actions sit flush
+   right; the date column keeps a wider gap from the money before it. */
+.sbs-col-who {
+	min-width: 16rem;
+}
+.sbs-col-plan {
+	width: 9rem;
+}
+.sbs-col-seats {
+	width: 8.5rem;
+}
+.sbs-col-mrr {
+	width: 7.5rem;
+	text-align: right;
+	& .sbs-sort {
+		flex-direction: row-reverse;
+	}
+}
+.sbs-col-date {
+	width: 11rem;
+}
+.sbs-table > :not(caption) > * > .sbs-col-date {
+	padding-left: 1.75rem;
+}
+.sbs-col-status {
+	width: 8rem;
+}
+.sbs-col-go {
+	width: 6rem;
+	text-align: right;
+}
+
+.sbs-row {
+	cursor: pointer;
+	&:hover {
+		background: var(--sbs-row-hover);
+	}
+	&.is-selected {
+		background: var(--sbs-row-on);
+	}
+	&.is-fresh {
+		animation: sbs-fresh 1.8s ease;
+	}
+}
+@keyframes sbs-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+/* Who the account is: lettered avatar, linked name and city. */
+.sbs-who {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	min-width: 0;
+}
+.sbs-who-text {
+	min-width: 0;
+}
+.sbs-who-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.sbs-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--sbs-quiet);
+}
+.sbs-sub-flat {
+	margin-top: 0;
+}
+.sbs-sub-late {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.basalt-avatar.sbs-mark {
+	flex: none;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 0.8rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+}
+.basalt-avatar.sbs-mark-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+}
+
+/* The tier name as a pale pill in the tier's hue, billing period below. */
+.sbs-plan {
+	display: inline-block;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--sbs-tone-ink);
+	background: color-mix(in srgb, var(--sbs-tone) 14%, var(--basalt-plane));
+}
+.sbs-col-plan .sbs-sub {
+	margin-top: 0.3rem;
+}
+
+/* Seats in use: a count above a short bar that turns amber when many
+   seats sit empty. The drawer shows a full-width version. */
+.sbs-seats {
+	display: block;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sbs-meter {
+	display: block;
+	width: 5.5rem;
+	height: 0.3rem;
+	margin-top: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+	&.is-low .sbs-meter-fill {
+		background: var(--basalt-warning);
+	}
+}
+.sbs-meter-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-success);
+}
+.sbs-meter-lg {
+	width: 100%;
+	height: 0.5rem;
+	margin-top: 0;
+}
+
+.sbs-date {
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sbs-amt {
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.sbs-empty {
+	margin: 1.5rem 0 0.5rem;
+	&[hidden] {
+		display: none;
+	}
+}
+.sbs-pager {
+	margin-top: 0.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The list answers to its card's width rather than the window's: with
+   the menu open, a 1024px window gives the card a tablet's room. */
+@container sbs-list (max-width: 900px) {
+	.sbs-table > :not(caption) > * {
+		& > * {
+			padding-left: 0.4rem;
+			padding-right: 0.4rem;
+		}
+		/* The end cells keep the wrapper's inset so column one stays aligned. */
+		& > :first-child {
+			padding-left: 0.6rem;
+		}
+		& > :last-child {
+			padding-right: 0.6rem;
+		}
+	}
+	.sbs-col-who {
+		min-width: 13rem;
+	}
+	.sbs-who > .sbs-mark {
+		display: none;
+	}
+	.sbs-col-seats {
+		width: 6.5rem;
+	}
+	.sbs-meter {
+		width: 4.5rem;
+	}
+	.sbs-table > :not(caption) > * > .sbs-col-date {
+		padding-left: 1rem;
+	}
+}
+
+/* At tablet width the seats column steps aside; the quick view and the
+   full page still show it, and the rest fits without scrolling. */
+@container sbs-list (max-width: 760px) {
+	.sbs-table .sbs-col-seats {
+		display: none;
+	}
+}
+
+/* At its narrowest each subscription stacks into a small card: name and
+   revenue, then tier and status, then the next date and the actions. */
+@container sbs-list (max-width: 640px) {
+	.sbs-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.sbs-table,
+	.sbs-table tbody {
+		display: block;
+	}
+	.sbs-table tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who  mrr"
+			"plan status"
+			"date go";
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.sbs-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.sbs-table > :not(caption) > * > *,
+	.sbs-table > :not(caption) > * > :first-child,
+	.sbs-table > :not(caption) > * > :last-child {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.sbs-table .sbs-col-who {
+		grid-area: who;
+	}
+	.sbs-table .sbs-col-mrr {
+		grid-area: mrr;
+		text-align: right;
+	}
+	.sbs-table .sbs-col-plan {
+		display: flex;
+		gap: 0.25rem 0.75rem;
+		flex-wrap: wrap;
+		grid-area: plan;
+		align-items: center;
+		& .sbs-sub {
+			margin: 0;
+		}
+	}
+	.sbs-table .sbs-col-status {
+		grid-area: status;
+		align-self: center;
+		justify-self: end;
+	}
+	.sbs-table > :not(caption) > * > .sbs-col-date {
+		padding: 0;
+	}
+	.sbs-table .sbs-col-date {
+		display: flex;
+		gap: 0.25rem 0.6rem;
+		flex-wrap: wrap;
+		grid-area: date;
+		align-items: baseline;
+		align-self: center;
+		& .sbs-sub {
+			margin: 0;
+		}
+	}
+	.sbs-table .sbs-col-go {
+		grid-area: go;
+		justify-self: end;
+	}
+	.sbs-table .sbs-col-seats {
+		display: none;
+	}
+}
+
+/* On a phone the city under the customer steps aside; the plan, the
+   amount, the date and the status are what a row is read for. */
+@media (max-width: 575.98px) {
+	.sbs-table .sbs-col-who .sbs-sub {
+		display: none;
+	}
+}
+
+/* The quick view drawer. On a phone the header keeps only the name: the
+   avatar goes and the record position is read aloud but not shown. */
+.sbs-drawer.offcanvas {
+	--bs-offcanvas-width: 480px;
+	@media (max-width: 575.98px) {
+		--bs-offcanvas-width: min(400px, 92vw);
+	}
+}
+@media (max-width: 575.98px) {
+	.sbs-drawer .sbs-mark-lg {
+		display: none;
+	}
+	.sbs-drawer .basalt-drawer-pos {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+.sbs-drawer {
+	& .offcanvas-title:focus {
+		outline: 0;
+	}
+	/* After its single action runs, the footer is left empty and hides. */
+	& .basalt-drawer-foot[hidden] {
+		display: none;
+	}
+}
+.sbs-d-status {
+	margin: 0 0 0.6rem;
+}
+.sbs-d-lead {
+	margin: 0;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.sbs-d-seats {
+	margin: 0.75rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.sbs-d-none {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--sbs-quiet);
+}
+
+/* The charge lines, the bills and the facts are three ruled lists that
+   share a rhythm: hairline between items, none above the first. */
+:is(.sbs-lines, .sbs-bills) {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sbs-bills[hidden] {
+	display: none;
+}
+.sbs-line {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.9rem;
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+.sbs-line-text {
+	min-width: 0;
+	& .sbs-sub {
+		white-space: normal;
+	}
+}
+.sbs-line-name {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sbs-line-amt {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sbs-line-total {
+	border-top-color: var(--basalt-edge-strong);
+	& :is(.sbs-line-name, .sbs-line-amt) {
+		font-weight: 700;
+	}
+}
+
+/* A bill row: number and date, the amount, then paid or unpaid in a
+   fixed-width track so the pills line up. */
+.sbs-bill {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto 4.75rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.9rem;
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& .basalt-status {
+		justify-self: start;
+	}
+}
+.sbs-bill-amt {
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.sbs-facts {
+	margin: 0;
+}
+.sbs-fact {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 8.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.9rem;
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--sbs-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+		& .sbs-sub {
+			white-space: normal;
+		}
+	}
+}
+@container basalt-drawer (max-width: 420px) {
+	.sbs-fact {
+		gap: 0.3rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* With reduced motion nothing slides, lifts, flashes or wipes in. */
+@media (prefers-reduced-motion: reduce) {
+	.sbs-row,
+	.sbs-tile-btn {
+		transition: none;
+	}
+	.sbs-tile-btn:hover {
+		transform: none;
+	}
+	.sbs-row.is-fresh {
+		animation: none;
+	}
+	.sbs-spark,
+	.sbs-plans.is-drawn .sbs-spark {
+		transition: none;
+		clip-path: none;
+	}
+}
+/* On paper the controls drop away and the sparklines print in full. */
+@media print {
+	.sbs-toolbar,
+	.sbs-views,
+	.sbs-pager,
+	.sbs-col-go,
+	.basalt-pagehead-actions {
+		display: none;
+	}
+	.sbs-row,
+	.sbs-tile-btn {
+		transition: none;
+	}
+	.sbs-spark {
+		transition: none;
+		clip-path: none;
+	}
+}

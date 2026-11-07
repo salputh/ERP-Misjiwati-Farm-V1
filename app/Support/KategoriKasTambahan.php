@@ -32,7 +32,7 @@ final readonly class KategoriKasTambahan
 
     public function kelasTag(): string
     {
-        return 'tag-primary';
+        return 'bg-primary-subtle text-primary';
     }
 
     /**

@@ -1,0 +1,828 @@
+/**
+ * Permissions page (permissions.html): the role by resource grid under
+ * .acl-*, from the toolbar at the top of the card down through the sticky
+ * header row, the group rows, the level cells and chips, the legend, the
+ * review bar, the level picker and the review sheet. Every color is a
+ * palette token or a mix of two.
+ */
+
+/* The toolbar runs along the top of the card: search, the role picker
+   for phones, the role filter, the differ switch and the fold button at
+   the far end. */
+.acl-toolbar {
+	display: flex;
+	gap: 0.625rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.acl-search {
+	flex: 1 1 15rem;
+	max-width: 22rem;
+
+	& .input-group-text {
+		color: var(--basalt-copy-muted);
+		background: transparent;
+	}
+}
+.acl-role-pick {
+	display: none;
+}
+.acl-roles .dropdown-toggle {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.acl-diff {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 2.375rem;
+	margin: 0;
+	padding-left: 2.75em;
+
+	& .form-check-label {
+		white-space: nowrap;
+		color: var(--basalt-copy-body);
+	}
+}
+.acl-fold {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-left: auto;
+}
+
+/* While the data loads a few ghost rows stand in for the grid; the note
+   slot takes the empty and error states. */
+.acl-skeleton {
+	display: grid;
+	gap: 1.1rem;
+	padding: var(--basalt-pad-x);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.acl-skeleton-row {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: 2.2fr 1fr 1fr 1fr;
+}
+.acl-note {
+	padding: 1.5rem var(--basalt-pad-x);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.acl-start {
+	max-width: 34rem;
+	margin: 1rem auto;
+}
+
+/* The grid grows with the page, which scrolls up and down. It only
+   scrolls sideways when the roles do not fit, and then the resource
+   column stays put. */
+.acl-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.acl-table {
+	width: 100%;
+	min-width: max-content;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 0.875rem;
+
+	& th,
+	& td {
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+}
+
+/* Role names are column labels, the same small uppercase label as every
+   other table header in the template, pinned to the top. */
+.acl-th {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	width: 6.5rem;
+	min-width: 6.5rem;
+	padding: 0.75rem 0.4rem 0.625rem;
+	border-bottom: 1px solid var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-align: center;
+	text-transform: uppercase;
+	vertical-align: bottom;
+	color: var(--basalt-copy-muted);
+	background: var(--basalt-plane);
+}
+.acl-th-res {
+	left: 0;
+	z-index: 4;
+	width: 14.5rem;
+	min-width: 14.5rem;
+	padding-left: var(--basalt-pad-x);
+	text-align: start;
+}
+.acl-th-name {
+	display: block;
+	line-height: 1.25;
+}
+.acl-th-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	white-space: nowrap;
+	text-transform: none;
+	color: var(--basalt-copy-muted);
+}
+
+/* Each area is a tbody headed by one row holding a fold button; a
+   sensitive area carries its flag on that row rather than on every
+   resource inside it. */
+.acl-group-head th {
+	padding: 0;
+	border-bottom: 1px solid var(--basalt-edge-strong);
+	background: var(--basalt-canvas);
+}
+.acl-group-btn {
+	position: sticky;
+	left: 0;
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.8rem var(--basalt-pad-x);
+	border: 0;
+	font-weight: 600;
+	text-align: start;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover .acl-group-name {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+	&:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&[aria-disabled="true"] {
+		cursor: default;
+	}
+	&[aria-disabled="true"]:hover .acl-group-name {
+		text-decoration: none;
+	}
+}
+.acl-group-chev {
+	color: var(--basalt-copy-muted);
+	transition: transform 0.18s ease;
+}
+.acl-group.is-collapsed .acl-group-chev {
+	transform: rotate(-90deg);
+}
+.acl-group-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 8px;
+	color: var(--basalt-hue-deep);
+	background: var(--basalt-hue-soft);
+}
+.acl-group-count {
+	font-size: 0.81rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.acl-group-btn .acl-res-flag {
+	font-weight: 600;
+}
+.acl-group-pending {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	&::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--basalt-warning);
+	}
+}
+
+/* The resource column down the side is pinned to the left edge. */
+.acl-res {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	min-width: 14.5rem;
+	max-width: 17rem;
+	padding: 0.85rem 1rem 0.85rem var(--basalt-pad-x);
+	border-right: 1px solid var(--basalt-edge);
+	font-weight: 400;
+	text-align: start;
+	background: var(--basalt-plane);
+}
+.acl-res-name {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.acl-res-desc {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	line-height: 1.35;
+	color: var(--basalt-copy-muted);
+}
+.acl-res-flag {
+	padding: 0.05rem 0.4rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--basalt-copy-body);
+}
+
+/* Once the grid has scrolled under the role row or the resource column,
+   a soft shadow on the edge facing the content shows they stay put. */
+@keyframes acl-pinned-top {
+	to {
+		box-shadow: 0 12px 24px -18px var(--basalt-scrim);
+	}
+}
+@keyframes acl-pinned-left {
+	to {
+		box-shadow: 12px 0 24px -18px var(--basalt-scrim);
+	}
+}
+@supports (animation-timeline: scroll()) {
+	.acl-th:not(.acl-th-res) {
+		animation: acl-pinned-top linear both;
+		animation-timeline: scroll(nearest block);
+		animation-range: 0 1rem;
+	}
+	.acl-res,
+	.acl-th-res {
+		animation: acl-pinned-left linear both;
+		animation-timeline: scroll(nearest inline);
+		animation-range: 0 1rem;
+	}
+}
+
+/* A level cell is a button filling its td; a pending cell carries a
+   warning wash that deepens with the row's hover. */
+.acl-row:hover .acl-td {
+	background: var(--basalt-wash);
+}
+.acl-td {
+	padding: 0.25rem;
+	text-align: center;
+	background: var(--basalt-plane);
+
+	&.is-pending {
+		background: color-mix(in srgb, var(--basalt-warning) 10%, var(--basalt-plane));
+	}
+}
+.acl-row:hover .acl-td.is-pending {
+	background: color-mix(in srgb, var(--basalt-warning) 14%, var(--basalt-plane));
+}
+.acl-cell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 2.5rem;
+	padding: 0.25rem;
+	border: 0;
+	border-radius: 8px;
+	color: inherit;
+	background: transparent;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&[aria-expanded="true"] {
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+}
+
+/* Level chips: the fill deepens from View to Full. An inherited chip is
+   dashed and plain, a locked one grayed, a pending one ringed with a
+   warning dot at its corner. */
+.acl-chip {
+	position: relative;
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	justify-content: center;
+	min-width: 4.25rem;
+	padding: 0.25rem 0.5rem;
+	border: 1px solid transparent;
+	border-radius: 999px;
+	font-size: 0.81rem;
+	font-weight: 600;
+	line-height: 1.25;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	& .bi {
+		font-size: 0.8rem;
+	}
+	&.is-inherited {
+		border: 1px dashed var(--basalt-edge-strong);
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+		background: transparent;
+	}
+	&.is-locked {
+		color: var(--basalt-copy-body);
+		background: var(--basalt-plane-alt);
+	}
+	&.is-pending {
+		box-shadow: 0 0 0 2px var(--basalt-warning);
+	}
+	&.is-pending::after {
+		content: "";
+		position: absolute;
+		top: -0.2rem;
+		right: -0.2rem;
+		width: 0.5rem;
+		height: 0.5rem;
+		border: 2px solid var(--basalt-plane);
+		border-radius: 50%;
+		background: var(--basalt-warning);
+	}
+}
+.acl-chip-none {
+	border-color: var(--basalt-edge);
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+/* The levels deepen like a heat map, so a column reads at a glance:
+   full is the accent itself, edit a strong tint, view a light one. */
+.acl-chip-view {
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.acl-chip-edit {
+	background: color-mix(in srgb, var(--basalt-hue) 34%, var(--basalt-plane));
+}
+.acl-chip-full {
+	color: var(--basalt-on-hue, #fff);
+	background: var(--basalt-hue);
+}
+.acl-chip-sample {
+	flex-shrink: 0;
+}
+
+/* The legend closes the card: one list of levels, one of marks, and the
+   keyboard hint. */
+.acl-legend {
+	display: grid;
+	gap: 0.75rem;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.81rem;
+	color: var(--basalt-copy-body);
+
+	&[hidden] {
+		display: none;
+	}
+	& ul {
+		display: grid;
+		gap: 0.5rem 1.5rem;
+		grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	& li {
+		display: inline-flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+}
+.acl-legend-keys {
+	margin: 0;
+	color: var(--basalt-copy-muted);
+
+	& kbd {
+		font-size: 0.71rem;
+	}
+}
+
+/* The review bar sticks to the bottom of the screen below the card. A
+   soft shadow above it shows the grid scrolling underneath, and a warning
+   stripe runs down its left edge. */
+.acl-review {
+	position: sticky;
+	bottom: 1rem;
+	z-index: 20;
+	margin-top: 1rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.acl-review-inner {
+	position: relative;
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.75rem 0.875rem 0.75rem 1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	box-shadow:
+		var(--basalt-card-shadow),
+		0 -12px 24px -18px var(--basalt-scrim);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.75rem;
+		bottom: 0.75rem;
+		left: -1px;
+		width: 4px;
+		border-radius: 0 4px 4px 0;
+		background: var(--basalt-warning);
+	}
+}
+.acl-review-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: var(--basalt-copy);
+	background: var(--basalt-warning-soft);
+}
+.acl-review-text {
+	display: flex;
+	gap: 0.1rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0;
+	color: var(--basalt-copy);
+}
+.acl-review-reach {
+	font-size: 0.81rem;
+	color: var(--basalt-copy-muted);
+}
+.acl-review-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-left: auto;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.acl-review:not([hidden]) {
+		animation: acl-rise 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+}
+@keyframes acl-rise {
+	from {
+		transform: translateY(0.5rem);
+		opacity: 0;
+	}
+}
+
+/* The level picker is one fixed menu the script moves beside the open
+   cell; its position arrives as two custom properties. */
+.acl-menu {
+	position: fixed;
+	top: var(--acl-menu-top, 0);
+	left: var(--acl-menu-left, 0);
+	z-index: 1056;
+	width: 18.5rem;
+	max-width: calc(100vw - 1rem);
+	padding: 0.375rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.acl-menu-head {
+	margin: 0;
+	padding: 0.4rem 0.6rem 0.5rem;
+	font-size: 0.75rem;
+	color: var(--basalt-copy-muted);
+
+	& span {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.acl-menu-item {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.4rem 0.6rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-align: start;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	& > .bi:first-child {
+		width: 1rem;
+		color: var(--basalt-copy-body);
+	}
+	&[aria-checked="true"] {
+		background: var(--basalt-hue-soft);
+	}
+	&[aria-checked="true"] .acl-menu-tick {
+		visibility: visible;
+	}
+	&[aria-disabled="true"] {
+		color: var(--basalt-copy-muted);
+		cursor: not-allowed;
+	}
+}
+.acl-menu-item:hover,
+.acl-menu-item:focus-visible {
+	outline: none;
+	background: var(--basalt-wash);
+}
+.acl-menu-item[aria-checked="true"]:hover,
+.acl-menu-item[aria-checked="true"]:focus-visible {
+	background: var(--basalt-hue-soft);
+}
+.acl-menu-item:focus-visible {
+	box-shadow: inset 0 0 0 2px var(--basalt-hue);
+}
+.acl-menu-item[aria-disabled="true"] > .bi:first-child,
+.acl-menu-item[aria-disabled="true"] .acl-menu-text small {
+	color: var(--basalt-copy-muted);
+}
+.acl-menu-item[aria-disabled="true"]:hover {
+	background: transparent;
+}
+.acl-menu-text {
+	flex: 1 1 auto;
+	min-width: 0;
+
+	& small {
+		display: block;
+		font-size: 0.75rem;
+		font-weight: 400;
+		color: var(--basalt-copy-body);
+	}
+}
+.acl-menu-key {
+	padding: 0.05rem 0.3rem;
+	font-size: 0.7rem;
+}
+.acl-menu-tick {
+	visibility: hidden;
+	color: var(--basalt-copy);
+}
+.acl-menu-rule {
+	margin: 0.3rem 0.25rem;
+	border-color: var(--basalt-edge);
+	opacity: 1;
+}
+.acl-menu-note {
+	display: flex;
+	gap: 0.5rem;
+	margin: 0.25rem 0.25rem 0.2rem;
+	padding: 0.5rem 0.6rem;
+	border-radius: 8px;
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+
+/* The review sheet lists changes by role, each one a row with the
+   before and after chips, any roles it ripples to, and an Undo. */
+.acl-drawer {
+	--bs-offcanvas-width: 28rem;
+}
+.acl-change + .acl-change {
+	margin-top: var(--basalt-pad-head);
+}
+.acl-change-role {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& span {
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--basalt-copy-muted);
+	}
+}
+.acl-change-list {
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	list-style: none;
+}
+.acl-change-item {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.8rem;
+
+	& + .acl-change-item {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.acl-change-what {
+	display: grid;
+	gap: 0.3rem;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.acl-change-res {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-weight: 600;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.acl-change-levels {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	color: var(--basalt-copy-muted);
+
+	& .acl-chip {
+		min-width: 0;
+		font-size: 0.75rem;
+	}
+}
+.acl-change-ripple {
+	display: flex;
+	gap: 0.3rem;
+	font-size: 0.75rem;
+	line-height: 1.35;
+	color: var(--basalt-copy-muted);
+}
+
+/* Mid widths narrow the resource column and let the fold button wrap. */
+@media (max-width: 1199.98px) {
+	.acl-fold {
+		margin-left: 0;
+	}
+	.acl-th-res,
+	.acl-res {
+		width: 12.5rem;
+		min-width: 12.5rem;
+		max-width: 12.5rem;
+	}
+}
+
+/* Phones show one role at a time from a select, so nothing is pinned
+   and the differ switch and role menu go away. */
+@media (max-width: 767.98px) {
+	.acl-toolbar {
+		padding: 1rem var(--basalt-pad-x-narrow);
+	}
+	.acl-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.acl-roles,
+	.acl-diff {
+		display: none;
+	}
+	.acl-role-pick {
+		display: flex;
+		gap: 0.5rem;
+		flex: 1 1 auto;
+		align-items: center;
+		min-width: 0;
+	}
+	.acl-role-pick-label {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+	}
+	.acl-role-pick > :last-child {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.acl-fold {
+		margin-left: 0;
+	}
+	/* Icon only on a phone; the label stays for screen readers. */
+	.acl-fold span {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.acl-wrap {
+		max-height: none;
+		overflow: visible;
+	}
+	.acl-table {
+		min-width: 0;
+	}
+	.acl-th {
+		position: static;
+		width: 6.5rem;
+		min-width: 6.5rem;
+	}
+	.acl-th-res,
+	.acl-res {
+		position: static;
+		width: auto;
+		min-width: 0;
+		max-width: none;
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.acl-legend-keys {
+		display: none;
+	}
+	.acl-group-btn {
+		position: static;
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.acl-review {
+		bottom: 0.5rem;
+	}
+	.acl-review-actions {
+		width: 100%;
+		margin-left: 0;
+	}
+	.acl-review-actions .btn {
+		flex: 1 1 auto;
+	}
+	.acl-legend {
+		padding: 1rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Touch screens have no keys to hint at; print drops the controls. */
+@media (pointer: coarse) {
+	.acl-menu-key {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.acl-group-chev {
+		transition: none;
+	}
+}
+@media print {
+	.acl-toolbar,
+	.acl-review,
+	.acl-menu {
+		display: none;
+	}
+	.acl-wrap {
+		max-height: none;
+		overflow: visible;
+	}
+	.acl-group-chev {
+		transition: none;
+	}
+}

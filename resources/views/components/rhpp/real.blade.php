@@ -3,7 +3,7 @@
 {{-- Tab RHPP Real: angka dokumen RHPP dari inti, perbandingan harga per trip, dan alokasi penghasilan per kandang. --}}
 @if ($lembar && $lembar['peringatan_sumber'] !== [])
     {{-- Alert template (alert-big) berisi daftar, sehingga ditulis langsung tanpa x-peringatan yang membungkus isinya dengan <p>. --}}
-    <div class="col-12 mb-25">
+    <div class="col-12 mb-4">
         <div class="alert alert-warning alert-big" role="alert">
             <div class="alert-content">
                 <h6 class="alert-heading">Beberapa data sumber RHPP belum lengkap</h6>
@@ -18,7 +18,7 @@
 @endif
 
 @if ($terkunci)
-    <div class="col-12 mb-25">
+    <div class="col-12 mb-4">
         <x-peringatan warna="info" judul="RHPP real dikunci">
             Dokumen ini sudah dikunci sehingga tidak dapat diubah. Buka kembali dengan password admin bila perlu diperbaiki.
         </x-peringatan>
@@ -26,13 +26,13 @@
 @endif
 
 @if ($dapatDiubah && ! $terkunci)
-    <div class="col-12 mb-25">
-        <div class="card card-default card-md">
-            <div class="card-header">
-                <h6>Input RHPP real dari dokumen inti</h6>
-                <div class="card-extra fs-13 color-light tanpa-kapital">Data RHPP tersimpan sebagai dokumen sementara.</div>
-            </div>
-            <div class="card-body">
+    <div class="col-12 mb-4">
+        <section class="card basalt-box db-card">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Input RHPP real dari dokumen inti</h2></div>
+                <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary tanpa-kapital">Data RHPP tersimpan sebagai dokumen sementara.</div>
+</header>
                 <form wire:submit="simpanReal">
                     <div class="row">
                         <div class="col-md-4">
@@ -45,8 +45,8 @@
                             <x-masukan id="rhpp-real-ppl" label="Nama PPL" wire:model="masukanReal.ppl" :kesalahan="$errors->first('masukanReal.ppl')" />
                         </div>
                         <div class="col-md-4">
-                            <div class="form-group mb-25">
-                                <label for="rhpp-real-tanggal-proses" class="il-gray fs-14 fw-500 align-center mb-10">Tanggal proses</label>
+                            <div class="mb-3 mb-4">
+                                <label for="rhpp-real-tanggal-proses" class="form-label fw-medium mb-2">Tanggal proses</label>
                                 <x-pilih-tanggal id="rhpp-real-tanggal-proses" ukuran="medium" :nilai="$masukan['tanggal_proses'] ?? ''" :kesalahan="$errors->has('masukanReal.tanggal_proses')" x-on:tanggal-dipilih="$wire.set('masukanReal.tanggal_proses', $event.detail)" />
                                 @error('masukanReal.tanggal_proses')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                             </div>
@@ -106,16 +106,16 @@
                     @enderror
 
                     @if ($nota->isNotEmpty())
-                        <h6 class="mb-15">Harga real tiap nota panen</h6>
-                        <div class="table4 table-responsive mb-25">
-                            <table class="table tabel-laporan mb-0">
+                        <h6 class="mb-3">Harga real tiap nota panen</h6>
+                        <div class="tabel-data table-responsive mb-4">
+                            <table class="table tabel-laporan mb-0 db-table">
                                 <thead>
-                                    <tr class="userDatatable-header">
-                                        <th><span class="userDatatable-title">Tanggal</span></th>
-                                        <th><span class="userDatatable-title">No. BTPA / SPA</span></th>
-                                        <th class="text-end"><span class="userDatatable-title">Ekor</span></th>
-                                        <th class="text-end"><span class="userDatatable-title">Tonase (kg)</span></th>
-                                        <th class="text-end"><span class="userDatatable-title">Harga real (Rp/kg)</span></th>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>No. BTPA / SPA</th>
+                                        <th class="text-end">Ekor</th>
+                                        <th class="text-end">Tonase (kg)</th>
+                                        <th class="text-end">Harga real (Rp/kg)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -131,8 +131,8 @@
                                                     type="text"
                                                     inputmode="numeric"
                                                     autocomplete="off"
-                                                    @class(['form-control form-control-sm ip-gray radius-xs b-light px-15 text-end', 'is-invalid' => $errors->has('hargaPanenReal.'.$satu->id)])
-                                                    x-data="isianRibuan('hargaPanenReal.{{ $satu->id }}', '.', false, { teks: true })"
+                                                    @class(['form-control form-control-sm    px-3 text-end', 'is-invalid' => $errors->has('hargaPanenReal.'.$satu->id)])
+ x-data="isianRibuan('hargaPanenReal.{{ $satu->id }}', '.', false, { teks: true })"
                                                     x-on:input="format"
                                                     x-on:blur="kirim(true)"
                                                     aria-label="Harga real nota {{ $satu->no_btpa }}"
@@ -148,21 +148,23 @@
                         </div>
                         <x-tombol tipe="submit" wire:loading.attr="disabled" wire:target="simpanReal">Simpan RHPP real</x-tombol>
                     @else
-                        <p class="color-light mb-0">Belum ada nota panen pada periode ini.</p>
+                        <p class="text-body-secondary mb-0">Belum ada nota panen pada periode ini.</p>
                     @endif
                 </form>
-            </div>
-        </div>
+            
+</div>
+</section>
     </div>
 @endif
 
 @if ($lembar)
-<div class="col-12 mb-25">
-    <div class="card card-default card-md">
-        <div class="card-header">
-            <h6>Dokumen RHPP dari inti</h6>
-            <div class="card-extra d-flex align-items-center gap-2 flex-wrap">
-                <span @class(['dm-tag tag-transparented m-0', 'tag-warning' => $lembar['dokumen']->status === 'sementara', 'tag-success' => $lembar['dokumen']->status !== 'sementara'])>{{ $lembar['dokumen']->status === 'sementara' ? 'Sementara' : 'Dikunci' }}</span>
+<div class="col-12 mb-4">
+    <section class="card basalt-box db-card">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Dokumen RHPP dari inti</h2></div>
+            <div class="d-flex flex-wrap align-items-center gap-2 d-flex align-items-center gap-2 flex-wrap">
+                <span @class(['badge  m-0', 'bg-warning-subtle text-warning' => $lembar['dokumen']->status === 'sementara', 'bg-success-subtle text-success' => $lembar['dokumen']->status !== 'sementara'])>{{ $lembar['dokumen']->status === 'sementara' ? 'Sementara' : 'Dikunci' }}</span>
                 @if ($dapatDiubah && ! $terkunci)
                     <x-tombol variasi="outlined" wire:click="bukaModalKunciRhpp" data-bs-toggle="modal" data-bs-target="#modal-kunci-rhpp" wire:loading.attr="disabled" wire:target="bukaModalKunciRhpp">
                         Kunci RHPP
@@ -173,8 +175,7 @@
                     </x-tombol>
                 @endif
             </div>
-        </div>
-        <div class="card-body">
+</header>
             <x-info class="mb-0">
                 <x-info.butir label="Inti">PT. Indojaya Agrinusa, {{ $lembar['dokumen']->kantor }}</x-info.butir>
                 <x-info.butir label="Peternak">Misjiwati</x-info.butir>
@@ -185,41 +186,42 @@
                     <x-info.butir label="DOC diklaim ke inti">@angka($lembar['doc_diklaim']) ekor · Rp @angka($lembar['rekap_klaim']['nilai']) (mati di perjalanan)</x-info.butir>
                 @endif
             </x-info>
-        </div>
-    </div>
+        
+</div>
+</section>
 </div>
 
-<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['rekap']['total_panen'] / 1000000, 1).' jt'" label="Total panen ayam" ikon="uil-bill" warna="primary">
+<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['rekap']['total_panen'] / 1000000, 1).' jt'" label="Total panen ayam" ikon="bi-receipt" warna="primary">
     <small>harga real rata-rata Rp @angka($lembar['kinerja']['harga_rata'], 2) per kg</small>
 </x-dashboard.kartu>
 
-<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['rekap']['sapronak'] / 1000000, 1).' jt'" label="Total sapronak" ikon="uil-box" warna="secondary">
+<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['rekap']['sapronak'] / 1000000, 1).' jt'" label="Total sapronak" ikon="bi-box-seam" warna="secondary">
     <small>DOC, pakan, dan OVK</small>
 </x-dashboard.kartu>
 
-<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['rekap']['lain'] / 1000000, 1).' jt'" label="Pendapatan lain-lain" ikon="uil-plus-circle" warna="info">
+<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['rekap']['lain'] / 1000000, 1).' jt'" label="Pendapatan lain-lain" ikon="bi-plus-circle" warna="info">
     <small>selisih efisiensi dan subsidi harga pasar</small>
 </x-dashboard.kartu>
 
-<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['rekap']['bersih'] / 1000000, 1).' jt'" label="Pendapatan bersih" ikon="uil-wallet" warna="warning">
+<x-dashboard.kartu data-lewati-ekspor lebar="col-xxl-3 col-sm-6" :nilai="'Rp '.\App\Support\Format::angka($lembar['rekap']['bersih'] / 1000000, 1).' jt'" label="Pendapatan bersih" ikon="bi-wallet2" warna="warning">
     <small>jumlah dibayar ke peternak</small>
 </x-dashboard.kartu>
 
 {{-- Sapronak --}}
-<div class="col-lg-6 mb-25">
-    <div class="card card-default card-md h-100">
-        <div class="card-header">
-            <h6>Sapronak (biaya)</h6>
-        </div>
-        <div class="card-body">
-            <div class="table4 table-responsive">
-                <table class="table tabel-laporan mb-0">
+<div class="col-lg-6 mb-4">
+    <section class="card basalt-box db-card h-100">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Sapronak (biaya)</h2></div>
+</header>
+            <div class="tabel-data table-responsive">
+                <table class="table tabel-laporan mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">Uraian</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Jumlah</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Harga</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Total (Rp)</span></th>
+                        <tr>
+                            <th>Uraian</th>
+                            <th class="text-end">Jumlah</th>
+                            <th class="text-end">Harga</th>
+                            <th class="text-end">Total (Rp)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -248,25 +250,26 @@
                     </tfoot>
                 </table>
             </div>
-        </div>
-    </div>
+        
+</div>
+</section>
 </div>
 
 {{-- Hasil panen dan kinerja --}}
-<div class="col-lg-6 mb-25">
-    <div class="card card-default card-md h-100">
-        <div class="card-header">
-            <h6>Hasil panen dan kinerja peternak</h6>
-        </div>
-        <div class="card-body">
-            <div class="table4 table-responsive">
-                <table class="table tabel-laporan mb-0">
+<div class="col-lg-6 mb-4">
+    <section class="card basalt-box db-card h-100">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Hasil panen dan kinerja peternak</h2></div>
+</header>
+            <div class="tabel-data table-responsive">
+                <table class="table tabel-laporan mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">Uraian</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Aktual</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Standar</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Selisih</span></th>
+                        <tr>
+                            <th>Uraian</th>
+                            <th class="text-end">Aktual</th>
+                            <th class="text-end">Standar</th>
+                            <th class="text-end">Selisih</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -292,9 +295,10 @@
                     </tbody>
                 </table>
             </div>
-            <p class="fs-13 color-light mt-15 mb-0">Angka <span class="recording-masukan">ungu</span> disalin dari dokumen RHPP inti. Selisih dalam kurung berarti di bawah standar.</p>
-        </div>
-    </div>
+            <p class="small text-body-secondary mt-3 mb-0">Angka <span class="recording-masukan">ungu</span> disalin dari dokumen RHPP inti. Selisih dalam kurung berarti di bawah standar.</p>
+        
+</div>
+</section>
 </div>
 
 <x-rhpp.rincian judul="Rekapitulasi pendapatan">
@@ -319,36 +323,37 @@
 </x-rhpp.rincian>
 
 {{-- Perbandingan harga per trip --}}
-<div class="col-12 mb-25">
-    <div class="card card-default card-md" x-data="kartuLipat(false)">
-        <div class="card-header">
-            <h6>Perbandingan harga per trip mobil</h6>
-            <div class="card-extra d-flex align-items-center gap-3">
-                <span class="fs-13 color-light tanpa-kapital">harga kontrak dan harga real</span>
-                <button type="button" class="btn btn-light btn-outlined btn-sm" @click="alihkan" :aria-expanded="terbuka" aria-label="Buka atau tutup perbandingan harga per trip">
-                    <i class="uil" :class="terbuka ? 'uil-angle-up' : 'uil-angle-down'" aria-hidden="true"></i>
+<div class="col-12 mb-4">
+    <section class="card basalt-box db-card" x-data="kartuLipat(false)">
+<div class="db-card-body">
+        <header class="db-card-head">
+<div><h2 class="db-card-title">Perbandingan harga per trip mobil</h2></div>
+            <div class="d-flex flex-wrap align-items-center gap-2 d-flex align-items-center gap-3">
+                <span class="small text-body-secondary tanpa-kapital">harga kontrak dan harga real</span>
+                <button type="button" class="btn btn-light btn-sm" @click="alihkan" :aria-expanded="terbuka" aria-label="Buka atau tutup perbandingan harga per trip">
+                    <i class="bi" :class="terbuka ? 'bi-chevron-up' : 'bi-chevron-down'" aria-hidden="true"></i>
                 </button>
             </div>
-        </div>
+</header>
         <div x-ref="isi" class="overflow-hidden" x-show="terbuka" x-cloak data-ekspor-buka>
-        <div class="card-body">
-            <div class="table4 table-responsive">
-                <table class="table tabel-laporan text-nowrap mb-0">
+        <div>
+            <div class="tabel-data table-responsive">
+                <table class="table tabel-laporan text-nowrap mb-0 db-table">
                         <thead>
-                            <tr class="userDatatable-header">
-                                <th><span class="userDatatable-title">No.</span></th>
-                                <th><span class="userDatatable-title">Tanggal</span></th>
-                                <th><span class="userDatatable-title">No. BTPA / SPA</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Ekor</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Tonase</span></th>
-                                <th class="text-end"><span class="userDatatable-title">BW</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Harga real</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Total real</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Harga kontrak</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Total kontrak</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Selisih harga</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Selisih nilai</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Alokasi subsidi</span></th>
+                            <tr>
+                                <th>No.</th>
+                                <th>Tanggal</th>
+                                <th>No. BTPA / SPA</th>
+                                <th class="text-end">Ekor</th>
+                                <th class="text-end">Tonase</th>
+                                <th class="text-end">BW</th>
+                                <th class="text-end">Harga real</th>
+                                <th class="text-end">Total real</th>
+                                <th class="text-end">Harga kontrak</th>
+                                <th class="text-end">Total kontrak</th>
+                                <th class="text-end">Selisih harga</th>
+                                <th class="text-end">Selisih nilai</th>
+                                <th class="text-end">Alokasi subsidi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -357,8 +362,8 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $trip['tanggal']->translatedFormat('j M') }}</td>
                                     <td>
-                                        <span class="d-block fw-500 color-dark">{{ $trip['no_btpa'] }}</span>
-                                        <span class="d-block fs-12 color-light">SPA {{ $trip['no_spa'] ?? '-' }}</span>
+                                        <span class="d-block fw-medium text-body">{{ $trip['no_btpa'] }}</span>
+                                        <span class="d-block small text-body-secondary">SPA {{ $trip['no_spa'] ?? '-' }}</span>
                                     </td>
                                     <td class="text-end">@angka($trip['ekor'])</td>
                                     <td class="text-end">@angka($trip['berat'], 2)</td>
@@ -390,12 +395,13 @@
                         </tfoot>
                     </table>
             </div>
-            <p class="fs-13 color-light mt-15 mb-0">
+            <p class="small text-body-secondary mt-3 mb-0">
                 Tonase dan BW dalam kg, harga dalam Rp per kg, nilai dalam Rp. Harga kontrak diambil dari bracket ABW (berat dibagi ekor); harga real adalah harga per nota di dokumen RHPP. Subsidi harga pasar dialokasikan ke tiap trip sebanding tonasenya.
             </p>
         </div>
         </div>
     </div>
+</section>
 </div>
 
 @if ($lembar['kandang'])

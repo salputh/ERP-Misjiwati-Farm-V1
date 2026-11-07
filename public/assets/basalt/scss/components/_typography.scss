@@ -1,0 +1,556 @@
+/* Text, from Bootstrap's own inline elements up to the larger reading pieces
+   built on top of them: keys and key combinations, headings and quotes, the
+   list group and the breadcrumb trail (folding one included), the type scale
+   specimen, eyebrows, steady figures and deltas, clamped paragraphs, step
+   lists and icon lists. typography.html walks through all of it; the
+   behavior behind [data-basalt-type-scale], kbd[data-basalt-key],
+   [data-basalt-clamp-toggle] and .basalt-breadcrumb-collapse is
+   Basalt.text in basalt.js. */
+
+$mono: "Chivo Mono", monospace;
+$icon-font: "bootstrap-icons";
+$quiet-ink: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+$hue-ink: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+$hue-solid: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+
+/* Small text controls drop the default glow for a crisp ring set off the edge. */
+@mixin focus-ring {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Bootstrap ships its own monospace stack and a pink code color; neither
+   belongs here, so every code-like element reads the template's face and
+   tokens instead. */
+code,
+kbd,
+samp,
+pre,
+.font-monospace {
+	font-family: $mono;
+}
+
+code {
+	padding: 0.05em 0.3em;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px;
+	font-size: 0.85em;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+
+	pre & {
+		padding: 0;
+		border: 0;
+		font-size: inherit;
+		background: none;
+	}
+}
+
+/* A key is a small raised cap: thicker underside, centered glyph. */
+kbd {
+	display: inline-block;
+	min-width: 1.6em;
+	padding: 0.12rem 0.4rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-bottom-width: 2px;
+	border-radius: 6px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	line-height: 1.35;
+	text-align: center;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: none;
+}
+
+/* Combinations line their caps up in a row, e.g.
+   <span class="basalt-keys"><kbd>⌘</kbd><kbd>K</kbd></span>; a word such as
+   "then" between caps means the keys go one after another. A cap the script
+   marks as pressed sinks by a pixel. */
+.basalt-keys {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	white-space: nowrap;
+
+	&-then {
+		padding: 0 0.1rem;
+		font-size: 0.75rem;
+		color: $quiet-ink;
+	}
+
+	kbd {
+		transition:
+			transform 90ms ease,
+			background-color 90ms ease,
+			border-color 90ms ease;
+
+		&.is-pressed {
+			transform: translateY(1px);
+			margin-bottom: 1px;
+			border-bottom-width: 1px;
+			border-color: var(--basalt-hue-border);
+			background: var(--basalt-hue-soft);
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+}
+
+mark,
+.mark {
+	padding: 0.05em 0.25em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 30%, var(--basalt-plane));
+}
+
+/* Edits and abbreviations keep their native marks, tinted to the palette. */
+del {
+	color: $quiet-ink;
+}
+
+ins {
+	text-decoration-color: var(--basalt-success);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+}
+
+abbr[title] {
+	text-decoration-color: color-mix(in srgb, var(--basalt-copy-muted) 70%, transparent);
+	text-underline-offset: 3px;
+}
+
+/* Schibsted Grotesk has nothing as light as the 300 Bootstrap asks for on
+   .lead and the display sizes, which leaves the browser to fake a weight.
+   The lead sits at a true regular, and display type is as bold as the
+   headings around it. */
+.lead {
+	font-weight: 400;
+}
+
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5,
+.display-6 {
+	font-weight: 700;
+	letter-spacing: -0.025em;
+}
+
+/* The base styles size small in rem, so a subtitle inside a heading would fall
+   to body size; here it is a share of the heading instead. */
+:is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) > small {
+	font-size: 0.62em;
+	font-weight: 500;
+	letter-spacing: 0;
+}
+
+.blockquote {
+	color: var(--basalt-copy);
+
+	&-footer {
+		color: $quiet-ink;
+	}
+}
+
+/* The list group maps its slots onto the palette, so the selected row takes
+   the accent and a disabled one goes quiet instead of Bootstrap's blue and
+   gray. */
+$list-group-slots: (
+	color: var(--basalt-copy-body),
+	bg: var(--basalt-plane),
+	border-color: var(--basalt-edge),
+	border-radius: 12px,
+	action-color: var(--basalt-copy-body),
+	action-hover-color: var(--basalt-copy),
+	action-hover-bg: var(--basalt-wash),
+	action-active-color: var(--basalt-copy),
+	action-active-bg: var(--basalt-plane-alt),
+	disabled-color: $quiet-ink,
+	disabled-bg: var(--basalt-canvas),
+	active-color: var(--basalt-on-hue),
+	active-bg: $hue-solid,
+	active-border-color: $hue-solid,
+);
+
+.list-group {
+	@each $slot, $value in $list-group-slots {
+		--bs-list-group-#{$slot}: #{$value};
+	}
+}
+
+.list-group-item {
+	&.active {
+		border-color: var(--bs-list-group-active-border-color);
+		color: var(--basalt-on-hue);
+		background-color: var(--bs-list-group-active-bg);
+	}
+
+	/* Leading icons get a box of their own width, so a column of them stays
+     aligned whatever each glyph measures. */
+	> .bi:first-child {
+		display: inline-block;
+		flex-shrink: 0;
+		width: 1.25em;
+		text-align: center;
+	}
+}
+
+.list-group-item-action:focus-visible {
+	z-index: 3;
+	outline: 0;
+	box-shadow: inset 0 0 0 2px var(--basalt-hue);
+}
+
+.list-group-numbered > .list-group-item::before {
+	color: $quiet-ink;
+}
+
+/* Trail links stay quiet until pointed at; the current page is the bold one.
+   Inside a folding trail, the middle levels hide behind a "…" button until
+   it is pressed. */
+.breadcrumb {
+	--bs-breadcrumb-divider-color: #{$quiet-ink};
+	--bs-breadcrumb-item-active-color: var(--basalt-copy);
+	font-size: 0.875rem;
+}
+
+.breadcrumb-item {
+	a {
+		border-radius: 4px;
+		text-decoration: none;
+		color: $quiet-ink;
+
+		&:hover {
+			text-decoration: underline;
+			text-underline-offset: 3px;
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			@include focus-ring;
+		}
+	}
+
+	&.active {
+		font-weight: 600;
+	}
+	.bi {
+		margin-right: 0.3rem;
+	}
+	.basalt-breadcrumb-collapse &.is-folded {
+		display: none;
+	}
+}
+
+.basalt-breadcrumb-more {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.75rem;
+	height: 1.35rem;
+	padding: 0 0.3rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 6px;
+	font-size: 0.8rem;
+	line-height: 1;
+	vertical-align: middle;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		@include focus-ring;
+	}
+}
+
+/* Each specimen row puts the style's name and measured size on the left and
+   a sample on the right. The script fills the numbers in from what the
+   browser actually renders, so they cannot drift from the truth. On a phone
+   the two halves stack. */
+.basalt-type-scale {
+	display: grid;
+
+	&-row {
+		display: grid;
+		gap: 1.5rem;
+		grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr);
+		align-items: center;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+
+		&:first-child {
+			padding-top: 0;
+		}
+		&:last-child {
+			padding-bottom: 0;
+			border-bottom: 0;
+		}
+
+		@media (max-width: 767.98px) {
+			gap: 0.3rem;
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	&-name {
+		display: block;
+		font-family: $mono;
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--basalt-copy);
+	}
+	&-spec {
+		display: block;
+		margin-top: 0.2rem;
+		font-family: $mono;
+		font-size: 0.7rem;
+		color: $quiet-ink;
+	}
+	&-sample {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+/* An eyebrow is the short mono label that sits over a heading. */
+.basalt-eyebrow {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-family: $mono;
+	font-size: 0.71rem;
+	font-weight: 500;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: $hue-ink;
+}
+
+/* Figures that update in place keep fixed-width digits so nothing shifts;
+   a delta adds a direction arrow and colors itself by which way it went. */
+.basalt-num {
+	font-feature-settings: "tnum";
+	font-variant-numeric: tabular-nums;
+}
+
+.basalt-delta {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	font-size: 0.77rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: $quiet-ink;
+
+	&-up {
+		color: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+	}
+	&-down {
+		color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+	}
+}
+
+/* A clamped block shows --basalt-clamp-lines lines (three unless told
+   otherwise) and opens in full once toggled; print always gets every line.
+   The toggle under it, [data-basalt-clamp-toggle], appears only when some
+   text is actually hidden. */
+.basalt-clamp {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-line-clamp: var(--basalt-clamp-lines, 3);
+	line-clamp: var(--basalt-clamp-lines, 3);
+	-webkit-box-orient: vertical;
+
+	&.is-open {
+		display: block;
+		overflow: visible;
+		-webkit-line-clamp: unset;
+		line-clamp: none;
+	}
+
+	@media print {
+		display: block;
+		overflow: visible;
+		-webkit-line-clamp: unset;
+	}
+}
+
+.basalt-clamp-toggle {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-top: 0.4rem;
+	padding: 0.1rem 0.1rem;
+	border: 0;
+	border-radius: 4px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&[hidden] {
+		display: none;
+	}
+	&:hover {
+		text-decoration-color: var(--basalt-hue);
+	}
+	&:focus-visible {
+		@include focus-ring;
+	}
+
+	.bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+
+	&[aria-expanded="true"] .bi {
+		transform: rotate(180deg);
+	}
+}
+
+/* Steps are numbered discs strung on a vertical line. A finished step trades
+   its number for a check and tints the line below it; the step in progress
+   is a filled disc with a soft halo. */
+.basalt-list-steps {
+	counter-reset: basalt-step;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	> li {
+		counter-increment: basalt-step;
+		position: relative;
+		padding: 0 0 1.35rem 2.75rem;
+		font-size: 0.875rem;
+		line-height: 1.55;
+		color: var(--basalt-copy-body);
+
+		&:last-child {
+			padding-bottom: 0;
+		}
+
+		&::before {
+			content: counter(basalt-step);
+			position: absolute;
+			top: -0.1rem;
+			left: 0;
+			display: grid;
+			place-items: center;
+			width: 1.9rem;
+			height: 1.9rem;
+			border-radius: 50%;
+			border: 1.5px solid var(--basalt-edge-strong);
+			font-size: 0.8rem;
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+			color: var(--basalt-copy-body);
+			background: var(--basalt-plane);
+		}
+
+		&:not(:last-child)::after {
+			content: "";
+			position: absolute;
+			top: 1.95rem;
+			bottom: 0.1rem;
+			left: calc(0.95rem - 1px);
+			width: 2px;
+			border-radius: 1px;
+			background: var(--basalt-edge-strong);
+		}
+
+		&.is-done {
+			&::before {
+				content: "\f272";
+				border-color: var(--basalt-hue-border);
+				font-family: $icon-font;
+				font-weight: 400;
+				color: $hue-ink;
+				background: var(--basalt-hue-soft);
+			}
+
+			&::after {
+				background: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-edge-strong));
+			}
+		}
+
+		&.is-current::before {
+			border-color: transparent;
+			color: var(--basalt-on-hue);
+			background: $hue-solid;
+			box-shadow: 0 0 0 4px var(--basalt-hue-soft);
+		}
+	}
+
+	&-title {
+		display: block;
+		margin-bottom: 0.1rem;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Icon lists hang a round marker beside each line: a check on .is-yes, and on
+   .is-no a smaller cross with the line itself gone quiet. */
+.basalt-list-icon {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+
+	> li {
+		position: relative;
+		padding-left: 1.85rem;
+		line-height: 1.5;
+		color: var(--basalt-copy-body);
+
+		&::before {
+			content: "\f309";
+			position: absolute;
+			top: 0.05rem;
+			left: 0;
+			display: grid;
+			place-items: center;
+			width: 1.3rem;
+			height: 1.3rem;
+			border-radius: 50%;
+			font-family: $icon-font;
+			font-size: 0.75rem;
+			color: var(--basalt-copy-body);
+			background: var(--basalt-plane-alt);
+		}
+
+		&.is-yes::before {
+			content: "\f633";
+			color: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+			background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+		}
+
+		&.is-no {
+			color: $quiet-ink;
+
+			&::before {
+				content: "\f659";
+				font-size: 0.6rem;
+				color: $quiet-ink;
+				background: var(--basalt-plane-alt);
+			}
+		}
+	}
+}

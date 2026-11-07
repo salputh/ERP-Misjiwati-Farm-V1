@@ -1,0 +1,236 @@
+/* Compiles to assets/basalt/css/components/ideas.css, linked after basalt.css by
+   the pages that use it. */
+/* AI suggestions: a card of up to four ideas in a row, each with an
+   icon, a short title, what it rests on and one thing to do. The card
+   is a plain one; the mark by the title says it is the assistant's, and
+   the ideas rise in one after another. Used on the Social Dashboard and the
+   Blog, which work their ideas out from their own numbers. */
+.basalt-ideas-mark {
+	display: grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	border-radius: 9px;
+	font-size: 1rem;
+	color: var(--basalt-on-hue, #fff);
+	background: linear-gradient(135deg, var(--basalt-hue), var(--basalt-series-5));
+	/* Flat mode: the mark is one plain primary. */
+}
+:root[data-basalt-gradients="off"] .basalt-ideas-mark {
+	background: var(--basalt-hue);
+}
+
+.basalt-ideas-list {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+@media (max-width: 1199.98px) {
+	.basalt-ideas-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-ideas-list {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.basalt-idea {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	padding: 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	animation: basalt-idea-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: calc(var(--i) * 90ms);
+}
+
+@keyframes basalt-idea-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+.basalt-idea-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	margin-bottom: 0.2rem;
+	border-radius: 9px;
+	color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+}
+
+.basalt-idea-title {
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.basalt-idea-why {
+	flex: 1;
+	margin: 0 0 0.4rem;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* As a column beside a chart: one idea per row, the icon on the left
+   and the action on the right, which drops under the text on a phone. */
+.basalt-ideas-list.is-column {
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+.basalt-ideas-list.is-column .basalt-idea {
+	display: grid;
+	gap: 0.1rem 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.9rem 1rem;
+}
+.basalt-ideas-list.is-column .basalt-idea-icon {
+	grid-row: span 2;
+	margin: 0;
+}
+.basalt-ideas-list.is-column .basalt-idea-why {
+	grid-column: 2;
+	margin: 0;
+}
+.basalt-ideas-list.is-column .basalt-idea > .btn,
+.basalt-ideas-list.is-column .basalt-idea-actions {
+	grid-row: 1 / span 2;
+	grid-column: 3;
+	white-space: nowrap;
+}
+
+/* A row's actions side by side, such as a pin beside the main button. */
+.basalt-idea-actions {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+
+/* Whether an idea fixes a problem or builds on what works, as a small
+   label before its reason; a problem's icon turns amber. */
+.basalt-idea-kind {
+	display: inline-block;
+	margin-right: 0.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.67rem;
+	font-weight: 700;
+	vertical-align: 0.08em;
+	color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 13%, transparent);
+}
+
+.basalt-idea.is-problem .basalt-idea-kind {
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 16%, transparent);
+}
+.basalt-idea.is-problem .basalt-idea-icon {
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 16%, transparent);
+}
+
+@media (max-width: 575.98px) {
+	.basalt-ideas-list.is-column .basalt-idea > .btn,
+	.basalt-ideas-list.is-column .basalt-idea-actions {
+		grid-row: auto;
+		grid-column: 2;
+		justify-self: start;
+		margin-top: 0.5rem;
+	}
+}
+/* While the AI reads the numbers: a line with three bouncing dots over
+   rows that shimmer where the ideas will land. */
+.basalt-ideas-thinking {
+	display: flex;
+	gap: 0.75rem;
+	flex: 1;
+	flex-direction: column;
+}
+
+.basalt-ideas-thinking-text {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.25rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-hue);
+}
+
+.basalt-ideas-dots {
+	display: inline-flex;
+	gap: 3px;
+}
+.basalt-ideas-dots i {
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: currentColor;
+	animation: basalt-ideas-dot 1s ease-in-out infinite;
+}
+.basalt-ideas-dots i:nth-child(2) {
+	animation-delay: 170ms;
+}
+.basalt-ideas-dots i:nth-child(3) {
+	animation-delay: 0.3s;
+}
+
+@keyframes basalt-ideas-dot {
+	50% {
+		opacity: 0.25;
+		transform: translateY(-3px);
+	}
+}
+.basalt-ideas-ghost {
+	height: 4.6rem;
+	border-radius: 14px;
+	background: linear-gradient(
+		100deg,
+		var(--basalt-plane-alt) 30%,
+		color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane)) 50%,
+		var(--basalt-plane-alt) 70%
+	);
+	background-size: 300% 100%;
+	animation: basalt-ideas-shimmer 1.2s linear infinite;
+}
+
+@keyframes basalt-ideas-shimmer {
+	from {
+		background-position: 100% 0;
+	}
+	to {
+		background-position: 0 0;
+	}
+}
+/* One quiet line under the ideas, such as a note that they change. */
+.basalt-ideas-note {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	margin: 1rem 0 0;
+	font-size: 0.77rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.basalt-ideas-dots i,
+	.basalt-ideas-ghost {
+		animation: none;
+	}
+	.basalt-idea {
+		animation: none;
+	}
+}

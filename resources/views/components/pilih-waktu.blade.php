@@ -1,6 +1,6 @@
 @props(['nilai', 'id', 'kesalahan' => false])
 
-{{-- Pemilih tanggal dan jam bergaya katalog template: tanggal dari Datepicker (jQuery UI), jam dari Timepicker (wickedpicker).
+{{-- Pemilih tanggal dan jam Basalt: tanggal dari datepicker Basalt, jam dari input type="time" 24 jam.
      Pengganti input datetime-local bawaan peramban. Nilai berformat Y-m-dTH:i; nilai baru dikirim lewat event "waktu-dipilih". --}}
 <div
     {{ $attributes->class(['row g-2']) }}
@@ -10,17 +10,15 @@
     wire:ignore
 >
     <div class="col-7">
-        <div class="form-group-calender position-relative">
-            <input type="text" id="{{ $id }}" x-ref="tanggal" readonly autocomplete="off" aria-label="Tanggal" @class(['form-control ih-medium ip-gray radius-xs b-light px-15', 'is-invalid' => $kesalahan])>
-            <a href="#" tabindex="-1" aria-hidden="true"><img src="{{ asset('assets/img/svg/calendar.svg') }}" alt="" class="svg"></a>
+        <div class="basalt-datepicker" data-basalt-datepicker x-ref="tanggal">
+            <div class="input-group">
+                <input type="text" id="{{ $id }}" autocomplete="off" aria-label="Tanggal" placeholder="Pilih tanggal" @class(['form-control', 'is-invalid' => $kesalahan])>
+                <button type="button" class="btn btn-outline-secondary basalt-datepicker-btn" aria-label="Buka kalender"><i class="bi bi-calendar3" aria-hidden="true"></i></button>
+            </div>
+            <input type="hidden" value="{{ \Illuminate\Support\Str::before($nilai, 'T') }}">
         </div>
     </div>
     <div class="col-5">
-        <div>
-            <div class="input-container icon-right position-relative">
-                <span class="input-icon icon-right"><img src="{{ asset('assets/img/svg/clock.svg') }}" alt="" class="svg"></span>
-                <input type="text" id="{{ $id }}-jam" x-ref="jam" readonly autocomplete="off" aria-label="Jam" placeholder="Jam" @class(['form-control ih-medium ip-gray radius-xs b-light px-15', 'is-invalid' => $kesalahan])>
-            </div>
-        </div>
+        <input type="time" id="{{ $id }}-jam" x-ref="jam" aria-label="Jam" step="60" @class(['form-control', 'is-invalid' => $kesalahan]) value="{{ \Illuminate\Support\Str::after($nilai, 'T') === $nilai ? '' : \Illuminate\Support\Str::after($nilai, 'T') }}">
     </div>
 </div>

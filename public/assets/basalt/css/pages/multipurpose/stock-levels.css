@@ -1,0 +1,946 @@
+/*
+ * stock-levels.html (Stock Levels), every class prefixed .whs-. Headers, cards,
+ * segmented controls, selects, status pills, choice tiles, the stepper,
+ * drawers, empty states and toasts are shared components; this sheet only
+ * arranges them and draws what is unique here: the restock list, stock by
+ * location, the stock table and its meters, the chart card and both drawers.
+ */
+
+/* Tokens for the page and its drawers. The quiet gray is pulled toward body
+   text so small type keeps 4.5:1 on the lighter palettes. */
+.whs-page,
+.whs-drawer {
+	--whs-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--whs-line: var(--basalt-edge);
+	--whs-track: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+	--whs-ok: var(--basalt-success);
+	--whs-low: var(--basalt-warning);
+	--whs-out: var(--basalt-danger);
+}
+
+/* Each card is its own container, so its layout answers to the card's width. */
+.whs-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.whs-cardhead {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.whs-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.whs-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	color: var(--whs-quiet);
+}
+
+/* A product is always shown as a square tile tinted by its own tone. */
+.whs-tile {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--whs-tone) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--whs-tone) 15%, var(--basalt-plane));
+}
+.whs-tile-lg {
+	width: 2.85rem;
+	height: 2.85rem;
+	font-size: 1.25rem;
+}
+
+/* Restock holds two short groups, order now and on the way; each line is
+   a tile, two lines of text and a single action. */
+.whs-restock {
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.whs-restock-group + .whs-restock-group {
+	margin-top: 1.5rem;
+}
+.whs-restock-title {
+	margin: 0 0 0.5rem;
+	font-size: inherit;
+}
+.whs-restock-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.whs-restock-item {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--whs-line);
+
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+.whs-restock-text {
+	flex: 1;
+	min-width: 0;
+}
+.whs-restock-what {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& a {
+		text-decoration: none;
+		color: inherit;
+	}
+	& a:hover {
+		text-decoration: underline;
+		color: var(--basalt-hue-deep, var(--basalt-hue));
+	}
+}
+.whs-restock-sub {
+	margin: 0.25rem 0 0;
+	font-size: 0.8rem;
+	color: var(--whs-quiet);
+}
+
+/* Stock by location sets the ring beside a list of locations, or above it
+   in a narrow card. Each list row is one button that filters the table. */
+.whs-sites {
+	display: flex;
+	gap: 1.5rem 2rem;
+	align-items: center;
+	padding: 1rem var(--basalt-pad-x) var(--basalt-pad-x);
+
+	@container (max-width: 560px) {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
+.whs-ring {
+	position: relative;
+	flex: none;
+	width: 12.5rem;
+	height: 12.5rem;
+
+	@container (max-width: 560px) {
+		align-self: center;
+		width: 11rem;
+		height: 11rem;
+	}
+}
+/* The ring's tooltip draws over its center words, not under them: the
+   words sit behind the canvas, which is clear except where it draws. */
+.whs-ring canvas {
+	position: relative;
+	z-index: 1;
+}
+.whs-ring-hole {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	text-align: center;
+	pointer-events: none;
+
+	& strong {
+		font-size: 1.6rem;
+		font-weight: 750;
+		line-height: 1.1;
+		color: var(--basalt-copy);
+		z-index: 0;
+	}
+	& span {
+		max-width: 7.5rem;
+		font-size: 0.77rem;
+		color: var(--whs-quiet);
+	}
+}
+.whs-sites-list {
+	flex: 1;
+	min-width: 0;
+	margin: 0 -0.75rem;
+	padding: 0;
+	list-style: none;
+}
+.whs-site {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 0.65rem minmax(0, 1fr) auto;
+	align-items: center;
+	width: 100%;
+	padding: 0.7rem 0.75rem;
+	border: 0;
+	border-radius: 12px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+	transition: background-color 130ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&.is-picked {
+		background: color-mix(in srgb, var(--whs-tone) 12%, var(--basalt-plane));
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.whs-site-dot {
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 50%;
+	background: var(--whs-tone);
+}
+.whs-site-who {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.whs-site-name {
+	font-weight: 700;
+	font-size: 0.92rem;
+}
+.whs-site-note {
+	font-size: 0.77rem;
+	color: var(--whs-quiet);
+}
+.whs-site-note-low {
+	color: color-mix(in srgb, var(--whs-low) 45%, var(--basalt-copy));
+}
+.whs-site-value {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	font-weight: 700;
+	font-size: 0.95rem;
+	white-space: nowrap;
+}
+.whs-site-unit {
+	min-width: 2.4rem;
+	font-weight: 400;
+	font-size: 0.77rem;
+	text-align: right;
+	color: var(--whs-quiet);
+}
+
+/* Over the table, search grows only to a comfortable width with the two
+   selects beside it, and the count is pushed to the far end. Narrow cards
+   wrap all of it onto full-width lines. */
+.whs-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--whs-line);
+}
+.whs-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 13rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--whs-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.whs-toolbar-select-site,
+.whs-toolbar-select-status {
+	flex: 0 1 11.5rem;
+	min-width: 10rem;
+}
+.whs-toolbar-count {
+	margin: 0 0 0 auto;
+	padding-left: 0.5rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--whs-quiet);
+}
+@container (max-width: 760px) {
+	.whs-toolbar {
+		flex-wrap: wrap;
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.whs-search {
+		flex: 1 1 100%;
+		min-width: 0;
+		max-width: 28rem;
+	}
+	.whs-toolbar-select-site,
+	.whs-toolbar-select-status {
+		flex: 1 1 9rem;
+		min-width: 0;
+		max-width: 13.5rem;
+	}
+	.whs-toolbar-count {
+		flex-basis: 100%;
+		margin: 0.25rem 0 0;
+		padding: 0;
+	}
+}
+
+/* The stock table scrolls sideways rather than squeezing, and a whole
+   product row is clickable. */
+.whs-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.whs-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy);
+	min-width: 100%;
+
+	& > :not(caption) > * > * {
+		border-bottom-color: var(--whs-line);
+	}
+	& thead th {
+		padding: 0.7rem 1rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--whs-quiet);
+		background: transparent;
+	}
+	& tbody td {
+		padding: var(--basalt-pad-row-y) 1rem;
+		font-size: 0.88rem;
+		vertical-align: top;
+	}
+	& tr > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& tr > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& tbody tr:last-child td {
+		border-bottom: 0;
+	}
+	& tbody tr[data-whs-sku] {
+		cursor: pointer;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+	& tbody tr[data-whs-sku]:hover > td {
+		background: var(--basalt-wash);
+	}
+}
+
+/* Sort buttons look like plain header text; the active column's arrow is
+   the only one at full strength. */
+.whs-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .bi {
+		font-size: 0.8rem;
+		opacity: 0.55;
+	}
+}
+th[aria-sort="ascending"] .whs-sort,
+th[aria-sort="descending"] .whs-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort="ascending"] .whs-sort .bi,
+th[aria-sort="descending"] .whs-sort .bi {
+	opacity: 1;
+}
+
+/* Every column but Product has a set width; Product absorbs what is left. */
+.whs-col-onhand {
+	width: 8rem;
+}
+.whs-col-avail {
+	width: 12.5rem;
+}
+.whs-col-incoming {
+	width: 8rem;
+}
+.whs-col-status {
+	width: 11.5rem;
+}
+.whs-col-act {
+	width: 12rem;
+}
+.whs-col-num {
+	text-align: right;
+}
+.whs-table thead .whs-col-num .whs-sort {
+	flex-direction: row-reverse;
+}
+
+.whs-prod {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.whs-prod-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.whs-prod-name {
+	font-weight: 700;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-hue-deep, var(--basalt-hue));
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.whs-prod-sku {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.75rem;
+	color: var(--whs-quiet);
+}
+
+.whs-num {
+	display: block;
+	font-weight: 700;
+	font-size: 0.92rem;
+	color: var(--basalt-copy);
+}
+.whs-sub {
+	display: block;
+	margin-top: 0.3rem;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--whs-quiet);
+}
+.whs-none {
+	font-size: 0.85rem;
+	color: var(--whs-quiet);
+}
+.whs-col-status .basalt-status {
+	margin-top: 0.05rem;
+}
+
+/* Availability reads as a number, then a meter whose center line is the
+   reorder point: green past it, amber short of it, an empty red track at
+   zero. The drawer's per-location bars are built from the same parts. */
+.whs-avail {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+
+	& .whs-num {
+		flex: 0 0 2.75rem;
+		text-align: right;
+	}
+}
+.whs-meter {
+	position: relative;
+	flex: 1;
+	max-width: 7.5rem;
+	height: 6px;
+	border-radius: 99px;
+	background: var(--whs-track);
+}
+.whs-meter-fill,
+.whs-rank-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: inherit;
+	background: var(--whs-ok);
+}
+.whs-meter-low .whs-meter-fill,
+.whs-rank-row-low .whs-rank-fill {
+	background: var(--whs-low);
+}
+.whs-meter-out,
+.whs-rank-row-out .whs-rank-bar {
+	background: color-mix(in srgb, var(--whs-out) 18%, var(--basalt-plane));
+}
+.whs-meter-mark,
+.whs-rank-mark {
+	position: absolute;
+	top: -3px;
+	bottom: -3px;
+	width: 2px;
+	margin-left: -1px;
+	border-radius: 1px;
+	background: var(--whs-quiet);
+}
+.whs-meter-mark {
+	left: 50%;
+}
+.whs-col-avail .whs-sub {
+	padding-left: 3.5rem;
+}
+
+.whs-act {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: flex-end;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.whs-reset {
+	display: flex;
+	justify-content: center;
+	margin-top: -1rem;
+	padding-bottom: 1.5rem;
+}
+
+/* Some cells carry the header's word ("available", "incoming") for when
+   the rows stack and the header row is gone; until then it is hidden. */
+.whs-narrow {
+	display: none;
+}
+
+/* Just above medium, cells tighten so the actions stay at the card edge. */
+@container (max-width: 1060px) {
+	.whs-table thead th,
+	.whs-table tbody td {
+		padding-left: 0.8rem;
+		padding-right: 0.8rem;
+	}
+	.whs-table tr > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	.whs-table tr > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+}
+
+/* At medium widths On hand drops out (the drawer still shows it) and the
+   other columns give up a little width. */
+@container (max-width: 1000px) {
+	.whs-col-onhand {
+		display: none;
+	}
+	.whs-prod-name {
+		white-space: normal;
+	}
+	.whs-col-avail {
+		width: 11rem;
+	}
+	.whs-col-incoming {
+		width: 6.5rem;
+	}
+	.whs-col-status {
+		width: 9.5rem;
+	}
+	.whs-col-act {
+		width: 12rem;
+	}
+}
+
+/* In a narrow card every row becomes a small record: product and status,
+   then the meter, then incoming beside the actions. */
+@container (max-width: 760px) {
+	.whs-table thead {
+		display: none;
+	}
+	.whs-table,
+	.whs-table tbody {
+		display: block;
+	}
+	.whs-table tbody tr[data-whs-sku] {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas: "prod prod status" "avail avail avail" "inc act act";
+		padding: 1.2rem var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--whs-line);
+
+		&:last-child {
+			border-bottom: 0;
+		}
+
+		& > td {
+			display: block;
+			width: auto;
+			padding: 0;
+			border: 0;
+		}
+		& > td.whs-col-onhand {
+			display: none;
+		}
+		& > td:nth-child(1) {
+			grid-area: prod;
+		}
+		& > td.whs-col-avail {
+			grid-area: avail;
+			padding-left: 3.4rem;
+		}
+		& > td.whs-col-incoming {
+			display: flex;
+			gap: 0.1rem 0.6rem;
+			flex-wrap: wrap;
+			grid-area: inc;
+			align-items: baseline;
+			align-self: center;
+			padding-left: 3.4rem;
+		}
+		& > td.whs-col-status {
+			grid-area: status;
+			text-align: right;
+		}
+		& > td.whs-col-act {
+			grid-area: act;
+			align-self: center;
+		}
+	}
+	.whs-avail .whs-num {
+		flex-basis: auto;
+		text-align: left;
+	}
+	.whs-meter {
+		max-width: none;
+	}
+	.whs-col-avail .whs-sub {
+		padding-left: 0;
+	}
+	.whs-narrow {
+		display: inline;
+		font-weight: 400;
+		color: var(--whs-quiet);
+	}
+	.whs-col-incoming .whs-sub {
+		margin: 0;
+	}
+	.whs-col-status .whs-sub {
+		white-space: normal;
+	}
+}
+
+/* On a phone the actions move to a line of their own, leaving incoming its width. */
+@container (max-width: 480px) {
+	.whs-table tbody tr[data-whs-sku] {
+		row-gap: 0.85rem;
+		grid-template-areas: "prod prod status" "avail avail avail" "inc inc inc" "act act act";
+
+		& > td.whs-col-act {
+			padding-left: 3.4rem;
+		}
+		& .whs-act {
+			justify-content: flex-start;
+		}
+	}
+}
+
+/* On a phone a product keeps its name, what is available and its status;
+   the reorder point and what is on order wait in the quick view. */
+@media (max-width: 575.98px) {
+	.whs-table tbody tr[data-whs-sku] {
+		grid-template-areas: "prod prod status" "avail avail avail" "act act act";
+	}
+	.whs-table tbody tr[data-whs-sku] > td.whs-col-incoming,
+	.whs-table td.whs-col-avail .whs-sub {
+		display: none;
+	}
+}
+
+.whs-stock-foot {
+	margin: 0;
+	padding: 1.1rem var(--basalt-pad-x) 1.3rem;
+	border-top: 1px solid var(--whs-line);
+	font-size: 0.8rem;
+	color: var(--whs-quiet);
+
+	@container (max-width: 760px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The in-and-out card: two totals with swatches that match the bars, over a fixed-height chart. */
+.whs-flow {
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.whs-flow-totals {
+	display: flex;
+	gap: 0.5rem 2rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+}
+.whs-flow-label {
+	font-size: 0.85rem;
+	color: var(--whs-quiet);
+}
+.whs-flow-value {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.whs-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+}
+.whs-swatch-in {
+	background: var(--basalt-series-2);
+}
+.whs-swatch-out {
+	background: var(--basalt-series-5);
+}
+.whs-flow-chart {
+	position: relative;
+	height: 240px;
+}
+
+/* Quick view drawer: a one-paragraph summary, then free stock per location
+   as a name, a bar with the reorder mark, and the figure. */
+.whs-say {
+	margin: 0.75rem 0 0;
+	font-size: 0.92rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.whs-rank {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.whs-rank-row {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr) 3rem;
+	align-items: center;
+	padding: 0.5rem 0;
+}
+.whs-rank-name {
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.whs-rank-bar {
+	position: relative;
+	height: 8px;
+	border-radius: 99px;
+	background: var(--whs-track);
+}
+.whs-rank-value {
+	font-weight: 700;
+	font-size: 0.88rem;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.whs-rank-key {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0.6rem 0 0;
+	font-size: 0.77rem;
+	color: var(--whs-quiet);
+}
+.whs-rank-keymark {
+	width: 2px;
+	height: 0.85rem;
+	border-radius: 1px;
+	background: var(--whs-quiet);
+}
+
+/* Orders on the way and recent movements share one row shape: an icon,
+   two lines of text, and a figure or button at the end. */
+.whs-pos,
+.whs-moves {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.whs-po,
+.whs-moves-item {
+	display: flex;
+	gap: 0.85rem;
+	align-items: flex-start;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--whs-line);
+}
+.whs-po {
+	align-items: center;
+}
+.whs-po:first-child,
+.whs-moves-item:first-child {
+	padding-top: 0;
+}
+.whs-po:last-child,
+.whs-moves-item:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.whs-po-icon,
+.whs-moves-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: var(--whs-quiet);
+	background: var(--basalt-plane-alt);
+}
+.whs-po-icon {
+	color: color-mix(in srgb, var(--basalt-info) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-info) 14%, var(--basalt-plane));
+}
+.whs-moves-item-in .whs-moves-icon {
+	color: color-mix(in srgb, var(--whs-ok) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--whs-ok) 14%, var(--basalt-plane));
+}
+.whs-po-text,
+.whs-moves-text {
+	flex: 1;
+	min-width: 0;
+}
+.whs-po-what,
+.whs-moves-what {
+	margin: 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.whs-po-sub,
+.whs-moves-sub {
+	margin: 0.2rem 0 0;
+	font-size: 0.77rem;
+	color: var(--whs-quiet);
+}
+.whs-po .btn {
+	white-space: nowrap;
+}
+.whs-moves-end {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	flex: none;
+	align-items: flex-end;
+}
+.whs-moves-qty {
+	font-weight: 700;
+	font-size: 0.88rem;
+	color: var(--basalt-copy);
+}
+.whs-moves-item-in .whs-moves-qty {
+	color: color-mix(in srgb, var(--whs-ok) 50%, var(--basalt-copy));
+}
+.whs-moves-date {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--whs-quiet);
+}
+
+/* The receive and count drawer: evenly spaced fields, and the stepper turns
+   red with its message shown once the quantity is rejected. */
+.whs-field {
+	margin-bottom: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.whs-sitepick {
+	--basalt-choice-min: 9rem;
+
+	& > legend {
+		font-size: var(--bs-body-font-size);
+		font-weight: 400;
+	}
+}
+.whs-qty {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& + .invalid-feedback {
+		margin-top: 0.4rem;
+	}
+	&:has(.is-invalid) + .invalid-feedback {
+		display: block;
+	}
+}
+.whs-qty-after {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--whs-quiet);
+}
+.basalt-stepper:has(.is-invalid) {
+	border-color: var(--basalt-danger);
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.whs-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

@@ -1,0 +1,425 @@
+/* Basalt - Approval Details (approval-details.html)
+   One request for sign-off. Namespaced under .apd-*; the header,
+   cards, status pills and avatars are the shared components from
+   basalt.css. Every color is a --basalt-* token, so palettes and dark
+   mode carry through. Three type sizes: the card title, body text
+   (--apd-fs-body) and one small size (--apd-fs-small). */
+
+.apd-page {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes. */
+	--apd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--apd-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--apd-line: var(--basalt-edge);
+	--apd-fs-body: 0.875rem;
+	--apd-fs-small: 0.8rem;
+}
+
+.apd-tone-1 {
+	--apd-tone: var(--basalt-series-1);
+}
+.apd-tone-2 {
+	--apd-tone: var(--basalt-series-2);
+}
+.apd-tone-3 {
+	--apd-tone: var(--basalt-series-3);
+}
+.apd-tone-4 {
+	--apd-tone: var(--basalt-series-4);
+}
+.apd-tone-5 {
+	--apd-tone: var(--basalt-series-5);
+}
+
+.apd-quiet {
+	display: block;
+	font-size: var(--apd-fs-small);
+	line-height: 1.45;
+	color: var(--apd-quiet);
+}
+.apd-link {
+	border-radius: 3px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--apd-link);
+}
+.apd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.apd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Header */
+.basalt-hero-detail.apd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.apd-head .basalt-hero-title:focus {
+	outline: none;
+}
+.apd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.apd-tags {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+.apd-tags .basalt-status {
+	padding: 0.25rem 0.7rem;
+	font-size: var(--apd-fs-small);
+}
+.apd-tag {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: var(--apd-fs-small);
+	font-weight: 600;
+	color: var(--apd-quiet);
+}
+.apd-pager {
+	display: flex;
+	gap: 0.3rem;
+}
+.apd-pager .btn.disabled {
+	opacity: 0.4;
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.apd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Grid
+   Rows whose cards end level: what is asked beside the sign-off, then
+   the comments beside the history. Below desktop width every card
+   stacks in that order. */
+.apd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.apd-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.apd-card-ask,
+	.apd-card-comments {
+		grid-column: span 7;
+	}
+	.apd-card-decide,
+	.apd-card-history {
+		grid-column: span 5;
+	}
+}
+
+/* Cards */
+.apd-card {
+	min-width: 0;
+}
+.apd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.apd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.apd-card-head > div {
+	min-width: 0;
+}
+.apd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.apd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--apd-fs-body);
+	line-height: 1.55;
+	color: var(--apd-quiet);
+}
+.apd-section {
+	margin: 1.5rem 0 0.75rem;
+	font-size: var(--apd-fs-body);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.apd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* What is asked */
+.apd-who,
+.apd-approver {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.apd-who-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.apd-who-name {
+	border-radius: 3px;
+	font-size: var(--apd-fs-body);
+	font-weight: 700;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.apd-who-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.apd-who-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.apd-what {
+	margin: 1.25rem 0 1.5rem;
+	font-size: var(--apd-fs-body);
+	line-height: 1.65;
+	color: var(--basalt-copy);
+}
+.apd-facts {
+	margin: 0;
+}
+.apd-facts-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 9rem minmax(0, 1fr);
+	padding: 0.75rem 0;
+	border-bottom: 1px solid var(--apd-line);
+	font-size: var(--apd-fs-body);
+}
+.apd-facts-row:first-child {
+	border-top: 1px solid var(--apd-line);
+}
+.apd-facts-row:last-child {
+	border-bottom: 0;
+}
+.apd-facts dt {
+	font-weight: 600;
+	color: var(--apd-quiet);
+}
+.apd-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* Sign-off */
+.apd-chip {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--apd-tone) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--apd-tone) 14%, var(--basalt-plane));
+}
+.apd-rule {
+	display: flex;
+	gap: 0.9rem;
+	align-items: flex-start;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--apd-line);
+	border-radius: 12px;
+}
+.apd-rule-text {
+	min-width: 0;
+}
+.apd-rule-text p {
+	margin: 0;
+}
+.apd-rule-name {
+	margin: 0 0 0.2rem;
+	font-size: var(--apd-fs-body);
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.apd-approver-name {
+	font-size: var(--apd-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.apd-decide {
+	margin-top: 1.5rem;
+}
+.apd-decide-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
+.apd-decide-foot .btn {
+	white-space: nowrap;
+}
+.apd-outcome {
+	display: flex;
+	gap: 0.7rem;
+	align-items: flex-start;
+	margin-top: 1.25rem;
+	padding: 0.9rem 1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.apd-outcome > .bi {
+	flex: none;
+	margin-top: 0.1rem;
+	font-size: 1.05rem;
+}
+.apd-outcome-ok > .bi {
+	color: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-copy));
+}
+.apd-outcome-no > .bi {
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+}
+.apd-outcome p {
+	margin: 0;
+	font-size: var(--apd-fs-body);
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+
+/* Comments */
+.apd-comments {
+	display: flex;
+	gap: 1.1rem;
+	flex-direction: column;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+.apd-comments[hidden] {
+	display: none;
+}
+.apd-comment {
+	display: flex;
+	gap: 0.8rem;
+	min-width: 0;
+}
+.apd-comment .basalt-avatar {
+	flex: none;
+}
+.apd-comment-body {
+	min-width: 0;
+}
+.apd-comment-head {
+	display: flex;
+	gap: 0.1rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0;
+	font-size: var(--apd-fs-body);
+	color: var(--basalt-copy);
+}
+.apd-comment-head .apd-quiet {
+	display: inline;
+}
+.apd-comment-text {
+	margin: 0.25rem 0 0;
+	font-size: var(--apd-fs-body);
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+.apd-reply-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.6rem;
+}
+.apd-error {
+	margin: 0.4rem 0 0;
+	font-size: var(--apd-fs-small);
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+}
+.apd-error[hidden] {
+	display: none;
+}
+
+/* History */
+.apd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.apd-feed-item {
+	position: relative;
+	display: flex;
+	gap: 0.85rem;
+	padding-bottom: 1.1rem;
+}
+.apd-feed-item:last-child {
+	padding-bottom: 0;
+}
+.apd-feed-item:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.2rem;
+	bottom: 0.2rem;
+	left: 1rem;
+	width: 1px;
+	background: var(--apd-line);
+}
+.apd-feed-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--apd-quiet);
+	background: var(--basalt-plane-alt);
+}
+.apd-feed-icon-check {
+	color: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-copy));
+	background: var(--basalt-success-soft, var(--basalt-plane-alt));
+}
+.apd-feed-icon-x {
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+	background: var(--basalt-danger-soft, var(--basalt-plane-alt));
+}
+.apd-feed-text {
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.apd-feed-what {
+	margin: 0 0 0.1rem;
+	font-size: var(--apd-fs-body);
+	color: var(--basalt-copy);
+}
+
+/* Note and comment boxes use the page text size. */
+.apd-card textarea.form-control {
+	font-size: var(--apd-fs-body);
+}

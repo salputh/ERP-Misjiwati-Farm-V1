@@ -1,0 +1,193 @@
+/* Healthcare - Vitals strip (header component)
+   Namespaced under .hc-vstrip*
+   A deep panel in the palette's primary with up to four live readings and
+   the day's heartbeat along its foot. Deep in dark mode as well, with
+   light text; plain with gradients off. vitals-strip.js fills it from its
+   data-* attributes. */
+
+.hc-vstrip {
+	--hc-vstrip-from: color-mix(in srgb, var(--basalt-hue) 82%, var(--basalt-copy));
+	--hc-vstrip-to: color-mix(in srgb, var(--basalt-hue) 50%, var(--basalt-copy));
+	--hc-vstrip-ink: var(--basalt-plane);
+	--hc-vstrip-soft: color-mix(in srgb, var(--hc-vstrip-ink) 84%, transparent);
+	position: relative;
+	overflow: hidden;
+	container-type: inline-size;
+	padding: 1.6rem 2rem 4.75rem;
+	border-radius: 20px;
+	color: var(--hc-vstrip-ink);
+	background-color: var(--hc-vstrip-from);
+	background-image: linear-gradient(120deg, var(--hc-vstrip-from), var(--hc-vstrip-to));
+	box-shadow: var(--basalt-card-shadow);
+
+	[data-bs-theme="dark"] & {
+		--hc-vstrip-from: color-mix(in srgb, var(--basalt-hue) 32%, var(--basalt-canvas));
+		--hc-vstrip-to: color-mix(in srgb, var(--basalt-hue) 15%, var(--basalt-canvas));
+		--hc-vstrip-ink: var(--basalt-copy);
+		--hc-vstrip-soft: color-mix(in srgb, var(--hc-vstrip-ink) 90%, transparent);
+	}
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+}
+
+/* The heartbeat runs in its own band along the foot, clear of the figures. */
+.hc-vstrip-beat {
+	position: absolute;
+	right: 0;
+	bottom: 0.85rem;
+	left: 0;
+	width: 100%;
+	height: 2.9rem;
+	pointer-events: none;
+}
+.hc-vstrip-past,
+.hc-vstrip-future {
+	fill: none;
+	stroke: var(--hc-vstrip-ink);
+	stroke-width: 1.5;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+.hc-vstrip-past {
+	stroke-opacity: 0.3;
+	transition: stroke-opacity 900ms ease;
+}
+.hc-vstrip-future {
+	stroke-opacity: 0.12;
+	stroke-dasharray: 4 6;
+}
+.hc-vstrip.is-held .hc-vstrip-past {
+	stroke-opacity: 0;
+	transition: none;
+}
+
+.hc-vstrip-title {
+	position: relative;
+	display: flex;
+	gap: 0.55rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--hc-vstrip-soft);
+}
+.hc-vstrip-live {
+	position: relative;
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background-color: var(--hc-vstrip-ink);
+
+	&::after {
+		position: absolute;
+		inset: -5px;
+		border-radius: inherit;
+		background-color: var(--hc-vstrip-ink);
+		opacity: 0;
+		content: "";
+		animation: hc-vstrip-pulse 2.4s ease-out 1s infinite;
+	}
+}
+@keyframes hc-vstrip-pulse {
+	0% {
+		opacity: 0.35;
+		transform: scale(0.4);
+	}
+	70%,
+	100% {
+		opacity: 0;
+		transform: scale(1.4);
+	}
+}
+
+.hc-vstrip-reads {
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 1.25rem;
+	margin: 1.6rem 0 0;
+}
+/* The default tone, kept weightless so data-tone wins. */
+:where(.hc-vstrip-read) {
+	--tone: var(--basalt-hue);
+}
+.hc-vstrip-read {
+	display: flex;
+	flex-direction: column-reverse;
+	justify-content: flex-end;
+	min-width: 0;
+	margin: -0.5rem;
+	padding: 0.5rem;
+	border-radius: 12px;
+	outline: 0;
+
+	&:focus-visible {
+		box-shadow: 0 0 0 2px var(--hc-vstrip-ink);
+	}
+	& dt {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		margin-top: 0.5rem;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--hc-vstrip-soft);
+	}
+	& dd {
+		margin: 0;
+		font-family: "Chivo Mono", monospace;
+		font-size: 3rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		line-height: 1;
+		letter-spacing: -0.03em;
+		white-space: nowrap;
+		color: var(--hc-vstrip-ink);
+	}
+	& dd small {
+		margin-left: 0.4rem;
+		font-family: "Schibsted Grotesk", sans-serif;
+		font-size: 1rem;
+		font-weight: 600;
+		letter-spacing: 0;
+		color: var(--hc-vstrip-soft);
+	}
+}
+/* Each reading's mark in its chart color, ringed so it shows on the panel. */
+.hc-vstrip-mark {
+	flex: none;
+	width: 0.85rem;
+	height: 0.3rem;
+	border-radius: 999px;
+	background-color: var(--tone);
+	box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--hc-vstrip-ink) 70%, transparent);
+}
+
+/* Tablets and phones: a clean two by two. */
+@container (max-width: 860px) {
+	.hc-vstrip-reads {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		row-gap: 1.75rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.hc-vstrip {
+		padding: 1.4rem 1.25rem 4.25rem;
+	}
+}
+@container (max-width: 420px) {
+	.hc-vstrip-read dd {
+		font-size: 2.3rem;
+	}
+	.hc-vstrip-read dt {
+		font-size: 0.82rem;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hc-vstrip-live::after {
+		animation: none;
+	}
+}

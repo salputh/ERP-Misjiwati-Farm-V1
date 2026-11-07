@@ -13,7 +13,7 @@
             @endif
 
             <x-slot:aksi>
-                <a href="{{ route('dashboard') }}" class="btn btn-primary btn-sm btn-squared">Kembali ke ringkasan</a>
+                <a href="{{ route('dashboard') }}" class="btn btn-primary btn-sm">Kembali ke ringkasan</a>
             </x-slot:aksi>
         </x-kosong>
     </div>

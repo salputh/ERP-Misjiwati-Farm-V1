@@ -1,19 +1,19 @@
 @props(['umur', 'total', 'umurRata'])
 
 {{-- Umur panen per tanggal mulai timbang; rata-ratanya tertimbang jumlah ekor dan dipakai di perhitungan IP. --}}
-<div class="col-xxl-5 mb-25">
+<div class="col-xxl-5 mb-4">
     <x-kartu judul="Umur panen per tanggal" class="h-100" badan="p-0">
-        <div class="table4 p-25">
+        <div class="tabel-data">
             <div class="table-responsive">
-                <table class="table tabel-rapat text-nowrap mb-0">
+                <table class="table tabel-rapat text-nowrap mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">Tanggal</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Umur</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Nota</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Ekor</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Berat (kg)</span></th>
-                            <th class="text-end"><span class="userDatatable-title">BW (kg)</span></th>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th class="text-end">Umur</th>
+                            <th class="text-end">Nota</th>
+                            <th class="text-end">Ekor</th>
+                            <th class="text-end">Berat (kg)</th>
+                            <th class="text-end">BW (kg)</th>
                         </tr>
                     </thead>
                     <tbody>

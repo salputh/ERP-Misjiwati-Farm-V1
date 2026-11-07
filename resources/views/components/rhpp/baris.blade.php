@@ -2,14 +2,14 @@
 
 {{-- Satu baris rincian (RHPP, kas operasional): label, angka, lalu satuan atau keterangan. Angka ungu (masukan) adalah input manual.
      Dengan kurung, nilai negatif ditulis dalam kurung dan berwarna merah. --}}
-<tr @class(['order-bg-opacity-primary' => $sorot])>
-    <td @class(['fw-600' => $tebal || $sorot, 'ps-4' => $menjorok])>{{ $label }}</td>
-    <td @class(['text-end', 'fw-600' => $tebal || $sorot, 'recording-masukan' => $masukan, 'color-danger' => $kurung && $angka < 0])>
+<tr @class(['bg-primary-subtle' => $sorot])>
+    <td @class(['fw-semibold' => $tebal || $sorot, 'ps-4' => $menjorok])>{{ $label }}</td>
+    <td @class(['text-end', 'fw-semibold' => $tebal || $sorot, 'recording-masukan' => $masukan, 'text-danger' => $kurung && $angka < 0])>
         @if ($kurung)
             @kurung($angka, (int) $desimal){{ $akhiran }}
         @else
             @angka($angka, (int) $desimal){{ $akhiran }}
         @endif
     </td>
-    <td class="fs-12 color-light">{{ $satuan }}</td>
+    <td class="small text-body-secondary">{{ $satuan }}</td>
 </tr>

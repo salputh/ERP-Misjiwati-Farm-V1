@@ -1,0 +1,1249 @@
+/* Basalt - Healthcare: Locations (locations.html)
+   Namespaced under .loc-*
+   and Location Details (location-details.html). Today's figures (plain
+   cards, a number over a bar per hour), the three tops (a preview: who
+   carries the load, open hours today, where a patient can be seen next),
+   the list of sites, one site's page, the add and edit dialogs, and the
+   picker for moving between sites on a site's page. Built on healthcare.css (cards, list
+   bar, tables, chips). No tinted boxes: state is a small capsule or dot. */
+
+.loc-page,
+.loc-peek,
+.modal {
+	--loc-open: var(--basalt-success);
+	--loc-soon: var(--basalt-warning);
+	--loc-closed: var(--basalt-copy-muted);
+	--loc-alert: var(--basalt-danger);
+	--loc-over: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--loc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+}
+
+/* A site's state as a soft capsule with a dot: green open, amber
+   closing soon, gray closed, red a problem (named). */
+:where(.loc-state, .loc-dot) {
+	--tone: var(--loc-open);
+}
+.loc-state {
+	display: inline-flex;
+	gap: 0.45rem;
+	align-items: center;
+	padding: 0.28rem 0.75rem 0.28rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 13%, var(--basalt-plane));
+}
+.loc-dot {
+	flex: none;
+	display: inline-block;
+	width: 0.55rem;
+	height: 0.55rem;
+	border-radius: 50%;
+	background: var(--tone);
+}
+:where(.loc-page, .loc-peek) :is(.is-soon, .is-soon .loc-dot) {
+	--tone: var(--loc-soon);
+}
+:where(.loc-page, .loc-peek) :is(.is-alert, .is-alert .loc-dot) {
+	--tone: var(--loc-alert);
+}
+:where(.loc-page, .loc-peek, .modal) :is(.is-new, .is-new .loc-dot) {
+	--tone: var(--basalt-hue);
+}
+:where(.loc-page, .loc-peek) :is(.is-closed, .is-closed .loc-dot) {
+	--tone: var(--loc-closed);
+}
+.loc-state.is-closed {
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--basalt-copy) 6%, var(--basalt-plane));
+}
+.loc-dot.is-closed,
+.loc-state.is-closed > .loc-dot {
+	background: transparent;
+	border: 1.5px solid var(--loc-closed);
+}
+
+/* Names that open the quick view, and quiet lines. */
+.loc-name-btn,
+.loc-name-link {
+	text-decoration: none;
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	max-width: 100%;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	white-space: nowrap;
+	color: var(--hc-link);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.loc-meta {
+	display: block;
+	margin-top: 0.15rem;
+	font-size: 0.78rem;
+	font-weight: 400;
+	white-space: nowrap;
+	color: var(--loc-quiet);
+}
+.loc-quiet {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--loc-quiet);
+}
+:where(.loc-page, .loc-peek) .is-over {
+	color: var(--loc-over);
+}
+
+/* Who is on: overlapping faces and a count. */
+.loc-faces {
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
+}
+.loc-face {
+	display: inline-flex;
+	margin-left: -8px;
+	border-radius: 50%;
+	text-decoration: none;
+
+	&:first-child {
+		margin-left: 0;
+	}
+	& .basalt-avatar {
+		box-sizing: content-box;
+		border: 2px solid var(--basalt-plane);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.loc-faces-count {
+	margin-left: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--hc-link);
+	text-decoration: none;
+	vertical-align: middle;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The list: roomy rows, one line per cell. */
+.loc-table td {
+	padding-top: 1.1rem;
+	padding-bottom: 1.1rem;
+	white-space: nowrap;
+}
+.loc-table .loc-name-link {
+	font-size: 0.95rem;
+}
+.loc-hours-cell {
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.loc-load-cell {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-size: 1rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+	&.is-over strong {
+		color: var(--loc-over);
+	}
+}
+.loc-cell-link {
+	width: 1%;
+	text-align: right;
+}
+
+/* Part titles, actions and the quick view's detail. */
+.loc-part-title {
+	margin: 0 0 0.6rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--loc-quiet);
+}
+.loc-detail-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 2rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.loc-detail {
+	min-width: 0;
+}
+.loc-facts {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 1.5rem 0 0;
+
+	& dt {
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--loc-quiet);
+	}
+	& dd {
+		margin: 0.2rem 0 0;
+		font-size: 1rem;
+		font-weight: 700;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+	& a {
+		color: var(--hc-link);
+		text-decoration: none;
+	}
+	& a:hover {
+		text-decoration: underline;
+	}
+}
+.loc-detail-part {
+	margin-top: 1.5rem;
+}
+.loc-line {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.loc-people {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		min-width: 0;
+		font-size: 0.875rem;
+	}
+}
+.loc-role {
+	overflow: hidden;
+	font-size: 0.78rem;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: var(--loc-quiet);
+}
+.loc-more-link {
+	display: inline-block;
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--hc-link);
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+.loc-week {
+	display: grid;
+	gap: 0.2rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		justify-content: space-between;
+		font-size: 0.82rem;
+		white-space: nowrap;
+		color: var(--loc-quiet);
+	}
+	& li.is-today {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.loc-peek .offcanvas-body {
+	padding: 1.25rem 1.5rem 1.75rem;
+}
+
+.loc-name-link {
+	text-decoration: none;
+}
+.loc-site-kind {
+	margin: 0 0 0.4rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--loc-quiet);
+}
+.loc-site-open {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 500;
+	color: var(--basalt-copy);
+}
+/* A problem in plain words: a red dot and a sentence. */
+.loc-attention {
+	display: flex;
+	gap: 0.6rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 1.75rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.loc-detail .loc-attention {
+	margin: 1.25rem 0 0;
+}
+
+/* Today so far: plain cards, a figure over a bar per hour, the latest bar solid. */
+.loc-figs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin-bottom: 1.5rem;
+
+	&.is-three {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+.loc-fig.card {
+	display: grid;
+	gap: 0.1rem;
+	grid-template-columns: minmax(0, 1fr);
+	min-width: 0;
+	padding: 1.2rem 1.5rem;
+}
+.loc-fig-head {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-bottom: 0.4rem;
+	font-size: 0.81rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--loc-quiet);
+
+	& .bi {
+		font-size: 1rem;
+		color: var(--tone);
+	}
+}
+.loc-fig-value {
+	display: flex;
+	gap: 0.35rem;
+	align-items: baseline;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.1;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+
+	& small {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--loc-quiet);
+	}
+}
+.loc-fig-link {
+	display: inline-flex;
+	gap: 0.35rem;
+	align-items: baseline;
+	color: inherit;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+}
+.loc-fig-note {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	min-width: 0;
+	font-size: 0.81rem;
+	color: var(--loc-quiet);
+
+	& > span {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+}
+.loc-fig-bars {
+	display: flex;
+	gap: 4px;
+	align-items: flex-end;
+	height: 1.75rem;
+	margin-top: 0.75rem;
+}
+.loc-fig-bar {
+	flex: 1;
+	height: calc(var(--value, 4) * 1%);
+	border-radius: 2px 2px 1px 1px;
+	background: color-mix(in srgb, var(--tone) 28%, var(--basalt-plane));
+	transition: background-color 130ms ease;
+
+	&.is-now,
+	&:hover {
+		background: var(--tone);
+	}
+}
+@media (max-width: 1199.98px) {
+	.loc-figs,
+	.loc-figs.is-three {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 575.98px) {
+	.loc-figs,
+	.loc-figs.is-three {
+		gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Bars shared by the scorecard, the opening and the members. */
+.loc-plan-track,
+.loc-ready-track {
+	display: block;
+	height: 10px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--hc-track);
+}
+.loc-load-fill {
+	display: block;
+	width: var(--share, 0%);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-hue);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.loc-load-fill,
+	.loc-rev-fill {
+		transition: width 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.loc-page:not(.loc-settled) :is(.loc-load-fill, .loc-rev-fill) {
+		width: 0;
+	}
+}
+
+/* The scorecard: a row per site; revenue as a bar against a target tick,
+   the rest plain figures, anything off target in red ink. */
+.loc-score-sort.form-select {
+	width: auto;
+	flex: none;
+}
+.loc-score td {
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.loc-score .loc-name-link {
+	font-size: 0.95rem;
+}
+.loc-rev-cell {
+	min-width: 17rem;
+}
+.loc-rev {
+	position: relative;
+	display: inline-block;
+	width: 8rem;
+	height: 10px;
+	margin-right: 0.85rem;
+	border-radius: 999px;
+	vertical-align: middle;
+	background: var(--hc-track);
+}
+.loc-rev-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--share, 0%);
+	border-radius: inherit;
+	background: var(--basalt-hue);
+
+	&.is-under {
+		background: var(--basalt-warning);
+	}
+}
+/* The target sits at 80% of the track. */
+.loc-rev-target {
+	position: absolute;
+	top: -4px;
+	bottom: -4px;
+	left: 80%;
+	width: 2px;
+	border-radius: 1px;
+	background: var(--basalt-copy);
+}
+.loc-rev-text {
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	vertical-align: middle;
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.loc-score td.is-over {
+	font-weight: 600;
+}
+
+/* Today's problems and Opening soon, side by side. */
+.loc-pair {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+	margin-bottom: 1.5rem;
+
+	& > .card {
+		min-width: 0;
+	}
+}
+@media (max-width: 991.98px) {
+	.loc-pair {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.loc-problems {
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x) 1.25rem;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.5rem 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 0.85rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& li:first-child {
+		border-top: 0;
+	}
+	& p {
+		margin: 0;
+		font-size: 0.92rem;
+		color: var(--basalt-copy);
+	}
+	& p a {
+		font-weight: 700;
+		color: var(--basalt-copy);
+		text-decoration: none;
+	}
+	& p a:hover {
+		color: var(--hc-link);
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+@media (max-width: 575.98px) {
+	.loc-problems li {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.loc-problems li > :is(.btn, .hc-pill) {
+		grid-column: 2;
+		justify-self: start;
+	}
+}
+.loc-opening-name {
+	font-size: 1.2rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+	text-decoration: none;
+
+	&:hover {
+		color: var(--hc-link);
+	}
+}
+.loc-opening-when {
+	margin: 0.3rem 0 0.15rem;
+	font-size: 0.92rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+}
+.loc-ready {
+	display: grid;
+	gap: 0.9rem;
+	margin: 1.5rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 9.5rem minmax(0, 1fr) 5.5rem;
+		align-items: center;
+		font-size: 0.875rem;
+	}
+}
+.loc-ready-label {
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.loc-ready-value {
+	font-weight: 700;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.loc-ready li {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.loc-ready-track {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+}
+
+/* Location Details: the header, a row of facts, then cards in a grid. */
+.loc-who {
+	display: flex;
+	gap: 1.5rem;
+	align-items: flex-start;
+	min-width: 0;
+
+	& .basalt-hero-title {
+		margin-bottom: 0.45rem;
+	}
+	& .basalt-hero-desc {
+		margin-bottom: 0;
+	}
+}
+.loc-who-mark {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 4rem;
+	height: 4rem;
+	border-radius: 16px;
+	font-size: 1.1rem;
+	font-weight: 750;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-hue);
+}
+.loc-who-text {
+	min-width: 0;
+}
+.loc-chips-row {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.1rem;
+}
+.loc-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.28rem 0.75rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.loc-facts-row {
+	display: flex;
+	gap: 1.25rem 3.5rem;
+	flex-wrap: wrap;
+	margin: 2.25rem 0 2.5rem;
+
+	& dt {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--loc-quiet);
+	}
+	& dd {
+		margin: 0.25rem 0 0;
+		font-size: 0.98rem;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+}
+.loc-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin-bottom: 1.5rem;
+
+	& > .card {
+		min-width: 0;
+	}
+}
+.loc-span-2 {
+	grid-column: span 2;
+}
+/* In two columns a wide card would leave a half row behind it: the grid
+   fills that gap with the next short card, and the last card takes the
+   whole row. */
+@media (max-width: 1199.98px) {
+	.loc-grid {
+		grid-auto-flow: row dense;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+
+		& > .card:last-child {
+			grid-column: 1 / -1;
+		}
+	}
+	.loc-span-2 {
+		grid-column: 1 / -1;
+	}
+}
+@media (max-width: 767.98px) {
+	.loc-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+/* Weekly visits as one line over a soft fill, at a calm fixed height; the
+   week columns on top take the pointer and carry the date labels. */
+.loc-weeks {
+	position: relative;
+	height: 11.5rem;
+}
+.loc-trend {
+	position: absolute;
+	inset: 0 0 1.6rem;
+	width: 100%;
+	height: calc(100% - 1.6rem);
+}
+.loc-trend-area {
+	fill: color-mix(in srgb, var(--basalt-hue) 10%, transparent);
+}
+.loc-trend-line {
+	fill: none;
+	stroke: var(--basalt-hue);
+	stroke-width: 2.5;
+	stroke-linejoin: round;
+}
+.loc-trend-now {
+	position: absolute;
+	top: calc((100% - 1.6rem) * var(--y));
+	left: 100%;
+	width: 11px;
+	height: 11px;
+	margin: -5.5px 0 0 -5.5px;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--basalt-hue);
+}
+.loc-trend-hits {
+	position: absolute;
+	inset: 0;
+	display: flex;
+}
+.loc-week-col {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	justify-content: flex-end;
+	min-width: 0;
+	cursor: default;
+}
+.loc-week-label {
+	display: block;
+	height: 1.2rem;
+	margin-top: 0.4rem;
+	overflow: visible;
+	font-size: 0.72rem;
+	text-align: center;
+	white-space: nowrap;
+	color: var(--loc-quiet);
+}
+.loc-weeks-note {
+	margin: 2rem 0 0;
+	font-size: 0.85rem;
+	color: var(--loc-quiet);
+}
+.loc-meta-indent {
+	padding-left: 2.15rem;
+}
+.loc-people-table td {
+	white-space: nowrap;
+}
+.loc-days {
+	display: inline-flex;
+	gap: 0.25rem;
+
+	& span {
+		display: inline-grid;
+		place-items: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 50%;
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: var(--loc-quiet);
+		border: 1px dashed var(--basalt-edge-strong);
+	}
+	& span.is-on {
+		border: 1px solid var(--basalt-hue-border);
+		color: color-mix(in srgb, var(--basalt-hue) 65%, var(--basalt-copy));
+	}
+}
+.loc-chips {
+	display: flex;
+	gap: 0.35rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		padding: 0.22rem 0.65rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 999px;
+		font-size: 0.8rem;
+		white-space: nowrap;
+		color: var(--basalt-copy-body);
+	}
+}
+.loc-plan-list {
+	display: grid;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 5.5rem minmax(0, 1fr) 3.5rem;
+		align-items: center;
+		font-size: 0.875rem;
+	}
+}
+.loc-plan-track {
+	height: 10px;
+}
+.loc-plan-n {
+	font-weight: 700;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.loc-reviews {
+	display: grid;
+	gap: 1.25rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.loc-review-stars {
+	display: flex;
+	gap: 0.15rem;
+	margin: 0 0 0.35rem;
+	font-size: 0.8rem;
+	color: var(--basalt-warning);
+}
+.loc-review-text {
+	margin: 0 0 0.3rem;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.loc-reviews .loc-meta {
+	white-space: normal;
+}
+.loc-paper {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		align-items: flex-start;
+	}
+	& li {
+		align-items: center;
+	}
+	& li > span:nth-child(2) {
+		flex: 1;
+		min-width: 0;
+	}
+}
+.loc-paper-what {
+	display: block;
+	color: var(--basalt-copy);
+	text-decoration: none;
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.loc-paper .loc-meta {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.loc-paper-status {
+	flex: none;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy-body);
+}
+.loc-facts {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* The dialogs: hours rows, the steps of Add location, an inline add. */
+.loc-week-form {
+	display: grid;
+	gap: 0.5rem;
+}
+.loc-week-row {
+	display: grid;
+	gap: 0.5rem 0.75rem;
+	grid-template-columns: 3rem minmax(0, 8rem) minmax(0, 8rem) auto;
+	align-items: center;
+
+	& .form-check {
+		margin: 0;
+		white-space: nowrap;
+	}
+}
+.loc-week-day {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.loc-week-row:has(.loc-week-day-wide) {
+	grid-template-columns: minmax(0, 11rem) minmax(0, 7rem) minmax(0, 7rem) auto;
+}
+@media (max-width: 575.98px) {
+	.loc-week-row,
+	.loc-week-row:has(.loc-week-day-wide) {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+	.loc-week-day {
+		grid-column: 1 / -1;
+	}
+}
+.loc-steps {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.75rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.5rem;
+		align-items: center;
+		font-size: 0.875rem;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--loc-quiet);
+	}
+	& li span {
+		display: inline-grid;
+		place-items: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border: 1px solid var(--basalt-edge-strong);
+		border-radius: 50%;
+		font-size: 0.75rem;
+	}
+	& li.is-now {
+		color: var(--basalt-copy);
+	}
+	& li.is-now span,
+	& li.is-done span {
+		border-color: transparent;
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+}
+.loc-step {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.loc-inline-add {
+	display: flex;
+	gap: 0.5rem;
+	max-width: 26rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.loc-service-picks {
+	gap: 0.45rem;
+}
+.loc-table tr.is-new td:first-child .loc-name-link::after {
+	content: "New";
+	margin-left: 0.5rem;
+	padding: 0.1rem 0.45rem;
+	border: 1px solid var(--basalt-hue-border);
+	border-radius: 999px;
+	font-size: 0.68rem;
+	color: var(--hc-link);
+}
+
+/* On a site's page: the way back and a picker for the other sites. */
+.loc-head-nav {
+	margin-bottom: 1.75rem;
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .basalt-hero-back {
+		margin-bottom: 0;
+	}
+}
+.loc-other-btn.btn {
+	display: inline-flex;
+	gap: 0.35rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--hc-link);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.loc-other-menu.dropdown-menu {
+	min-width: 15rem;
+
+	& .dropdown-header {
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--loc-quiet);
+	}
+	& .dropdown-item.active {
+		color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+	}
+}
+
+/* On Location Details the figures are one vitals strip across the page. */
+.loc-figs.is-strip {
+	display: block;
+	margin-bottom: 2.25rem;
+}
+
+/* Who works here: one line per person, the rest behind Show all. */
+[data-ld="people"] td {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	white-space: nowrap;
+}
+[data-ld="people"] .loc-meta {
+	margin-left: 0.35rem;
+}
+.loc-people-foot:has([hidden]) {
+	display: none;
+}
+
+/* Services as icons in soft tones, two columns; rooms as one square each. */
+.loc-services {
+	display: grid;
+	gap: 0.7rem 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		min-width: 0;
+		color: var(--basalt-copy);
+	}
+}
+.loc-service-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	color: var(--tone);
+	background: color-mix(in srgb, var(--tone) 14%, transparent);
+}
+.loc-rooms-name {
+	margin: 0 0 0.45rem;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+}
+/* The count reads right after the squares, where the eye lands. */
+.loc-rooms-count {
+	align-self: center;
+	margin: 0 0 1rem 0.6rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	.loc-rooms > & {
+		margin: 0 0 0 0.6rem;
+	}
+	.loc-rooms-bar + & {
+		margin: -0.5rem 0 1rem;
+	}
+}
+.loc-rooms {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+
+	& > span {
+		width: 1.4rem;
+		height: 1.4rem;
+		border: 1px solid var(--basalt-edge-strong);
+		border-radius: 5px;
+		background: var(--basalt-plane);
+	}
+	& > span.is-used {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-hue);
+	}
+}
+
+/* Members, Reviews and Approvals end level: each card's body fills the
+   card and its link sits at the foot. */
+[data-ld="members"],
+[data-ld="reviews"],
+[data-ld="paper"] {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+
+	& > .loc-more-link {
+		align-self: flex-start;
+		margin-top: auto;
+		padding-top: 1rem;
+	}
+}
+.loc-paper-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+}
+.loc-rooms-bar {
+	height: 0.9rem;
+	margin: 0 0 1rem;
+	overflow: hidden;
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+
+	& span {
+		display: block;
+		height: 100%;
+		width: calc(var(--value, 0) * 1%);
+		background: var(--basalt-hue);
+	}
+}
+
+/* Members: this month's movement under the plans, as three plain figures. */
+.loc-member-moves {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 1.75rem 0 0;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& dt {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--loc-quiet);
+	}
+	& dd {
+		margin: 0.3rem 0 0;
+		font-family: "Chivo Mono", monospace;
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The week being pointed at, marked on the line. */
+.loc-trend-at {
+	position: absolute;
+	top: calc((100% - 1.6rem) * var(--y));
+	left: calc(100% * var(--x));
+	z-index: 1;
+	width: 13px;
+	height: 13px;
+	margin: -6.5px 0 0 -6.5px;
+	border: 3px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--basalt-hue);
+	box-shadow: 0 0 0 1px var(--basalt-hue);
+	pointer-events: none;
+}
+[data-ld="visits-head"] small {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--loc-quiet);
+}

@@ -1,112 +1,123 @@
-<nav class="navbar navbar-light">
-    <div class="navbar-left">
-        <div class="logo-area">
-            <a class="navbar-brand brand-teks" href="{{ route('dashboard') }}">Misjiwati Farm</a>
-            <a href="#" class="sidebar-toggle" aria-label="Buka atau tutup sidebar">
-                <img class="svg" src="{{ asset('assets/img/svg/align-center-alt.svg') }}" alt="">
-            </a>
-        </div>
-    </div>
-    <div class="navbar-right">
-        <ul class="navbar-right__menu">
-            @if ($farm)
-                <li>
-                    <x-pilih class="header-periode" :label="$farm->nama" nama="Pilih farm" ukuran="sm">
-                        @foreach ($daftarFarm as $pilihan)
-                            <a
-                                href="{{ route('periode.index', ['farm' => $pilihan->id]) }}"
-                                @class(['dropdown-item', 'active' => $pilihan->is($farm)])
-                                @if ($pilihan->is($farm)) aria-current="true" @endif>
-                                {{ $pilihan->nama }}
-                            </a>
-                        @endforeach
-                    </x-pilih>
-                </li>
-            @endif
-            @if ($periodeTerpilih)
-                <li>
-                    <x-pilih class="header-periode" :label="$periodeTerpilih->nama" nama="Pilih periode" ukuran="sm">
-                        @foreach ($daftarPeriode as $pilihan)
-                            <a
-                                href="{{ request()->fullUrlWithQuery(['periode' => $pilihan->id]) }}"
-                                @class(['dropdown-item', 'active' => $pilihan->is($periodeTerpilih)])
-                                @if ($pilihan->is($periodeTerpilih)) aria-current="true" @endif>
-                                {{ $pilihan->nama }} · {{ ucfirst($pilihan->status) }}
-                            </a>
-                        @endforeach
-                    </x-pilih>
-                </li>
-            @endif
-            {{-- Notifikasi (HexaDash: nav-notification). Dropdown terbuka saat disorot atau difokus. --}}
-            <li class="nav-notification">
-                <div class="dropdown-custom">
-                    <a href="javascript:;" @class(['nav-item-toggle', 'icon-active' => $notifikasi]) aria-label="Notifikasi, {{ count($notifikasi) }} perlu ditindaklanjuti" aria-haspopup="true">
-                        <img class="svg" src="{{ asset('assets/img/svg/alarm.svg') }}" alt="">
+{{-- Top bar Basalt: tombol menu (ponsel), pilihan farm dan periode, notifikasi, mode terang/gelap, dan menu akun. --}}
+<header class="basalt-topbar">
+    <div class="basalt-topbar-start">
+        <button data-basalt-chrome="menu-open" aria-label="Buka menu" aria-controls="basalt-mainmenu" aria-expanded="false" type="button" class="btn btn-icon basalt-topbar-menubtn d-lg-none">
+            <i class="bi bi-list"></i>
+        </button>
+
+        @if ($farm)
+            <x-pilih class="header-periode" :label="$farm->nama" nama="Pilih farm" ukuran="sm">
+                @foreach ($daftarFarm as $pilihan)
+                    <a
+                        href="{{ route('periode.index', ['farm' => $pilihan->id]) }}"
+                        @class(['dropdown-item', 'active' => $pilihan->is($farm)])
+                        @if ($pilihan->is($farm)) aria-current="true" @endif>
+                        {{ $pilihan->nama }}
                     </a>
-                    <div class="dropdown-wrapper">
-                        <h2 class="dropdown-wrapper__title">Notifikasi
-                            @if ($notifikasi)
-                                <span class="badge-circle badge-warning ms-1">{{ count($notifikasi) }}</span>
-                            @endif
-                        </h2>
-                        <ul>
-                            @forelse ($notifikasi as $satu)
-                                <li class="nav-notification__single nav-notification__single--unread d-flex flex-wrap">
-                                    <div class="nav-notification__type nav-notification__type--{{ $satu['warna'] }}">
-                                        <i class="uil {{ $satu['ikon'] }} fs-15" aria-hidden="true"></i>
-                                    </div>
-                                    <div class="nav-notification__details">
-                                        <p>
-                                            <a href="{{ $satu['tautan'] }}" class="subject stretched-link">{{ $satu['judul'] }}</a>
-                                        </p>
-                                        <p>
-                                            <span class="time-posted">{{ $satu['isi'] }}</span>
-                                        </p>
-                                    </div>
-                                </li>
-                            @empty
-                                <li class="nav-notification__single d-flex flex-wrap">
-                                    <div class="nav-notification__type nav-notification__type--success">
-                                        <i class="uil uil-check fs-15" aria-hidden="true"></i>
-                                    </div>
-                                    <div class="nav-notification__details">
-                                        <p><span class="subject">Tidak ada yang perlu ditindaklanjuti</span></p>
-                                        <p><span class="time-posted">Semua data {{ $periodeTerpilih?->nama ?? 'periode ini' }} sudah lengkap.</span></p>
-                                    </div>
-                                </li>
-                            @endforelse
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li><span class="fs-14 color-gray">{{ now()->translatedFormat('l, j F Y') }}</span></li>
-            @auth
-                {{-- Pengguna yang sedang masuk (HexaDash: nav-author). --}}
-                <li class="nav-author">
-                    <div class="dropdown-custom">
-                        <a href="javascript:;" class="nav-item-toggle" aria-haspopup="true">
-                            <img class="svg" src="{{ asset('assets/img/svg/user.svg') }}" alt="">
-                            <span class="nav-item__title">{{ auth()->user()->name }}</span>
-                        </a>
-                        <div class="dropdown-wrapper">
-                            <div class="nav-author__info">
-                                <div>
-                                    <h6 class="text-capitalize">{{ auth()->user()->name }}</h6>
-                                    <span>{{ auth()->user()->email }}</span>
-                                </div>
-                            </div>
-                            <div class="nav-author__options">
-                                <form action="{{ route('logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="nav-author__signout border-0 w-100">
-                                        <img src="{{ asset('assets/img/svg/log-out.svg') }}" alt="" class="svg"> Keluar
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            @endauth
-        </ul>
+                @endforeach
+            </x-pilih>
+        @endif
+        @if ($periodeTerpilih)
+            <x-pilih class="header-periode" :label="$periodeTerpilih->nama" nama="Pilih periode" ukuran="sm">
+                @foreach ($daftarPeriode as $pilihan)
+                    <a
+                        href="{{ request()->fullUrlWithQuery(['periode' => $pilihan->id]) }}"
+                        @class(['dropdown-item', 'active' => $pilihan->is($periodeTerpilih)])
+                        @if ($pilihan->is($periodeTerpilih)) aria-current="true" @endif>
+                        {{ $pilihan->nama }} · {{ $pilihan->labelStatus() }}
+                    </a>
+                @endforeach
+            </x-pilih>
+        @endif
     </div>
-</nav>
+
+    <div class="basalt-topbar-end">
+        <span class="small text-body-secondary d-none d-xl-inline">{{ now()->translatedFormat('l, j F Y') }}</span>
+
+        <div class="basalt-topbar-tools">
+            <button data-basalt-fullscreen data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-title="Layar penuh" aria-pressed="false" aria-label="Layar penuh" type="button" class="btn btn-icon basalt-fullscreen d-none d-md-inline-flex">
+                <i aria-hidden="true" class="bi bi-arrows-fullscreen basalt-fullscreen-enter"></i>
+                <i aria-hidden="true" class="bi bi-fullscreen-exit basalt-fullscreen-exit"></i>
+            </button>
+            <button data-basalt-chrome="mode" aria-label="Ganti mode terang atau gelap" type="button" class="btn btn-icon basalt-modeswitch">
+                <i class="bi bi-brightness-high basalt-modeswitch-day"></i>
+                <i class="bi bi-moon basalt-modeswitch-night"></i>
+            </button>
+        </div>
+
+        {{-- Notifikasi: hal di periode terpilih yang perlu ditindaklanjuti. --}}
+        <div class="basalt-topbar-inbox">
+            <div class="dropdown">
+                <button data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifikasi, {{ count($notifikasi) }} perlu ditindaklanjuti" type="button" class="btn btn-icon">
+                    <i class="bi bi-bell"></i>
+                    @if ($notifikasi)
+                        <span class="basalt-tally bg-warning">{{ count($notifikasi) }}</span>
+                    @endif
+                </button>
+                <div class="dropdown-menu dropdown-menu-end basalt-tray">
+                    <div class="basalt-tray-top">
+                        <p class="h6 mb-0">Notifikasi</p>
+                    </div>
+                    <ul class="basalt-tray-rows">
+                        @forelse ($notifikasi as $satu)
+                            <li>
+                                <a href="{{ $satu['tautan'] }}" class="basalt-tray-row basalt-tray-row-new">
+                                    <span class="basalt-avatar basalt-avatar-sm bg-{{ $satu['warna'] }}-subtle text-{{ $satu['warna'] }}"><i class="bi {{ $satu['ikon'] }}" aria-hidden="true"></i></span>
+                                    <span class="basalt-tray-copy">
+                                        <span class="basalt-tray-what">{{ $satu['judul'] }}</span>
+                                        <small class="text-body-secondary">{{ $satu['isi'] }}</small>
+                                    </span>
+                                </a>
+                            </li>
+                        @empty
+                            <li>
+                                <span class="basalt-tray-row">
+                                    <span class="basalt-avatar basalt-avatar-sm bg-success-subtle text-success"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+                                    <span class="basalt-tray-copy">
+                                        <span class="basalt-tray-what">Tidak ada yang perlu ditindaklanjuti</span>
+                                        <small class="text-body-secondary">Semua data {{ $periodeTerpilih?->nama ?? 'periode ini' }} sudah lengkap.</small>
+                                    </span>
+                                </span>
+                            </li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        @auth
+            @php($inisial = \Illuminate\Support\Str::of(auth()->user()->name)->explode(' ')->take(2)->map(fn ($kata) => mb_substr($kata, 0, 1))->implode(''))
+            <div class="dropdown basalt-topbar-account">
+                <button data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu akun" type="button" class="btn basalt-me">
+                    <span class="basalt-avatar basalt-avatar-sm bg-primary-subtle text-primary fw-semibold">{{ $inisial }}</span>
+                    <span class="basalt-me-info d-none d-lg-flex">
+                        <span class="basalt-me-name">{{ auth()->user()->name }}</span>
+                        <span class="basalt-me-job">{{ auth()->user()->email }}</span>
+                    </span>
+                    <i class="bi bi-chevron-down d-none d-lg-inline"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end basalt-tray basalt-tray-account">
+                    <li class="basalt-tray-top basalt-tray-me">
+                        <span class="basalt-avatar bg-primary-subtle text-primary fw-semibold">{{ $inisial }}</span>
+                        <div>
+                            <p class="mb-0 fw-semibold">{{ auth()->user()->name }}</p>
+                            <small class="text-body-secondary">{{ auth()->user()->email }}</small>
+                        </div>
+                    </li>
+                    <li><a href="{{ route('akun') }}" class="dropdown-item"><i class="bi bi-person-badge"></i>Akun pengguna</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    @unless (config('app.demo_mode'))
+                        <li>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="dropdown-item text-danger"><i class="bi bi-door-closed"></i>Keluar</button>
+                            </form>
+                        </li>
+                    @else
+                        <li><span class="dropdown-item-text text-body-secondary small"><i class="bi bi-door-closed me-2"></i>Versi Demo</span></li>
+                    @endunless
+                </ul>
+            </div>
+        @endauth
+    </div>
+</header>

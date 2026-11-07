@@ -1,0 +1,474 @@
+/* Layout for booking-details.html, under the .bd- prefix. It is linked
+   after bookings.css and leans on it for the service colors, fact rows,
+   the note block, time slots and dialogs; this sheet only arranges the
+   page around them. Colors are --basalt-* tokens throughout. */
+
+/* The header keeps the title block and the actions on one baseline. */
+.basalt-hero-detail.bd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+
+.bd-head .basalt-hero-actions {
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.bd-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.bd-who-text {
+	min-width: 0;
+}
+
+.bd-who-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 64px;
+	height: 64px;
+	border-radius: 18px;
+	font-size: 1.6rem;
+	color: color-mix(in srgb, var(--bk-tone, var(--basalt-hue)) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--bk-tone, var(--basalt-hue)) 16%, var(--basalt-plane));
+}
+
+.bd-tags {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.7rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+
+.bd-id {
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--bk-quiet);
+}
+
+/* The overflow menu: icons spaced off the label, Cancel tinted red. */
+.bd-page .dropdown-item {
+	& .bi {
+		margin-right: 0.6rem;
+	}
+
+	&.bd-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+
+	&.bd-danger-item:hover,
+	&.bd-danger-item:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.bd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.bd-head .basalt-hero-actions {
+		justify-content: flex-start;
+	}
+	.bd-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.bd-who-icon {
+		width: 52px;
+		height: 52px;
+		border-radius: 15px;
+		font-size: 1.3rem;
+	}
+}
+
+/* Below 1200px the cards stack in reading order. Wider, When and where
+   spans the top, then customer pairs with payment and notes with
+   history, each pair finishing at the same height. */
+.bd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+
+@media (min-width: 1200px) {
+	.bd-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.bd-card-when {
+		grid-column: span 12;
+	}
+
+	.bd-card-cust,
+	.bd-card-notes {
+		grid-column: span 7;
+	}
+
+	.bd-card-pay,
+	.bd-card-log {
+		grid-column: span 5;
+	}
+}
+
+/* Every card is a size container, so fact rows stack in a slim card. */
+.bd-card {
+	container-type: inline-size;
+	min-width: 0;
+}
+
+@container (max-width: 420px) {
+	.bd-facts .bk-facts-row {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.bd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+
+@media (max-width: 575.98px) {
+	.bd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.bd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+}
+
+.bd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.bd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--bk-fs-body);
+	line-height: 1.55;
+	color: var(--bk-quiet);
+}
+
+.bd-sub {
+	margin: 1.5rem 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--bk-quiet);
+}
+
+.bd-facts .bk-facts-row:first-child {
+	padding-top: 0;
+}
+.bd-due {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* When and where sits beside the day plan once the card has room. */
+.bd-card-when {
+	container-type: inline-size;
+}
+.bd-when {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+@container (min-width: 760px) {
+	.bd-when {
+		gap: 3rem;
+		grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+		align-items: start;
+	}
+	.bd-dayplan .bd-sub:first-child {
+		margin-top: 0;
+	}
+}
+
+/* Opening hours run as a single track. Each booking is a slot with its
+   reset time as a faint striped tail, and this one wears its color. */
+.bd-strip {
+	padding-top: 0.25rem;
+}
+
+.bd-strip-track {
+	position: relative;
+	height: 3rem;
+	border-radius: 10px;
+	background: var(--basalt-plane-alt);
+	box-shadow: inset 0 0 0 1px var(--bk-line);
+}
+
+.bd-strip-slot {
+	position: absolute;
+	top: 0.4rem;
+	bottom: 0.4rem;
+	left: var(--bd-x);
+	width: var(--bd-w);
+	min-width: 6px;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--basalt-copy-muted) 30%, var(--basalt-plane));
+	transition: background-color 130ms ease;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 100%;
+		width: calc(var(--bd-b) / var(--bd-w) * 100%);
+		border-radius: 0 4px 4px 0;
+		background: repeating-linear-gradient(
+			135deg,
+			color-mix(in srgb, var(--basalt-copy-muted) 18%, transparent) 0 3px,
+			transparent 3px 7px
+		);
+	}
+}
+
+/* Other bookings are links to their own pages. */
+a.bd-strip-slot {
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-copy-muted) 48%, var(--basalt-plane));
+	}
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.bd-strip-slot.is-me {
+	top: 0.3rem;
+	bottom: 0.3rem;
+	background: var(--bk-tone);
+	box-shadow: 0 4px 12px -6px var(--bk-tone);
+
+	&::after {
+		background: repeating-linear-gradient(
+			135deg,
+			color-mix(in srgb, var(--bk-tone) 35%, transparent) 0 3px,
+			transparent 3px 7px
+		);
+	}
+}
+
+.bd-strip-ticks {
+	position: relative;
+	height: 1.4rem;
+	margin-top: 0.4rem;
+}
+
+/* Hour labels center on their mark, except the two at the ends. */
+.bd-strip-tick {
+	position: absolute;
+	left: var(--bd-x);
+	transform: translateX(-50%);
+	font-size: var(--bk-fs-small);
+	white-space: nowrap;
+	color: var(--bk-quiet);
+
+	&:first-child {
+		transform: none;
+	}
+	&:last-child {
+		transform: translateX(-100%);
+	}
+}
+
+.bd-strip-note {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0.75rem 0 0;
+	font-size: var(--bk-fs-body);
+	color: var(--basalt-copy-body);
+}
+.bd-key {
+	flex: none;
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 3px;
+	background: var(--bk-tone);
+}
+
+/* The customer card leads with a large avatar and a linked name. */
+.bd-person-who {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+
+.bd-person-name {
+	border-radius: 3px;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.bd-note {
+	margin-top: 0;
+
+	&.is-empty {
+		color: var(--bk-quiet);
+	}
+}
+
+/* Team notes: a compose box, then the notes split by hairlines. */
+.bd-add .form-control {
+	font-size: var(--bk-fs-body);
+	resize: vertical;
+}
+
+.bd-add-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.6rem;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.bd-notes {
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.bd-notes-item {
+	display: flex;
+	gap: 0.75rem;
+	padding: 0.9rem 0;
+	border-top: 1px solid var(--bk-line);
+
+	& > div {
+		min-width: 0;
+	}
+}
+
+.bd-notes-meta {
+	margin: 0;
+	font-size: var(--bk-fs-small);
+	color: var(--bk-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+.bd-notes-text {
+	margin: 0.3rem 0 0;
+	font-size: var(--bk-fs-body);
+	color: var(--basalt-copy);
+}
+.bd-notes-none {
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--bk-line);
+	font-size: var(--bk-fs-body);
+	color: var(--bk-quiet);
+}
+
+/* History hangs off a quiet rail on the left; only the newest dot is lit. */
+.bd-log {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.bd-log-item {
+	position: relative;
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	padding: 0 0 1.25rem 1.5rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.4rem;
+		left: 0.2rem;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--basalt-hue);
+	}
+
+	&:not(:first-child)::before {
+		background: color-mix(in srgb, var(--basalt-copy-muted) 45%, var(--basalt-plane));
+	}
+
+	&:not(:last-child)::after {
+		content: "";
+		position: absolute;
+		top: 1.25rem;
+		bottom: 0.1rem;
+		left: calc(0.475rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--bk-line);
+	}
+}
+
+.bd-log-text {
+	font-size: var(--bk-fs-body);
+	color: var(--basalt-copy);
+}
+.bd-log-when {
+	font-size: var(--bk-fs-small);
+	color: var(--bk-quiet);
+}

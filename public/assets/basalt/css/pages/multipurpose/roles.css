@@ -1,0 +1,738 @@
+/* Basalt - Roles (roles.html)
+   Namespaced under .rl-*
+   A plain Bootstrap table of roles. This file adds the in-place text
+   buttons and inputs, the access row with its selects, the warning
+   lines, and the stacked layout used on narrow screens. */
+
+.rl-page,
+.rl-dialog {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--rl-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--rl-warn-text: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+}
+[data-bs-theme="dark"] .rl-page,
+[data-bs-theme="dark"] .rl-dialog {
+	--rl-warn-text: color-mix(in srgb, var(--basalt-warning) 62%, var(--basalt-copy));
+}
+
+.rl-quiet {
+	color: var(--rl-quiet);
+}
+
+/* The table */
+.rl-card {
+	overflow: hidden;
+}
+.rl-table {
+	min-width: 0;
+}
+.rl-table > thead > tr > th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--rl-quiet);
+}
+.rl-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 1rem;
+}
+@media (min-width: 992px) {
+	.rl-table > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	.rl-table > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+}
+.rl-c-name {
+	width: 13rem;
+	font-weight: 600;
+}
+.rl-c-desc {
+	color: var(--basalt-copy);
+}
+/* A description shows two lines in the table; the rest is in the editor. */
+.rl-c-desc > .rl-text,
+.rl-c-desc > span:not(.rl-lbl) {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+.rl-c-people {
+	white-space: nowrap;
+}
+.rl-c-access {
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.rl-c-actions {
+	text-align: end;
+	white-space: nowrap;
+}
+
+.rl-name-wrap {
+	display: flex;
+	gap: 0.25rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.rl-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.rl-tag {
+	display: inline-block;
+	padding: 0.1rem 0.4rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 500;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: var(--rl-quiet);
+}
+
+.rl-lock {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	color: var(--rl-quiet);
+	background: transparent;
+}
+.rl-lock:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.rl-lock:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+/* Name and description: text that turns into an input when selected. */
+.rl-text {
+	display: inline;
+	margin: -0.15rem -0.35rem;
+	padding: 0.1rem 0.3rem;
+	border: 0;
+	border-radius: 6px;
+	font: inherit;
+	text-align: start;
+	color: inherit;
+	background: transparent;
+	cursor: text;
+}
+.rl-text:hover {
+	background: var(--basalt-wash);
+}
+.rl-text:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.rl-text-pen {
+	margin-inline-start: 0.4rem;
+	font-size: 0.75rem;
+	color: var(--rl-quiet);
+	opacity: 0;
+}
+.rl-text:hover .rl-text-pen,
+.rl-text:focus-visible .rl-text-pen {
+	opacity: 1;
+}
+@media (hover: none) {
+	.rl-text-pen {
+		opacity: 1;
+	}
+}
+
+.rl-input {
+	max-width: 26rem;
+}
+.rl-c-name .rl-input {
+	max-width: 14rem;
+	font-weight: 600;
+}
+
+.rl-actions {
+	display: inline-flex;
+	gap: 0.375rem;
+	flex-wrap: nowrap;
+	justify-content: flex-end;
+}
+
+/* The phone labels ("For", "People", "Access") only show when stacked. */
+.rl-lbl {
+	display: none;
+}
+
+/* An open row and the access row under it read as one block. */
+.rl-row.is-open > *,
+.rl-row.is-fresh > * {
+	border-bottom-color: transparent;
+}
+.table-hover > tbody > tr.rl-xrow:hover > * {
+	--bs-table-bg-state: transparent;
+}
+
+.rl-skel .placeholder {
+	display: block;
+	height: 0.9rem;
+}
+
+/* Access row */
+.rl-xrow > td {
+	padding-top: 0;
+}
+.rl-access {
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane-alt);
+}
+.rl-access-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rl-access-title:focus {
+	outline: none;
+}
+/* Each area is a name and its switch, side by side, so the mouse never
+   has to cross the screen. Two columns once there is room. */
+/* Two columns of areas only once both fit side by side; the grid must
+   never scroll inside the card. */
+.rl-access-grid {
+	display: grid;
+	gap: 0.6rem 3rem;
+	grid-template-columns: repeat(auto-fill, minmax(32rem, 1fr));
+}
+.rl-area {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 9.5rem auto;
+	align-items: center;
+	min-width: 0;
+}
+.rl-area-label {
+	font-size: 0.81rem;
+	font-weight: 500;
+	color: var(--basalt-copy);
+}
+.rl-area .rl-risk {
+	grid-column: 2;
+}
+.rl-risk {
+	display: flex;
+	gap: 0.3rem;
+	margin: 0.3rem 0 0;
+	font-size: 0.75rem;
+	line-height: 1.35;
+	color: var(--rl-warn-text);
+}
+.rl-risk[hidden] {
+	display: none;
+}
+.rl-risk .bi {
+	flex: none;
+	margin-top: 0.05rem;
+}
+
+.rl-access-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.rl-access-summary {
+	flex: 1 1 18rem;
+	margin: 0;
+	font-size: 0.875rem;
+	white-space: normal;
+	color: var(--basalt-copy);
+}
+.rl-access-btns {
+	display: flex;
+	gap: 0.5rem;
+}
+
+/* Messages */
+.rl-note {
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--rl-quiet);
+}
+.rl-msg {
+	padding: 1.5rem var(--basalt-pad-x);
+}
+
+/* Delete dialog */
+.rl-move {
+	margin: 0 0 1.25rem;
+	text-align: start;
+}
+.rl-move[hidden] {
+	display: none;
+}
+
+/* Narrow screens: one stacked block per role */
+@media (max-width: 991.98px) {
+	.rl-table,
+	.rl-table > tbody,
+	.rl-table > tbody > tr,
+	.rl-table > tbody > tr > * {
+		display: block;
+		width: auto;
+	}
+	.rl-table > thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	/* Padding sits on the cells, so the whole block shares one background. */
+	.rl-table > tbody > .rl-row {
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.rl-table > tbody > .rl-row.is-open,
+	.rl-table > tbody > .rl-row.is-fresh {
+		border-bottom-color: transparent;
+	}
+	.rl-table > tbody > tr > * {
+		padding: 0.1rem var(--basalt-pad-x);
+		border: 0;
+		text-align: start;
+		white-space: normal;
+	}
+	.rl-table > tbody > .rl-row > .rl-c-name {
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: 0.3rem;
+	}
+	.rl-table > tbody > .rl-row > .rl-c-actions {
+		padding-top: 0.6rem;
+		padding-bottom: var(--basalt-pad-row-y);
+	}
+	.rl-table > tbody > .rl-xrow {
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.rl-table > tbody > .rl-xrow > td {
+		padding: 0 var(--basalt-pad-x) var(--basalt-pad-row-y);
+	}
+	.rl-table .rl-c-desc .rl-text {
+		display: block;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+	}
+	.rl-lbl {
+		display: inline;
+		margin-inline-end: 0.4rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--rl-quiet);
+	}
+	.rl-lbl::after {
+		content: ":";
+	}
+	.rl-c-desc .rl-input {
+		display: inline-block;
+		width: 100%;
+		max-width: none;
+		margin-top: 0.2rem;
+	}
+	.rl-actions {
+		flex-wrap: wrap;
+		justify-content: flex-start;
+	}
+}
+@media (max-width: 575.98px) {
+	.rl-table > tbody > tr > *,
+	.rl-table > tbody > .rl-xrow > td,
+	.rl-note,
+	.rl-msg {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rl-access {
+		padding: 0.85rem;
+	}
+	.rl-access-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.rl-area {
+		row-gap: 0.3rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.rl-area .rl-risk {
+		grid-column: 1;
+	}
+	.rl-area .basalt-segmented {
+		display: flex;
+	}
+	.rl-area .basalt-segmented-option {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	.rl-access-btns {
+		width: 100%;
+	}
+	.rl-access-btns .btn {
+		flex: 1 1 0;
+	}
+}
+
+/* View as: the band above the table. The head holds the title and the
+   role picker; under it the sections of the menu sit in a wrapping row,
+   each tinted by the most the role may do there. */
+.rl-view {
+	margin-bottom: 1.5rem;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) var(--basalt-pad-row-y);
+}
+.rl-view[hidden] {
+	display: none;
+}
+.rl-view-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.rl-view-lead {
+	flex: 1 1 18rem;
+	min-width: 0;
+}
+.rl-view-title {
+	margin: 0 0 0.2rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rl-view-text {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--rl-quiet);
+}
+.rl-view-pick {
+	display: flex;
+	gap: 0.5rem;
+	flex: 0 1 auto;
+	align-items: center;
+}
+.rl-view-label {
+	margin: 0;
+	font-size: 0.81rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.rl-view-pick .form-select {
+	min-width: 11rem;
+}
+
+/* One tile per section: the sidebar icon in a box, the name and the
+   level under it. The fill deepens from View to Full; a hidden section
+   is grayed with a dashed edge, the way a closed door reads. */
+/* The four levels share one ramp: full is the accent, edit a strong tint,
+   view a light one and hidden only an outline. The ring, the list, the
+   access strip in the table and the key all read from it. */
+.rl-page {
+	--rl-full: var(--basalt-hue);
+	--rl-edit: color-mix(in srgb, var(--basalt-hue) 58%, var(--basalt-plane));
+	--rl-view: color-mix(in srgb, var(--basalt-hue) 24%, var(--basalt-plane));
+	--rl-none: var(--basalt-plane-alt);
+}
+
+/* The ring of sections beside their list; pointing at either lights the
+   same section in both and fades the rest. */
+.rl-view-body {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: 13rem minmax(0, 1fr);
+	align-items: center;
+}
+@media (max-width: 767.98px) {
+	.rl-view-body {
+		grid-template-columns: minmax(0, 1fr);
+		justify-items: center;
+	}
+}
+.rl-ring {
+	position: relative;
+	width: 13rem;
+	height: 13rem;
+
+	& svg {
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+}
+.rl-arc {
+	fill: var(--rl-none);
+	stroke: var(--basalt-plane);
+	stroke-width: 1;
+	cursor: pointer;
+	transform-origin: 100px 100px;
+	transition:
+		fill 260ms ease,
+		opacity 200ms ease,
+		transform 200ms ease;
+	animation: rl-arc-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: calc(var(--i) * 25ms);
+
+	&.is-view {
+		fill: var(--rl-view);
+	}
+	&.is-edit {
+		fill: var(--rl-edit);
+	}
+	&.is-full {
+		fill: var(--rl-full);
+	}
+	&.is-none {
+		fill: var(--basalt-plane);
+		stroke: var(--basalt-edge-strong);
+		stroke-dasharray: 3 3;
+	}
+	&.is-lit {
+		transform: scale(1.05);
+	}
+}
+@keyframes rl-arc-in {
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+}
+.rl-view.is-pointing .rl-arc:not(.is-lit) {
+	opacity: 0.35;
+}
+.rl-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 0 3.6rem;
+	text-align: center;
+	pointer-events: none;
+
+	& b {
+		font-size: 1.5rem;
+		font-weight: 800;
+		line-height: 1.1;
+		color: var(--basalt-copy);
+	}
+	& span {
+		margin-top: 0.1rem;
+		font-size: 0.75rem;
+		color: var(--rl-quiet);
+	}
+}
+.rl-view-menu {
+	display: grid;
+	gap: 0.1rem 1.5rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@media (max-width: 1199.98px) {
+	.rl-view-menu {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 575.98px) {
+	.rl-view-menu {
+		grid-template-columns: minmax(0, 1fr);
+		width: 100%;
+	}
+}
+.rl-reach {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: 0.7rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	transition:
+		background-color 170ms ease,
+		opacity 170ms ease;
+
+	&:hover,
+	&.is-lit {
+		background: var(--basalt-plane-alt);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&.is-none {
+		color: var(--rl-quiet);
+	}
+}
+.rl-view.is-pointing .rl-reach:not(.is-lit) {
+	opacity: 0.5;
+}
+.rl-reach-dot {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--rl-none);
+}
+.rl-reach.is-view .rl-reach-dot {
+	background: var(--rl-view);
+}
+.rl-reach.is-edit .rl-reach-dot {
+	background: var(--rl-edit);
+}
+.rl-reach.is-full .rl-reach-dot {
+	background: var(--rl-full);
+}
+.rl-reach.is-none .rl-reach-dot {
+	border: 1px dashed var(--basalt-edge-strong);
+	background: transparent;
+}
+.rl-reach-name {
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.rl-reach-sub {
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--rl-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.rl-arc {
+		animation: none;
+		transition: none;
+	}
+}
+
+/* The access column: one short bar per section, deepest for full. */
+.rl-reachline {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.rl-strip {
+	display: inline-flex;
+	gap: 2px;
+
+	& i {
+		width: 0.5rem;
+		height: 1.1rem;
+		border-radius: 2px;
+		background: var(--rl-none);
+	}
+	& .is-view {
+		background: var(--rl-view);
+	}
+	& .is-edit {
+		background: var(--rl-edit);
+	}
+	& .is-full {
+		background: var(--rl-full);
+	}
+}
+.rl-strip-count {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--rl-quiet);
+}
+
+/* Duplicate and Delete sit behind the three-dot button. */
+.rl-more {
+	width: 2rem;
+	padding-right: 0;
+	padding-left: 0;
+}
+.rl-actions .dropdown-item {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+/* The key under the ring: a swatch per level. */
+.rl-view-key {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0.9rem 0 0;
+	padding: 0;
+	font-size: 0.75rem;
+	list-style: none;
+	color: var(--rl-quiet);
+}
+.rl-view-key li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.rl-key {
+	width: 0.85rem;
+	height: 0.85rem;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background: var(--rl-view);
+}
+.rl-key.is-edit {
+	background: var(--rl-edit);
+}
+.rl-key.is-full {
+	background: var(--rl-full);
+}
+.rl-key.is-none {
+	border: 1px dashed var(--basalt-edge-strong);
+	background: transparent;
+}
+@media (max-width: 575.98px) {
+	.rl-view {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rl-view-pick {
+		width: 100%;
+	}
+	.rl-view-pick .form-select {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.rl-reach {
+		flex: 1 1 calc(50% - 0.25rem);
+		min-width: 0;
+	}
+	.rl-reach-name,
+	.rl-reach-sub {
+		white-space: normal;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.rl-reach {
+		transition: none;
+	}
+}

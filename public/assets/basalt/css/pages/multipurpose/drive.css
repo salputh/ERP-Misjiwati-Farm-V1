@@ -1,0 +1,1626 @@
+/*
+ * Drive page (drive.html). Every class here starts with drv-.
+ * The tree, context menu, drop zone, upload queue, rings, skeletons,
+ * empty states, drawers, dialogs and the page header come from basalt.css;
+ * this sheet arranges them and draws what only the drive has: the side
+ * panel, the file grid and list, the previews and the storage meter.
+ */
+
+/* Shared tokens. Quiet text and link text are mixed toward the body color
+   so they keep 4.5:1 on light palettes and on tinted, selected rows. */
+.drv-page,
+.drv-sheet,
+.drv-dialog {
+	--drv-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--drv-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	--drv-danger-text: color-mix(in srgb, var(--basalt-danger) 58%, var(--basalt-copy));
+	--drv-selected: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+}
+
+.drv-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+}
+
+/* Key caps: the outlined kind sits inside buttons, the filled kind in running text. */
+.drv-kbd {
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+	font:
+		600 0.71rem/1.3 "Chivo Mono",
+		monospace;
+	color: inherit;
+	background: transparent;
+	box-shadow: none;
+}
+.drv-page kbd:not(.drv-kbd),
+.drv-sheet kbd {
+	padding: 0.05rem 0.3rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge);
+	font:
+		600 0.71rem/1.3 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+	box-shadow: none;
+}
+
+/* A button styled as an inline link, for paths and "open the trash". */
+.drv-link.btn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	--bs-btn-font-size: inherit;
+	--bs-btn-color: var(--drv-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	text-align: left;
+	text-underline-offset: 2px;
+	vertical-align: baseline;
+}
+
+/* Destructive buttons stay readable; the stock outline-danger misses 4.5:1 in most palettes. */
+.drv-danger-btn.btn {
+	--bs-btn-color: var(--drv-danger-text);
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-danger) 40%, var(--basalt-edge));
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-danger-soft);
+	--bs-btn-hover-border-color: var(--basalt-danger);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-danger-soft);
+	--bs-btn-active-border-color: var(--basalt-danger);
+}
+
+/* One --drv-tone per storage slice (numbered) and per file family (named). */
+.drv-tone-1 {
+	--drv-tone: var(--basalt-series-1);
+}
+.drv-tone-2 {
+	--drv-tone: var(--basalt-series-2);
+}
+.drv-tone-3 {
+	--drv-tone: var(--basalt-series-3);
+}
+.drv-tone-4 {
+	--drv-tone: var(--basalt-series-4);
+}
+.drv-tone-5 {
+	--drv-tone: var(--basalt-series-5);
+}
+.drv-tone-6 {
+	--drv-tone: var(--basalt-series-6);
+}
+.drv-tone-7 {
+	--drv-tone: var(--basalt-series-7);
+}
+.drv-tone-8 {
+	--drv-tone: var(--basalt-series-8);
+}
+.drv-g-folder {
+	--drv-tone: var(--basalt-hue);
+}
+.drv-g-pdf {
+	--drv-tone: var(--basalt-danger);
+}
+.drv-g-doc {
+	--drv-tone: var(--basalt-info);
+}
+.drv-g-sheet {
+	--drv-tone: var(--basalt-success);
+}
+.drv-g-image {
+	--drv-tone: var(--basalt-series-4);
+}
+.drv-g-video {
+	--drv-tone: var(--basalt-series-5);
+}
+.drv-g-archive {
+	--drv-tone: var(--basalt-warning);
+}
+.drv-g-other {
+	--drv-tone: var(--basalt-copy-muted);
+}
+
+/* The tinted square that carries a file's type icon. */
+.drv-ico {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--drv-tone) 72%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--drv-tone) 14%, var(--basalt-plane));
+}
+
+/* The card holds two columns from 992px; narrower, the side panel turns
+   into Bootstrap's .offcanvas-lg drawer behind the Folders button. */
+.drv-app.card {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	overflow: hidden;
+
+	@media (min-width: 992px) {
+		grid-template-columns: 16.5rem minmax(0, 1fr);
+	}
+	@media (min-width: 1400px) {
+		grid-template-columns: 18rem minmax(0, 1fr);
+	}
+}
+
+/* The side panel: places, then folders, then the storage card pinned low. */
+.drv-side {
+	--bs-offcanvas-bg: var(--basalt-plane);
+	--bs-offcanvas-width: 19rem;
+	color: var(--basalt-copy);
+
+	& .offcanvas-header {
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& .offcanvas-title {
+		font-size: 1rem;
+		font-weight: 650;
+	}
+	@media print {
+		display: none;
+	}
+}
+.drv-side-body {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+	min-height: 0;
+	padding: 1.25rem 1rem;
+	overflow-y: auto;
+}
+@media (min-width: 992px) {
+	.drv-side {
+		border-right: 1px solid var(--basalt-edge);
+		background: color-mix(in srgb, var(--basalt-plane-alt) 55%, var(--basalt-plane));
+	}
+	.drv-side-body {
+		height: 100%;
+		padding: 1.25rem 1rem 1.5rem;
+		overflow: visible;
+	}
+}
+.drv-side-title {
+	margin: 0 0 0.4rem 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--drv-quiet);
+}
+
+/* Places list; the current one gets a tint and a bar on its left edge. */
+.drv-places {
+	display: grid;
+	gap: 0.1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.drv-place {
+	position: relative;
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.5rem 0.65rem;
+	border: 0;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	font-weight: 550;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+
+	& .bi {
+		width: 1.1rem;
+		font-size: 1rem;
+		text-align: center;
+		color: var(--drv-quiet);
+	}
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[aria-current="page"] {
+		font-weight: 650;
+		color: var(--basalt-copy);
+		background: var(--drv-selected);
+
+		&::before {
+			content: "";
+			position: absolute;
+			top: 0.4rem;
+			bottom: 0.4rem;
+			left: 0;
+			width: 3px;
+			border-radius: 0 3px 3px 0;
+			background: var(--basalt-hue);
+		}
+		& .bi {
+			color: var(--drv-link);
+		}
+	}
+	@media (prefers-reduced-motion: reduce), print {
+		transition: none;
+	}
+}
+.drv-place-count {
+	margin-left: auto;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--drv-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* The folder tree only needs quieter counts and no outer margin. */
+.drv-tree-host {
+	position: relative;
+}
+.drv-tree.basalt-tree {
+	margin: 0;
+}
+.drv-tree .basalt-tree-meta {
+	color: var(--drv-quiet);
+}
+
+/* Storage card: a total, a stacked bar of file families, its legend and the trash line. */
+.drv-storage {
+	margin-top: auto;
+	padding: 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+}
+.drv-storage-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.6rem;
+
+	& .drv-side-title {
+		margin-left: 0;
+	}
+}
+.drv-storage-total {
+	font-size: 0.8rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.drv-storage-bar {
+	display: flex;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+
+	& > span {
+		display: block;
+		min-width: 3px;
+		height: 100%;
+		background: var(--drv-tone);
+	}
+	/* A hairline of panel color keeps neighboring slices apart. */
+	& > span + span {
+		box-shadow: -1px 0 0 var(--basalt-plane);
+	}
+}
+.drv-storage-legend {
+	display: grid;
+	gap: 0.3rem;
+	margin: 0.75rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+}
+.drv-swatch {
+	flex: none;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 3px;
+	background: var(--drv-tone);
+}
+.drv-storage-num {
+	margin-left: auto;
+	color: var(--drv-quiet);
+}
+.drv-storage-trash {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--drv-quiet);
+}
+
+/* The files panel is a size container, so the list columns and the toolbar
+   respond to the panel's own width rather than the window's. */
+.drv-main {
+	position: relative;
+	container: drv-main / inline-size;
+	min-width: 0;
+	min-height: 34rem;
+	padding: 1.25rem 1.5rem 1.5rem;
+
+	@media (max-width: 575.98px) {
+		min-height: 26rem;
+		padding: 1rem;
+	}
+}
+
+/* Top bar: the Folders button on small screens, the path, the view switch. */
+.drv-bar {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+.drv-bar-side {
+	flex: none;
+}
+.drv-bar-view {
+	flex: none;
+	margin-left: auto;
+
+	@media print {
+		display: none;
+	}
+}
+
+/* The path doubles as the page heading and truncates instead of wrapping. */
+.drv-crumbs {
+	flex: 1 1 auto;
+	min-width: 0;
+
+	& .breadcrumb {
+		--bs-breadcrumb-divider-color: var(--drv-quiet);
+		--bs-breadcrumb-item-active-color: var(--basalt-copy);
+		flex-wrap: nowrap;
+		overflow: hidden;
+		font-size: 1.1rem;
+		font-weight: 650;
+		line-height: 1.3;
+	}
+	& .breadcrumb-item {
+		display: flex;
+		align-items: center;
+		min-width: 0;
+		white-space: nowrap;
+	}
+	& .breadcrumb-item:not(:last-child) {
+		flex: 0 1 auto;
+	}
+	& .breadcrumb-item:last-child {
+		flex: 0 1 auto;
+		overflow: hidden;
+	}
+	& .breadcrumb-item > span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+.drv-crumb {
+	max-width: 12rem;
+	margin: 0 -0.35rem;
+	padding: 0.1rem 0.3rem;
+	border: 0;
+	border-radius: 6px;
+	overflow: hidden;
+	font: inherit;
+	font-weight: 550;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--drv-quiet);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+/* A phone has room for only the last two steps of the path. */
+@media (max-width: 575.98px) {
+	.drv-crumbs .breadcrumb {
+		font-size: 1rem;
+	}
+	.drv-crumbs .breadcrumb-item:not(:nth-last-child(-n + 2)) {
+		display: none;
+	}
+	.drv-crumb {
+		max-width: 7rem;
+	}
+}
+
+/* Toolbar: search, the two filters and the live count, wrapping as needed. */
+.drv-tools {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+
+	@media print {
+		display: none;
+	}
+}
+.drv-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--drv-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+		padding-right: 2.4rem;
+	}
+	/* The slash hint steps aside once the field has focus. */
+	&:focus-within .drv-search-key {
+		display: none;
+	}
+}
+.drv-search-key.drv-kbd {
+	position: absolute;
+	top: 50%;
+	right: 0.7rem;
+	transform: translateY(-50%);
+	margin: 0;
+	color: var(--drv-quiet);
+	pointer-events: none;
+}
+.drv-tools-select {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 9.5rem;
+}
+.drv-tools .basalt-select {
+	flex: 0 0 auto;
+	min-width: 9.5rem;
+}
+.drv-tools-count {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--drv-quiet);
+}
+/* Once the row is too tight, search gets a line of its own and the two
+   filters split the next one. */
+@container drv-main (max-width: 40rem) {
+	.drv-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.drv-tools .basalt-select,
+	.drv-tools-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	.drv-tools-count {
+		flex-basis: 100%;
+		margin-left: 0;
+	}
+}
+
+/* The bulk bar and the trash note share a banner shape; the bulk bar also sticks under the header. */
+.drv-bulk,
+.drv-trash-note {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+	padding: 0.6rem 0.75rem 0.6rem 1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+}
+.drv-bulk {
+	position: sticky;
+	top: calc(var(--basalt-header-height, 64px) + 0.5rem);
+	z-index: 3;
+	border: 1px solid color-mix(in srgb, var(--basalt-hue) 30%, var(--basalt-edge));
+	color: var(--basalt-copy);
+	background: var(--drv-selected);
+	box-shadow: 0 12px 24px -18px var(--basalt-scrim);
+}
+.drv-bulk-count {
+	font-weight: 650;
+}
+.drv-bulk-actions {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-left: auto;
+}
+.drv-bulk-clear.btn {
+	--bs-btn-color: var(--drv-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+}
+.drv-trash-note {
+	border: 1px solid var(--basalt-edge);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	& p {
+		flex: 1 1 16rem;
+	}
+}
+.drv-bulk[hidden],
+.drv-trash-note[hidden],
+.drv-head[hidden] {
+	display: none;
+}
+
+/* The upload tray scrolls past about six rows. */
+.drv-queue {
+	margin-bottom: 1rem;
+
+	& .basalt-file-queue-list {
+		max-height: 15rem;
+		overflow-y: auto;
+	}
+	& .basalt-file-queue-list[hidden] {
+		display: none;
+	}
+	@media print {
+		display: none;
+	}
+}
+
+/* Every entry, tile or row, is a bordered card that tints on hover and when picked. */
+.drv-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.drv-item {
+	position: relative;
+	min-width: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		background: color-mix(in srgb, var(--basalt-wash) 60%, var(--basalt-plane));
+	}
+	&.is-selected {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-edge));
+		background: var(--drv-selected);
+	}
+	&:has(.drv-item-open:focus-visible) {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&.is-target {
+		border-color: var(--basalt-hue);
+	}
+	/* A brief ring marks a folder or upload that has just arrived. */
+	&.is-fresh {
+		animation: drv-fresh 1.6s ease;
+	}
+	@media (prefers-reduced-motion: reduce), print {
+		transition: none;
+
+		&.is-fresh {
+			animation: none;
+		}
+	}
+}
+@keyframes drv-fresh {
+	0%,
+	30% {
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+	}
+	100% {
+		box-shadow: 0 0 0 0 transparent;
+	}
+}
+
+/* The name button stretches over the whole card, so a click anywhere opens
+   it; the checkbox and the menu button sit above that layer. */
+.drv-item-open {
+	display: block;
+	min-width: 0;
+	max-width: 100%;
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	font-size: 0.875rem;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+	}
+	&:focus-visible {
+		outline: none;
+	}
+}
+.drv-item-name {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.drv-item-text {
+	display: block;
+	min-width: 0;
+}
+.drv-item-meta {
+	display: block;
+	margin-top: 0.1rem;
+	overflow: hidden;
+	font-size: 0.77rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--drv-quiet);
+}
+/* Owner, date and size are list columns; tiles keep them hidden. */
+.drv-item-owner,
+.drv-item-date,
+.drv-item-size {
+	display: none;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.drv-item-owner {
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+
+	& > span:last-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+.drv-item-flags {
+	display: inline-flex;
+	gap: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--drv-quiet);
+}
+.drv-flag-star {
+	color: color-mix(in srgb, var(--basalt-warning) 80%, var(--basalt-copy));
+}
+.drv-item-check.form-check-input {
+	position: relative;
+	z-index: 2;
+	width: 1.1rem;
+	height: 1.1rem;
+	margin: 0;
+	cursor: pointer;
+}
+.drv-item-more {
+	position: relative;
+	z-index: 2;
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	background: transparent;
+
+	&:hover {
+		border-color: var(--basalt-edge);
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+/* Grid layout: tiles fill the row, two per row on a phone, and the first
+   file always starts a fresh line under the folders. */
+.drv-items-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+
+	@media (max-width: 575.98px) {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	& .is-first-file {
+		grid-column-start: 1;
+	}
+}
+/* In a narrow panel a folder spans the row so its whole name shows. */
+@container drv-main (max-width: 480px) {
+	.drv-items-grid .drv-item-folder {
+		grid-column: 1 / -1;
+	}
+}
+
+/* A folder tile is one compact row: icon, name, menu button. */
+.drv-items-grid .drv-item-folder {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.7rem 0.5rem 0.7rem 0.75rem;
+
+	& .drv-item-check {
+		position: absolute;
+		top: 50%;
+		left: 0.75rem;
+		translate: 0 -50%;
+		margin-left: 0.5rem;
+	}
+	& .drv-item-flags {
+		display: none;
+	}
+}
+
+/* A file tile is a picture with the name under it; marks and controls float on the corners. */
+.drv-items-grid .drv-item-file {
+	display: flex;
+	flex-direction: column;
+	padding: 0.5rem 0.5rem 0.75rem;
+
+	& .drv-item-visual {
+		display: block;
+		margin-bottom: 0.65rem;
+	}
+	& .drv-item-visual .drv-ico {
+		display: none;
+	}
+	& .drv-item-text {
+		padding: 0 1.9rem 0 0.3rem;
+	}
+	& .drv-item-check {
+		position: absolute;
+		top: 0.9rem;
+		left: 0.9rem;
+	}
+	& .drv-item-more {
+		position: absolute;
+		right: 0.25rem;
+		bottom: 0.5rem;
+	}
+	& .drv-item-flags {
+		position: absolute;
+		top: 0.85rem;
+		right: 0.85rem;
+		z-index: 1;
+		padding: 0.1rem 0.3rem;
+		border-radius: 6px;
+		background: var(--basalt-plane);
+	}
+	& .drv-item-flags:empty {
+		display: none;
+	}
+}
+
+/* Tile checkboxes appear on hover or focus, and stay once anything is picked;
+   a folder's icon steps aside for its checkbox. Touch screens show them always. */
+.drv-items-grid .drv-item-check {
+	opacity: 0;
+	transition: opacity 110ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.drv-items-grid .drv-item:hover .drv-item-check,
+.drv-items-grid .drv-item:focus-within .drv-item-check,
+.drv-items-grid.has-selection .drv-item-check,
+.drv-items-grid .drv-item-check:checked {
+	opacity: 1;
+}
+.drv-items-grid .drv-item-folder:hover .drv-ico,
+.drv-items-grid .drv-item-folder:focus-within .drv-ico,
+.drv-items-grid.has-selection .drv-item-folder .drv-ico {
+	visibility: hidden;
+}
+@media (hover: none) {
+	.drv-items-grid .drv-item-check {
+		opacity: 1;
+	}
+	.drv-items-grid .drv-item-folder .drv-ico {
+		visibility: hidden;
+	}
+}
+
+/* Tile pictures: a real photo, a demo drawing, or a sheet of paper with the type icon. */
+.drv-thumb {
+	position: relative;
+	display: grid;
+	place-items: center;
+	aspect-ratio: 4 / 3;
+	border-radius: 8px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--drv-tone, var(--basalt-copy-muted)) 9%, var(--basalt-plane-alt));
+
+	& img,
+	& .drv-art {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
+.drv-thumb-photo {
+	background: var(--basalt-plane-alt);
+}
+.drv-thumb-icon {
+	position: relative;
+	font-size: 2rem;
+	color: color-mix(in srgb, var(--drv-tone) 72%, var(--basalt-copy));
+}
+.drv-thumb-page {
+	position: absolute;
+	inset: 16% 27% -12%;
+	display: flex;
+	gap: 7%;
+	flex-direction: column;
+	padding: 12% 12%;
+	border-radius: 6px 6px 0 0;
+	background: var(--basalt-plane);
+	box-shadow: 0 1px 3px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+
+	& span {
+		height: 5%;
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--basalt-copy) 10%, var(--basalt-plane));
+	}
+	& span:first-child {
+		width: 60%;
+		background: color-mix(in srgb, var(--drv-tone) 35%, var(--basalt-plane));
+	}
+	& span:nth-child(3) {
+		width: 80%;
+	}
+}
+.drv-thumb-badge {
+	position: absolute;
+	bottom: 0.4rem;
+	left: 0.4rem;
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.1rem 0.4rem 0.1rem 0.25rem;
+	border-radius: 6px;
+	font:
+		600 0.71rem/1.4 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+/* Fills for the demo drawings, all derived from the tile's tone. */
+.drv-art-bg {
+	fill: color-mix(in srgb, var(--drv-tone) 16%, var(--basalt-plane));
+}
+.drv-art-a {
+	fill: color-mix(in srgb, var(--drv-tone) 78%, var(--basalt-plane));
+}
+.drv-art-deep {
+	fill: color-mix(in srgb, var(--drv-tone) 70%, var(--basalt-copy));
+}
+.drv-art-paper {
+	fill: var(--basalt-plane);
+}
+.drv-art-ink {
+	fill: color-mix(in srgb, var(--basalt-copy) 75%, var(--basalt-plane));
+}
+.drv-art-mute {
+	fill: color-mix(in srgb, var(--basalt-copy) 25%, var(--basalt-plane));
+}
+.drv-art-line {
+	fill: none;
+	stroke: color-mix(in srgb, var(--drv-tone) 70%, var(--basalt-copy));
+	stroke-width: 4;
+	stroke-linecap: round;
+}
+
+/* List layout: the header and each row share one column template. */
+.drv-head,
+.drv-items-list .drv-item {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: 1.4rem minmax(0, 1fr) 9rem 6.5rem 4.75rem 2rem;
+	align-items: center;
+}
+/* Header and rows hang into the panel padding, which lines the checkboxes
+   up with the left edge of the search box. */
+.drv-head {
+	margin-inline: -0.75rem;
+	padding: 0 0.75rem 0.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--drv-quiet);
+}
+.drv-head-name {
+	grid-column: 2;
+}
+.drv-head-size {
+	text-align: right;
+}
+.drv-items-list {
+	display: grid;
+	gap: 0;
+	margin-inline: -0.75rem;
+
+	& .drv-item {
+		padding: 1rem 0.75rem;
+		border-width: 0 0 1px;
+		border-radius: 0;
+		background: transparent;
+	}
+	& .drv-item:hover {
+		background: color-mix(in srgb, var(--basalt-wash) 70%, var(--basalt-plane));
+	}
+	& .drv-item.is-selected {
+		background: var(--drv-selected);
+	}
+	& .drv-item:has(.drv-item-open:focus-visible) {
+		border-radius: 8px;
+		outline-offset: -2px;
+	}
+	/* Rows show the small icon in place of the picture, laid over the name cell. */
+	& .drv-item-visual {
+		display: contents;
+	}
+	& .drv-item-visual .drv-thumb {
+		display: none;
+	}
+	& .drv-item > .drv-ico,
+	& .drv-item-visual .drv-ico {
+		grid-column: 2;
+		grid-row: 1;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 8px;
+		font-size: 0.95rem;
+	}
+	& .drv-item-text {
+		grid-column: 2;
+		grid-row: 1;
+		padding-left: 2.75rem;
+	}
+	& .drv-item-owner {
+		display: inline-flex;
+	}
+	& .drv-item-date {
+		display: block;
+	}
+	& .drv-item-size {
+		display: block;
+		text-align: right;
+	}
+	/* The star and shared marks close the Name cell instead of filling an unlabeled column. */
+	& .drv-item-flags {
+		grid-column: 2;
+		grid-row: 1;
+		justify-self: end;
+	}
+	& .drv-item:has(.drv-item-flags:not(:empty)) .drv-item-text {
+		padding-right: 2.6rem;
+	}
+	/* The folder line under a name appears only where entries come from many
+     folders: search, Recent, Starred, Shared and Trash. */
+	& .drv-item-meta {
+		display: none;
+		font-size: 0.76rem;
+	}
+	&.is-flat .drv-item-meta {
+		display: block;
+	}
+}
+/* Columns drop away as the panel narrows: owner and size first, then the date. */
+@container drv-main (max-width: 700px) {
+	.drv-head,
+	.drv-items-list .drv-item {
+		grid-template-columns: 1.4rem minmax(0, 1fr) 6.5rem 2rem;
+	}
+	.drv-head-owner,
+	.drv-head-size,
+	.drv-items-list .drv-item-owner,
+	.drv-items-list .drv-item-size {
+		display: none;
+	}
+}
+@container drv-main (max-width: 480px) {
+	.drv-head {
+		display: none;
+	}
+	.drv-items-list {
+		margin-inline: -0.25rem;
+	}
+	.drv-items-list .drv-item {
+		gap: 0.5rem;
+		grid-template-columns: 1.4rem minmax(0, 1fr) 2rem;
+		padding: 0.6rem 0.25rem;
+	}
+	.drv-items-list .drv-item-date {
+		display: none;
+	}
+	.drv-items-list .drv-item-meta {
+		display: block;
+	}
+}
+
+/* Placeholder tiles while the drive loads; they ignore hover. */
+.drv-item-skeleton {
+	display: grid;
+	gap: 0.5rem;
+	padding: 0.5rem 0.5rem 0.9rem;
+
+	&:hover {
+		border-color: var(--basalt-edge);
+		background: var(--basalt-plane);
+	}
+}
+.drv-skel-thumb {
+	height: auto;
+	aspect-ratio: 4 / 3;
+	border-radius: 8px;
+}
+.drv-skel-short {
+	width: 55%;
+}
+.drv-items-list .drv-item-skeleton {
+	display: grid;
+	grid-template-columns: 2rem minmax(0, 1fr) 30%;
+	padding: 0.75rem;
+}
+.drv-items-list .drv-skel-thumb {
+	aspect-ratio: 1;
+}
+
+/* Empty, no-match and error states sit in a dashed frame with a tinted badge. */
+.drv-empty {
+	padding: 2.5rem 1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 14px;
+
+	& .basalt-empty-text {
+		max-width: 34rem;
+		color: var(--drv-quiet);
+	}
+}
+.drv-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.5rem;
+	border-radius: 14px;
+	font-size: 1.3rem;
+	color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.drv-empty.basalt-empty-danger .drv-empty-icon {
+	color: var(--drv-danger-text);
+	background: var(--basalt-danger-soft);
+}
+.drv-empty.basalt-empty-success .drv-empty-icon {
+	color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	background: var(--basalt-success-soft);
+}
+
+.drv-hint {
+	margin: 1.25rem 0 0;
+	font-size: 0.77rem;
+	color: var(--drv-quiet);
+
+	&[hidden] {
+		display: none;
+	}
+	@media print {
+		display: none;
+	}
+}
+
+/* The drop overlay shows while the shared drop zone marks the panel .is-over. */
+.drv-drop {
+	position: absolute;
+	inset: 0.5rem;
+	z-index: 5;
+	display: none;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border: 2px dashed var(--basalt-hue);
+	border-radius: 14px;
+	font-weight: 650;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue-soft) 94%, transparent);
+	pointer-events: none;
+
+	& .bi {
+		font-size: 2.25rem;
+		color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	}
+}
+.drv-main.is-over .drv-drop {
+	display: flex;
+}
+
+/* The context menu floats at the pointer, above the sheet and dialogs. */
+.drv-menu.dropdown-menu {
+	position: fixed;
+	z-index: 1060;
+	min-width: 13rem;
+}
+.drv-menu li[hidden] {
+	display: none;
+}
+
+/* Side sheet header: icon, name and the previous and next buttons, which
+   drop under the name on a phone. */
+.drv-sheet {
+	& .offcanvas-header {
+		gap: 0.75rem;
+		align-items: center;
+	}
+	@media (max-width: 575.98px) {
+		& .offcanvas-header {
+			flex-wrap: wrap;
+		}
+		& .basalt-drawer-heading {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+		& .basalt-drawer-nav {
+			flex-basis: 100%;
+			justify-content: flex-end;
+			order: 3;
+		}
+	}
+	& .offcanvas-title {
+		font-size: var(--basalt-fs-card-title, 1.2rem);
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+	& .basalt-drawer-sub {
+		color: var(--drv-quiet);
+	}
+	& .offcanvas-body {
+		display: flex;
+		gap: 0;
+		flex-direction: column;
+	}
+	& .offcanvas-body > * {
+		flex-shrink: 0;
+	}
+	& .basalt-drawer-foot[hidden] {
+		display: none;
+	}
+}
+.drv-sheet-icon .drv-ico {
+	width: 2.5rem;
+	height: 2.5rem;
+	font-size: 1.1rem;
+}
+/* Sheet section headings: a clear step above the facts, with the panel's section gap over them. */
+.drv-sheet-sub {
+	margin: var(--basalt-pad-head) 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.drv-sheet-open {
+	align-self: flex-start;
+	margin-top: 0.75rem;
+}
+.drv-sheet-trash {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.drv-sheet-keys {
+	margin: 1.5rem 0 0;
+	font-size: 0.77rem;
+	color: var(--drv-quiet);
+}
+
+/* Previews share a framed box with a caption strip; each kind fills it differently. */
+.drv-pv {
+	margin: 0;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.drv-pv-note {
+	margin: 0;
+	padding: 0.5rem 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.77rem;
+	color: var(--drv-quiet);
+	background: var(--basalt-plane);
+}
+.drv-pv-plain .drv-pv-note:first-child {
+	border-top: 0;
+}
+.drv-pv-stage {
+	position: relative;
+	display: grid;
+	place-items: center;
+	aspect-ratio: 4 / 3;
+
+	& img,
+	& .drv-art {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+	& .drv-art {
+		object-fit: cover;
+	}
+}
+.drv-pv-play {
+	position: absolute;
+	display: grid;
+	place-items: center;
+	width: 3.5rem;
+	height: 3.5rem;
+	border-radius: 50%;
+	font-size: 1.6rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 4px 14px color-mix(in srgb, var(--basalt-copy) 20%, transparent);
+}
+/* Documents show their first page as a sheet of paper. */
+.drv-pv-doc {
+	padding: 1rem 1rem 0;
+
+	& .drv-pv-note {
+		margin: 0 -1rem;
+	}
+}
+.drv-paper {
+	margin-bottom: 1rem;
+	padding: 1.5rem 1.4rem;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	box-shadow: 0 1px 4px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+
+	& p:last-child {
+		margin-bottom: 0;
+	}
+}
+.drv-paper-title {
+	margin: 0 0 0.75rem;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.drv-pv-pre {
+	margin: 0;
+	padding: 1rem;
+	font:
+		0.77rem/1.6 "Chivo Mono",
+		monospace;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+/* Spreadsheets wrap inside the drawer rather than adding a second scrollbar. */
+.drv-pv-sheet .table-responsive {
+	overflow: clip;
+	background: var(--basalt-plane);
+}
+.drv-pv-table.table {
+	--bs-table-bg: var(--basalt-plane);
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	font-size: 0.77rem;
+}
+.drv-pv-table {
+	& th {
+		font-weight: 650;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+	}
+	& thead th {
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--drv-quiet);
+	}
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.6rem;
+		overflow-wrap: anywhere;
+	}
+}
+/* Folder contents and zip listings: icon, name, size at the far end. */
+.drv-pv-files {
+	margin: 0;
+	padding: 0.4rem 0.5rem;
+	background: var(--basalt-plane);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		padding: 0.6rem 0.3rem;
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+	}
+	& li > span:nth-child(2) {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	& .drv-ico {
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 7px;
+		font-size: 0.85rem;
+	}
+}
+.drv-pv-dim {
+	margin-left: auto;
+	font-size: 0.76rem;
+	white-space: nowrap;
+	color: var(--drv-quiet);
+}
+.drv-pv-none {
+	display: grid;
+	gap: 0.5rem;
+	justify-items: center;
+	padding: 2rem 1rem 0;
+	text-align: center;
+	background: var(--basalt-plane);
+
+	& > .bi {
+		font-size: 2.5rem;
+		color: var(--drv-quiet);
+	}
+	& .drv-pv-note {
+		border: 0;
+	}
+}
+.drv-skel-pv {
+	height: 12rem;
+	margin: 0.5rem;
+}
+
+/* Details read as label beside value. Type and size already open the
+   sheet's subtitle, so the first two pairs stay hidden and Where leads. */
+.drv-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7rem minmax(0, 1fr);
+		min-width: 0;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& > div:nth-child(-n + 2) {
+		display: none;
+	}
+	& > div:nth-child(3) {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& dt {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--drv-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Who can open it: the link badge, then overlapping avatars and names. */
+.drv-access {
+	display: grid;
+	gap: 0.6rem;
+	justify-items: start;
+}
+.drv-access-line {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.drv-access-avatars {
+	display: inline-flex;
+
+	& .basalt-avatar + .basalt-avatar {
+		margin-left: -0.4rem;
+		box-shadow: 0 0 0 2px var(--basalt-plane);
+	}
+}
+
+/* Activity: who did what, with the time on its own quiet line. */
+.drv-act {
+	display: grid;
+	gap: 0.7rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.6rem;
+		align-items: flex-start;
+		font-size: 0.84rem;
+		color: var(--basalt-copy-body);
+	}
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.drv-act-when {
+	display: block;
+	font-size: 0.76rem;
+	color: var(--drv-quiet);
+}
+
+/* Dialog forms, and the move dialog's framed tree. */
+.drv-dialog .form-label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.drv-warn {
+	min-height: 1.25rem;
+	margin: 0.4rem 0 0;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+}
+.drv-move-host {
+	position: relative;
+	padding: 0.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+}
+.drv-move-to {
+	margin: 0.75rem 0 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Share dialog: an add row, the people list and the link controls. On a
+   phone the person field takes its own line and role selects tuck under names. */
+.drv-share-add {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: minmax(0, 1fr) 9rem auto;
+	align-items: start;
+}
+.drv-share-add-go {
+	margin-top: 1.95rem;
+}
+.drv-share-add-who .invalid-feedback {
+	color: var(--drv-danger-text);
+}
+.drv-share-sub {
+	margin: 1.5rem 0 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.drv-share-people > li {
+	flex-wrap: wrap;
+}
+.drv-share-person {
+	min-width: 0;
+
+	& .basalt-person-meta {
+		overflow-wrap: anywhere;
+	}
+}
+.drv-share-people .basalt-select,
+.drv-share-role {
+	flex: none;
+	width: 8.5rem;
+}
+.drv-share-remove.btn {
+	flex: none;
+}
+.drv-share-link {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: 15rem minmax(0, 1fr);
+	margin-top: 0.5rem;
+}
+.drv-share-note {
+	margin: 0.6rem 0 0;
+	font-size: 0.8rem;
+	color: var(--drv-quiet);
+}
+@media (max-width: 575.98px) {
+	.drv-share-add {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.drv-share-add-who {
+		grid-column: 1 / -1;
+	}
+	.drv-share-link {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.drv-share-people .basalt-person {
+		flex-basis: 100%;
+	}
+	.drv-share-people .basalt-select,
+	.drv-share-role {
+		margin-left: 2.75rem;
+	}
+}

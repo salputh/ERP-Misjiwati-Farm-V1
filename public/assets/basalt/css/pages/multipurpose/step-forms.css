@@ -1,0 +1,1701 @@
+/* Styles for step-forms.html and its return dialog. The page's own
+   classes all start with .wiz-, and every color is drawn from the
+   --basalt-* tokens, so the eight sample cards follow the chosen palette
+   and dark mode. */
+
+/* The page's own shades: quiet text sits closer to the body color than
+   the muted token, so it still clears 4.5:1 on the lighter palettes. */
+.wiz-page,
+.wiz-return {
+	--wiz-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	--wiz-line: color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+	--wiz-track: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+	--wiz-danger-text: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--wiz-ok-text: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+}
+
+/* Primary buttons here carry a deeper fill and the on-hue text color:
+   stock white text is too faint on the pale primaries of dark palettes,
+   and pulling the fill toward the text color keeps white legible on the
+   lighter light-mode primaries too. */
+.wiz-page .btn-primary,
+.wiz-return .btn-primary {
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-active-color: var(--basalt-on-hue);
+	--bs-btn-disabled-color: var(--basalt-on-hue);
+	--bs-btn-bg: color-mix(in srgb, var(--basalt-hue) 85%, var(--basalt-copy));
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-hue) 85%, var(--basalt-copy));
+	--bs-btn-hover-bg: color-mix(in srgb, var(--basalt-hue) 75%, var(--basalt-copy));
+	--bs-btn-hover-border-color: color-mix(in srgb, var(--basalt-hue) 75%, var(--basalt-copy));
+	--bs-btn-active-bg: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--bs-btn-active-border-color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--bs-btn-disabled-bg: color-mix(in srgb, var(--basalt-hue) 85%, var(--basalt-copy));
+	--bs-btn-disabled-border-color: color-mix(in srgb, var(--basalt-hue) 85%, var(--basalt-copy));
+}
+
+/* Status pills mix their text further toward the body color than the shared default. */
+.wiz-page .basalt-status {
+	color: color-mix(in srgb, var(--stp-tone) 45%, var(--basalt-copy));
+}
+
+/* The chips above the grid narrow it to one layout; the pressed chip is solid. */
+.wiz-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.wiz-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.wiz-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.wiz-chips .wiz-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.wiz-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wiz-chip {
+		transition: none;
+	}
+}
+@media print {
+	.wiz-filter {
+		display: none;
+	}
+}
+
+/* Cards fill the row until 1200px, then pair up; a filtered card left on its own spans the row again. */
+.wiz-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.wiz-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+@media (min-width: 1200px) {
+	.wiz-card {
+		grid-column: span 6;
+	}
+	.wiz-card-full,
+	.wiz-grid.is-filtered .wiz-card.is-alone {
+		grid-column: span 12;
+	}
+}
+@media print {
+	.wiz-card.is-hidden {
+		display: block;
+	}
+}
+
+/* Inside a card the body is a column, so the code toggle can settle at the foot. */
+.wiz-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.wiz-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+.wiz-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.wiz-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.wiz-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--wiz-quiet);
+}
+.wiz-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--wiz-quiet);
+}
+.wiz {
+	min-width: 0;
+}
+.wiz-card .wiz {
+	margin-bottom: 1.75rem;
+}
+
+/* Step indicator, numbered line: dots joined by a track that fills as steps are done. */
+.wiz-steps {
+	display: grid;
+	grid-auto-columns: minmax(0, 1fr);
+	grid-auto-flow: column;
+	margin: 0 0 2rem;
+	padding: 0;
+	list-style: none;
+}
+.wiz-steps-item {
+	position: relative;
+	min-width: 0;
+}
+/* Each connector reaches back from its own dot to the one before it. */
+.wiz-steps-item + .wiz-steps-item::before {
+	content: "";
+	position: absolute;
+	top: 1.05rem;
+	right: calc(50% + 1.35rem);
+	left: calc(-50% + 1.35rem);
+	height: 2px;
+	border-radius: 2px;
+	background: var(--wiz-track);
+	transition: background-color 300ms ease;
+}
+.wiz-steps-item.is-done + .wiz-steps-item::before,
+.wiz-steps-item.is-done + .wiz-steps-item.is-current::before {
+	background: var(--basalt-hue);
+}
+.wiz-steps-btn {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 10px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-align: center;
+	color: var(--wiz-quiet);
+	background: none;
+
+	&:not(:disabled) {
+		cursor: pointer;
+	}
+	&:disabled {
+		color: var(--wiz-quiet);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+.wiz-steps-dot {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 50%;
+	border: 2px solid var(--wiz-line);
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--wiz-quiet);
+	background: var(--basalt-plane);
+	transition:
+		background-color 200ms ease,
+		border-color 200ms ease,
+		box-shadow 200ms ease,
+		color 200ms ease;
+}
+.wiz-steps-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	max-width: 100%;
+}
+.wiz-steps-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.wiz-steps-item.is-current {
+	.wiz-steps-btn {
+		color: var(--basalt-copy);
+	}
+	.wiz-steps-dot {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 16%, transparent);
+	}
+}
+.wiz-steps-item.is-done {
+	.wiz-steps-dot {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+	.wiz-steps-btn {
+		color: var(--basalt-copy-body);
+	}
+}
+.wiz-steps-btn:not(:disabled):hover .wiz-steps-dot {
+	border-color: var(--basalt-hue);
+}
+/* Five labels will not share a phone-width line, so only the current step
+   keeps its name on screen; the rest show a number and keep the name for
+   screen readers. */
+@media (max-width: 575.98px) {
+	.wiz-steps:not(.wiz-steps-pills) .wiz-steps-item:not(.is-current) .wiz-steps-text {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.wiz-steps:not(.wiz-steps-pills) .is-current .wiz-steps-label {
+		overflow: visible;
+	}
+}
+
+/* Step indicator, pills: the branching sample wraps its steps as pills, and a step that joins pops in. */
+.wiz-steps-pills {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.75rem;
+
+	.wiz-steps-item::before {
+		display: none;
+	}
+	.wiz-steps-btn {
+		gap: 0.4rem;
+		flex-direction: row;
+		padding: 0.3rem 0.8rem 0.3rem 0.3rem;
+		border: 1px solid var(--wiz-line);
+		border-radius: 999px;
+		background: var(--basalt-plane);
+	}
+	.wiz-steps-dot {
+		width: 1.5rem;
+		height: 1.5rem;
+		border-width: 0;
+		font-size: 0.71rem;
+		background: var(--wiz-track);
+	}
+	.is-current .wiz-steps-btn {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+	.is-current .wiz-steps-dot {
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: none;
+	}
+	.is-done .wiz-steps-dot {
+		background: var(--basalt-hue);
+	}
+}
+.wiz-steps-item.is-new {
+	animation: wiz-pop 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes wiz-pop {
+	from {
+		transform: scale(0.8);
+		opacity: 0;
+	}
+}
+
+/* Step indicator, vertical rail: each step carries a status line. When
+   the card is narrow the rail lies down as a numbered line and the status
+   is kept for screen readers only. */
+.wiz-steps-rail {
+	margin: 0;
+
+	.is-needs .wiz-steps-dot {
+		border-color: var(--basalt-danger);
+		color: var(--wiz-danger-text);
+		background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+	.is-needs .wiz-steps-status {
+		font-weight: 600;
+		color: var(--wiz-danger-text);
+	}
+}
+.wiz-steps-status {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--wiz-quiet);
+}
+@container (max-width: 699.98px) {
+	.wiz-steps-rail .wiz-steps-btn {
+		font-size: 0.71rem;
+	}
+	.wiz-steps-rail .wiz-steps-status {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+@container (min-width: 700px) {
+	.wiz-steps-rail {
+		display: flex;
+		flex-direction: column;
+
+		.wiz-steps-item + .wiz-steps-item::before {
+			top: calc(-50% + 1.2rem);
+			right: auto;
+			bottom: calc(50% + 1.2rem);
+			left: calc(1.05rem - 1px);
+			width: 2px;
+			height: auto;
+		}
+		.wiz-steps-btn {
+			gap: 0.8rem;
+			flex-direction: row;
+			align-items: center;
+			padding: 0.5rem 0.5rem 0.5rem 0;
+			text-align: left;
+		}
+		.wiz-steps-label {
+			font-size: 0.875rem;
+		}
+		.wiz-steps-btn:hover .wiz-steps-label {
+			text-decoration: underline;
+			text-underline-offset: 3px;
+		}
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.wiz-steps-dot,
+	.wiz-steps-item::before {
+		transition: none;
+	}
+	.wiz-steps-item.is-new {
+		animation: none;
+	}
+}
+
+/* A panel slides in from the side it was reached from; its heading takes focus without a ring. */
+.wiz-form {
+	min-width: 0;
+}
+.wiz-panel-title {
+	margin: 0 0 1.1rem;
+	padding: 0;
+	font-size: 1.05rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.wiz .wiz-panel-title:focus,
+.wiz .wiz-panel-title:focus-visible {
+	outline: none;
+}
+.wiz-panel.is-entering {
+	animation: wiz-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.wiz-panel.is-entering-back {
+	animation: wiz-in-back 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes wiz-in {
+	from {
+		transform: translateX(14px);
+		opacity: 0;
+	}
+}
+@keyframes wiz-in-back {
+	from {
+		transform: translateX(-14px);
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.wiz-panel.is-entering,
+	.wiz-panel.is-entering-back {
+		animation: none;
+	}
+}
+
+/* Fields stack with even gaps; help, error and confirmation lines share one small size under them. */
+.wiz-field {
+	margin-bottom: 1.25rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+.wiz-help,
+.wiz-error,
+.wiz-ok {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+}
+.wiz-help {
+	color: var(--wiz-quiet);
+}
+.wiz-help-end {
+	text-align: right;
+}
+.wiz-optional {
+	margin-left: 0.25rem;
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--wiz-quiet);
+}
+.wiz-error {
+	font-weight: 600;
+	color: var(--wiz-danger-text);
+}
+.wiz-ok {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-weight: 600;
+	color: var(--wiz-ok-text);
+}
+.wiz-note {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	margin: 1rem 0 0;
+	padding: 0.8rem 1rem;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+
+	.bi {
+		margin-top: 0.1rem;
+		color: var(--basalt-hue);
+	}
+}
+/* Fieldsets used as plain groups drop the browser's frame and let their legend span the width. */
+.wiz-answers,
+.wiz-range,
+.wiz-return fieldset {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.wiz-answers > legend,
+.wiz-range > legend,
+.wiz-return fieldset > legend {
+	float: none;
+	width: 100%;
+}
+
+/* The shared choice, tag and stepper controls are tuned for contrast on this page. */
+.wiz-page .basalt-choice-hint,
+.wiz-return .basalt-choice-hint,
+.wiz-page .basalt-tags-meta,
+.wiz-return .basalt-dialog-head-sub {
+	color: var(--wiz-quiet);
+}
+.wiz-page .basalt-choices {
+	margin-bottom: 0.25rem;
+}
+.wiz-page .basalt-choices > legend,
+.wiz-return .basalt-choices > legend {
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+.wiz-page .form-control::placeholder,
+.wiz-page .basalt-tags-input::placeholder {
+	color: var(--wiz-quiet);
+	opacity: 1;
+}
+.wiz-page .basalt-tags-input:disabled {
+	color: var(--wiz-quiet);
+}
+/* An invalid checkbox keeps its label in the text color; Bootstrap's danger
+   shade is too light on some palettes, and the message below says enough. */
+.wiz-page .form-check-input.is-invalid ~ .form-check-label,
+.wiz-return .form-check-input.is-invalid ~ .form-check-label {
+	color: inherit;
+}
+.basalt-stepper:has(.is-invalid),
+.basalt-tags:has(.is-invalid) {
+	border-color: var(--basalt-danger);
+}
+.basalt-choices:has(.is-invalid) .basalt-choice {
+	border-color: color-mix(in srgb, var(--basalt-danger) 60%, var(--wiz-line));
+}
+
+/* The "things to fix" box opens the form with a danger edge and a link to each field. */
+.wiz-summary {
+	margin-bottom: 1.25rem;
+	padding: 0.9rem 1.1rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 40%, transparent);
+	border-left-width: 4px;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-danger) 6%, var(--basalt-plane));
+
+	&:focus {
+		outline: 2px solid var(--basalt-danger);
+		outline-offset: 2px;
+	}
+}
+.wiz-summary-title {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.4rem;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	.bi {
+		color: var(--basalt-danger);
+	}
+}
+.wiz-summary-list {
+	margin: 0;
+	padding-left: 1.6rem;
+	font-size: 0.85rem;
+
+	& li + li {
+		margin-top: 0.1rem;
+	}
+	& a {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	& a:hover {
+		color: var(--wiz-danger-text);
+	}
+}
+.wiz-summary-where {
+	font-weight: 700;
+}
+
+/* The button row closes each form; the forward button keeps right unless a note sits between. */
+.wiz-nav {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.75rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.wiz-nav [data-wiz-next],
+.wiz-nav [data-pr-publish] {
+	margin-left: auto;
+}
+.wiz-nav-meta {
+	margin: 0 auto;
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+}
+.wiz-nav-meta + [data-wiz-next],
+.wiz-nav-meta + [data-pr-publish] {
+	margin-left: 0;
+}
+.wiz-nav [data-wiz-back]:not([hidden]) ~ .wiz-nav-meta {
+	margin: 0 auto;
+}
+@media (max-width: 575.98px) {
+	.wiz-nav-save {
+		order: 3;
+		width: 100%;
+	}
+}
+
+/* The finished view rises into place, centered under a tinted badge. */
+.wiz-done {
+	padding: 2.5rem 1rem 1.5rem;
+	text-align: center;
+	animation: wiz-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes wiz-rise {
+	from {
+		transform: translateY(10px);
+		opacity: 0;
+	}
+}
+.wiz-done-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 3.75rem;
+	height: 3.75rem;
+	margin-bottom: 1rem;
+	border-radius: 50%;
+	font-size: 1.6rem;
+	color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 12%, var(--basalt-plane));
+	box-shadow: 0 0 0 8px color-mix(in srgb, var(--basalt-hue) 6%, transparent);
+}
+.wiz-done-title {
+	margin: 0 0 0.4rem;
+	font-size: 1.2rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.wiz .wiz-done-title:focus,
+.wiz .wiz-done-title:focus-visible {
+	outline: none;
+}
+.wiz-done-text {
+	max-width: 48ch;
+	margin: 0 auto 1.35rem;
+	font-size: 0.9rem;
+	color: var(--wiz-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wiz-done {
+		animation: none;
+	}
+}
+
+/* Review lists pair a quiet term with its answer on hairline-divided rows. */
+.wiz-review dt,
+.wiz-facts dt {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--wiz-quiet);
+}
+.wiz-review {
+	margin: 0 0 1.25rem;
+}
+.wiz-review-row {
+	display: grid;
+	gap: 0.5rem 1rem;
+	grid-template-columns: 5.5rem minmax(0, 1fr);
+	align-items: center;
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+}
+.wiz-review dd {
+	display: flex;
+	gap: 0.5rem 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+
+	.btn {
+		flex-shrink: 0;
+	}
+}
+@media (max-width: 575.98px) {
+	.wiz-review-row {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.wiz-facts {
+	margin: 0;
+
+	> div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 6.5rem minmax(0, 1fr);
+		padding: 0.6rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	> div:first-child {
+		padding-top: 0;
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.9rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Progress meters: segments that light up one by one, and a bar that fills smoothly. */
+.wiz-segments {
+	display: flex;
+	gap: 4px;
+}
+.wiz-segments span {
+	flex: 1;
+	height: 6px;
+	border-radius: 3px;
+	background: var(--wiz-track);
+	transition: background-color 300ms ease;
+
+	&.is-on {
+		background: var(--basalt-hue);
+	}
+}
+.wiz-segments-bar span {
+	height: 4px;
+}
+.wiz-bar {
+	height: 6px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: var(--wiz-track);
+}
+.wiz-bar-fill {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-hue);
+	transition: width 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wiz-bar-fill,
+	.wiz-segments span {
+		transition: none;
+	}
+}
+
+/* Checkout: the form and the order summary sit side by side once the card is wide enough. */
+.wiz-checkout {
+	container-type: inline-size;
+}
+.wiz-checkout-layout {
+	display: grid;
+	gap: 1.75rem;
+}
+@container (min-width: 760px) {
+	.wiz-checkout-layout {
+		gap: 2.25rem;
+		grid-template-columns: minmax(0, 1fr) 290px;
+		align-items: start;
+	}
+}
+
+/* A bag row stacks its stepper under the name, then lines everything up on one row when there is room. */
+.wiz-bag {
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+.wiz-bag-item {
+	display: grid;
+	gap: 0.3rem 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-areas: "thumb info info" "thumb step line";
+	align-items: center;
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	.wiz-thumb {
+		grid-area: thumb;
+	}
+	.basalt-stepper {
+		grid-area: step;
+		justify-self: start;
+	}
+}
+@container (min-width: 520px) {
+	.wiz-bag-item {
+		grid-template-columns: auto minmax(0, 1fr) auto 5rem;
+		grid-template-areas: "thumb info step line";
+	}
+}
+.wiz-bag-info {
+	grid-area: info;
+	min-width: 0;
+}
+.wiz-bag-line {
+	grid-area: line;
+	margin: 0;
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.wiz-bag-name {
+	display: block;
+	font-weight: 650;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.wiz-bag-meta {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+}
+.wiz-bag-item.is-zero .wiz-bag-line {
+	font-weight: 500;
+	color: var(--wiz-quiet);
+}
+.wiz-bag + .wiz-error {
+	margin: -0.4rem 0 1.25rem;
+}
+.wiz-promo {
+	max-width: 360px;
+}
+
+/* Product thumbnails tint an icon with one of the chart series colors. */
+.wiz-thumb {
+	--wiz-tone: var(--basalt-series-1);
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: var(--wiz-tone);
+	background: color-mix(in srgb, var(--wiz-tone) 14%, var(--basalt-plane));
+}
+.wiz-tone-1 {
+	--wiz-tone: var(--basalt-series-1);
+}
+.wiz-tone-2 {
+	--wiz-tone: var(--basalt-series-2);
+}
+.wiz-tone-3 {
+	--wiz-tone: var(--basalt-series-3);
+}
+.wiz-tone-4 {
+	--wiz-tone: var(--basalt-series-4);
+}
+
+/* The card number field leaves room on the right for the detected brand. */
+.wiz-card-input {
+	position: relative;
+
+	.form-control {
+		padding-right: 6rem;
+		letter-spacing: 0.02em;
+	}
+	.form-control.is-invalid {
+		background-image: none;
+	}
+}
+.wiz-card-input-brand {
+	position: absolute;
+	top: 50%;
+	right: 0.75rem;
+	transform: translateY(-50%);
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--wiz-quiet);
+	pointer-events: none;
+
+	.bi {
+		font-size: 1.1rem;
+	}
+	&.is-known {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The order summary reads like a receipt: items, a dashed rule, then the sums and a bold total. */
+.wiz-receipt {
+	padding: 1.35rem 1.35rem 1.2rem;
+	border-radius: 16px;
+	background: var(--basalt-canvas);
+}
+.wiz-receipt-title {
+	margin: 0 0 0.9rem;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.wiz-receipt-items {
+	margin: 0 0 0.9rem;
+	padding: 0 0 0.9rem;
+	border-bottom: 1px dashed var(--wiz-line);
+	font-size: 0.85rem;
+	list-style: none;
+}
+.wiz-receipt-items li,
+.wiz-receipt-rows > div {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+}
+.wiz-receipt-items li {
+	padding: 0.2rem 0;
+	color: var(--basalt-copy-body);
+}
+.wiz-receipt-empty {
+	color: var(--wiz-quiet);
+}
+.wiz-receipt-rows {
+	margin: 0;
+	font-size: 0.85rem;
+
+	> div {
+		padding: 0.2rem 0;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+	& dd {
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+	> .wiz-receipt-total {
+		margin-top: 0.5rem;
+		padding-top: 0.7rem;
+		border-top: 1px solid var(--wiz-line);
+	}
+}
+.wiz-receipt-total dt,
+.wiz-receipt-total dd {
+	font-size: 1.1rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.wiz-receipt-note {
+	margin: 0.9rem 0 0;
+	font-size: 0.77rem;
+	color: var(--wiz-quiet);
+}
+
+/* Shipping zones: saved zones list above the form, and a new one flashes as it lands. */
+.wiz-zones {
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+.wiz-zones-item {
+	display: flex;
+	gap: 0.2rem 1rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.65rem 0.9rem;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	background: var(--basalt-canvas);
+
+	& + & {
+		margin-top: 0.4rem;
+	}
+	&.is-new {
+		animation: wiz-flash 1.6s ease;
+	}
+}
+@keyframes wiz-flash {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-canvas));
+		box-shadow: 0 0 0 2px var(--basalt-hue);
+	}
+}
+.wiz-zones-name {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.wiz-zones-meta {
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wiz-zones-item.is-new {
+		animation: none;
+	}
+}
+.wiz-zone-progress {
+	margin-bottom: 1.25rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.wiz-zone-count {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin: 0 0 0.5rem;
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+}
+.wiz-zone-label {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.wiz-range > legend {
+	padding: 0;
+}
+.wiz-range-row {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+}
+.wiz-range-label {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--wiz-quiet);
+}
+
+/* Seat invite: a ring beside the step names, and a preview card with a ribbon across its corner. */
+.wiz-gift-meter {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+/* The ring is drawn on a 36-unit box, so this thickness is in viewBox units. */
+.wiz-gift-ring {
+	--size: 64px;
+	--thickness: 3.6px;
+
+	.basalt-ring-value {
+		font-size: 0.95rem;
+	}
+}
+.wiz-gift-step {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.wiz-gift-next {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+}
+.wiz-date {
+	max-width: 220px;
+}
+.wiz-giftcard {
+	position: relative;
+	padding: 1.5rem 1.5rem 1.35rem;
+	border-radius: 18px;
+	border: 1px solid color-mix(in srgb, var(--basalt-hue) 22%, var(--basalt-edge));
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+}
+.wiz-giftcard::before,
+.wiz-giftcard::after {
+	content: "";
+	position: absolute;
+	background: color-mix(in srgb, var(--basalt-hue) 30%, transparent);
+}
+.wiz-giftcard::before {
+	top: 0;
+	right: 3.25rem;
+	bottom: 0;
+	width: 10px;
+}
+.wiz-giftcard::after {
+	top: 2.25rem;
+	right: 0;
+	left: 0;
+	height: 10px;
+	background: color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+}
+.wiz-giftcard > * {
+	position: relative;
+	z-index: 1;
+}
+.wiz-giftcard-to {
+	margin: 1.25rem 0 0.2rem;
+	font-size: 1.35rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.wiz-giftcard-plan {
+	margin: 0 0 0.9rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.wiz-giftcard-msg {
+	max-width: 40ch;
+	margin: 0 0 0.9rem;
+	font-size: 0.9rem;
+	font-style: italic;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.wiz-giftcard-when {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--wiz-quiet);
+}
+
+/* Product listing: a readiness meter and status pill on top, then four equal tabs. */
+.wiz-product-top {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.wiz-product-meter {
+	flex: 1;
+	max-width: 280px;
+}
+.wiz-product-count {
+	margin: 0 0 0.4rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.wiz-tabs {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin-bottom: 1.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.wiz-tab {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	margin-bottom: -1px;
+	padding: 0.7rem 0.4rem;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--wiz-quiet);
+	background: none;
+	cursor: pointer;
+
+	.bi {
+		font-size: 0.9rem;
+		color: var(--wiz-quiet);
+	}
+	&.is-ready .bi {
+		color: var(--basalt-success);
+	}
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&[aria-selected="true"] {
+		border-bottom-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 8px 8px 0 0;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+@media (max-width: 575.98px) {
+	.wiz-tab {
+		gap: 0.2rem;
+		flex-direction: column;
+		font-size: 0.77rem;
+	}
+}
+.wiz-tabpanel:focus-visible {
+	border-radius: 8px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 6px;
+}
+.wiz-margin {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Return request: the order card the dialog writes back to, and the dialog's own thin bar and item rows. */
+.wiz-order {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+.wiz-order-head {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	width: 100%;
+}
+.wiz-order-id {
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.wiz-order-meta {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+}
+.wiz-order-items {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem 0.9rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: 0.7rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& li:first-child {
+		padding-top: 0;
+	}
+}
+.wiz-order-name {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 9rem;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.wiz-order-sub {
+	font-size: 0.77rem;
+	font-weight: 400;
+	color: var(--wiz-quiet);
+}
+.wiz-order-note {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.wiz-return-bar {
+	height: 4px;
+	margin: 0 1.5rem 0.75rem;
+	border-radius: 2px;
+	overflow: hidden;
+	background: var(--wiz-track);
+}
+.wiz-pick {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-height: 3.25rem;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	.form-check-input {
+		flex-shrink: 0;
+		margin: 0;
+	}
+}
+.wiz-pick-label {
+	flex: 1;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+
+/* Stockist application: the rail takes a side column once the card passes 700px. */
+.wiz-rail {
+	container-type: inline-size;
+}
+.wiz-rail-layout {
+	display: grid;
+	gap: 1.5rem;
+}
+@container (min-width: 700px) {
+	.wiz-rail-layout {
+		gap: 2.25rem;
+		grid-template-columns: 200px minmax(0, 1fr);
+	}
+	.wiz-rail-side {
+		padding-right: 1.5rem;
+		border-right: 1px solid var(--basalt-edge);
+	}
+}
+.wiz-rail-saved {
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+.wiz-draft {
+	display: flex;
+	gap: 0.6rem 0.9rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.5rem;
+	padding: 0.75rem 1rem;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-info) 9%, var(--basalt-plane));
+
+	.bi {
+		color: var(--basalt-info);
+	}
+}
+.wiz-draft-text {
+	flex: 1 1 14rem;
+	margin: 0;
+}
+.wiz-volume {
+	display: flex;
+	gap: 1.25rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.wiz-tier {
+	padding: 0.1rem 0 0.1rem 0.9rem;
+	border-left: 3px solid var(--basalt-hue);
+}
+.wiz-tier-name {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.wiz-tier-text {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--wiz-quiet);
+}
+
+/* The drop zone hides its file input but passes the input's focus ring to the Choose button. */
+.wiz-drop {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 1.75rem 1.25rem 1.5rem;
+	border: 2px dashed var(--wiz-line);
+	border-radius: 16px;
+	text-align: center;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	> .bi {
+		font-size: 1.75rem;
+		color: var(--basalt-hue);
+	}
+	&:has(.wiz-drop-input:focus-visible) .wiz-drop-pick {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&.is-over {
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 6%, transparent);
+	}
+	&:has(.is-invalid) {
+		border-color: var(--basalt-danger);
+	}
+	.wiz-help {
+		max-width: 46ch;
+	}
+}
+.wiz-drop-text {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.wiz-drop-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	opacity: 0;
+	clip-path: inset(50%);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wiz-drop {
+		transition: none;
+	}
+}
+.wiz-files {
+	margin: 1rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.wiz-files-item {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.6rem 0.75rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	font-size: 0.85rem;
+
+	& + & {
+		margin-top: 0.5rem;
+	}
+	> .bi {
+		font-size: 1.1rem;
+		color: var(--basalt-hue);
+	}
+}
+.wiz-files-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.wiz-files-size {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--wiz-quiet);
+}
+
+/* Plan finder: one question in large type, answers as lettered cards, and a match card at the end. */
+.wiz-quiz-progress {
+	margin-bottom: 1.5rem;
+}
+.wiz-quiz-count {
+	margin: 0 0 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--wiz-quiet);
+}
+.wiz-answers {
+	display: grid;
+	gap: 0.5rem;
+}
+.wiz-quiz-q {
+	margin-bottom: 1.1rem;
+	font-size: 1.3rem;
+	font-weight: 750;
+	letter-spacing: -0.02em;
+}
+.wiz-answer {
+	position: relative;
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.8rem 1rem;
+	border: 1px solid var(--wiz-line);
+	border-radius: 12px;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	& input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+.wiz-answer-key {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 1.65rem;
+	height: 1.65rem;
+	border: 1px solid var(--wiz-line);
+	border-radius: 7px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--basalt-copy-body);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.wiz-answer:hover {
+	border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--wiz-line));
+}
+.wiz-answer:has(input:checked) {
+	border-color: var(--basalt-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+
+	.wiz-answer-key {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-on-hue);
+		background: var(--basalt-hue);
+	}
+}
+.wiz-answer:has(input:focus-visible:not(:checked)) {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.wiz-answers:has(.is-invalid) .wiz-answer {
+	border-color: color-mix(in srgb, var(--basalt-danger) 55%, var(--wiz-line));
+}
+@media (prefers-reduced-motion: reduce) {
+	.wiz-answer,
+	.wiz-answer-key {
+		transition: none;
+	}
+}
+.wiz-quiz-hint kbd {
+	display: inline-block;
+	padding: 0.05rem 0.3rem;
+	border: 1px solid var(--wiz-line);
+	border-radius: 5px;
+	font-family: inherit;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: 0 1px 0 var(--wiz-line);
+}
+@media (max-width: 575.98px) {
+	.wiz-quiz-hint {
+		display: none;
+	}
+}
+.wiz-match {
+	padding: 0.5rem 0 0;
+	text-align: left;
+
+	.wiz-done-title {
+		font-size: 1.5rem;
+		letter-spacing: -0.02em;
+	}
+	.wiz-done-text {
+		max-width: 52ch;
+		margin: 0 0 1rem;
+	}
+}
+.wiz-match-eyebrow {
+	display: inline-block;
+	margin: 0 0 0.6rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--wiz-quiet);
+}
+.wiz-match-facts {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		padding: 0.25rem 0.7rem;
+		border-radius: 999px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+	}
+}
+.wiz-match-actions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}
+
+/* Every card ends with a folded code sample pinned to its foot; it is left out of print. */
+.wiz-code {
+	margin-top: auto;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		.bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+@media print {
+	.wiz-code {
+		display: none;
+	}
+}

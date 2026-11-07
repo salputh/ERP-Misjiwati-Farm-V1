@@ -1,0 +1,1255 @@
+/* Styles for subscription-details.html, all under the .sd- prefix. The
+   header shell, cards, status pills, choice cards, stepper, segmented
+   control, dialogs and toasts come from basalt.css; this sheet adds the
+   plan band, renewal ring, seat chart, invoices and the change feed. Each
+   color is mixed from --basalt-* tokens, so palettes and dark mode hold. */
+
+/* Muted text leans toward the body color to keep 4.5:1 on light palettes,
+   and links do the same because the bare primary falls short in a few. */
+.sd-page {
+	--sd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--sd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--sd-line: var(--basalt-edge);
+}
+
+/* Each plan keeps the hue it has on the Subscriptions list; its ink is
+   pulled toward the text color so words in that hue stay readable. */
+.sd-tone-starter {
+	--sd-tone: var(--basalt-series-3);
+}
+.sd-tone-growth {
+	--sd-tone: var(--basalt-series-1);
+}
+.sd-tone-enterprise {
+	--sd-tone: var(--basalt-series-8);
+}
+.sd-tone-starter,
+.sd-tone-growth,
+.sd-tone-enterprise {
+	--sd-tone-soft: color-mix(in srgb, var(--sd-tone) 10%, var(--basalt-plane));
+	--sd-tone-edge: color-mix(in srgb, var(--sd-tone) 28%, var(--basalt-edge));
+	--sd-tone-ink: color-mix(in srgb, var(--sd-tone) 45%, var(--basalt-copy));
+}
+
+/* The header puts the account on the left and its two actions on the
+   right, bottoms aligned; on a phone the actions drop underneath. */
+.basalt-hero-detail.sd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+.sd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+.sd-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.sd-who-text {
+	min-width: 0;
+}
+.sd-mark {
+	flex: none;
+	font-weight: 700;
+}
+.sd-tags {
+	display: flex;
+	gap: 0.4rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+.sd-tag {
+	font-size: 0.8rem;
+	color: var(--sd-quiet);
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.sd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.sd-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.sd-who .basalt-avatar-xl {
+		width: 56px;
+		height: 56px;
+		font-size: 1.2rem;
+	}
+}
+
+/* Menu items carry an icon, and the one that cancels reads in red. */
+.sd-page .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+.sd-page .dropdown-item.sd-danger-item {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+
+	&:hover,
+	&:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* The notice is one slim line: amber while at risk, red after a failed
+   bill, gray once the subscription is set to end. */
+.sd-notice {
+	--sd-notice-tone: var(--basalt-warning);
+	display: flex;
+	gap: 0.3rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid color-mix(in srgb, var(--sd-notice-tone) 40%, var(--basalt-edge));
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--sd-notice-tone) 10%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		flex: none;
+		color: color-mix(in srgb, var(--sd-notice-tone) 55%, var(--basalt-copy));
+	}
+	& > span {
+		flex: 1 1 16rem;
+	}
+}
+.sd-notice-danger {
+	--sd-notice-tone: var(--basalt-danger);
+}
+.sd-notice-end {
+	--sd-notice-tone: var(--basalt-copy-muted);
+}
+.sd-notice-btn {
+	padding: 0;
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+
+/* Cards pair up from 1200px (plan with renewal, usage with account,
+   invoices with history) and each pair ends level; narrower, they stack. */
+.sd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.sd-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 8fr) minmax(0, 5fr);
+		align-items: stretch;
+	}
+}
+
+.sd-card {
+	min-width: 0;
+}
+.sd-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.sd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* A card head holds the title and description, with one button at most. */
+.sd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+.sd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--sd-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* Small capitals label a section inside a card, and a rule above a
+   section sets it apart from what comes before. */
+.sd-sub {
+	margin: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--sd-quiet);
+}
+.sd-sub-block,
+.sd-change {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--sd-line);
+}
+.sd-sub-block > .sd-sub {
+	margin-bottom: 0.75rem;
+}
+.sd-small {
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.sd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--sd-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+/* The plan is a band tinted in its own hue, marked by a straight bar
+   down the left; on a phone the price moves under the name. */
+.sd-planband {
+	position: relative;
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.25rem 1.5rem 1.25rem 1.75rem;
+	border: 1px solid var(--sd-tone-edge);
+	border-radius: 14px;
+	background: var(--sd-tone-soft);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1rem;
+		bottom: 1rem;
+		left: 0.6rem;
+		width: 4px;
+		border-radius: 2px;
+		background: var(--sd-tone);
+	}
+}
+.sd-planband-who {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	min-width: 0;
+}
+.sd-planband-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+	color: var(--sd-tone-ink);
+	background: var(--basalt-plane);
+}
+.sd-planband-name {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--sd-tone-ink);
+}
+.sd-planband-note {
+	margin: 0.2rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.sd-planband-money {
+	text-align: right;
+}
+.sd-planband-value {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.15;
+	color: var(--basalt-copy);
+}
+.sd-planband-unit {
+	font-size: 0.9rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+@media (max-width: 575.98px) {
+	.sd-planband-money {
+		text-align: left;
+	}
+}
+
+/* Priced lines and add-on use share one row shape: a tinted icon, a name
+   over a note, and a figure or meter at the end. */
+.sd-line,
+.sd-use {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+}
+.sd-line-text,
+.sd-use-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.sd-line-name,
+.sd-use-name {
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.sd-line-note,
+.sd-use-note {
+	font-size: 0.8rem;
+	color: var(--sd-quiet);
+}
+
+.sd-lines {
+	margin: 0.5rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-line {
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--sd-line);
+
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.sd-line-plan {
+	--sd-line-tone: var(--sd-tone);
+}
+.sd-line-route {
+	--sd-line-tone: var(--basalt-series-2);
+}
+.sd-line-portal {
+	--sd-line-tone: var(--basalt-series-4);
+}
+.sd-line-sms {
+	--sd-line-tone: var(--basalt-series-5);
+}
+.sd-line-icon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--sd-line-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--sd-line-tone) 14%, var(--basalt-plane));
+}
+.sd-line-amt {
+	font-size: 0.9rem;
+	font-weight: 650;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sd-line-per {
+	font-weight: 400;
+	color: var(--sd-quiet);
+}
+.sd-line-missing {
+	display: block;
+	padding-top: 1rem;
+}
+@media (max-width: 419.98px) {
+	.sd-line-per {
+		display: none;
+	}
+}
+
+/* While the plan is edited, the card wears a soft ring and the form
+   takes the place of the band. */
+.sd-card-plan.is-editing {
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--basalt-hue) 30%, transparent);
+}
+.sd-editor[hidden],
+[data-sd-plan-view][hidden] {
+	display: none;
+}
+.sd-field {
+	min-width: 0;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	border: 0;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.sd-field > legend,
+.sd-label {
+	display: block;
+	float: none;
+	width: auto;
+	margin: 0 0 0.6rem;
+	padding: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sd-field-pair {
+	display: flex;
+	gap: 1.25rem 2.5rem;
+	flex-wrap: wrap;
+}
+.sd-hint {
+	display: block;
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--sd-quiet);
+}
+.sd-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.sd-field .basalt-stepper {
+	width: 10rem;
+}
+
+/* Plan tiles take the hue of the plan they stand for. */
+.sd-plans {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+.sd-plan-tile {
+	--basalt-choice-on: var(--sd-tone);
+
+	& .basalt-choice-card-icon {
+		border-color: var(--sd-tone-edge);
+		color: var(--sd-tone-ink);
+		background: var(--sd-tone-soft);
+	}
+	&:has(.basalt-choice-card-input:checked) {
+		background: var(--sd-tone-soft);
+	}
+	& .basalt-choice-card-input:checked ~ .basalt-choice-card-icon {
+		border-color: var(--sd-tone-edge);
+		color: var(--sd-tone-ink);
+	}
+}
+.sd-addons {
+	display: grid;
+	gap: 1rem;
+
+	& .form-check {
+		display: flex;
+		column-gap: 0.75rem;
+		flex-wrap: wrap;
+		align-items: baseline;
+		margin: 0;
+	}
+	& .form-check .sd-hint {
+		margin: 0;
+	}
+}
+.sd-sms {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.sd-sms-label {
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.sd-sms-select {
+	width: auto;
+	min-width: 13rem;
+}
+.sd-preview {
+	margin: 0 0 1.5rem;
+	padding: 0.85rem 1rem;
+	border-radius: 10px;
+	background: var(--basalt-plane-alt);
+
+	&:empty {
+		display: none;
+	}
+}
+.sd-preview-line {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.sd-editor-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--sd-line);
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* The renewal card runs as a column, so its foot can sink to the bottom. */
+.sd-card-renewal .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.sd-term {
+	display: flex;
+	gap: 1.5rem;
+	align-items: center;
+}
+
+/* The ring fills clockwise from the top as the term passes, and turns
+   amber when the subscription will not renew. */
+.sd-ring {
+	position: relative;
+	flex: none;
+	width: 7rem;
+	height: 7rem;
+
+	& svg {
+		transform: rotate(-90deg);
+		width: 100%;
+		height: 100%;
+	}
+}
+.sd-ring-track,
+.sd-ring-fill {
+	fill: none;
+	stroke-width: 9;
+}
+.sd-ring-track {
+	stroke: var(--sd-tone-soft);
+}
+.sd-ring-fill {
+	stroke: var(--sd-tone);
+	stroke-linecap: round;
+	stroke-dasharray: var(--sd-ring) 100;
+	animation: sd-ring-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.sd-ring.is-ending .sd-ring-fill {
+	stroke: var(--basalt-warning);
+}
+@keyframes sd-ring-in {
+	from {
+		stroke-dasharray: 0 100;
+	}
+}
+.sd-ring-label {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+.sd-ring-num {
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1;
+	color: var(--basalt-copy);
+}
+.sd-ring-unit {
+	margin-top: 0.25rem;
+	font-size: 0.75rem;
+	color: var(--sd-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.sd-ring-fill {
+		animation: none;
+	}
+}
+.sd-term-facts {
+	display: grid;
+	gap: 0.85rem;
+	min-width: 0;
+	margin: 0;
+
+	& dt {
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--sd-quiet);
+	}
+	& dd {
+		margin: 0.1rem 0 0;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* What changes at renewal is shown as before and after, row by row, with
+   the yearly difference in a pill above. */
+.sd-change-head {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+.sd-change-same {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.sd-delta {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 650;
+	white-space: nowrap;
+}
+.sd-delta-up {
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.sd-delta-down {
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 16%, var(--basalt-plane));
+}
+.sd-compare {
+	display: grid;
+	margin: 0;
+
+	& dd {
+		display: flex;
+		gap: 0.2rem 0.5rem;
+		flex-wrap: wrap;
+		align-items: baseline;
+		margin: 0;
+		font-size: 0.875rem;
+	}
+	& dd .bi {
+		font-size: 0.8rem;
+		color: var(--sd-quiet);
+	}
+}
+.sd-compare-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 5.5rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--sd-line);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.sd-compare dt,
+.sd-fact dt {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--sd-quiet);
+}
+.sd-compare-from {
+	color: var(--basalt-copy-body);
+}
+.sd-compare-to {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sd-renew-foot {
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-top: auto;
+	padding-top: 1.25rem;
+
+	&:empty {
+		display: none;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.sd-renew-foot-note {
+	margin: 0;
+	font-size: 0.8rem;
+	line-height: 1.55;
+	color: var(--sd-quiet);
+}
+.sd-renew-foot-done {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+
+	& .bi {
+		margin-right: 0.3rem;
+	}
+}
+
+/* Seats in use are a solid line with a soft fill; seats paid for are a
+   dashed line, and the legend draws both swatches the same way. */
+.sd-legend {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0 0 0.75rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.sd-legend-item {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+
+	&::before {
+		content: "";
+		width: 1rem;
+		height: 3px;
+		border-radius: 2px;
+	}
+}
+.sd-legend-item-used::before {
+	background: var(--basalt-series-1);
+}
+.sd-legend-item-paid::before {
+	background: repeating-linear-gradient(90deg, var(--basalt-series-4) 0 4px, transparent 4px 7px);
+}
+.sd-chart {
+	position: relative;
+	min-height: 190px;
+}
+.sd-chart-svg {
+	display: block;
+	overflow: visible;
+}
+.sd-chart-none {
+	margin: 0;
+	padding: 2rem 0;
+	font-size: 0.875rem;
+	color: var(--sd-quiet);
+}
+.sd-chart-grid {
+	stroke: var(--sd-line);
+	stroke-width: 1;
+}
+.sd-chart-axis {
+	font-size: 12px;
+	fill: var(--sd-quiet);
+}
+.sd-chart-area {
+	fill: color-mix(in srgb, var(--basalt-series-1) 14%, transparent);
+}
+.sd-chart-line {
+	fill: none;
+	stroke: var(--basalt-series-1);
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.sd-chart-paid {
+	fill: none;
+	stroke: var(--basalt-series-4);
+	stroke-width: 2;
+	stroke-dasharray: 5 4;
+}
+.sd-chart-dot {
+	fill: var(--basalt-plane);
+	stroke: var(--basalt-series-1);
+	stroke-width: 3;
+}
+.sd-chart-cursor {
+	opacity: 0;
+	stroke: var(--basalt-edge-strong);
+	stroke-width: 1;
+
+	&.is-on {
+		opacity: 1;
+	}
+}
+
+/* On first draw the line traces itself in, then the fill and end dot fade up. */
+.sd-chart-svg.is-entering {
+	& .sd-chart-line {
+		stroke-dasharray: 1;
+		animation: sd-draw 0.5s cubic-bezier(0.3, 0.6, 0.2, 1) both;
+	}
+	& .sd-chart-area,
+	& .sd-chart-dot {
+		animation: sd-fade 0.4s 0.3s ease-out both;
+	}
+}
+@keyframes sd-draw {
+	from {
+		stroke-dashoffset: 1;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+@keyframes sd-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+/* The tip floats above the point under the mouse and never takes clicks. */
+.sd-chart-tip {
+	position: absolute;
+	top: -0.5rem;
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0.4rem 0.7rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 8px;
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	box-shadow: 0 6px 18px color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+	pointer-events: none;
+
+	&[hidden] {
+		display: none;
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+.sd-uses {
+	display: grid;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-use-route {
+	--sd-use-tone: var(--basalt-series-2);
+}
+.sd-use-portal {
+	--sd-use-tone: var(--basalt-series-4);
+}
+.sd-use-sms {
+	--sd-use-tone: var(--basalt-series-5);
+}
+.sd-use-none {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--sd-quiet);
+}
+.sd-use-icon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--sd-use-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--sd-use-tone) 14%, var(--basalt-plane));
+}
+
+/* The text meter fills in the add-on's hue and turns amber past 90%. */
+.sd-meter {
+	display: block;
+	width: 7rem;
+	height: 8px;
+	border-radius: 4px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+
+	&.is-high .sd-meter-fill {
+		background: var(--basalt-warning);
+	}
+}
+.sd-meter-fill {
+	display: block;
+	height: 100%;
+	border-radius: 4px;
+	background: var(--sd-use-tone);
+}
+@media (max-width: 419.98px) {
+	.sd-meter {
+		width: 4rem;
+	}
+}
+
+/* Account facts are a label column beside the value; on the narrowest
+   screens the label sits above it instead. */
+.sd-facts {
+	display: grid;
+	margin: 0;
+}
+.sd-fact {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--sd-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	& dd {
+		display: flex;
+		gap: 0.1rem;
+		flex-direction: column;
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& dd .sd-link {
+		align-self: flex-start;
+	}
+}
+.sd-fact-sub {
+	font-size: 0.8rem;
+	color: var(--sd-quiet);
+}
+.sd-fact-line {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	max-width: 100%;
+
+	& > span {
+		min-width: 0;
+	}
+	& .sd-copy {
+		flex: none;
+	}
+}
+@media (max-width: 419.98px) {
+	.sd-fact {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.sd-copy {
+	padding: 0.1rem 0.3rem;
+	color: var(--sd-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The invoice table has no outer cell padding, so it lines up with the
+   card text; the upcoming bill gets a faint wash that reaches the edges. */
+.sd-card-invoices {
+	container-type: inline-size;
+}
+.sd-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+	font-size: 0.875rem;
+}
+.sd-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+	border-bottom-color: var(--sd-line);
+	color: var(--basalt-copy);
+}
+.sd-table > :not(caption) > * > :first-child {
+	padding-left: 0;
+}
+.sd-table > :not(caption) > * > :last-child {
+	padding-right: 0;
+}
+.sd-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.sd-table tbody tr:not(.sd-inv-next):last-child > * {
+	padding-bottom: 0;
+}
+.sd-table thead th {
+	padding-top: 0;
+	padding-bottom: 0.8rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--sd-quiet);
+}
+.sd-table td {
+	white-space: nowrap;
+}
+.sd-table td:first-child {
+	width: 1%;
+}
+.sd-table .sd-col-for {
+	width: 100%;
+	white-space: normal;
+	color: var(--basalt-copy-body);
+}
+.sd-table .sd-col-amt {
+	font-weight: 650;
+	text-align: right;
+}
+.sd-inv-no {
+	display: block;
+	font-weight: 650;
+}
+.sd-inv-date {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--sd-quiet);
+}
+.sd-table .sd-inv-next {
+	& > * {
+		background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	}
+	& > :first-child {
+		box-shadow: -0.75rem 0 0 color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	}
+	& > :last-child {
+		box-shadow: 0.75rem 0 0 color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	}
+}
+
+/* A new invoice flashes green once as it lands at the top. */
+.sd-table tr.is-fresh > * {
+	animation: sd-flash 1.6s ease-out;
+}
+@keyframes sd-flash {
+	from {
+		background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.sd-table tr.is-fresh > * {
+		animation: none;
+	}
+}
+
+/* A narrow card hides the "for" column, since the date already says it. */
+@container (max-width: 520px) {
+	.sd-table .sd-col-for {
+		display: none;
+	}
+	.sd-table td:first-child {
+		width: 100%;
+	}
+}
+
+/* On a phone each invoice becomes a small card: number and date at left,
+   amount over status at right. */
+@container (max-width: 400px) {
+	.sd-table thead {
+		display: none;
+	}
+	.sd-table tbody tr {
+		display: grid;
+		row-gap: 0.3rem;
+		column-gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--sd-line);
+	}
+	.sd-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.sd-table tbody tr:not(.sd-inv-next):last-child {
+		padding-bottom: 0;
+	}
+	.sd-table tbody tr > * {
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.sd-table tbody tr > :first-child {
+		grid-row: span 2;
+	}
+	.sd-table tbody tr > :last-child {
+		justify-self: end;
+	}
+	.sd-table .sd-inv-next {
+		margin: 0 -0.75rem;
+		padding-left: 0.75rem;
+		padding-right: 0.75rem;
+		background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	}
+	.sd-table .sd-inv-next > * {
+		background: transparent;
+		box-shadow: none;
+	}
+}
+
+/* The change feed is a column of round icons joined by a thin rail,
+   each icon tinted by the kind of change. */
+.sd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sd-feed-item {
+	--sd-feed-tone: var(--basalt-series-1);
+	position: relative;
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.25rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.3rem;
+		bottom: 0.3rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+}
+.sd-feed-item-start {
+	--sd-feed-tone: var(--basalt-series-2);
+}
+.sd-feed-item-seats {
+	--sd-feed-tone: var(--basalt-series-1);
+}
+.sd-feed-item-plan {
+	--sd-feed-tone: var(--basalt-series-3);
+}
+.sd-feed-item-fail {
+	--sd-feed-tone: var(--basalt-danger);
+}
+.sd-feed-item-addon {
+	--sd-feed-tone: var(--basalt-series-5);
+}
+.sd-feed-item-renew {
+	--sd-feed-tone: var(--basalt-success);
+}
+.sd-feed-item-quote {
+	--sd-feed-tone: var(--basalt-series-8);
+}
+.sd-feed-item-edit {
+	--sd-feed-tone: var(--basalt-hue);
+}
+.sd-feed-item-cancel {
+	--sd-feed-tone: var(--basalt-warning);
+}
+.sd-feed-item-keep {
+	--sd-feed-tone: var(--basalt-success);
+}
+.sd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--sd-feed-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--sd-feed-tone) 15%, var(--basalt-plane));
+}
+.sd-feed-item.is-fresh .sd-feed-icon {
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--sd-feed-tone) 14%, transparent);
+}
+.sd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	padding-top: 0.3rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+}
+.sd-feed-time {
+	font-size: 0.77rem;
+	color: var(--sd-quiet);
+}
+
+/* Paper gets the facts without buttons or motion. */
+@media print {
+	.sd-head .basalt-hero-actions,
+	.sd-card-head .btn,
+	.sd-renew-foot .btn {
+		display: none;
+	}
+	.sd-ring-fill,
+	.sd-chart-svg * {
+		animation: none;
+	}
+}

@@ -1,0 +1,1390 @@
+/*
+ * Sign-in history (sign-in-history.html), every class prefixed .lh-.
+ * Tabs, segmented control, pager, drawer, dialogs, empty states, skeletons
+ * and status pills come from basalt.css; this sheet arranges them and draws
+ * the charts' surroundings, the sign-in table, the flagged patterns, the open
+ * sessions and the places breakdown, coloring everything with --basalt-* tokens.
+ */
+
+/* Two page-wide mixes. Quiet text is the muted token nudged toward body copy
+   so it holds 4.5:1 on the light palettes and on hovered rows; link text does
+   the same for the primary hue, which falls short on its own in a few palettes. */
+.lh-page {
+	--lh-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--lh-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+}
+
+/* Cards fill a twelve-column grid and only pair up from 1200px. */
+.lh-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.lh-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+
+@media (min-width: 1200px) {
+	.lh-card-trend {
+		grid-column: span 8;
+	}
+	.lh-card-methods {
+		grid-column: span 4;
+	}
+	.lh-card-wide {
+		grid-column: span 7;
+	}
+	.lh-card-narrow {
+		grid-column: span 5;
+	}
+}
+
+/* The inset lives in a property so the table can bleed past it and line back up. */
+.lh-card.basalt-box .card-body {
+	--lh-inset: 1.75rem;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--lh-inset);
+
+	@media (max-width: 575.98px) {
+		--lh-inset: 1.25rem;
+	}
+}
+
+.lh-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+}
+
+/* Titles take focus from script, so the ring shows for keyboard users only. */
+.lh-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+.lh-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--lh-quiet);
+}
+
+/* Secondary lines under a value are small, quiet and on their own line. */
+.lh-sub {
+	display: block;
+	font-size: 0.77rem;
+	line-height: 1.45;
+	color: var(--lh-quiet);
+
+	& .bi {
+		margin-right: 0.3rem;
+		font-size: 0.75rem;
+	}
+}
+
+.lh-sub-inline {
+	font-size: 0.77rem;
+	color: var(--lh-quiet);
+}
+
+/* A heading wearing .lh-sub reads one clear step above the labels beneath it. */
+h3.lh-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.lh-line {
+	display: block;
+	color: var(--basalt-copy);
+}
+
+/* Addresses and key caps are set in the mono face on a canvas chip. */
+.lh-mono,
+.lh-code {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+}
+.lh-code {
+	padding: 0.1rem 0.3rem;
+	border-radius: 5px;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+.lh-page kbd {
+	padding: 0.1rem 0.3rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.71rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+	box-shadow: none;
+}
+
+/* Buttons that read as links keep an underline tinted from their own color. */
+.lh-link {
+	display: inline;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--lh-link) 40%, transparent);
+	text-underline-offset: 0.2em;
+	color: var(--lh-link);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration-color: currentColor;
+		color: var(--basalt-copy);
+	}
+}
+
+.lh-link:focus-visible,
+.lh-open:focus-visible {
+	border-radius: 3px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+/* Severity tiles tint their background and darken their glyph toward the copy color. */
+.lh-tone-danger {
+	color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+
+.lh-tone-warning {
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 18%, var(--basalt-plane));
+}
+
+/* Region tones hand a series color to whatever paints with --lh-tone. */
+.lh-tone-1 {
+	--lh-tone: var(--basalt-series-1);
+}
+.lh-tone-3 {
+	--lh-tone: var(--basalt-series-3);
+}
+.lh-tone-4 {
+	--lh-tone: var(--basalt-series-4);
+}
+.lh-tone-8 {
+	--lh-tone: var(--basalt-series-8);
+}
+
+/* Loading placeholders stagger three line widths so rows do not look stamped. */
+.lh-skel-row {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.7rem 0;
+}
+.lh-skel-lines {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	flex: 1 1 auto;
+}
+
+.lh-skel-lines .basalt-skeleton,
+.lh-row-ghost .basalt-skeleton-line {
+	display: block;
+}
+
+.lh-skel-w0 {
+	width: 72%;
+}
+.lh-skel-w1 {
+	width: 54%;
+}
+.lh-skel-w2 {
+	width: 38%;
+}
+
+/* The trend card's headline total sits flush right, with its change below it. */
+.lh-total {
+	display: flex;
+	gap: 0.1rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: flex-end;
+	margin: 0;
+	text-align: right;
+}
+
+.lh-total-n {
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.lh-total-label {
+	font-size: 0.8rem;
+	color: var(--lh-quiet);
+}
+
+.lh-total-change {
+	display: inline-flex;
+	gap: 0.25rem;
+	flex-basis: 100%;
+	align-items: center;
+	justify-content: flex-end;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		font-size: 0.75rem;
+		color: var(--lh-quiet);
+	}
+}
+
+@media (max-width: 575.98px) {
+	.lh-total,
+	.lh-total-change {
+		justify-content: flex-start;
+		text-align: left;
+	}
+}
+
+/* The result legend tucks up under the card head. */
+.lh-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: -0.5rem 0 1rem;
+	padding: 0;
+	font-size: 0.77rem;
+	color: var(--lh-quiet);
+	list-style: none;
+
+	& strong {
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+.lh-key li,
+.lh-mix-key li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+
+/* Swatches read the same tokens the canvases do in sign-in-history.js. */
+.lh-sw {
+	flex: 0 0 auto;
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--basalt-series-1);
+}
+.lh-sw-success {
+	background: var(--basalt-success);
+}
+.lh-sw-challenged {
+	background: var(--basalt-info);
+}
+.lh-sw-failed {
+	background: var(--basalt-warning);
+}
+.lh-sw-blocked {
+	background: var(--basalt-danger);
+}
+.lh-sw-m1 {
+	background: var(--basalt-series-1);
+}
+.lh-sw-m2 {
+	background: var(--basalt-series-2);
+}
+.lh-sw-m3 {
+	background: var(--basalt-series-3);
+}
+.lh-sw-m4 {
+	background: var(--basalt-series-4);
+}
+
+/* A series left out by the tabs or the method menu dims its swatch, never its text. */
+.is-dim > .lh-sw {
+	opacity: 0.3;
+}
+
+/* The bar chart stretches when the donut card beside it runs taller; the
+   canvas is taken out of flow so it never pushes the box itself. */
+.lh-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 240px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+}
+
+.lh-chart-ring {
+	flex: none;
+	height: 190px;
+	min-height: 0;
+}
+
+/* A canvas Chart.js has not sized yet stays inside its card. */
+.lh-card canvas {
+	display: block;
+	max-width: 100%;
+}
+
+.lh-chart[hidden],
+.lh-chart-state[hidden] {
+	display: none;
+}
+
+.lh-chart-skel {
+	display: block;
+	width: 100%;
+	height: 240px;
+	border-radius: 10px;
+}
+.lh-chart-skel-ring {
+	width: 170px;
+	height: 170px;
+	margin: 10px auto;
+	border-radius: 50%;
+}
+
+.lh-chart-note {
+	margin: 1rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--lh-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* Donut and method list stack, and sit side by side only between 576px and 1199px. */
+.lh-split {
+	display: grid;
+	gap: 1.25rem;
+	flex: 1 1 auto;
+	align-items: center;
+
+	@media (min-width: 576px) and (max-width: 1199.98px) {
+		grid-template-columns: 200px minmax(0, 1fr);
+	}
+}
+
+.lh-split-list {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lh-split-row {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: auto minmax(0, 1fr) auto 3rem;
+	align-items: center;
+	padding: 0.4rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+}
+
+.lh-split-label {
+	min-width: 0;
+	color: var(--basalt-copy-body);
+}
+.lh-split-n {
+	font-weight: 650;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.lh-split-pct {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--lh-quiet);
+}
+
+/* Under 1200px the five result tabs tighten so the row fits tablets and laptops without scrolling. */
+.lh-results {
+	display: block;
+	margin-bottom: 1.25rem;
+
+	@media (max-width: 1199.98px) {
+		& .basalt-tabs-list > .nav-link {
+			padding-left: 0.6rem;
+			padding-right: 0.6rem;
+		}
+	}
+}
+
+.lh-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+/* Search gives way first so the filters keep their row, and caps its width so they stay beside it. */
+.lh-search {
+	position: relative;
+	flex: 1 1 16rem;
+	min-width: 0;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--lh-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+.lh-select {
+	width: auto;
+	min-width: 11rem;
+}
+.lh-period {
+	margin-left: auto;
+}
+
+/* On phones search takes a full row and the menu and period split the next. */
+@media (max-width: 767.98px) {
+	.lh-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.lh-select {
+		flex: 1 1 10rem;
+		min-width: 0;
+	}
+	.lh-period {
+		flex: 1 1 auto;
+		margin-left: 0;
+	}
+	.lh-period .basalt-segmented-option {
+		flex: 1 1 0;
+	}
+}
+
+.lh-page .form-control,
+.lh-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+
+.lh-page .form-control:focus,
+.lh-page .form-select:focus-visible {
+	border-color: var(--basalt-hue);
+}
+
+.lh-page .form-control::placeholder {
+	color: var(--lh-quiet);
+	opacity: 1;
+}
+
+/* Chips sit left and the count sits right, until there are no chips. */
+.lh-status {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-height: 2rem;
+	margin-bottom: 0.75rem;
+
+	& .basalt-applied:empty + .lh-summary {
+		margin-left: 0;
+	}
+}
+
+.lh-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--lh-quiet);
+}
+
+/* The table bleeds to the card edges while its outer cells keep the inset,
+   so the first column lines up with the title and the toolbar. */
+.lh-scroll {
+	position: relative;
+	margin: 0 calc(-1 * var(--lh-inset));
+}
+
+.lh-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	margin-bottom: 0;
+	font-size: 0.85rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.7rem;
+		vertical-align: top;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--lh-inset);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--lh-inset);
+	}
+
+	& > thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--lh-quiet);
+	}
+
+	/* Day rows act as small caps headings with room above them. */
+	& > tbody > .lh-day > th {
+		padding: 1.35rem var(--lh-inset) 0.5rem;
+		border-bottom-color: var(--basalt-edge);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--lh-quiet);
+		background: transparent;
+	}
+
+	& > tbody > .lh-day:first-child > th {
+		padding-top: 0.6rem;
+	}
+	& > tbody > .lh-empty-row > td {
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 0;
+	}
+}
+
+.lh-col-who {
+	width: 14rem;
+}
+td.lh-col-when {
+	width: 4.25rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	white-space: nowrap;
+}
+.lh-col-when time {
+	color: var(--basalt-copy);
+}
+.lh-col-method {
+	width: 9rem;
+}
+.lh-col-result {
+	width: 12.5rem;
+}
+
+/* A whole row opens its record; ghost rows only hold the shape while loading. */
+.lh-row {
+	cursor: pointer;
+
+	&:hover > td {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		& > td {
+			transition: none;
+		}
+	}
+}
+
+.lh-row-ghost {
+	cursor: default;
+
+	&:hover > td {
+		background: transparent;
+	}
+	& .lh-who {
+		width: 100%;
+	}
+	& .lh-who .basalt-skeleton-line {
+		flex: 1 1 auto;
+	}
+}
+
+.lh-who {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	min-width: 0;
+
+	& .basalt-avatar {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+	}
+}
+
+.lh-who-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.lh-sub-device {
+	display: none;
+}
+
+.lh-open {
+	display: inline;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		text-decoration-color: var(--basalt-edge-strong);
+	}
+}
+
+.lh-method {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		font-size: 0.8rem;
+		color: var(--lh-quiet);
+	}
+}
+
+/* First-time places get a warm pill; blocked addresses get a red word. */
+.lh-new {
+	display: inline-block;
+	margin-left: 0.25rem;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	line-height: 1.5;
+	white-space: nowrap;
+	vertical-align: 0.05em;
+	color: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 18%, transparent);
+}
+
+.lh-flag {
+	font-family: var(--bs-body-font-family);
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+}
+
+.lh-reason {
+	max-width: 16rem;
+	margin-top: 0.3rem;
+}
+.lh-live {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+
+.lh-live-dot {
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--basalt-success);
+}
+
+/* Between 768px and 1399px the method and device fold into the person cell,
+   leaving the place and the result enough width beside the sidebar. */
+@media (min-width: 768px) and (max-width: 1399.98px) {
+	.lh-col-method,
+	.lh-col-device {
+		display: none;
+	}
+	.lh-sub-role {
+		display: none;
+	}
+	.lh-sub-device {
+		display: block;
+	}
+	.lh-col-who {
+		width: auto;
+	}
+	.lh-col-result {
+		width: 11rem;
+	}
+}
+
+/* On phones every sign-in turns into a quiet card: person and result share
+   the first line, the result's badge on a fixed track so badges align across
+   cards, then the place, the result's note, and the time as a muted footer. */
+@media (max-width: 767.98px) {
+	.lh-scroll {
+		margin: 0;
+	}
+	.lh-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.lh-table,
+	.lh-table tbody {
+		display: block;
+	}
+
+	.lh-table > tbody > tr {
+		display: grid;
+		row-gap: 0.3rem;
+		column-gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr) 8.75rem;
+		grid-template-areas: "who status" "where where" "note note" "when when";
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+
+	.lh-table > tbody > tr > *,
+	.lh-table > :not(caption) > * > :first-child,
+	.lh-table > :not(caption) > * > :last-child {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+
+	.lh-table > tbody > .lh-day {
+		padding: 0;
+		border-bottom: 0;
+	}
+	.lh-table > tbody > .lh-day > th {
+		grid-column: 1 / -1;
+		padding: 1.25rem 0 0.4rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.lh-table > tbody > .lh-empty-row {
+		display: block;
+		border-bottom: 0;
+	}
+
+	.lh-table > tbody > tr > .lh-col-who {
+		grid-area: who;
+	}
+
+	.lh-table > tbody > tr > .lh-col-method,
+	.lh-table > tbody > tr > .lh-col-device {
+		display: none;
+	}
+
+	.lh-table > tbody > tr > .lh-col-where {
+		grid-area: where;
+		padding-left: 2.35rem;
+	}
+	.lh-table > tbody > tr > .lh-col-result {
+		display: contents;
+	}
+	.lh-table > tbody > tr > .lh-col-result > :not(.basalt-status) {
+		grid-area: note;
+		margin-top: 0;
+		padding-left: 2.35rem;
+	}
+	.lh-table > tbody > tr > .lh-col-result > .basalt-status {
+		grid-area: status;
+		align-self: start;
+		justify-self: start;
+	}
+	.lh-table > tbody > tr > .lh-col-when {
+		grid-area: when;
+		padding-left: 2.35rem;
+		font-size: 0.75rem;
+		color: var(--lh-quiet);
+	}
+	.lh-table > tbody > tr > .lh-col-when time {
+		color: inherit;
+	}
+
+	.lh-col-where .lh-line,
+	.lh-col-where .lh-sub {
+		display: inline;
+	}
+	.lh-col-where .lh-sub::before {
+		content: " · ";
+		font-family: var(--bs-body-font-family);
+	}
+	.lh-sub-role {
+		display: none;
+	}
+	.lh-sub-device {
+		display: block;
+	}
+	.lh-reason {
+		max-width: none;
+	}
+	.lh-row:hover > td {
+		background: transparent;
+	}
+}
+
+/* On a phone a sign-in reads in two lines: who and how it went, then where
+   and when. The device, the address (unless it is blocked) and the note
+   under the result wait in the drawer. */
+@media (max-width: 575.98px) {
+	.lh-table > tbody > tr {
+		row-gap: 0.6rem;
+		grid-template-areas: "who status" "where when";
+	}
+	.lh-table > tbody > tr > .lh-col-when {
+		align-self: center;
+		padding-left: 0;
+	}
+	.lh-sub-device,
+	.lh-col-where .lh-sub:not(:has(.lh-flag)),
+	.lh-table > tbody > tr > .lh-col-result > .lh-sub {
+		display: none;
+	}
+}
+
+.lh-pager {
+	margin-top: 0.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Each flagged pattern is icon, story and actions; under 1200px the actions drop beneath the story. */
+.lh-alerts {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lh-alert {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: start;
+	padding: 1.1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+
+.lh-alert-icon {
+	display: grid;
+	place-items: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+}
+
+.lh-alert-title {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 650;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+}
+.lh-alert-text {
+	max-width: 72ch;
+	margin: 0.25rem 0 0;
+	font-size: 0.85rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+.lh-alert-meta {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--lh-quiet);
+}
+
+.lh-alert-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+@media (max-width: 1199.98px) {
+	.lh-alert {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.lh-alert-actions {
+		grid-column: 2;
+		justify-content: flex-start;
+	}
+}
+
+/* Blocked addresses hang under the alerts behind a dashed rule. */
+.lh-blocked {
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+}
+
+.lh-blocked-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lh-blocked-item {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.4rem 0;
+}
+
+.lh-blocked-meta {
+	flex: 1 1 16rem;
+	min-width: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Open sessions nest under their person, indented past the avatar until phone width. */
+.lh-people,
+.lh-sessions {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lh-person {
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+
+.lh-person-head {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.lh-person-name {
+	flex: 1 1 10rem;
+	min-width: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 650;
+	}
+}
+
+.lh-you {
+	margin-left: 0.25rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+}
+
+.lh-sessions {
+	margin: 0.5rem 0 0 2.75rem;
+}
+
+.lh-session {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.5rem 0;
+}
+
+.lh-session-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	color: var(--lh-quiet);
+	background: var(--basalt-canvas);
+}
+
+.lh-session-title {
+	display: flex;
+	gap: 0.1rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0;
+	font-size: 0.85rem;
+
+	& .lh-open {
+		font-weight: 600;
+	}
+}
+
+/* A session away from the person's usual place turns red and gains a warning glyph. */
+.lh-session-place {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	&.is-odd {
+		font-weight: 650;
+		color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+	}
+
+	& .bi {
+		margin-right: 0.25rem;
+		font-size: 0.75rem;
+	}
+}
+
+.lh-this {
+	font-size: 0.75rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--lh-quiet);
+}
+
+@media (max-width: 575.98px) {
+	.lh-sessions {
+		margin-left: 0;
+	}
+	.lh-session {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.lh-session > .btn,
+	.lh-session > .lh-this {
+		grid-column: 2;
+		justify-self: start;
+	}
+	.lh-person-all {
+		flex-basis: 100%;
+	}
+}
+
+/* One segmented bar shares the period out by region, with its key beneath. */
+.lh-mix {
+	display: flex;
+	gap: 3px;
+	height: 10px;
+	margin: 0 0 0.75rem;
+}
+.lh-mix-seg {
+	flex: 1 1 0;
+	min-width: 6px;
+	border-radius: 999px;
+	background: var(--lh-tone);
+}
+
+.lh-mix-key {
+	display: flex;
+	gap: 0.3rem 1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.1rem;
+	padding: 0;
+	font-size: 0.77rem;
+	color: var(--lh-quiet);
+	list-style: none;
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+.lh-mix-dot {
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--lh-tone);
+}
+
+/* Countries run busiest first, one button each. The bar's length is its share
+   of the busiest country, and its red tail is the sign-ins turned away. */
+.lh-places {
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid var(--basalt-edge);
+	list-style: none;
+}
+
+.lh-country {
+	display: grid;
+	gap: 0.3rem 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	width: 100%;
+	padding: 0.5rem 0.5rem;
+	border: 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.81rem;
+	text-align: start;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&[aria-pressed="true"] {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.lh-country-name {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	font-weight: 600;
+}
+.lh-country-n {
+	font-size: 0.77rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.lh-country-out {
+	font-weight: 500;
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+
+.lh-country-bar {
+	display: flex;
+	grid-column: 1 / -1;
+	width: 0;
+	height: 4px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-plane));
+	transition: width 500ms ease;
+}
+
+.lh-country-in {
+	display: block;
+	width: 0;
+	height: 100%;
+	background: var(--basalt-series-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lh-country,
+	.lh-country-bar {
+		transition: none;
+	}
+}
+
+/* The record drawer lays its facts out as a two-column definition list. */
+.lh-drawer {
+	& .offcanvas-header {
+		gap: 0.75rem;
+	}
+	& .offcanvas-title {
+		font-size: var(--basalt-fs-card-title, 1.2rem);
+		font-weight: 700;
+		line-height: 1.35;
+	}
+	& .basalt-drawer-sub {
+		color: var(--lh-quiet);
+	}
+	& .offcanvas-body {
+		padding-top: 1rem;
+	}
+}
+
+.lh-r-result {
+	margin-bottom: var(--basalt-pad-head);
+
+	& > .basalt-status {
+		min-height: 1.75rem;
+		padding-inline: 0.7rem;
+	}
+}
+
+.lh-r-note {
+	margin: 0.75rem 0 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		margin-right: 0.4rem;
+		color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	}
+}
+
+.lh-r-note-alert .bi {
+	color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+}
+
+.lh-r-block {
+	margin-bottom: var(--basalt-pad-head);
+}
+
+.lh-facts {
+	display: grid;
+	gap: 0;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+		align-items: center;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& > div:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--lh-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.85rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& dd > .bi {
+		margin-right: 0.3rem;
+		color: var(--lh-quiet);
+	}
+}
+
+.lh-copy.btn-icon {
+	width: 1.9rem;
+	height: 1.9rem;
+	margin-left: 0.25rem;
+	padding: 0;
+	border-radius: 8px;
+	vertical-align: middle;
+	color: var(--lh-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+.lh-hint {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--lh-quiet);
+}
+
+.lh-drawer-foot {
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .btn[hidden] {
+		display: none;
+	}
+}
+
+/* The sign-out-everyone dialog explains when to reach for it. */
+.lh-ev-note {
+	margin: 0 0 1rem;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* Paper gets no motion and none of the controls that only work on screen. */
+@media print {
+	.lh-row > td,
+	.lh-country-bar {
+		transition: none;
+	}
+	.lh-toolbar,
+	.lh-status,
+	.lh-pager,
+	.lh-alert-actions,
+	.lh-session > .btn,
+	.lh-person-all {
+		display: none;
+	}
+}

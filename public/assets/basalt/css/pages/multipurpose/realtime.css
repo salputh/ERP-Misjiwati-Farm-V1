@@ -1,0 +1,474 @@
+/* Basalt - Realtime (realtime.html)
+   Namespaced under .rtm-*
+   Bars and splits take their colors from the --basalt-* tokens, so they
+   follow every palette and dark mode. */
+
+.rtm-page {
+	--rtm-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--rtm-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--rtm-bar: var(--basalt-series-1);
+	--rtm-track: color-mix(in srgb, var(--basalt-edge) 60%, transparent);
+}
+
+/* Cards share one head. */
+.rtm-card.card {
+	overflow: hidden;
+}
+.rtm-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.rtm-card-head > div:first-child {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+.rtm-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.rtm-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--rtm-quiet);
+}
+
+/* The live count and the last half hour, a bar a minute. */
+.rtm-now {
+	container-type: inline-size;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) var(--basalt-pad-x);
+}
+/* Two fixed columns, the count and the figures, so the line under the count
+   can change as the pointer moves along the bars without moving anything.
+   A narrow card stacks them, by its width and never by that line's. */
+.rtm-now-head {
+	display: grid;
+	gap: 1.5rem 3rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+@container (max-width: 46rem) {
+	.rtm-now-head {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+/* The line under the count keeps room for two lines, so a shorter reading
+   for one minute never pulls the bars up. */
+.rtm-now-head [data-rtm-read] {
+	min-height: 2lh;
+}
+.rtm-now-label {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rtm-now-value {
+	margin: 0.4rem 0 0.25rem;
+	font-size: 3rem;
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.rtm-figures {
+	display: flex;
+	gap: 1.25rem 2.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& dt {
+		font-size: 0.81rem;
+		font-weight: 500;
+		color: var(--rtm-quiet);
+	}
+	& dd {
+		margin: 0.2rem 0 0;
+		font-size: 1.5rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+.rtm-minutes {
+	display: flex;
+	gap: 4px;
+	align-items: flex-end;
+	height: 8.5rem;
+	margin-top: 1.75rem;
+}
+.rtm-minute {
+	flex: 1 1 0;
+	height: calc(var(--value, 0) * 1%);
+	min-height: 4px;
+	border-radius: 4px 4px 2px 2px;
+	background: color-mix(in srgb, var(--rtm-bar) 55%, var(--basalt-plane));
+	transition:
+		height 600ms cubic-bezier(0.32, 0.72, 0, 1),
+		background-color 170ms ease;
+
+	&:hover,
+	&:focus-visible {
+		background: var(--rtm-bar);
+		outline: none;
+	}
+	&.is-now {
+		background: var(--rtm-bar);
+	}
+}
+.rtm-minutes-axis {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	font-size: 0.75rem;
+	color: var(--rtm-quiet);
+}
+@media (prefers-reduced-motion: reduce) {
+	.rtm-minute {
+		transition: none;
+	}
+}
+@media (max-width: 575.98px) {
+	.rtm-minutes {
+		gap: 2px;
+		height: 6rem;
+	}
+	.rtm-now-value {
+		font-size: 2.5rem;
+	}
+}
+
+/* List bar: search, a filter and a count. */
+.rtm-listbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.25rem var(--basalt-pad-x) 0.75rem;
+}
+.rtm-listbar-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 10rem;
+	max-width: 24rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--rtm-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.rtm-listbar-select.form-select {
+	width: auto;
+	flex: none;
+}
+.rtm-listbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	color: var(--rtm-quiet);
+}
+
+/* Pages being read */
+/* The table never shrinks to the card: it shows every row, top to bottom,
+   and only scrolls sideways if the columns cannot fit. */
+.rtm-table-wrap {
+	flex: none;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.rtm-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: inherit;
+	margin: 0;
+}
+.rtm-table th,
+.rtm-table td {
+	padding: 0.6rem var(--basalt-pad-x);
+	vertical-align: middle;
+	border-color: var(--basalt-edge);
+}
+.rtm-table th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--rtm-quiet);
+}
+.rtm-table td:not(:first-child),
+.rtm-table th:not(:first-child) {
+	padding-left: 0.75rem;
+}
+.rtm-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+.rtm-num {
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	text-align: right;
+}
+.rtm-table th.rtm-num .rtm-sort {
+	flex-direction: row-reverse;
+}
+.rtm-strong {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rtm-page-link {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	text-decoration: none;
+
+	&:hover .rtm-page-path {
+		text-decoration: underline;
+	}
+}
+.rtm-page-path {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--rtm-link);
+}
+.rtm-page-title {
+	font-size: 0.81rem;
+	color: var(--rtm-quiet);
+}
+.rtm-page-bar {
+	display: block;
+	height: 3px;
+	margin-top: 0.3rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--rtm-bar) 60%, var(--basalt-plane));
+	transition: width 500ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+@container (max-width: 30rem) {
+	.rtm-col-exit {
+		display: none;
+	}
+}
+@media (max-width: 575.98px) {
+	.rtm-col-time,
+	.rtm-col-exit {
+		display: none;
+	}
+}
+
+/* Sortable heads are bare buttons that borrow the head's type. */
+.rtm-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	white-space: nowrap;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.rtm-sort-idle {
+	opacity: 0.55;
+}
+
+/* Sources and places: a name, a count and a bar under them. */
+.rtm-bars {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0;
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+	list-style: none;
+}
+.rtm-bar {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 0.3rem 1rem;
+	font-size: 0.875rem;
+}
+.rtm-bar-name {
+	color: var(--basalt-copy);
+}
+.rtm-bar-value {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.rtm-bar-share {
+	margin-left: 0.5rem;
+	font-weight: 500;
+	color: var(--rtm-quiet);
+}
+.rtm-bar-track {
+	grid-column: 1 / -1;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--rtm-track);
+}
+.rtm-bar-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--rtm-bar);
+	transform-origin: left center;
+	transition:
+		width 500ms cubic-bezier(0.32, 0.72, 0, 1),
+		transform 700ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i, 0) * 70ms);
+}
+
+/* Devices: one strip split three ways, with its key under it. */
+.rtm-devices {
+	margin-top: auto;
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+.rtm-card.h-100 {
+	display: flex;
+	flex-direction: column;
+}
+.rtm-sub-title {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.rtm-device-strip {
+	display: flex;
+	gap: 3px;
+	height: 0.75rem;
+}
+.rtm-device {
+	border-radius: 4px;
+	background: var(--tone);
+	transform-origin: left center;
+	transition:
+		width 500ms cubic-bezier(0.32, 0.72, 0, 1),
+		transform 700ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i, 0) * 110ms);
+}
+/* Until the card is first seen the bars wait at zero, then grow from the
+   left; visitors who ask for less motion see them in place. */
+@media (prefers-reduced-motion: no-preference) {
+	.is-waiting :is(.rtm-bar-fill, .rtm-device) {
+		transform: scaleX(0);
+	}
+}
+.rtm-device-key {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0.75rem 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.81rem;
+	color: var(--rtm-quiet);
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.rtm-key {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--tone);
+}
+
+/* Just happened */
+.rtm-feed {
+	margin: 0;
+	padding: 0 0 0.5rem;
+	list-style: none;
+}
+.rtm-event {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: 0 0.85rem;
+	align-items: center;
+	padding: 0.75rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+
+	&.is-fresh {
+		animation: rtm-arrive 900ms ease-out;
+	}
+}
+@keyframes rtm-arrive {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.rtm-event.is-fresh {
+		animation: none;
+	}
+}
+.rtm-event-icon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 16%, transparent);
+}
+.rtm-event-main {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.rtm-event-what {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rtm-event-who {
+	font-size: 0.81rem;
+	color: var(--rtm-quiet);
+
+	& a {
+		color: var(--rtm-link);
+	}
+}
+.rtm-event-when {
+	font-size: 0.81rem;
+	white-space: nowrap;
+	color: var(--rtm-quiet);
+}
+.rtm-feed-empty {
+	padding: 1.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}

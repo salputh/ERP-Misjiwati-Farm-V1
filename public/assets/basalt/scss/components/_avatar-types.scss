@@ -1,0 +1,521 @@
+/*
+ * Everything built on top of the plain .basalt-avatar: the larger steps, chart
+ * tones, presence and count markers, the progress ring, stacks that fan out
+ * or collapse into a "+N" menu, the editable picture and the name, list and
+ * tile layouts. avatars.html walks through all of it in this order;
+ * basalt.js drives the parts marked [data-basalt-avatar],
+ * [data-basalt-avatar-group], [data-basalt-avatar-edit] and
+ * [data-basalt-presence].
+ */
+
+/* Secondary lines lean toward the body color so they keep 4.5:1. */
+$quiet-copy: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+/* Every interactive part of an avatar shows the same hue outline on focus. */
+@mixin hue-outline($gap: 2px) {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: $gap;
+}
+
+/* Calm the motion for visitors who asked the system for less of it. */
+@mixin still {
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* The two big steps, and what any avatar does with a photo or an icon. */
+.basalt-avatar {
+	line-height: 1;
+	text-decoration: none;
+
+	> img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	> .bi {
+		font-size: 1.1em;
+	}
+}
+.basalt-avatar-xl {
+	width: 72px;
+	height: 72px;
+	font-size: 1.5rem;
+}
+.basalt-avatar-xxl {
+	width: 96px;
+	height: 96px;
+	font-size: 2rem;
+}
+
+/* Each tone borrows one chart series; the text mix keeps 4.5:1 on the tint. */
+@for $series from 1 through 8 {
+	.basalt-avatar-tone-#{$series} {
+		--avatar-tone: var(--basalt-series-#{$series});
+	}
+}
+[class*="basalt-avatar-tone-"] {
+	color: color-mix(in srgb, var(--avatar-tone) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--avatar-tone) 16%, var(--basalt-plane));
+
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--avatar-tone) 62%, var(--basalt-copy));
+	}
+}
+
+/* Solid, dashed and ringed treatments sit on top of any tone. */
+.basalt-avatar-solid {
+	color: var(--basalt-on-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 80%, var(--basalt-shade));
+
+	[data-bs-theme="dark"] & {
+		background: var(--basalt-hue);
+	}
+}
+.basalt-avatar-outline {
+	border: 1.5px dashed var(--basalt-edge-strong);
+	color: var(--basalt-copy-body);
+	background: transparent;
+}
+.basalt-avatar-ring {
+	box-shadow:
+		0 0 0 2px var(--basalt-plane),
+		0 0 0 4px var(--basalt-hue);
+}
+:is(a, button).basalt-avatar:focus-visible {
+	@include hue-outline;
+}
+
+/* Softer corners shrink along with the two smallest sizes. */
+.basalt-avatar-rounded {
+	border-radius: 12px;
+
+	&:is(.basalt-avatar-xs, .basalt-avatar-sm) {
+		border-radius: 8px;
+	}
+}
+.basalt-avatar-square {
+	border-radius: 4px;
+}
+
+/* The presence dot scales with its avatar and hugs the lower corner; on a
+   squared avatar it slides out a little so it still clears the edge. */
+.basalt-avatar-status {
+	position: relative;
+	display: inline-flex;
+	flex-shrink: 0;
+}
+.basalt-avatar-status-dot {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 28%;
+	min-width: 8px;
+	height: 28%;
+	min-height: 8px;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	background: var(--basalt-copy-muted);
+	transition: background-color 200ms ease;
+	@include still;
+
+	:is(.basalt-avatar-rounded, .basalt-avatar-square) + & {
+		right: -3px;
+		bottom: -3px;
+	}
+}
+.basalt-avatar-status-dot-top {
+	top: 0;
+	bottom: auto;
+}
+.basalt-avatar-status-dot-online {
+	background: var(--basalt-success);
+}
+
+/* Busy and away carry a mark as well as a color, so neither relies on hue. */
+.basalt-avatar-status-dot-busy {
+	background: var(--basalt-danger);
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 42% 22%;
+		border-radius: 2px;
+		background: var(--basalt-plane);
+	}
+}
+.basalt-avatar-status-dot-away {
+	background: var(--basalt-warning);
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 18% 18% 30% 30%;
+		border-bottom: 2px solid var(--basalt-plane);
+		border-left: 2px solid var(--basalt-plane);
+	}
+}
+
+/* A count rides the upper corner, cut out from the avatar by a surface ring. */
+.basalt-avatar-badge {
+	position: absolute;
+	top: -4px;
+	right: -6px;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	line-height: 20px;
+	text-align: center;
+	color: var(--basalt-plane);
+	background: color-mix(in srgb, var(--basalt-danger) 72%, var(--basalt-shade));
+	box-shadow: 0 0 0 2px var(--basalt-plane);
+
+	[data-bs-theme="dark"] & {
+		color: var(--basalt-canvas);
+		background: var(--basalt-danger);
+	}
+}
+
+/* The ring fills to --value (0 to 100) around the picture for profile or
+   course progress; a plain custom property animates it, no script. */
+@property --value {
+	syntax: "<number>";
+	inherits: true;
+	initial-value: 0;
+}
+.basalt-avatar-meter {
+	--value: 0;
+	--meter-width: 3px;
+	--meter-tone: var(--basalt-hue);
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	padding: calc(var(--meter-width) + 3px);
+	border-radius: 50%;
+	background: conic-gradient(
+		var(--meter-tone) calc(var(--value) * 1%),
+		color-mix(in srgb, var(--basalt-copy) 12%, transparent) 0
+	);
+	transition: --value 600ms ease;
+	@include still;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: var(--meter-width);
+		border-radius: 50%;
+		background: var(--basalt-plane);
+	}
+	> .basalt-avatar {
+		position: relative;
+	}
+}
+.basalt-avatar-meter-lg {
+	--meter-width: 4px;
+}
+.basalt-avatar-meter-success {
+	--meter-tone: var(--basalt-success);
+}
+.basalt-avatar-meter-warning {
+	--meter-tone: var(--basalt-warning);
+}
+
+/* Stacks come in two more overlaps (the base one lives with .basalt-avatar), and a
+   hover variant lifts the avatar under the pointer above its neighbors. */
+.basalt-avatar-more {
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.basalt-avatar-group-sm .basalt-avatar {
+	margin-left: -6px;
+}
+.basalt-avatar-group-lg .basalt-avatar {
+	margin-left: -14px;
+	border-width: 3px;
+}
+:is(.basalt-avatar-group-sm, .basalt-avatar-group-lg) .basalt-avatar:first-child {
+	margin-left: 0;
+}
+.basalt-avatar-group-hover .basalt-avatar {
+	transition: transform 170ms ease;
+	@include still;
+
+	&:hover {
+		position: relative;
+		z-index: 1;
+		transform: translateY(-3px);
+	}
+}
+
+/* The name sits beside its avatar with one quieter line of detail under it. */
+.basalt-person {
+	display: inline-flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.basalt-person-name {
+	display: block;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--basalt-copy);
+}
+.basalt-person-meta {
+	display: block;
+	font-size: 0.81rem;
+	color: $quiet-copy;
+}
+
+/* A chip is a person you can take back out of a selection. */
+.basalt-person-chip {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.25rem 0.3rem 0.25rem 0.25rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-weight: 550;
+	font-size: 0.84rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.basalt-person-chip-remove {
+	display: inline-grid;
+	place-items: center;
+	width: 1.4rem;
+	height: 1.4rem;
+	padding: 0;
+	border-radius: 50%;
+	border: 0;
+	color: var(--basalt-copy-body);
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		@include hue-outline(1px);
+	}
+}
+
+/* A people list runs edge to edge, one ruled row per person and their role. */
+.basalt-people {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	> li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		padding: 0.75rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+
+		&:last-child {
+			border-bottom: 0;
+		}
+	}
+	.basalt-person {
+		flex: 1;
+	}
+}
+.basalt-people-role {
+	font-size: 0.77rem;
+	white-space: nowrap;
+	color: $quiet-copy;
+}
+
+/* A profile tile centers one person over a short row of actions. */
+.basalt-profile-tile {
+	display: grid;
+	gap: 0.2rem;
+	justify-items: center;
+	min-width: 0;
+	padding: 1.5rem 1rem 1.25rem;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge);
+	text-align: center;
+	background: var(--basalt-plane);
+
+	.basalt-avatar-status {
+		margin-bottom: 0.65rem;
+	}
+}
+.basalt-profile-tile-actions {
+	display: flex;
+	gap: 0.4rem;
+	margin-top: 0.75rem;
+}
+
+/* An editable avatar takes a picked or dropped image; a ring fills around it
+   while the picture loads (script: [data-basalt-avatar-edit]). */
+.basalt-avatar-edit {
+	position: relative;
+	display: inline-flex;
+	border-radius: 50%;
+
+	&.is-dragging {
+		box-shadow:
+			0 0 0 3px var(--basalt-plane),
+			0 0 0 6px var(--basalt-hue);
+	}
+	> .basalt-avatar {
+		position: relative;
+		z-index: 1;
+	}
+}
+.basalt-avatar-edit-btn {
+	position: absolute;
+	right: -2px;
+	bottom: -2px;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 2px solid var(--basalt-plane);
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--basalt-on-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 80%, var(--basalt-shade));
+
+	[data-bs-theme="dark"] & {
+		background: var(--basalt-hue);
+	}
+	&:hover {
+		background: var(--basalt-hue-deep);
+	}
+	&:focus-visible {
+		@include hue-outline;
+	}
+}
+.basalt-avatar-edit-ring {
+	position: absolute;
+	inset: -6px;
+	border-radius: 50%;
+	background: conic-gradient(var(--basalt-hue) calc(var(--value, 0) * 1%), transparent 0);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 200ms ease;
+	@include still;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 3px;
+		border-radius: 50%;
+		background: var(--basalt-plane);
+	}
+}
+.basalt-avatar-edit.is-loading {
+	.basalt-avatar-edit-ring {
+		opacity: 1;
+	}
+	.basalt-avatar {
+		opacity: 0.6;
+	}
+}
+
+/* A spread stack opens up on hover or focus. With data-max, the script keeps
+   that many avatars and folds the rest into a "+N" button whose menu lists
+   them; the button's dropdown wrapper overlaps like any other member. */
+.basalt-avatar-group-spread .basalt-avatar {
+	transition:
+		margin 210ms cubic-bezier(0.3, 0.7, 0.3, 1),
+		transform 170ms ease;
+	@include still;
+}
+.basalt-avatar-group-spread:is(:hover, :focus-within) .basalt-avatar:not(:first-child) {
+	margin-left: 4px;
+}
+.basalt-avatar-group {
+	.basalt-avatar[hidden] {
+		display: none;
+	}
+
+	> .dropdown {
+		display: inline-flex;
+		margin-left: -8px;
+
+		.basalt-avatar {
+			box-sizing: content-box;
+			margin-left: 0;
+			border: 2px solid var(--basalt-plane);
+		}
+	}
+	> .basalt-avatar:focus-visible,
+	> .dropdown > .basalt-avatar:focus-visible {
+		position: relative;
+		z-index: 2;
+	}
+}
+.basalt-avatar-group-lg > .dropdown {
+	margin-left: -14px;
+
+	.basalt-avatar {
+		border-width: 3px;
+	}
+}
+.basalt-avatar-group-spread:is(:hover, :focus-within) > .dropdown {
+	margin-left: 4px;
+}
+.basalt-avatar-group-more {
+	padding: 0;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&[aria-expanded="true"] {
+		box-shadow: 0 0 0 2px var(--basalt-hue);
+	}
+}
+
+/* The overflow menu scrolls past a handful of people and reuses the quiet
+   detail color for each person's second line. */
+.dropdown-menu.basalt-avatar-roster {
+	--bs-dropdown-padding-y: 0.4rem;
+	--bs-dropdown-min-width: 15rem;
+	--bs-dropdown-header-color: #{$quiet-copy};
+	--bs-dropdown-link-color: var(--basalt-copy);
+	--bs-dropdown-link-hover-bg: var(--basalt-wash);
+	--bs-dropdown-link-hover-color: var(--basalt-copy);
+	--bs-dropdown-link-active-bg: var(--basalt-wash);
+	--bs-dropdown-link-active-color: var(--basalt-copy);
+	min-width: 15rem;
+	max-height: 18rem;
+	overflow-y: auto;
+	box-shadow: 0 12px 32px -12px color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+}
+.basalt-avatar-roster .dropdown-item {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding-top: 0.4rem;
+	padding-bottom: 0.4rem;
+
+	&:focus-visible {
+		background: var(--basalt-wash);
+		@include hue-outline(-2px);
+	}
+}
+.basalt-avatar-roster-name {
+	display: block;
+	font-weight: 600;
+	font-size: 0.84rem;
+	line-height: 1.25;
+}
+.basalt-avatar-roster-meta {
+	display: block;
+	font-size: 0.74rem;
+	color: $quiet-copy;
+}

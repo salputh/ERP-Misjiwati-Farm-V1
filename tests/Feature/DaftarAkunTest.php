@@ -69,7 +69,7 @@ class DaftarAkunTest extends TestCase
         Livewire::test(DaftarAkun::class)
             ->assertSee('Sedang masuk')
             ->assertSeeInOrder(['Salman Putra', 'Chrome di macOS', 'Perangkat ini', 'Budi', 'Safari di iOS', '10.0.0.7'])
-            ->assertSeeHtml('uil-mobile-android')
+            ->assertSeeHtml('bi-phone')
             ->assertDontSee($iphone->id)
             ->assertDontSee(session()->getId());
     }
@@ -238,6 +238,6 @@ class DaftarAkunTest extends TestCase
         $this->get(route('akun'))
             ->assertOk()
             ->assertSee('Pengaturan')
-            ->assertSee('<a href="'.route('akun', ['farm' => Farm::query()->sole()->id]).'" class="active">', false);
+            ->assertSee('href="'.route('akun', ['farm' => Farm::query()->sole()->id]).'" class="basalt-menu-entry active"', false);
     }
 }

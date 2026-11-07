@@ -1,0 +1,1047 @@
+/* Basalt - Income (income.html)
+   Namespaced under .earn-*
+   The page header, cards, status pills, choice cards, empty state, drawer
+   and dialog are the shared components from basalt.css; this file lays
+   them out and styles October's total with its sources, the unpaid
+   invoices, the payment log and the drawer's contents. Every color is a --basalt-*
+   token, mixed with color-mix() so each palette and mode keeps its own
+   hues. The drawer and dialog sit outside the page container, so they
+   carry the page's mixes too. */
+
+.earn-page,
+.earn-drawer,
+.earn-modal {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--earn-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--earn-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--earn-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	--earn-row-on: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+/* One hue per source, from the theme ramp. The chart reads the same
+   tokens, so a dot in the table matches its bar. */
+.earn-src-plans {
+	--earn-tone: var(--basalt-series-1);
+}
+.earn-src-extras {
+	--earn-tone: var(--basalt-series-2);
+}
+.earn-src-onboarding {
+	--earn-tone: var(--basalt-series-3);
+}
+
+.earn-optional {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--earn-quiet);
+}
+.earn-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--earn-link);
+}
+.earn-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--basalt-copy);
+}
+.earn-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.earn-page .form-control,
+.earn-page .form-select,
+.earn-modal .form-control,
+.earn-modal .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.earn-page .form-control::placeholder,
+.earn-modal .form-control::placeholder {
+	color: var(--earn-quiet);
+	opacity: 1;
+}
+.earn-page .btn {
+	white-space: nowrap;
+}
+.earn-page .btn-outline-secondary {
+	background-color: var(--basalt-plane);
+}
+
+/* Cards */
+.earn-card.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.earn-card.basalt-box > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.earn-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.earn-card-head > div:first-child {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+.earn-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.earn-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--earn-quiet);
+}
+.earn-card-desc strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Received in October */
+/* The first card leads with the month's total on a soft palette wash. */
+.earn-month {
+	overflow: hidden;
+}
+.earn-month-band {
+	position: relative;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 1.5rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-grad-soft);
+}
+.earn-month-figure {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.25rem;
+}
+.earn-month-value {
+	margin: 0;
+	font-size: 2.5rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.earn-delta {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.3rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	background: var(--basalt-plane);
+}
+.earn-delta-up {
+	color: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+}
+.earn-delta-down {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.earn-month-clearing {
+	margin: 0.85rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.earn-month-clearing strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.earn-month-wait {
+	display: inline-block;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.5rem;
+	border-radius: 50%;
+	vertical-align: 0.1em;
+	background: var(--basalt-warning);
+}
+.earn-month > .card-body {
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-head);
+}
+@media (max-width: 575.98px) {
+	.earn-month-band {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+	.earn-month > .card-body {
+		padding: 1rem var(--basalt-pad-x-narrow) 1.25rem;
+	}
+	.earn-month-value {
+		font-size: 2.1rem;
+	}
+}
+
+/* One row per source: tile, name, its trend this year, October's amount. */
+.earn-month > .card-body {
+	display: flex;
+	flex-direction: column;
+	container: earn-src / inline-size;
+}
+.earn-src-head,
+.earn-source {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 2.75rem minmax(0, 1fr) 9rem 8rem;
+	align-items: center;
+}
+.earn-src-head {
+	padding-bottom: 0.6rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--earn-quiet);
+}
+.earn-src-head > :first-child {
+	grid-column: 1 / 3;
+}
+.earn-src-head-amt {
+	text-align: right;
+}
+.earn-sources-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.earn-source {
+	padding: 1.1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.earn-sources-list > .earn-source:last-child {
+	padding-bottom: 0;
+}
+.earn-source-icon {
+	display: grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--earn-tone) 75%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--earn-tone) 16%, var(--basalt-plane));
+}
+.earn-source-text {
+	min-width: 0;
+}
+.earn-source-name {
+	display: block;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.earn-source-trend {
+	position: relative;
+	display: block;
+	height: 2.25rem;
+}
+.earn-spark {
+	display: block;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	animation: earn-draw 0.5s ease-out both;
+}
+.earn-spark-area {
+	fill: color-mix(in srgb, var(--earn-tone) 16%, transparent);
+}
+.earn-spark-line {
+	fill: none;
+	stroke: var(--earn-tone);
+	stroke-width: 2.25;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+/* The trend draws in from the left once, then its end dot appears. */
+@keyframes earn-draw {
+	from {
+		clip-path: inset(-4px 100% -4px 0);
+	}
+	to {
+		clip-path: inset(-4px -4px -4px 0);
+	}
+}
+.earn-spark-dot {
+	position: absolute;
+	right: -0.3rem;
+	width: 0.6rem;
+	height: 0.6rem;
+	margin-top: -0.3rem;
+	border-radius: 50%;
+	background: var(--earn-tone);
+	box-shadow: 0 0 0 3px var(--basalt-plane);
+	animation: earn-dot 0.25s ease-out 0.8s both;
+}
+@keyframes earn-dot {
+	from {
+		transform: scale(0.4);
+		opacity: 0;
+	}
+}
+.earn-source-amt {
+	text-align: right;
+	white-space: nowrap;
+}
+.earn-month-foot {
+	margin: auto 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--earn-quiet);
+}
+.earn-sources-list {
+	margin-bottom: 1.25rem;
+}
+.earn-source-value {
+	display: block;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+/* Narrow cards: the trend moves under the name, across the row. */
+@container earn-src (max-width: 480px) {
+	.earn-src-head {
+		display: none;
+	}
+	.earn-source {
+		row-gap: 0.8rem;
+		grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+		grid-template-areas: "icon text amt" "trend trend trend";
+	}
+	.earn-sources-list > .earn-source:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	.earn-source-icon {
+		grid-area: icon;
+	}
+	.earn-source-text {
+		grid-area: text;
+	}
+	.earn-source-amt {
+		grid-area: amt;
+	}
+	.earn-source-trend {
+		grid-area: trend;
+		height: 2rem;
+		margin-right: 0.3rem;
+	}
+}
+
+/* Waiting for payment */
+.earn-due-card {
+	display: flex;
+	flex-direction: column;
+}
+.earn-due-card .earn-card-head {
+	margin-bottom: 1rem;
+}
+.earn-due {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.earn-due-row {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	margin: 0 -0.6rem;
+	padding: 0.8rem 0.6rem;
+	border-top: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	text-decoration: none;
+	color: inherit;
+	transition: background-color 170ms ease;
+}
+.earn-due li:first-child .earn-due-row {
+	border-top-color: transparent;
+}
+.earn-due-row:hover {
+	background: var(--earn-row-hover);
+}
+.earn-due-row:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: -2px;
+}
+.earn-due-text {
+	flex: 1;
+	min-width: 0;
+}
+.earn-due-name {
+	display: block;
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.earn-due-meta {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--earn-quiet);
+}
+.earn-due-late {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.earn-due-amt {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.earn-due-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.earn-due-more {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--earn-quiet);
+}
+
+/* Toolbar */
+.earn-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.5rem;
+}
+.earn-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 12rem;
+	max-width: 28rem;
+}
+.earn-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	z-index: 1;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--earn-quiet);
+	pointer-events: none;
+}
+.earn-search .form-control {
+	padding-left: 2.4rem;
+}
+.earn-source-select.form-select {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 15.5rem;
+}
+.earn-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--earn-quiet);
+}
+@media (max-width: 767.98px) {
+	.earn-search {
+		flex: 1 1 100%;
+	}
+	.earn-source-select.form-select {
+		flex: 1 1 auto;
+		max-width: 18rem;
+	}
+	.earn-summary {
+		flex: 1 1 100%;
+		margin: 0.25rem 0 0;
+	}
+}
+
+/* Payment log */
+/* Pulled out by the cells' side padding, so the first column starts on
+   the card's left edge, under the title and the search box. */
+.earn-table-wrap {
+	position: relative;
+	container: earn-log / inline-size;
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.earn-table-wrap[hidden] {
+	display: none;
+}
+.earn-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+}
+.earn-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.6rem;
+	border-bottom-color: var(--basalt-edge);
+	color: inherit;
+	background: transparent;
+}
+.earn-table > tbody > tr:last-child > * {
+	border-bottom: 0;
+}
+.earn-table thead th {
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--earn-quiet);
+}
+.earn-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+}
+.earn-sort:hover {
+	color: var(--basalt-copy);
+}
+.earn-sort:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+[aria-sort] .earn-sort {
+	color: var(--basalt-copy);
+}
+.earn-sort-idle {
+	opacity: 0.55;
+}
+.earn-sort:hover .earn-sort-idle {
+	opacity: 1;
+}
+
+.earn-col-who {
+	min-width: 17rem;
+}
+.earn-col-src {
+	width: 14rem;
+}
+.earn-col-date {
+	width: 7rem;
+}
+.earn-col-status {
+	width: 8.5rem;
+}
+.earn-col-amt {
+	width: 9.5rem;
+	text-align: right;
+}
+.earn-col-amt .earn-sort {
+	flex-direction: row-reverse;
+}
+.earn-col-go {
+	width: 3rem;
+	text-align: right;
+}
+
+.earn-row {
+	cursor: pointer;
+}
+.earn-row:hover {
+	background: var(--earn-row-hover);
+}
+.earn-row.is-selected {
+	background: var(--earn-row-on);
+}
+.earn-row.is-fresh {
+	animation: earn-fresh 1.8s ease;
+}
+@keyframes earn-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+/* The customer: a lettered tile, the name and what the money was for. */
+.earn-who {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	min-width: 0;
+}
+.earn-who-text {
+	min-width: 0;
+}
+.earn-who-name {
+	display: inline;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 650;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+}
+.earn-who-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.earn-who-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.earn-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--earn-quiet);
+}
+.basalt-avatar.earn-mark {
+	flex: none;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 0.8rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+}
+.basalt-avatar.earn-mark-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 0.9rem;
+}
+.basalt-avatar.earn-mark-batch {
+	font-size: 1.05rem;
+}
+.basalt-avatar.earn-mark-lg.earn-mark-batch {
+	font-size: 1.1rem;
+}
+
+.earn-src {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.earn-src::before {
+	content: "";
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 3px;
+	background: var(--earn-tone);
+}
+.earn-date {
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+.earn-amt {
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.earn-amt-out {
+	color: var(--earn-quiet);
+}
+.earn-go {
+	display: inline-grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	color: var(--earn-quiet);
+}
+.earn-row:hover .earn-go {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+
+.earn-more {
+	display: flex;
+	justify-content: center;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.earn-more[hidden] {
+	display: none;
+}
+.earn-empty {
+	margin: 1.5rem 0 0.5rem;
+}
+.earn-empty[hidden] {
+	display: none;
+}
+
+/* The log follows the room its card has, not the window: with the menu
+   open, a 1024px window leaves the card about as narrow as a tablet. */
+.earn-row-date {
+	display: none;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--earn-quiet);
+}
+.earn-ref {
+	white-space: nowrap;
+}
+@container earn-log (max-width: 1000px) {
+	.earn-table > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	/* The outer cells keep the wrap's inset, so the first column stays on
+     the card's left edge. */
+	.earn-table > :not(caption) > * > :first-child {
+		padding-left: 0.6rem;
+	}
+	.earn-table > :not(caption) > * > :last-child {
+		padding-right: 0.6rem;
+	}
+	.earn-col-who {
+		min-width: 13rem;
+	}
+	.earn-col-src {
+		width: 12.5rem;
+	}
+	.earn-col-go {
+		display: none;
+	}
+}
+/* Narrower: the letter tile steps back and the date joins the source. */
+@container earn-log (max-width: 860px) {
+	.earn-who > .earn-mark {
+		display: none;
+	}
+	.earn-col-src {
+		width: 13rem;
+	}
+	.earn-col-status {
+		width: 7.5rem;
+	}
+	.earn-col-amt {
+		width: 8rem;
+	}
+	.earn-table .earn-col-date {
+		display: none;
+	}
+	.earn-row-date {
+		display: block;
+		margin-top: 0.3rem;
+		padding-left: 1.05rem;
+	}
+	.earn-sub {
+		white-space: normal;
+	}
+}
+
+/* Narrowest: each payment becomes a small stacked record: who and the
+   amount on top, what it was for under it, then the facts. */
+@container earn-log (max-width: 620px) {
+	.earn-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.earn-table,
+	.earn-table tbody {
+		display: block;
+	}
+	.earn-table tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who    amt"
+			"facts  status";
+		padding: var(--basalt-pad-row-y) 0.6rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.earn-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.earn-table > :not(caption) > * > *,
+	.earn-table > :not(caption) > * > :first-child,
+	.earn-table > :not(caption) > * > :last-child {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.earn-table .earn-col-who {
+		grid-area: who;
+	}
+	.earn-table .earn-col-amt {
+		grid-area: amt;
+		text-align: right;
+	}
+	.earn-table .earn-col-src {
+		display: flex;
+		gap: 0.25rem 0.9rem;
+		flex-wrap: wrap;
+		grid-area: facts;
+		align-items: center;
+	}
+	.earn-table .earn-col-status {
+		grid-area: status;
+		align-self: center;
+		justify-self: end;
+	}
+	.earn-row-date {
+		display: inline;
+		margin: 0;
+		padding: 0;
+	}
+}
+
+/* Drawer */
+.earn-drawer.offcanvas {
+	--bs-offcanvas-width: 480px;
+}
+@media (max-width: 575.98px) {
+	.earn-drawer.offcanvas {
+		--bs-offcanvas-width: min(400px, 92vw);
+	}
+	/* A phone keeps the header to the name: the tile goes and the
+     position is read out but not shown. */
+	.earn-drawer .earn-mark-lg {
+		display: none;
+	}
+	.earn-drawer .basalt-drawer-pos {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+}
+.earn-d-status {
+	margin: 0 0 0.6rem;
+}
+.earn-d-lead {
+	margin: 0;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.earn-d-lead strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.earn-lines {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.earn-line {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.9rem;
+}
+.earn-line:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+.earn-line-text {
+	min-width: 0;
+}
+.earn-line-name {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.earn-line-text .earn-sub {
+	white-space: normal;
+}
+.earn-line-amt {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.earn-line-total {
+	border-top-color: var(--basalt-edge-strong);
+}
+.earn-line-total .earn-line-name,
+.earn-line-total .earn-line-amt {
+	font-weight: 700;
+}
+
+/* History: filled markers joined by a line; status, not checkboxes. */
+.earn-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.earn-step {
+	position: relative;
+	padding: 0 0 1.1rem 1.6rem;
+	font-size: 0.9rem;
+}
+.earn-step:last-child {
+	padding-bottom: 0;
+}
+.earn-step::before {
+	content: "";
+	position: absolute;
+	top: 0.4rem;
+	left: 0.2rem;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--earn-step, var(--basalt-success));
+}
+.earn-step:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	top: 1.2rem;
+	bottom: 0.1rem;
+	left: calc(0.5rem - 1px);
+	width: 2px;
+	border-radius: 2px;
+	background: var(--basalt-edge);
+}
+.earn-step-wait {
+	--earn-step: var(--basalt-warning);
+}
+.earn-step-back {
+	--earn-step: var(--basalt-copy-muted);
+}
+.earn-step-what {
+	display: block;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.earn-step-when {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--earn-quiet);
+}
+
+/* Dialog */
+.earn-form-row {
+	margin-bottom: 1.25rem;
+}
+.earn-form-row:last-child {
+	margin-bottom: 0;
+}
+.earn-modal legend.form-label {
+	float: none;
+	margin-bottom: 0.5rem;
+	font-size: inherit;
+	line-height: inherit;
+}
+.earn-sources {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.earn-tile.basalt-choice-card {
+	align-items: center;
+	text-align: center;
+}
+.earn-tile .basalt-choice-card-icon {
+	margin-bottom: 0.3rem;
+}
+.earn-tile .basalt-choice-card-title {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+/* Phones: the tiles become slim rows, icon beside the label. */
+@media (max-width: 575.98px) {
+	.earn-sources {
+		gap: 0.6rem;
+		grid-template-columns: 1fr;
+	}
+	.earn-tile.basalt-choice-card {
+		gap: 0.85rem;
+		flex-direction: row;
+		justify-content: flex-start;
+		padding: 0.7rem 1rem;
+		text-align: left;
+	}
+	.earn-tile .basalt-choice-card-icon {
+		flex: none;
+		width: 2.25rem;
+		height: 2.25rem;
+		margin: 0;
+	}
+}
+/* One ring for the amount: the group lights up, the input inside it doesn't. */
+.earn-amount:focus-within {
+	border-radius: var(--bs-border-radius);
+	box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 25%, transparent);
+}
+.earn-amount:focus-within .input-group-text,
+.earn-amount:focus-within .form-control {
+	border-color: var(--basalt-hue);
+}
+.earn-amount .form-control:focus {
+	box-shadow: none;
+}
+.earn-amount .input-group-text {
+	border-color: var(--basalt-edge-strong);
+	color: var(--earn-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.earn-spark,
+	.earn-spark-dot {
+		animation: none;
+	}
+	.earn-row,
+	.earn-due-row {
+		transition: none;
+	}
+	.earn-row.is-fresh {
+		animation: none;
+	}
+}
+@media print {
+	.earn-spark,
+	.earn-spark-dot {
+		animation: none;
+	}
+	.earn-toolbar,
+	.earn-more,
+	.earn-col-go,
+	.earn-due-foot .btn {
+		display: none;
+	}
+	.earn-row,
+	.earn-due-row {
+		transition: none;
+	}
+	.earn-row.is-fresh {
+		animation: none;
+	}
+}

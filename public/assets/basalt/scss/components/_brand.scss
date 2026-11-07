@@ -1,0 +1,49 @@
+/* The logo: the mark, the word and the plan tag in one row. The mark is a
+   24px drawing with a pixel of air on every side. */
+.basalt-logo {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.basalt-logo-art {
+	flex: none;
+	width: 24px;
+	height: 24px;
+	margin: 1px;
+}
+/* The mark's gradient stops are set here so they follow the palette. With
+   gradients switched off the mark takes the first series color instead;
+   a stylesheet rule outranks the fill attribute on the path. */
+.basalt-logo-fade-a {
+	stop-color: var(--basalt-series-1);
+}
+.basalt-logo-fade-b {
+	stop-color: var(--basalt-series-3);
+}
+:root[data-basalt-gradients="off"] .basalt-logo-glyph {
+	fill: var(--basalt-series-1);
+}
+/* A mark drawn as a line carries its gradient on the stroke. */
+:root[data-basalt-gradients="off"] .basalt-logo-glyph[stroke] {
+	fill: none;
+	stroke: var(--basalt-series-1);
+}
+.basalt-logo-word {
+	font-size: 1.2rem;
+	font-weight: 800;
+	letter-spacing: -0.025em;
+	color: var(--basalt-copy);
+}
+.basalt-logo-plan {
+	padding: 3px 7px;
+	border-radius: 6px;
+	font-size: 0.625rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}

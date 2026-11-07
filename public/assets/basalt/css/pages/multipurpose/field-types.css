@@ -1,0 +1,898 @@
+/*
+ * Styles for field-types.html, the gallery of field types. Every class here
+ * starts with .fb- and every color is drawn from the --basalt-* tokens; the
+ * handful of color-mix() values exist so small text keeps 4.5:1 contrast in
+ * each palette, light or dark. Card grid, kind pill and snippet follow the
+ * chart pages.
+ */
+
+/* The page root defines the toned-down text colors the rest of this file reuses. */
+.fb-page {
+	/* Muted gray, pulled a little toward the body color so small text stays legible. */
+	--fb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* The raw status tokens are tuned for fills and borders and can fall below
+     4.5:1 as small text, so these text versions lean toward the body color. */
+	--fb-danger-text: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+	--fb-success-text: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	--fb-link: color-mix(in srgb, var(--basalt-hue) 78%, var(--basalt-copy));
+	--fb-line: color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	margin-top: 2rem;
+}
+
+/* Bootstrap's hint, placeholder and feedback text takes the page's readable tones. */
+.fb-page .form-text,
+.fb-page .form-control::placeholder,
+.fb-page .basalt-tags-input::placeholder,
+.fb-page .basalt-choice-hint,
+.fb-page .basalt-tags-meta {
+	color: var(--fb-quiet);
+	opacity: 1;
+}
+.fb-page .form-text {
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+}
+/* A floating label stands in for the placeholder, which therefore stays invisible. */
+.fb-page .form-floating > .form-control::placeholder {
+	color: transparent;
+}
+.fb-page .form-floating > .form-control ~ label,
+.fb-page .form-floating > .form-select ~ label {
+	color: var(--fb-quiet);
+}
+.fb-page .invalid-feedback,
+.fb-page .form-check-input.is-invalid ~ .form-check-label {
+	color: var(--fb-danger-text);
+}
+.fb-page .valid-feedback {
+	color: var(--fb-success-text);
+}
+.fb-page .invalid-feedback,
+.fb-page .valid-feedback {
+	font-size: 0.8rem;
+	font-weight: 500;
+}
+
+/* Disabled controls read as quiet rather than half transparent, so their text stays legible. */
+.fb-page .form-check-input:disabled ~ .form-check-label {
+	color: var(--fb-quiet);
+	opacity: 1;
+}
+.fb-page .form-control:disabled,
+.fb-page .form-select:disabled {
+	color: var(--basalt-copy-body);
+}
+.fb-page .basalt-choice:has(input:disabled) {
+	border-style: dashed;
+	color: var(--fb-quiet);
+	background: var(--basalt-canvas);
+	opacity: 1;
+}
+.fb-page .basalt-choice:has(input:disabled:checked) {
+	border-color: var(--fb-quiet);
+	box-shadow: none;
+}
+.fb-page .form-control-plaintext {
+	color: var(--basalt-copy);
+}
+.fb-page legend {
+	float: none;
+}
+
+/* Picked rows of a multi-select wear the soft primary fill in every theme. */
+.fb-page select[multiple] {
+	padding: 0.3rem;
+
+	& option {
+		padding: 0.3rem 0.5rem;
+		border-radius: 6px;
+		color: var(--basalt-copy);
+	}
+	& option:checked {
+		font-weight: 600;
+		color: var(--basalt-copy);
+		background-image: linear-gradient(var(--basalt-hue-soft), var(--basalt-hue-soft));
+	}
+}
+
+/* Primary buttons set their label in the on-primary color, which is dark on
+   the dark palettes where white falls under 3:1, and shade the fill toward the
+   text color so the paler palettes still reach 4.5:1. */
+.fb-page .btn-primary {
+	--fb-btn: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	--fb-btn-hover: color-mix(in srgb, var(--basalt-hue) 74%, var(--basalt-copy));
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-bg: var(--fb-btn);
+	--bs-btn-border-color: var(--fb-btn);
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-hover-bg: var(--fb-btn-hover);
+	--bs-btn-hover-border-color: var(--fb-btn-hover);
+	--bs-btn-active-color: var(--basalt-on-hue);
+	--bs-btn-active-bg: var(--fb-btn-hover);
+	--bs-btn-active-border-color: var(--fb-btn-hover);
+}
+
+.fb-optional {
+	font-weight: 400;
+	color: var(--fb-quiet);
+}
+.fb-mono {
+	font-family: "Chivo Mono", monospace;
+	letter-spacing: 0.02em;
+}
+
+/* The filter row stacks its chips above a running count of the cards shown. */
+.fb-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.fb-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--fb-quiet);
+}
+.fb-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.fb-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.fb-chips .fb-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+
+/* A twelve-column grid; each card takes the full row until desktop width pairs them up. */
+.fb-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.fb-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.fb-card.is-hidden {
+	display: none;
+}
+@media (min-width: 1200px) {
+	.fb-card {
+		grid-column: span 6;
+	}
+	.fb-card-full,
+	.fb-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* A card body is a column, so the snippet toggle can sink to the bottom. */
+.fb-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.fb-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+/* The demo just before the snippet toggle always leaves the same gap above it. */
+.fb-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+
+/* The kind pill comes after the title in the markup, so the title is read
+   first, and the reversed column lifts the pill above it on screen. */
+.fb-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.fb-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fb-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--fb-quiet);
+}
+.fb-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--fb-quiet);
+}
+
+/* The snippet folds open from a quiet toggle, with its Copy button pinned in the corner. */
+.fb-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:hover {
+		color: var(--basalt-copy);
+	}
+	& summary:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.fb-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.fb-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* Layout pieces the demos are built from: stacks, plain legends, button rows and label rows. */
+.fb-stack {
+	display: grid;
+	gap: 1.35rem;
+}
+.fb-legend-plain {
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 1rem;
+}
+.fb-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.fb-inline-field {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.fb-unit {
+	flex: 0 0 5.25rem;
+	max-width: 5.25rem;
+}
+
+/* Confirmation lines stay out of the layout until there is something to confirm. */
+.fb-status,
+.fb-done,
+.fb-applied {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--fb-success-text);
+}
+.fb-status:empty,
+.fb-done:empty,
+.fb-applied:empty {
+	display: none;
+}
+.fb-status.is-bad {
+	color: var(--fb-danger-text);
+}
+.fb-applied {
+	margin-top: 0.4rem;
+	font-size: 0.8rem;
+}
+
+/* Readouts under a field are small and quiet; an empty note takes no room. */
+.fb-note,
+.fb-value {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--fb-quiet);
+}
+.fb-note:empty {
+	display: none;
+}
+.fb-value code {
+	padding: 0.1rem 0.4rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 6px;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+	word-break: break-all;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+.fb-stack > .fb-value,
+.fb-stack > .fb-pick {
+	margin-top: 0;
+}
+
+/* Text input card: the states fill as many columns as fit, the sizes stack. */
+.fb-states {
+	display: grid;
+	gap: 1.75rem 1.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));
+	align-items: start;
+}
+.fb-sizes {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.fb-floating-area {
+	height: 6.5rem;
+}
+
+/* Textareas grow with their text; quick phrases sit beneath as toggles that show a check once added. */
+.fb-autogrow {
+	min-height: 4.5rem;
+	overflow: hidden;
+	resize: none;
+}
+.fb-counter {
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	text-align: right;
+	color: var(--fb-quiet);
+
+	&.is-low {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.fb-phrases {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-top: 0.75rem;
+}
+.fb-phrase {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	padding: 0.3rem 0.7rem 0.3rem 0.5rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+	&[aria-pressed="true"] .bi::before {
+		content: "\F26E";
+	}
+}
+
+/* The email card's did-you-mean line offers its fix as an underlined link-style button. */
+.fb-suggest {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.fb-suggest-btn {
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--fb-link);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Password card: icon-and-word buttons, a four-segment meter that fills by level, and the checklist. */
+.fb-page [data-fb-copy-field],
+.fb-page [data-fb-reveal] {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.fb-meter {
+	display: grid;
+	gap: 4px;
+	grid-template-columns: repeat(4, 1fr);
+	margin-top: 0.65rem;
+
+	& span {
+		height: 5px;
+		border-radius: 3px;
+		background: var(--fb-line);
+		transition: background-color 170ms ease;
+	}
+	&[data-level="1"] span:nth-child(-n + 1) {
+		background: var(--basalt-danger);
+	}
+	&[data-level="2"] span:nth-child(-n + 2) {
+		background: var(--basalt-warning);
+	}
+	&[data-level="3"] span:nth-child(-n + 3) {
+		background: var(--basalt-success);
+	}
+	&[data-level="4"] span {
+		background: var(--basalt-success);
+	}
+}
+.fb-meter-label {
+	margin: 0.4rem 0 0.6rem;
+	font-size: 0.8rem;
+	color: var(--fb-quiet);
+}
+.fb-rules {
+	display: grid;
+	gap: 0.3rem;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--fb-quiet);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& li.is-met {
+		color: var(--basalt-copy);
+	}
+	& li.is-met .bi {
+		color: var(--fb-success-text);
+	}
+}
+@media (min-width: 576px) {
+	.fb-rules {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+.fb-match {
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 500;
+
+	&:empty {
+		display: none;
+	}
+	&.is-ok {
+		color: var(--fb-success-text);
+	}
+	&.is-bad {
+		color: var(--fb-danger-text);
+	}
+}
+
+/* The picked-customer readout is a soft panel led by an icon in the primary color. */
+.fb-pick {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+	margin: 0;
+	padding: 0.85rem 1rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+
+	& .bi {
+		margin-top: 0.1rem;
+		color: var(--basalt-hue);
+	}
+}
+
+.fb-tags-meta {
+	margin-top: 0.3rem;
+}
+
+/* Tile checkbox card: rows of .basalt-tick sizes and a channel grid with icon column heads. */
+.fb-tick-row {
+	display: flex;
+	gap: 0.85rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.fb-tick-size {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.fb-tick-grid {
+	display: grid;
+	gap: 0.5rem 0.25rem;
+	grid-template-columns: minmax(0, 1fr) repeat(3, 56px);
+	align-items: center;
+	justify-items: center;
+	max-width: 360px;
+}
+.fb-tick-grid-row {
+	justify-self: start;
+	min-width: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.fb-tick-grid-col {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: center;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--basalt-copy-muted);
+
+	& .bi {
+		font-size: 1rem;
+		letter-spacing: 0;
+	}
+}
+
+/* Child checkboxes indent under their parent; a radio's extra field indents under its label. */
+.fb-kids {
+	margin: 0.25rem 0 0.25rem 1.5rem;
+}
+.fb-reveal {
+	max-width: 16rem;
+	margin: 0.6rem 0 0 1.5em;
+
+	& .form-label {
+		margin-bottom: 0.3rem;
+		font-size: 0.85rem;
+	}
+}
+
+/* Switch rows are ruled off from each other; a paused row drops its label to regular weight. */
+.fb-switches {
+	border-top: 1px solid var(--basalt-edge);
+}
+.fb-switch {
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	& .form-check {
+		margin: 0;
+	}
+	& .form-check-label {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	&.is-off .form-check-label {
+		font-weight: 500;
+	}
+}
+.fb-switch-help {
+	margin: 0.1rem 0 0 2.5em;
+	font-size: 0.8rem;
+	color: var(--fb-quiet);
+}
+.fb-switch-extra {
+	max-width: 18rem;
+	margin: 0.75rem 0 0 2.5em;
+
+	&[hidden] {
+		display: none;
+	}
+	& .form-label {
+		font-size: 0.85rem;
+	}
+}
+
+.fb-choices-wide {
+	--basalt-choice-min: 150px;
+}
+@media (max-width: 575.98px) {
+	.fb-choices-wide {
+		--basalt-choice-min: 88px;
+	}
+}
+
+/* Stepper rows are ruled like the switches and keep the label and control on one line. */
+.fb-steppers {
+	display: grid;
+
+	& > .fb-inline-field {
+		flex-wrap: nowrap;
+		padding: 0.9rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& > .fb-inline-field > :first-child {
+		min-width: 0;
+	}
+	& > .fb-inline-field:first-child {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+
+/* Range card: label and value share a line, and the two-thumb slider lays both inputs over one track. */
+.fb-range-head {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.3rem;
+}
+.fb-range-out {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.fb-scale {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.2rem;
+	font-size: 0.75rem;
+	color: var(--fb-quiet);
+}
+.fb-dual {
+	position: relative;
+	height: 1.5rem;
+}
+.fb-dual-track {
+	position: absolute;
+	top: 50%;
+	right: 0;
+	left: 0;
+	transform: translateY(-50%);
+	height: 6px;
+	border-radius: 999px;
+	background: var(--fb-line);
+}
+.fb-dual-fill {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-radius: 999px;
+	background: var(--basalt-hue);
+}
+/* The inputs ignore the pointer so both stay reachable; only their thumbs take it back. */
+.fb-dual input[type="range"] {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	margin: 0;
+	background: none;
+	pointer-events: none;
+	appearance: none;
+
+	&::-webkit-slider-runnable-track {
+		height: 1.5rem;
+		background: transparent;
+	}
+	&::-moz-range-track {
+		background: transparent;
+	}
+	&::-webkit-slider-thumb {
+		width: 1.1rem;
+		height: 1.1rem;
+		margin-top: 0.175rem;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-plane);
+		background: var(--basalt-hue);
+		box-shadow: 0 0 0 1px var(--basalt-hue);
+		cursor: grab;
+		pointer-events: auto;
+		-webkit-appearance: none;
+	}
+	&::-moz-range-thumb {
+		width: 1rem;
+		height: 1rem;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-plane);
+		background: var(--basalt-hue);
+		cursor: grab;
+		pointer-events: auto;
+	}
+	&:focus-visible {
+		outline: 0;
+	}
+	&:focus-visible::-webkit-slider-thumb {
+		box-shadow:
+			0 0 0 1px var(--basalt-hue),
+			0 0 0 5px color-mix(in srgb, var(--basalt-hue) 30%, transparent);
+	}
+	&:focus-visible::-moz-range-thumb {
+		box-shadow: 0 0 0 5px color-mix(in srgb, var(--basalt-hue) 30%, transparent);
+	}
+}
+
+/* Add-ons beside formatted fields: the dial-code select, the currency symbol and the card brand. */
+.fb-dial {
+	flex: 0 0 6.75rem;
+	max-width: 6.75rem;
+}
+.fb-margin {
+	margin: -0.5rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	&.is-low {
+		color: var(--fb-danger-text);
+	}
+}
+.fb-sym {
+	justify-content: center;
+	min-width: 2.5rem;
+}
+.fb-cc-brand {
+	gap: 0.4rem;
+	min-width: 7.5rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+/* The error summary is a tinted panel with a thick left rule; the success line is its calmer twin. */
+.fb-errors {
+	margin: 0 0 1.75rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 45%, transparent);
+	border-left-width: 4px;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--basalt-danger) 6%, var(--basalt-plane));
+
+	&:focus {
+		outline: 2px solid var(--basalt-danger);
+		outline-offset: 2px;
+	}
+	&:focus:not(:focus-visible) {
+		outline: 0;
+	}
+}
+.fb-errors-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.5rem;
+	font-size: 0.95rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--fb-danger-text);
+	}
+}
+.fb-errors-list {
+	margin: 0;
+	padding-left: 1.6rem;
+	font-size: 0.875rem;
+
+	& li + li {
+		margin-top: 0.2rem;
+	}
+	& a {
+		font-weight: 500;
+		text-underline-offset: 2px;
+		color: var(--fb-danger-text);
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+}
+.fb-done {
+	margin-bottom: 1.75rem;
+	padding: 0.85rem 1.1rem;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--basalt-success) 40%, transparent);
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-success) 6%, var(--basalt-plane));
+}
+.fb-stack > .fb-errors,
+.fb-stack > .fb-done {
+	margin-bottom: 0;
+}
+
+/* With reduced motion the chips, phrases, snippet caret and meter change state instantly. */
+@media (prefers-reduced-motion: reduce) {
+	.fb-chip,
+	.fb-phrase,
+	.fb-code summary .bi,
+	.fb-meter span {
+		transition: none;
+	}
+}
+
+/* On paper every card prints, and the filters and snippets are left off. */
+@media print {
+	.fb-filter,
+	.fb-code {
+		display: none;
+	}
+	.fb-card.is-hidden {
+		display: block;
+	}
+}

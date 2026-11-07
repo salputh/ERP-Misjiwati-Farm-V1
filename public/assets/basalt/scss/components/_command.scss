@@ -1,0 +1,347 @@
+/* .basalt-command is a search field over grouped results that answers to the
+   arrow keys and Enter and marks the matching letters. The same block stands
+   alone on a page, sits inside a dropdown (.dropdown-menu.basalt-command-menu
+   around .basalt-command-as-menu) or fills a dialog (.modal.basalt-modal-command).
+   A result either stacks a title over a second line (-text holding -title and
+   -sub, followed by a -kbd) or shows one label with a hint at the end (-label
+   and -hint). [data-basalt-command] in basalt.js runs it; dropdowns.html
+   and modals.html show it. */
+
+/* Secondary text everywhere in the menu mixes the muted token toward the body
+   color so it stays readable on every palette. */
+$command-dim: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+.basalt-command {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	border-radius: 14px;
+	border: 1px solid var(--basalt-edge-strong);
+	overflow: hidden;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	box-shadow:
+		0 2px 6px color-mix(in srgb, var(--basalt-copy) 5%, transparent),
+		0 18px 40px color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+
+	&:focus-within {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, transparent);
+	}
+
+	/* Matched letters get a soft highlighter stroke. */
+	mark {
+		padding: 0 0.05em;
+		border-radius: 3px;
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-warning) 30%, transparent);
+	}
+}
+
+/* The search row carries the focus cue as an underline, so the field inside
+   it drops its own ring. */
+.basalt-command-search {
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	padding: 0.85rem 1.1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	color: $command-dim;
+	transition: box-shadow 170ms ease;
+
+	> .bi {
+		font-size: 1.05rem;
+	}
+	&:focus-within {
+		box-shadow: inset 0 -2px 0 var(--basalt-hue);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.basalt-command-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0.2rem 0;
+	border: 0;
+	outline: 0;
+	font-size: 1rem;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&::placeholder {
+		color: color-mix(in srgb, var(--basalt-copy-muted) 80%, var(--basalt-copy));
+		opacity: 1;
+	}
+
+	&:focus-visible {
+		outline: 0;
+		box-shadow: none;
+	}
+}
+
+/* Results scroll inside the box and never hand the scroll to the page. */
+.basalt-command-list {
+	scroll-padding: 0.4rem;
+	max-height: var(--basalt-command-height, 22rem);
+	padding: 0.4rem;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.basalt-command-group + .basalt-command-group {
+	margin-top: 0.3rem;
+}
+
+.basalt-command-group[hidden],
+.basalt-command-item[hidden] {
+	display: none;
+}
+
+.basalt-command-heading {
+	padding: 0.5rem 0.7rem 0.3rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: $command-dim;
+}
+
+/* The active result is tinted and gets a short bar on its leading edge. */
+.basalt-command-item {
+	position: relative;
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.5rem 0.7rem;
+	border-radius: 10px;
+	color: var(--basalt-copy-body);
+	cursor: pointer;
+
+	&[aria-selected="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+
+		&::before {
+			content: "";
+			position: absolute;
+			top: 22%;
+			bottom: 22%;
+			left: 0;
+			width: 3px;
+			border-radius: 3px;
+			background: var(--basalt-hue);
+		}
+	}
+}
+
+/* Icon tiles take their tint from --cmd-tone; the modifiers only repoint it. */
+.basalt-command-icon {
+	--cmd-tone: var(--basalt-copy-muted);
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	font-size: 0.95rem;
+	color: color-mix(in srgb, var(--cmd-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cmd-tone) 14%, var(--basalt-plane));
+}
+
+$command-icon-tones: (
+	primary: hue,
+	warm: series-5,
+	fresh: series-3,
+);
+
+@each $name, $token in $command-icon-tones {
+	.basalt-command-icon-#{$name} {
+		--cmd-tone: var(--basalt-#{$token});
+	}
+}
+
+/* Two-line results: a title over a line that truncates. */
+.basalt-command-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	line-height: 1.3;
+}
+
+.basalt-command-title {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.basalt-command-sub {
+	overflow: hidden;
+	font-size: 0.77rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: $command-dim;
+}
+
+/* One-line results: a label that truncates and a hint pinned to the end,
+   which phones leave out. */
+.basalt-command-label {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	font-size: 0.9rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.basalt-command-hint {
+	flex-shrink: 0;
+	font-size: 0.75rem;
+	color: $command-dim;
+
+	.basalt-command-item[aria-selected="true"] & {
+		color: var(--basalt-copy-body);
+	}
+
+	@media (max-width: 575.98px) {
+		display: none;
+	}
+}
+
+/* Every key cap in the menu, from a result's shortcut to the footer legend,
+   shares one look. */
+.basalt-command-kbd,
+.basalt-command-esc,
+.basalt-command-foot kbd {
+	flex-shrink: 0;
+	padding: 0.1rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge-strong);
+	font:
+		600 0.67rem/1.2 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+	box-shadow: none;
+}
+
+.basalt-command-empty {
+	padding: 2rem 1rem;
+	font-size: 0.875rem;
+	text-align: center;
+	color: $command-dim;
+
+	&[hidden] {
+		display: none;
+	}
+
+	.bi {
+		display: block;
+		margin-bottom: 0.4rem;
+		font-size: 1.4rem;
+	}
+
+	p {
+		margin: 0;
+	}
+}
+
+/* The footer legend keeps only the result count on a phone. */
+.basalt-command-foot {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.6rem 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	color: $command-dim;
+	background: var(--basalt-canvas);
+
+	span {
+		display: inline-flex;
+		gap: 0.25rem;
+		align-items: center;
+	}
+
+	@media (max-width: 575.98px) {
+		span:not(.basalt-command-count) {
+			display: none;
+		}
+	}
+}
+
+.basalt-command-count {
+	margin-left: auto;
+	font-variant-numeric: tabular-nums;
+}
+
+/* A fixed-height box holds still while results come and go, which suits a
+   dialog; --basalt-command-height sets the size. */
+.basalt-command-fixed .basalt-command-list,
+.basalt-modal-command .basalt-command-list {
+	height: var(--basalt-command-height, 360px);
+	max-height: none;
+}
+
+.basalt-command-fixed .basalt-command-empty,
+.basalt-modal-command .basalt-command-empty {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: var(--basalt-command-height, 360px);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* In a dropdown the menu itself is the frame, so the box sheds its own. */
+.basalt-stage .dropdown-menu.basalt-command-menu {
+	width: min(24rem, calc(100vw - 2rem));
+	padding: 0;
+	overflow: hidden;
+}
+
+.basalt-command-as-menu {
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+
+	.basalt-command-list {
+		max-height: 16rem;
+	}
+}
+
+/* In a dialog the box sits high on the screen and the modal supplies the
+   chrome; phones pull it up further and cap its height. */
+.basalt-modal-command {
+	.modal-dialog {
+		max-width: 620px;
+		margin-top: min(12vh, 7rem);
+	}
+
+	.modal-content {
+		overflow: hidden;
+	}
+
+	.basalt-command {
+		border: 0;
+		border-radius: inherit;
+		box-shadow: none;
+	}
+
+	@media (max-width: 575.98px) {
+		.modal-dialog {
+			margin-top: 0.75rem;
+		}
+		.basalt-command {
+			--basalt-command-height: min(360px, 55vh);
+		}
+	}
+}

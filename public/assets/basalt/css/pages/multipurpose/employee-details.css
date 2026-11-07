@@ -1,0 +1,1695 @@
+/*
+ * Staff record page (employee-details.html); every class here carries the
+ * .emd- prefix. Cards, status pills, avatars, menus, tooltips and toasts
+ * come from basalt.css as they are. What this sheet adds is the layout of
+ * the record and the pieces nobody else has: the summary tiles with their
+ * hour strip, leave donut, score pips and tenure meter; the reporting
+ * line; the open leave request; balance bars; clock-in bars; the review;
+ * papers, loaned equipment, the change log and the lending dialog.
+ * Colors are only ever --basalt-* tokens, blended through color-mix(), so
+ * every palette and both modes keep their own hues.
+ */
+
+/* The page sets its own small palette, built from the theme tokens. */
+.emd-page {
+	/* Links blend the accent toward body text; the bare accent misses 4.5:1
+     on a few light palettes. */
+	--emd-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--emd-ok: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	--emd-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--emd-tone: var(--basalt-series-1);
+}
+
+/* Fine print is muted gray leaned toward body text so it still reaches
+   4.5:1 on the palest palettes. The lending dialog sits outside the page
+   wrapper, so it declares the same gray and the same field colors itself. */
+.emd-page,
+.emd-assign {
+	--emd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+}
+
+.emd-page .form-control,
+.emd-page .form-select,
+.emd-assign .form-control,
+.emd-assign .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+
+.emd-assign .form-control::placeholder {
+	color: var(--emd-quiet);
+	opacity: 1;
+}
+
+/* Each tone class picks one step of the theme's chart ramp. */
+.emd-tone-1 {
+	--emd-tone: var(--basalt-series-1);
+}
+.emd-tone-2 {
+	--emd-tone: var(--basalt-series-2);
+}
+.emd-tone-3 {
+	--emd-tone: var(--basalt-series-3);
+}
+.emd-tone-4 {
+	--emd-tone: var(--basalt-series-4);
+}
+.emd-tone-5 {
+	--emd-tone: var(--basalt-series-5);
+}
+.emd-tone-6 {
+	--emd-tone: var(--basalt-series-6);
+}
+.emd-tone-7 {
+	--emd-tone: var(--basalt-series-7);
+}
+.emd-tone-8 {
+	--emd-tone: var(--basalt-series-8);
+}
+
+/* Small helpers that several panels lean on. */
+.emd-quiet {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--emd-quiet);
+}
+.emd-small {
+	font-size: 0.85rem;
+}
+.emd-mono {
+	font-family: "Chivo Mono", monospace;
+}
+.emd-nowrap {
+	white-space: nowrap;
+}
+
+.emd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--emd-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Every list the script fills starts without bullets or indents. */
+.emd-chain,
+.emd-team,
+.emd-allow,
+.emd-scores,
+.emd-goals,
+.emd-said,
+.emd-docs {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Keyboard focus looks the same on links, people and the upload button. */
+.emd-link:focus-visible,
+.emd-glance-jump:focus-visible,
+a.emd-person:focus-visible,
+.emd-upload input:focus-visible + .btn {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Thin rounded bars stand inside the person card, the request and quotes. */
+.emd-person-self::before,
+.emd-ask::before,
+.emd-quote::before {
+	content: "";
+	position: absolute;
+	width: 3px;
+	border-radius: 3px;
+}
+
+/* The header grid keeps the person on the left and the buttons bottom right. */
+.basalt-hero-detail.emd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+}
+
+.emd-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.emd-menu .dropdown-item .bi {
+	width: 1rem;
+	margin-right: 0.5rem;
+	text-align: center;
+}
+
+.emd-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+.emd-who-text {
+	min-width: 0;
+}
+
+.emd-avatar {
+	flex: none;
+	font-weight: 700;
+	box-shadow:
+		0 0 0 4px var(--basalt-plane),
+		0 0 0 5px color-mix(in srgb, var(--avatar-tone) 45%, transparent);
+}
+
+/* In the header the avatar wears the team hue at full strength, as on Users. */
+.emd-head .emd-avatar[class*="basalt-avatar-tone-"] {
+	color: color-mix(in srgb, var(--avatar-tone) 26%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--avatar-tone) 58%, var(--basalt-plane));
+	background-image: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--avatar-tone) 44%, var(--basalt-plane)),
+		transparent 55%
+	);
+
+	[data-bs-theme="dark"] & {
+		color: var(--basalt-copy);
+		background-color: color-mix(in srgb, var(--avatar-tone) 36%, var(--basalt-plane));
+		background-image: linear-gradient(
+			135deg,
+			transparent 28%,
+			color-mix(in srgb, var(--avatar-tone) 20%, var(--basalt-plane))
+		);
+	}
+
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+}
+
+.emd-tags {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+
+.emd-pill {
+	display: inline-flex;
+	align-items: center;
+	min-height: 1.6rem;
+	padding: 0.1rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--emd-tone) 42%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--emd-tone) 15%, var(--basalt-plane));
+
+	[data-bs-theme="dark"] & {
+		color: color-mix(in srgb, var(--emd-tone) 30%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--emd-tone) 24%, var(--basalt-plane));
+	}
+}
+
+/* Plain pills stay neutral in either mode. */
+.emd-pill-plain,
+[data-bs-theme="dark"] .emd-pill-plain {
+	border: 1px solid var(--basalt-edge);
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.emd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+	.emd-who {
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.emd-avatar.basalt-avatar-xl {
+		width: 56px;
+		height: 56px;
+		font-size: 1.1rem;
+	}
+}
+
+/* Four summary tiles, each tinted and each with a different little
+   graphic, so the row never looks like four copies of one number box. */
+.emd-glance {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0 0 1.5rem;
+
+	@media (max-width: 1399.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	@media (max-width: 459.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.emd-glance-cell {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.25rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	overflow: hidden;
+	background-color: var(--basalt-plane);
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--emd-tone) 13%, transparent), transparent 62%);
+
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+}
+
+.emd-glance-label {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--emd-quiet);
+
+	& .bi {
+		display: inline-grid;
+		place-items: center;
+		width: 1.65rem;
+		height: 1.65rem;
+		border-radius: 8px;
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--emd-tone) 58%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--emd-tone) 18%, var(--basalt-plane));
+	}
+}
+
+.emd-glance-body {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+	margin: 0.7rem 0 0;
+}
+
+.emd-glance-body-side {
+	gap: 1rem;
+	flex-direction: row;
+	align-items: center;
+
+	& > span:last-child {
+		min-width: 0;
+	}
+}
+
+.emd-glance-value {
+	display: block;
+	font-size: 1.45rem;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.emd-glance-jump {
+	width: fit-content;
+	border-radius: 6px;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
+		color: var(--basalt-copy);
+	}
+}
+
+.emd-glance-of {
+	font-size: 0.85rem;
+	font-weight: 600;
+	letter-spacing: 0;
+	color: var(--emd-quiet);
+}
+.emd-glance-note {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--emd-quiet);
+}
+
+/* The local-time strip has one block per hour: shift hours are filled
+   and the current hour rises to full height. */
+.emd-hours {
+	display: flex;
+	gap: 2px;
+	align-items: flex-end;
+	box-sizing: content-box;
+	height: 0.85rem;
+	margin-top: auto;
+	padding-top: 0.8rem;
+}
+
+.emd-hour {
+	flex: 1;
+	height: 0.4rem;
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--emd-tone) 16%, var(--basalt-plane));
+
+	&.is-work {
+		background: color-mix(in srgb, var(--emd-tone) 60%, var(--basalt-plane));
+	}
+	&.is-now {
+		height: 100%;
+		background: var(--basalt-copy-muted);
+	}
+	&.is-work.is-now {
+		background: var(--basalt-warning);
+	}
+}
+
+/* The leave donut draws days taken, then days asked for, over a pale track. */
+.emd-ring {
+	flex: none;
+	width: 3.25rem;
+	height: 3.25rem;
+
+	& svg {
+		transform: rotate(-90deg);
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	& circle {
+		fill: none;
+		stroke-width: 5;
+	}
+}
+
+.emd-ring-track {
+	stroke: color-mix(in srgb, var(--emd-tone) 16%, var(--basalt-plane));
+}
+.emd-ring-used {
+	stroke: var(--emd-tone);
+}
+.emd-ring-ask {
+	stroke: var(--basalt-warning);
+}
+
+/* Five pips fill up to the review score. */
+.emd-pips {
+	display: flex;
+	gap: 0.3rem;
+	margin-top: auto;
+	padding-top: 0.8rem;
+}
+.emd-pip {
+	flex: 1;
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--emd-tone) 16%, var(--basalt-plane));
+}
+
+/* The tenure meter shows how much of the current work year has gone by. */
+.emd-meter {
+	display: block;
+	height: 0.4rem;
+	margin-top: auto;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--emd-tone) 16%, var(--basalt-plane));
+}
+.emd-glance-note + .emd-meter {
+	margin-top: 0.8rem;
+}
+
+/* Pip, meter and score fills share one look in the tile's own hue. */
+.emd-pip-fill,
+.emd-meter-fill,
+.emd-score-bar > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--emd-tone);
+}
+
+/* Cards pair up side by side from 1400px and end level; below that they
+   stack, since the sidebar leaves no room for two. */
+.emd-row {
+	display: grid;
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+
+	@media (min-width: 1400px) {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	}
+}
+
+.emd-card {
+	container-type: inline-size;
+	scroll-margin-top: 5.5rem;
+	min-width: 0;
+}
+
+.emd-card.basalt-box > .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.emd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+
+.emd-card-title {
+	scroll-margin-top: 6rem;
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+}
+
+.emd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--emd-quiet);
+}
+
+.emd-card-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+	& .emd-quiet {
+		flex: 1 1 18rem;
+	}
+}
+
+.emd-sub {
+	margin: 1.75rem 0 0.75rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:first-child {
+		margin-top: 0;
+	}
+}
+
+/* Facts are label and value rows split by hairlines. */
+.emd-facts {
+	margin: 0;
+}
+
+.emd-facts > div {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 8.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0.25rem;
+		border-top: 0;
+	}
+}
+
+.emd-facts dt {
+	font-weight: 500;
+	color: var(--emd-quiet);
+}
+.emd-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.emd-fact-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--emd-quiet);
+}
+
+/* Employment facts flow into two columns when the card is wide enough. */
+@container (min-width: 36rem) {
+	.emd-facts-two {
+		display: grid;
+		column-gap: 2rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.emd-facts-two > div {
+		grid-template-columns: 7.5rem minmax(0, 1fr);
+	}
+	.emd-facts-two > div:nth-child(2) {
+		padding-top: 0.25rem;
+		border-top: 0;
+	}
+}
+
+/* In a narrow card, a phone or the smaller of a laptop pair, the label sits
+   above its value so a long email address keeps a whole line. */
+@container (max-width: 26rem) {
+	.emd-facts > div {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.emd-copyline {
+	display: inline-flex;
+	gap: 0.1rem 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	max-width: 100%;
+
+	& .emd-link {
+		overflow-wrap: anywhere;
+	}
+}
+
+/* Copy and row-action buttons are quiet icons until hovered. */
+.emd-copy.btn-icon,
+.emd-icon-btn.btn-icon {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border-radius: 8px;
+	color: var(--emd-quiet);
+}
+
+.emd-copy.btn-icon {
+	width: 1.75rem;
+	height: 1.75rem;
+	margin: -0.3rem 0;
+	font-size: 0.8rem;
+}
+
+.emd-copy.btn-icon:hover,
+.emd-icon-btn.btn-icon:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+
+.emd-copy.is-copied {
+	color: var(--emd-ok);
+}
+
+/* The reporting line is a list of steps hung on a rail down the left. */
+.emd-chain {
+	position: relative;
+}
+
+.emd-chain-step {
+	position: relative;
+	padding: 0 0 1.25rem 1.6rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.85rem;
+		bottom: -0.15rem;
+		left: 0.3rem;
+		width: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge-strong);
+	}
+
+	&:last-child::before {
+		display: none;
+	}
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 1.45rem;
+		left: 0;
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 50%;
+		border: 2px solid var(--basalt-edge-strong);
+		background: var(--basalt-plane);
+	}
+}
+
+.emd-chain-step-self::after {
+	border-color: var(--basalt-series-1);
+	background: var(--basalt-series-1);
+}
+.emd-chain-label {
+	display: block;
+	margin-bottom: 0.4rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--emd-quiet);
+}
+
+.emd-person {
+	display: inline-flex;
+	gap: 0.7rem;
+	align-items: center;
+	max-width: 100%;
+	padding: 0.5rem 0.9rem 0.5rem 0.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	& .basalt-avatar {
+		flex: none;
+	}
+}
+
+a.emd-person:hover {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+
+/* The person's own card is tinted and marked with a straight inset bar
+   rather than a bent border. */
+.emd-person-self {
+	position: relative;
+	padding-left: 0.95rem;
+	border-color: color-mix(in srgb, var(--emd-tone) 40%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--emd-tone) 8%, var(--basalt-plane));
+
+	&::before {
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: 0.3rem;
+		background: var(--emd-tone);
+	}
+}
+
+.emd-person-text {
+	min-width: 0;
+}
+.emd-person-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.3;
+}
+.emd-person-role {
+	display: block;
+	font-size: 0.77rem;
+	line-height: 1.35;
+	color: var(--emd-quiet);
+}
+
+.emd-team {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	& .emd-person {
+		display: flex;
+		width: 100%;
+	}
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Inline editors replace a panel's facts; whichever side is hidden is gone. */
+[data-emd-view][hidden],
+.emd-edit[hidden] {
+	display: none;
+}
+
+.emd-field {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+.emd-field-last {
+	margin-bottom: 0;
+}
+
+.emd-field-pair {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (max-width: 459.98px) {
+		gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.emd-legend {
+	float: none;
+	width: auto;
+	margin: 0.5rem 0 0.9rem;
+	padding: 0;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.emd-money {
+	max-width: 11rem;
+
+	&:has(.is-invalid) + .invalid-feedback {
+		display: block;
+	}
+}
+
+.emd-edit-foot {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* An open leave request sits in an amber card above the balances. */
+.emd-ask {
+	position: relative;
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	margin: 0 0 0.5rem;
+	padding: 1.1rem 1.25rem 1.1rem 1.5rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-warning) 30%, var(--basalt-edge));
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--basalt-warning) 7%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	&[hidden] + .emd-sub {
+		margin-top: 0;
+	}
+	&::before {
+		top: 0.9rem;
+		bottom: 0.9rem;
+		left: 0.5rem;
+		background: var(--basalt-warning);
+	}
+}
+
+.emd-ask-when {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	min-width: 0;
+}
+
+.emd-ask-cal {
+	display: inline-flex;
+	flex-direction: column;
+	flex: none;
+	align-items: center;
+	width: 3.1rem;
+	padding: 0.3rem 0 0.3rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 1.2rem;
+	font-weight: 700;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	& span {
+		font-size: 0.65rem;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		color: var(--emd-warn);
+	}
+}
+
+.emd-ask-text {
+	min-width: 0;
+}
+.emd-ask-title {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.emd-ask-line {
+	margin: 0.25rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--emd-warn);
+}
+.emd-ask-reason {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+
+/* Approve and Decline line up with the request text, under the date tile. */
+.emd-ask-acts {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	padding-left: 4.1rem;
+
+	@media (max-width: 389.98px) {
+		padding-left: 0;
+	}
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* Each balance is one bar: days used, then days waiting on a decision. */
+.emd-allow-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 9.5rem minmax(0, 1fr) 7rem;
+	align-items: center;
+	padding: 0.5rem 0;
+	font-size: 0.875rem;
+}
+
+.emd-allow-name {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--emd-quiet);
+	}
+}
+
+.emd-allow-bar {
+	display: flex;
+	height: 0.6rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-series-1) 13%, var(--basalt-plane));
+}
+
+.emd-allow-used {
+	background: var(--basalt-series-1);
+}
+.emd-allow-ask {
+	background: var(--basalt-warning);
+}
+
+.emd-allow-value {
+	white-space: nowrap;
+	color: var(--emd-quiet);
+
+	& strong {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+@media (max-width: 575.98px) {
+	.emd-allow-row {
+		row-gap: 0.4rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.emd-allow-bar {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+}
+
+/* Legends under the balance bars and the clock-in chart. */
+.emd-key {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0.75rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--emd-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& li[hidden] {
+		display: none;
+	}
+}
+
+.emd-key-dot {
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 3px;
+}
+
+.emd-key-dot-used,
+.emd-key-dot-day {
+	background: var(--basalt-series-1);
+}
+
+.emd-key-dot-ask {
+	background: var(--basalt-warning);
+}
+.emd-key-dot-left {
+	border: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-series-1) 13%, var(--basalt-plane));
+}
+.emd-key-dot-long {
+	background: var(--basalt-series-2);
+}
+.emd-key-line {
+	width: 1rem;
+	border-top: 1px dashed var(--basalt-copy-muted);
+}
+.emd-key-dot-holiday {
+	border: 1px dashed color-mix(in srgb, var(--basalt-series-5) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-5) 30%, var(--basalt-plane));
+}
+
+/* The bookings, equipment and history tables share one flush, compact look. */
+.emd-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.emd-table {
+	--bs-table-bg: transparent;
+	margin: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.75rem;
+		border-bottom-color: var(--basalt-edge);
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+
+	& thead th {
+		padding-top: 0;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--emd-quiet);
+	}
+
+	& td {
+		white-space: nowrap;
+	}
+	& .emd-col-wide {
+		width: 100%;
+		white-space: normal;
+	}
+}
+
+/* History rows use the theme's row height instead of the roomier default. */
+.emd-table-hist > :not(caption) > * > * {
+	padding-top: var(--basalt-pad-row-y);
+	padding-bottom: var(--basalt-pad-row-y);
+}
+
+.emd-col-num {
+	text-align: right;
+}
+.emd-type-sub {
+	display: none;
+}
+
+.emd-type,
+.emd-change {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: baseline;
+}
+
+.emd-type .bi,
+.emd-change .bi {
+	color: var(--emd-quiet);
+}
+
+/* A row or paper that was just added glows once in the accent wash. */
+.emd-table tr.is-fresh > *,
+.emd-doc.is-fresh {
+	animation: emd-fresh 1.8s ease;
+}
+
+@keyframes emd-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+@media (max-width: 575.98px) {
+	.emd-table .emd-col-by {
+		display: none;
+	}
+	.emd-table td {
+		white-space: normal;
+	}
+	.emd-table td:first-child {
+		white-space: nowrap;
+	}
+	/* On a phone the leave type drops below the dates in the bookings table. */
+	.emd-table .emd-col-type {
+		display: none;
+	}
+	.emd-table td:first-child .emd-type-sub {
+		display: block;
+		margin-top: 0.1rem;
+		font-size: 0.8rem;
+		color: var(--emd-quiet);
+	}
+}
+
+/* Attendance: two headline figures above the bars. */
+.emd-figs {
+	display: flex;
+	gap: 1rem 2.5rem;
+	flex-wrap: wrap;
+	margin: 0 0 1.5rem;
+}
+.emd-fig dt {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--emd-quiet);
+}
+.emd-fig dd {
+	margin: 0.25rem 0 0;
+	font-size: 1.45rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+}
+
+/* The chart grows to whatever height its row hands the card. */
+.emd-bars {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	margin: 0;
+
+	& .emd-key {
+		margin-top: 1.25rem;
+	}
+}
+
+.emd-bars-plot {
+	display: grid;
+	gap: 0.75rem;
+	flex: 1;
+	grid-template-columns: repeat(10, minmax(0, 1fr));
+	min-height: 11rem;
+	padding-bottom: 0.25rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+
+.emd-bar {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	border-radius: 8px;
+	cursor: default;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	&:hover .emd-bar-fill {
+		filter: brightness(1.08);
+	}
+	&.is-long .emd-bar-fill {
+		background: var(--basalt-series-2);
+	}
+
+	&.is-holiday .emd-bar-fill {
+		border: 1px dashed color-mix(in srgb, var(--basalt-series-5) 70%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-series-5) 18%, var(--basalt-plane));
+	}
+}
+
+.emd-bar-col {
+	position: relative;
+	display: flex;
+	flex: 1;
+	align-items: flex-end;
+
+	/* A dashed eight-hour line crosses each column and the gap beside it,
+     so together they read as one guide over all the bars. */
+	&::after {
+		content: "";
+		position: absolute;
+		right: -0.375rem;
+		bottom: 80%;
+		left: -0.375rem;
+		border-top: 1px dashed color-mix(in srgb, var(--basalt-copy-muted) 70%, transparent);
+		pointer-events: none;
+	}
+}
+
+.emd-bar:first-child .emd-bar-col::after {
+	left: 0;
+}
+.emd-bar:last-child .emd-bar-col::after {
+	right: 0;
+}
+
+.emd-bar-fill {
+	display: block;
+	width: 100%;
+	max-width: 1.6rem;
+	margin: 0 auto;
+	border-radius: 6px 6px 3px 3px;
+	background: var(--basalt-series-1);
+	transition: filter 170ms ease;
+}
+
+.emd-bar-day {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-top: 0.4rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	line-height: 1.25;
+	color: var(--emd-quiet);
+}
+
+.emd-bar-date {
+	font-weight: 500;
+}
+.emd-att-note {
+	margin-top: 1rem;
+}
+
+/* The review cycle runs left to right as five numbered marks. */
+.emd-steps {
+	--emd-trail-from: scaleX(0);
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin: 0 0 1.75rem;
+	padding: 0;
+	list-style: none;
+}
+
+.emd-step {
+	position: relative;
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+
+	/* A short line links each mark to the one after it. */
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0.8rem;
+		right: 0.3rem;
+		left: 2rem;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--basalt-edge);
+	}
+
+	&:last-child::after {
+		display: none;
+	}
+	&.is-done::after {
+		background: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-plane));
+	}
+}
+
+.emd-step-mark {
+	display: grid;
+	place-items: center;
+	width: 1.65rem;
+	height: 1.65rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--emd-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+.emd-step-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--emd-quiet);
+}
+
+.emd-step.is-done {
+	& .emd-step-mark {
+		color: var(--emd-ok);
+		background: color-mix(in srgb, var(--basalt-success) 20%, var(--basalt-plane));
+	}
+	& .emd-step-label {
+		color: var(--basalt-copy-body);
+	}
+}
+
+.emd-step.is-now {
+	& .emd-step-mark {
+		color: var(--emd-warn);
+		background: color-mix(in srgb, var(--basalt-warning) 22%, var(--basalt-plane));
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-warning) 14%, transparent);
+	}
+
+	& .emd-step-label {
+		font-weight: 700;
+		color: var(--emd-warn);
+	}
+}
+
+/* On a phone the stages stack and the joining line turns vertical. */
+@media (max-width: 575.98px) {
+	.emd-steps {
+		gap: 0.6rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.emd-step {
+		gap: 0.75rem;
+		flex-direction: row;
+		align-items: center;
+	}
+	.emd-steps {
+		--emd-trail-from: scaleY(0);
+	}
+	.emd-step::after {
+		top: 1.85rem;
+		right: auto;
+		left: 0.8rem;
+		width: 2px;
+		height: 0.6rem;
+	}
+}
+
+/* The first time the review is on screen, each line between finished
+   stages draws in after the one before, then the score and goal bars grow. */
+.emd-steps.is-waiting .emd-step.is-done::after {
+	transform: var(--emd-trail-from);
+}
+.emd-review.is-waiting :is(.emd-score-bar, .emd-goal-bar) > span {
+	transform: scaleX(0);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.emd-steps.is-drawing .emd-step.is-done::after {
+		transform-origin: left;
+		animation: emd-trail-draw 450ms ease-out calc(var(--emd-at, 0) * 180ms) both;
+	}
+	.emd-review.is-drawing :is(.emd-score-bar, .emd-goal-bar) > span {
+		transform-origin: left;
+		animation: emd-trail-draw 600ms ease-out calc(450ms + var(--emd-at, 0) * 70ms) both;
+	}
+	@keyframes emd-trail-draw {
+		from {
+			transform: var(--emd-trail-from, scaleX(0));
+		}
+	}
+}
+@media (prefers-reduced-motion: no-preference) and (max-width: 575.98px) {
+	.emd-steps.is-drawing .emd-step.is-done::after {
+		transform-origin: top;
+	}
+}
+
+.emd-review {
+	display: grid;
+	gap: 0 2.5rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+	& .emd-sub {
+		margin-top: 0;
+	}
+}
+
+@media (max-width: 767.98px) {
+	.emd-review {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.emd-review-part + .emd-review-part {
+		margin-top: 1.75rem;
+	}
+}
+
+.emd-score {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr) 2rem;
+	align-items: center;
+	padding: 0.4rem 0;
+	font-size: 0.85rem;
+}
+
+.emd-scores {
+	--emd-tone: var(--basalt-series-2);
+}
+.emd-score-name {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.emd-score-bar {
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--emd-tone) 14%, var(--basalt-plane));
+}
+.emd-score-value {
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+.emd-goal {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	padding: 0.5rem 0 0.75rem;
+	font-size: 0.875rem;
+}
+
+.emd-goal-name {
+	color: var(--basalt-copy);
+}
+.emd-goal-value {
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.emd-goal-bar {
+	grid-column: 1 / -1;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-series-1) 13%, var(--basalt-plane));
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-series-1);
+	}
+}
+
+/* A goal that is met turns green, both its figure and its bar. */
+.emd-goal.is-done {
+	& .emd-goal-value {
+		color: var(--emd-ok);
+	}
+	& .emd-goal-bar > span {
+		background: var(--basalt-success);
+	}
+}
+
+.emd-said {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+
+	@media (max-width: 767.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.emd-quote {
+	position: relative;
+	padding: 0.9rem 1.1rem 0.95rem 1.35rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--emd-tone) 8%, var(--basalt-plane));
+
+	&::before {
+		top: 0.8rem;
+		bottom: 0.8rem;
+		left: 0.5rem;
+		background: var(--emd-tone);
+	}
+	& q {
+		quotes: "\201C" "\201D";
+	}
+}
+
+.emd-quote-kind {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--emd-tone) 40%, var(--basalt-copy));
+}
+
+/* Papers on file: an icon tile, the name over its details, then actions. */
+.emd-upload {
+	flex: none;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+.emd-doc {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.85rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0.25rem;
+		border-top: 0;
+	}
+}
+
+.emd-doc-icon {
+	display: grid;
+	place-items: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	border-radius: 10px;
+	color: color-mix(in srgb, var(--emd-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--emd-tone) 15%, var(--basalt-plane));
+}
+
+.emd-doc-text {
+	min-width: 0;
+}
+.emd-doc-name {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.emd-doc-meta {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--emd-quiet);
+}
+.emd-doc-state {
+	display: block;
+	margin-top: 0.4rem;
+}
+.emd-doc-acts {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+}
+
+/* On a phone the paper type and its day fit on a single line. */
+@media (max-width: 575.98px) {
+	.emd-doc-verb {
+		display: none;
+	}
+}
+
+/* Equipment rows are compact, and the action column hugs the right edge. */
+.emd-kit-card {
+	margin-bottom: 1.5rem;
+}
+
+.emd-table-kit {
+	& > :not(caption) > * > * {
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: var(--basalt-pad-row-y);
+	}
+	& .emd-col-wide {
+		white-space: nowrap;
+	}
+}
+
+.emd-table .emd-col-act {
+	width: 1%;
+	text-align: right;
+}
+.emd-table-kit td.emd-col-act {
+	padding-top: 0.3rem;
+	padding-bottom: 0.3rem;
+}
+.emd-col-serial.emd-mono {
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.emd-kit-sub {
+	display: none;
+}
+
+/* Under 768px the serial moves beneath the item name. */
+@media (max-width: 767.98px) {
+	.emd-table-kit .emd-col-serial {
+		display: none;
+	}
+	.emd-table-kit .emd-kit-sub {
+		display: block;
+		margin-top: 0.1rem;
+		font-size: 0.75rem;
+		color: var(--emd-quiet);
+	}
+}
+
+.emd-kit-sub-on {
+	display: none;
+}
+
+/* On a phone the hand-over day joins the serial under the name. */
+@media (max-width: 575.98px) {
+	.emd-table-kit td {
+		white-space: nowrap;
+	}
+	.emd-table-kit .emd-col-on {
+		display: none;
+	}
+	.emd-table-kit .emd-kit-sub-on {
+		display: inline;
+	}
+}
+
+/* In the change log, the viewer's own entries carry a small You tag. */
+.emd-you {
+	display: inline-block;
+	margin-left: 0.3rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 6px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--emd-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* With reduced motion, new rows appear without the glow and hovers snap. */
+@media (prefers-reduced-motion: reduce) {
+	.emd-table tr.is-fresh > *,
+	.emd-doc.is-fresh {
+		animation: none;
+	}
+
+	.emd-person,
+	.emd-bar-fill {
+		transition: none;
+	}
+}
+
+/* A printed record drops every control and every highlight. */
+@media print {
+	.emd-head .basalt-hero-actions,
+	.emd-card-head .btn,
+	.emd-upload,
+	.emd-ask-acts,
+	.emd-icon-btn,
+	.emd-copy {
+		display: none;
+	}
+
+	.emd-table tr.is-fresh > *,
+	.emd-doc.is-fresh {
+		animation: none;
+	}
+}

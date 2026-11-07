@@ -1,0 +1,1063 @@
+/* Hiring (hiring.html): the page's own pieces under .rc-*. The plain
+   page header, avatars, styled selects, choice tiles, status pills, empty
+   states, the record drawer, dialogs and toasts come from basalt.css; this
+   sheet lays them out and adds the pipeline board and its cards, the open
+   roles table, the applicant and role drawers, and the two forms. */
+
+.rc-page,
+.rc-drawer,
+.rc-new,
+.rc-reject-dialog {
+	/* Quiet text is the muted token leaned toward the body color, so it
+     stays above 4.5:1 on the lighter palettes. */
+	--rc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--rc-line: var(--basalt-edge);
+}
+
+/* Every stage takes one color from the palette's chart ramp, and hired
+   takes the success color; anything carrying data-stage picks it up. */
+[data-stage="applied"] {
+	--rc-tone: var(--basalt-series-5);
+}
+[data-stage="screen"] {
+	--rc-tone: var(--basalt-series-2);
+}
+[data-stage="interview"] {
+	--rc-tone: var(--basalt-series-1);
+}
+[data-stage="offer"] {
+	--rc-tone: var(--basalt-series-4);
+}
+[data-stage="hired"] {
+	--rc-tone: var(--basalt-success);
+}
+
+/* Both cards measure their own width, which the board and table fold by. */
+.rc-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.rc-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.rc-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.rc-card-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	color: var(--rc-quiet);
+}
+
+/* The toolbar keeps the search at a comfortable width with the role
+   select right beside it; any spare room collects at the end. */
+.rc-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.rc-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 13rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--rc-quiet);
+		pointer-events: none;
+	}
+	.form-control {
+		padding-left: 2.4rem;
+	}
+}
+.rc-toolbar-select {
+	flex: 0 0 16.5rem;
+}
+
+/* The board puts five columns side by side on a wide card. Each column is
+   a soft wash of its stage color under a straight bar along the top, and
+   lights up while a card is dragged over it. */
+.rc-board {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+}
+.rc-col {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 0.65rem 0.65rem;
+	border: 1px solid color-mix(in srgb, var(--rc-tone) 22%, var(--rc-line));
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--rc-tone) 7%, var(--basalt-plane));
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 0.9rem;
+		left: 0.9rem;
+		height: 3px;
+		border-radius: 0 0 3px 3px;
+		background: var(--rc-tone);
+	}
+	&.is-over {
+		border-color: color-mix(in srgb, var(--rc-tone) 70%, var(--basalt-plane));
+		background: color-mix(in srgb, var(--rc-tone) 15%, var(--basalt-plane));
+	}
+}
+.rc-col-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.8rem;
+	padding: 0 0.25rem;
+}
+.rc-col-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.rc-col-dot {
+	flex-shrink: 0;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--rc-tone);
+}
+.rc-col-count {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.76rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--rc-tone) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--rc-tone) 18%, var(--basalt-plane));
+}
+.rc-col-list {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rc-col-empty {
+	display: grid;
+	place-items: center;
+	min-height: 5.5rem;
+	margin: 0;
+	padding: 0.75rem;
+	border: 1.5px dashed color-mix(in srgb, var(--rc-tone) 35%, var(--basalt-edge-strong));
+	border-radius: 12px;
+	font-size: 0.8rem;
+	text-align: center;
+	color: var(--rc-quiet);
+}
+
+/* A card says who and for what, where they came from and how the
+   interviews went, then what happens next. The card, its name and the
+   expand icon open the full page; the panel icon opens the quick view.
+   Someone added by hand has no page, so their name is plain text. */
+.rc-cand {
+	display: flex;
+	flex-direction: column;
+	padding: 0.85rem 0.9rem;
+	border: 1px solid var(--rc-line);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--basalt-copy) 6%, transparent);
+	cursor: grab;
+	transition:
+		border-color 130ms ease,
+		box-shadow 130ms ease;
+
+	&:hover {
+		border-color: var(--basalt-edge-strong);
+		box-shadow: 0 4px 12px color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+	}
+	&.is-dragging {
+		opacity: 0.45;
+	}
+}
+.rc-cand-who {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+
+	.basalt-avatar {
+		flex-shrink: 0;
+	}
+}
+.rc-cand-text {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.rc-cand-name {
+	font-size: 0.88rem;
+	font-weight: 700;
+	line-height: 1.3;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+a.rc-cand-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--basalt-copy);
+}
+.rc-cand-role {
+	margin-top: 0.1rem;
+	font-size: 0.76rem;
+	line-height: 1.35;
+	color: var(--rc-quiet);
+}
+
+.rc-cand-tags {
+	display: flex;
+	gap: 0.4rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.7rem;
+}
+/* Chart colors run lighter than status colors, so the source pill's small
+   text leans further toward the text color. */
+.rc-source {
+	color: color-mix(in srgb, var(--stp-tone) 38%, var(--basalt-copy));
+}
+.rc-source-careers {
+	--stp-tone: var(--basalt-series-3);
+}
+.rc-source-referral {
+	--stp-tone: var(--basalt-series-8);
+}
+.rc-source-board {
+	--stp-tone: var(--basalt-series-7);
+}
+.rc-source-agency {
+	--stp-tone: var(--basalt-series-5);
+}
+.rc-votes {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.76rem;
+	font-weight: 700;
+}
+.rc-votes-n {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+}
+.rc-votes-n-yes {
+	color: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+}
+.rc-votes-n-mixed {
+	color: color-mix(in srgb, var(--basalt-warning) 52%, var(--basalt-copy));
+}
+
+.rc-next {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	margin: 0.75rem 0 0;
+	padding-top: 0.65rem;
+	border-top: 1px solid var(--rc-line);
+	font-size: 0.77rem;
+	line-height: 1.4;
+}
+/* Quick view and Open full page sit small beside the date. A narrow card
+   has no room there, so they drop to its bottom corner. */
+.rc-next-top {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+
+	.basalt-row-actions {
+		margin: -0.2rem -0.4rem -0.2rem auto;
+	}
+	.basalt-row-actions .btn-icon {
+		width: 28px;
+		height: 28px;
+		font-size: 0.85rem;
+	}
+}
+.rc-cand {
+	container: rc-cand / inline-size;
+}
+@container rc-cand (max-width: 15rem) {
+	.rc-next-top {
+		display: contents;
+	}
+	.rc-next-top .basalt-row-actions {
+		order: 1;
+		margin: -0.15rem -0.4rem -0.4rem auto;
+	}
+}
+.rc-next-when {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	.bi {
+		color: var(--rc-quiet);
+	}
+	&.is-today {
+		color: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+	}
+	&.is-today .bi {
+		color: inherit;
+	}
+	&.is-todo {
+		color: var(--rc-quiet);
+	}
+}
+.rc-next-what {
+	color: var(--rc-quiet);
+}
+
+.rc-empty {
+	grid-column: 1 / -1;
+	max-width: 30rem;
+	margin: 1rem auto 0.5rem;
+	text-align: center;
+
+	.basalt-empty-actions {
+		justify-content: center;
+	}
+}
+
+/* The stage chips only appear when the card is too narrow for five
+   columns; the checked chip takes the primary tint. */
+.rc-stages {
+	display: none;
+}
+.rc-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.8rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.rc-chip-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.35rem;
+	height: 1.35rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--basalt-copy) 7%, transparent);
+}
+.btn-check:checked + .rc-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+
+	.rc-chip-count {
+		color: inherit;
+		background: color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+	}
+}
+.btn-check:focus-visible:not(:checked) + .rc-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Too narrow for five columns, the chips pick one stage and its cards fill
+   even rows across the card. */
+@container (max-width: 1060px) {
+	.rc-stages:not([hidden]) {
+		display: flex;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+		padding: 0 var(--basalt-pad-x) 1.25rem;
+	}
+	.rc-board {
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.rc-col:not(.is-shown) {
+		display: none;
+	}
+	.rc-col {
+		padding: 1rem;
+	}
+	.rc-col-list {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+	}
+	.rc-col-empty {
+		min-height: 3.5rem;
+	}
+}
+
+/* The open roles table runs edge to edge under a rule, with fixed widths
+   for every column after the role itself. */
+.rc-table-wrap {
+	margin-top: var(--basalt-pad-head);
+	border-top: 1px solid var(--rc-line);
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.rc-table {
+	--bs-table-bg: transparent;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		border-color: var(--rc-line);
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& thead th {
+		padding-top: calc(var(--basalt-pad-row-y) / 2);
+		padding-bottom: calc(var(--basalt-pad-row-y) / 2);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--rc-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+	& th:nth-child(2) {
+		width: 10.5rem;
+	}
+	& th:nth-child(3) {
+		width: 7rem;
+	}
+	& th:nth-child(4) {
+		width: 9rem;
+	}
+	& th:nth-child(5) {
+		width: 5rem;
+	}
+	& th:nth-child(6) {
+		width: 6.5rem;
+	}
+	& th:nth-child(7) {
+		width: 6.25rem;
+	}
+	.rc-num {
+		text-align: right;
+	}
+	& td:last-child {
+		text-align: right;
+	}
+}
+
+/* A row opens the role's full page, as its title does; the panel icon
+   opens the quick view, and the row stays tinted while it is open. */
+.rc-role[data-rc-role-id] {
+	cursor: pointer;
+
+	&:hover > * {
+		background: var(--basalt-wash);
+	}
+}
+.rc-role.is-open > * {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+.rc-role-title {
+	display: flex;
+	gap: 0.3rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.9rem;
+	font-weight: 700;
+
+	.basalt-status {
+		padding: 0.1rem 0.5rem;
+		font-size: 0.7rem;
+	}
+}
+.rc-role-link {
+	border-radius: 4px;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		color: var(--basalt-copy);
+	}
+}
+.rc-role-meta {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--rc-quiet);
+}
+.rc-link {
+	font-size: 0.86rem;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		color: var(--basalt-copy);
+	}
+}
+.rc-figure {
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+.rc-unit {
+	display: none;
+}
+.rc-quiet {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--rc-quiet);
+}
+.rc-filled,
+.rc-age {
+	font-size: 0.86rem;
+	white-space: nowrap;
+}
+.rc-age.is-long {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+.rc-stage-pill {
+	--stp-tone: var(--rc-tone);
+	color: color-mix(in srgb, var(--rc-tone) 40%, var(--basalt-copy));
+}
+
+/* Too narrow for the table, each role becomes a small record: the title
+   and its two icons on top, the furthest stage and the figures in one line
+   under them, then the hiring manager. */
+@container (max-width: 920px) {
+	.rc-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.rc-table,
+	.rc-table tbody {
+		display: block;
+		width: 100%;
+	}
+	.rc-table tbody tr {
+		display: flex;
+		gap: 0.7rem 1.25rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+		border-bottom: 1px solid var(--rc-line);
+	}
+	.rc-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.rc-table > :not(caption) > * > *,
+	.rc-table > :not(caption) > * > :first-child,
+	.rc-table > :not(caption) > * > :last-child {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+	.rc-table td:nth-child(1) {
+		flex: 1 1 calc(100% - 6rem);
+		order: 1;
+		min-width: 0;
+	}
+	.rc-table td:nth-child(7) {
+		flex: 0 0 auto;
+		align-self: flex-start;
+		order: 2;
+		margin: -0.3rem -0.45rem 0 auto;
+	}
+	.rc-table td:nth-child(4) {
+		flex: 0 0 auto;
+		order: 3;
+	}
+	.rc-table td:nth-child(3) {
+		order: 4;
+		text-align: left;
+	}
+	.rc-table td:nth-child(5) {
+		order: 5;
+	}
+	.rc-table td:nth-child(6) {
+		flex: 1 1 auto;
+		order: 6;
+	}
+	.rc-table td:nth-child(2) {
+		flex: 1 1 100%;
+		order: 7;
+	}
+	.rc-unit {
+		display: inline;
+		font-size: 0.86rem;
+		color: var(--rc-quiet);
+	}
+	.rc-table td:nth-child(2)::before,
+	.rc-table td:nth-child(5)::after,
+	.rc-table td:nth-child(6)::before {
+		font-size: 0.86rem;
+		color: var(--rc-quiet);
+	}
+	.rc-table td:nth-child(2)::before {
+		content: "Hiring manager: ";
+	}
+	.rc-table td:nth-child(5)::after {
+		content: " filled";
+	}
+	.rc-table td:nth-child(6)::before {
+		content: "Open for ";
+	}
+}
+/* On a phone a role keeps its title, stage, candidates and how long it has
+   been open; the hiring manager waits in the role's panel. */
+@media (max-width: 575.98px) {
+	.rc-table td:nth-child(2) {
+		display: none;
+	}
+}
+
+/* On a phone-size card the side gutter slims, and the search and the role
+   select each take a full row. */
+@container (max-width: 560px) {
+	.rc-card-head,
+	.rc-toolbar,
+	.rc-board,
+	.rc-table tbody tr {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rc-toolbar {
+		flex-wrap: wrap;
+	}
+	.rc-search {
+		flex: 1 1 100%;
+		min-width: 0;
+		max-width: 28rem;
+	}
+	.rc-toolbar-select {
+		flex: 0 1 16.5rem;
+		min-width: 0;
+	}
+	.rc-stages:not([hidden]) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.rc-col-list {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* The applicant and role drawers share one width and one focus style for
+   the title, which takes focus after a move. */
+.rc-drawer {
+	&.offcanvas {
+		--bs-offcanvas-width: min(480px, 100vw);
+	}
+	.offcanvas-title:focus {
+		outline: none;
+	}
+	.offcanvas-title:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	.offcanvas-body {
+		padding-bottom: var(--basalt-pad-head);
+	}
+	.basalt-drawer-foot .btn {
+		white-space: nowrap;
+	}
+}
+
+/* The stage pill sits on its own line, the sentence explaining it below. */
+.rc-r-state {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin: 0 0 1.5rem;
+}
+.rc-r-state-text {
+	margin: 0;
+	font-size: 0.88rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+
+.rc-r-h {
+	margin: 1.5rem 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+
+/* Scorecards: who interviewed and for what, the verdict pill at the end. */
+.rc-scores {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rc-score {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--rc-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	.basalt-status {
+		flex-shrink: 0;
+	}
+}
+.rc-score-who {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.rc-score-name {
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rc-score-what {
+	font-size: 0.8rem;
+	color: var(--rc-quiet);
+}
+.rc-wait {
+	margin: 0;
+	font-size: 0.86rem;
+	line-height: 1.5;
+	color: var(--rc-quiet);
+}
+
+.rc-history {
+	display: grid;
+	gap: 0.65rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 4rem minmax(0, 1fr);
+		font-size: 0.86rem;
+		line-height: 1.45;
+	}
+}
+.rc-history-day {
+	white-space: nowrap;
+	color: var(--rc-quiet);
+}
+.rc-history-text {
+	color: var(--basalt-copy);
+}
+
+.rc-r-facts {
+	display: grid;
+	gap: 0.65rem 1rem;
+	grid-template-columns: 7rem minmax(0, 1fr);
+	margin: 0;
+	font-size: 0.86rem;
+
+	& dt {
+		font-weight: 400;
+		color: var(--rc-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& a {
+		text-underline-offset: 0.2em;
+		color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+}
+.rc-id {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+}
+
+/* The role quick view lists each stage with how many are in it and who. */
+.rc-v-stages {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.rc-v-stage {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 7rem 1.75rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--rc-line);
+	font-size: 0.86rem;
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+.rc-v-stage-label {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.rc-v-stage-count {
+	font-weight: 700;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.rc-v-stage-who {
+	min-width: 0;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+
+	& a {
+		text-underline-offset: 0.2em;
+		color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The add-applicant drawer and the turn-down dialog share their field
+   spacing, labels, hints and error lines. */
+.rc-new.offcanvas {
+	--bs-offcanvas-width: min(480px, 100vw);
+}
+.rc-field {
+	margin-bottom: 1.5rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+fieldset.rc-field {
+	min-width: 0;
+	padding: 0;
+	border: 0;
+}
+.rc-new .form-label,
+.rc-new legend.form-label,
+.rc-reject-dialog .form-label {
+	float: none;
+	width: 100%;
+	margin-bottom: 0.4rem;
+	padding: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.rc-field-pair {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.rc-field-select {
+	max-width: 19rem;
+}
+.rc-reject-dialog .rc-field-select {
+	max-width: 21rem;
+}
+.rc-source {
+	--basalt-choice-min: 92px;
+}
+.rc-optional {
+	margin-left: 0.25rem;
+	font-weight: 400;
+	color: var(--rc-quiet);
+}
+.rc-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--rc-quiet);
+}
+.rc-check {
+	margin: 0;
+
+	.form-check-input:focus:not(:focus-visible) {
+		box-shadow: none;
+	}
+}
+.rc-error {
+	margin: 0.25rem 0 0;
+	font-size: 0.875em;
+	font-weight: 400;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* In the new-role drawer short answers get short fields, and the pay range
+   reads as one line: currency, from, "to", to. */
+.rc-input-md {
+	max-width: 20rem;
+}
+.rc-input-lg {
+	max-width: 26rem;
+}
+.rc-setup,
+.rc-type {
+	--basalt-choice-min: 84px;
+	max-width: 24rem;
+}
+fieldset.rc-pay {
+	min-width: 0;
+	margin-inline: 0;
+	padding: 0;
+	border: 0;
+}
+.rc-pay-row {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.rc-pay-cur {
+	flex: 0 0 6rem;
+}
+.rc-pay-n {
+	flex: 0 1 8.5rem;
+	min-width: 0;
+}
+.rc-pay-to {
+	font-size: 0.875rem;
+	color: var(--rc-quiet);
+}
+.rc-field-start {
+	grid-template-columns: 6.5rem minmax(0, 15rem);
+}
+
+/* A narrow drawer stacks the paired fields and lets the pay inputs share
+   what width there is. */
+@container basalt-drawer (max-width: 380px) {
+	.rc-field-pair {
+		gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.rc-field-start {
+		gap: 1rem;
+		grid-template-columns: 6.5rem minmax(0, 15rem);
+	}
+	.rc-pay-row {
+		flex-wrap: nowrap;
+	}
+	.rc-pay-cur {
+		flex-basis: 5.5rem;
+	}
+	.rc-pay-n {
+		flex: 1 1 0;
+	}
+	.rc-r-facts {
+		grid-template-columns: 6rem minmax(0, 1fr);
+	}
+}
+
+/* Reduced motion drops the hover and drag transitions; print drops the
+   toolbar and the row icons too. */
+@media (prefers-reduced-motion: reduce) {
+	.rc-col,
+	.rc-cand {
+		transition: none;
+	}
+}
+
+@media print {
+	.rc-toolbar,
+	.rc-table td:last-child {
+		display: none;
+	}
+	.rc-col,
+	.rc-cand {
+		transition: none;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.rc-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

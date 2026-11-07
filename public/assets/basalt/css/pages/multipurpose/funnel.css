@@ -1,0 +1,1213 @@
+/* The conversion funnel page (funnel.html) keeps every class
+   under the .fa- prefix. Its cards, keys and chart boxes match the chart
+   pages and its tables match the data tables; all color comes from the
+   --basalt-* tokens that funnel.js also reads for the canvases. */
+
+/* Small gray text is the muted token pulled toward the body color, which
+   keeps it at 4.5:1 on the lighter palettes as well. */
+.fa-page {
+	--fa-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+
+	& canvas {
+		display: block;
+		max-width: 100%;
+	}
+
+	& .form-control,
+	& .form-select {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+	& .form-control:focus,
+	& .form-select:focus {
+		border-color: var(--basalt-hue);
+	}
+	& .form-control::placeholder {
+		color: var(--fa-quiet);
+		opacity: 1;
+	}
+	& .form-control.is-invalid {
+		border-color: var(--basalt-danger);
+	}
+}
+
+/* The controls card wraps its fields onto as many lines as it needs, and
+   on a phone every field takes the full width. */
+.fa-controls .card-body {
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+}
+.fa-controls-row {
+	display: flex;
+	gap: 0.9rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.fa-field {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+
+	& .form-select {
+		min-width: 9.5rem;
+	}
+	& .basalt-segmented {
+		max-width: 100%;
+	}
+}
+.fa-field-label {
+	margin: 0;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--fa-quiet);
+}
+.fa-custom {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.fa-custom-field {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+}
+.fa-custom-error {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+.fa-controls-foot {
+	display: flex;
+	gap: 0.6rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1rem;
+}
+.fa-controls-period {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--fa-quiet);
+}
+@media (max-width: 575.98px) {
+	.fa-controls .card-body {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.fa-field {
+		flex: 1 1 100%;
+	}
+	.fa-field .form-select {
+		width: 100%;
+		min-width: 0;
+	}
+	.fa-field .basalt-segmented {
+		display: flex;
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+	.fa-field .basalt-segmented .basalt-segmented-option {
+		flex: 1 1 auto;
+		padding-left: 0.3rem;
+		padding-right: 0.3rem;
+		font-size: 0.75rem;
+		white-space: nowrap;
+	}
+	.fa-custom-field {
+		flex: 1 1 8rem;
+	}
+}
+
+/* Headline tiles sit three over two until a wide screen fits all five in
+   one row; a phone shows the first tile alone, then pairs. */
+.fa-kpis {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+
+	& > * {
+		grid-column: span 2;
+	}
+	& > :nth-child(n + 4) {
+		grid-column: span 3;
+	}
+}
+@media (min-width: 1400px) {
+	.fa-kpis {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+}
+@media (min-width: 1400px), (max-width: 575.98px) {
+	.fa-kpis > *,
+	.fa-kpis > :nth-child(n + 4) {
+		grid-column: auto;
+	}
+}
+@media (max-width: 575.98px) {
+	.fa-kpis {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.fa-kpis > :first-child {
+		grid-column: span 2;
+	}
+}
+.fa-kpi {
+	min-width: 0;
+
+	& .card-body {
+		--basalt-foot-x: 1.1rem;
+		--basalt-foot-y: 0.9rem;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.1rem var(--basalt-foot-x) var(--basalt-foot-y);
+	}
+}
+.fa-kpi-label {
+	margin: 0 0 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--fa-quiet);
+}
+.fa-kpi-value {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 700;
+	line-height: 1.15;
+	letter-spacing: -0.015em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+/* Only the arrow takes the success or danger tint; the figures stay in
+   body color so they read on every palette. */
+.fa-kpi-delta {
+	display: flex;
+	gap: 0.1rem 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.4rem 0 0.6rem;
+	font-size: 0.8rem;
+	font-weight: 650;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+
+	& .bi {
+		font-size: 0.85rem;
+	}
+	&.is-up .bi {
+		color: color-mix(in srgb, var(--basalt-success) 75%, var(--basalt-copy));
+	}
+	&.is-down .bi {
+		color: color-mix(in srgb, var(--basalt-danger) 75%, var(--basalt-copy));
+	}
+}
+.fa-kpi-was {
+	font-weight: 500;
+	color: var(--fa-quiet);
+}
+.fa-spark {
+	display: block;
+	height: calc(34px + var(--basalt-foot-y));
+	margin-top: auto;
+	overflow: visible;
+}
+.fa-spark-line {
+	fill: none;
+	stroke: var(--fa-c, var(--basalt-series-1));
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	vector-effect: non-scaling-stroke;
+}
+.fa-spark-area {
+	fill: color-mix(in srgb, var(--fa-c, var(--basalt-series-1)) 14%, transparent);
+}
+.fa-skel-line {
+	display: block;
+	width: 60%;
+	margin-bottom: 0.6rem;
+}
+.fa-skel-line-short {
+	width: 40%;
+	margin: 0.6rem 0 0;
+}
+.fa-skel-value {
+	display: block;
+	width: 50%;
+}
+.fa-skel-leak {
+	display: block;
+	width: 100%;
+	height: 3rem;
+	margin-bottom: 0.5rem;
+}
+
+/* Cards stack on a twelve-column grid and pair up from 1200px, where the
+   wide and narrow cards split a row seven to five. */
+.fa-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.fa-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+@media (min-width: 1200px) {
+	.fa-card {
+		grid-column: span 6;
+	}
+	.fa-card-full {
+		grid-column: span 12;
+	}
+	.fa-card-wide {
+		grid-column: span 7;
+	}
+	.fa-card-narrow {
+		grid-column: span 5;
+	}
+}
+.fa-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: var(--basalt-pad-x-narrow);
+	}
+}
+/* The kind pill shows above the title yet follows it in the markup, so a
+   screen reader meets the title first. */
+.fa-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.25rem;
+}
+.fa-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	&:focus {
+		outline: none;
+	}
+}
+.fa-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--fa-quiet);
+}
+.fa-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--fa-quiet);
+}
+
+/* Tables bleed out by their cell padding, so the first column lines up
+   with the card title above it. */
+.fa-scroll {
+	position: relative;
+	margin: 0 -0.75rem;
+	padding: 0;
+}
+.fa-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+	font-variant-numeric: tabular-nums;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+	&.table-sm > :not(caption) > * > * {
+		padding: 0.4rem 0.6rem;
+	}
+	&.table-sm > :not(caption) > * > :first-child {
+		padding-left: 0.75rem;
+	}
+	&.table-sm > :not(caption) > * > :last-child {
+		padding-right: 0.75rem;
+	}
+	& > thead > tr > th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--fa-quiet);
+	}
+	& > tbody > tr > th {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& td,
+	& th {
+		white-space: nowrap;
+	}
+	& [hidden] {
+		display: none;
+	}
+}
+
+/* A stage row leads with its name over a slim bar of the share that came
+   through, then the counts and the button into the drawer. */
+.fa-table-steps > tbody > tr > th {
+	width: 42%;
+}
+.fa-table-steps .fa-step-num,
+.fa-table-steps .fa-step-act {
+	text-align: right;
+}
+.fa-step-name {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+.fa-step-bar {
+	display: block;
+	max-width: 20rem;
+	height: 6px;
+	margin-top: 0.5rem;
+	border-radius: 3px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 7%, transparent);
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: 3px;
+		background: var(--basalt-series-1);
+	}
+}
+/* The first time the steps are on screen, each bar fills from the left
+   once the stage above it has, so the funnel narrows as it is read. */
+@media (prefers-reduced-motion: no-preference) {
+	.is-arriving .fa-step-bar > span {
+		transform-origin: left;
+		animation: fa-step-fill 620ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--fa-at, 0) * 150ms) both;
+	}
+	@keyframes fa-step-fill {
+		from {
+			transform: scaleX(0);
+		}
+	}
+}
+.fa-step-vs {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.77rem;
+	color: var(--fa-quiet);
+}
+.fa-step-start {
+	color: var(--fa-quiet);
+}
+.fa-info {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	color: var(--fa-quiet);
+	background: none;
+	cursor: help;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+/* In a narrow card each stage becomes a block: name and bar on top, the
+   three labeled counts in a row, and the button on a line of its own. */
+.fa-card:has(.fa-table-steps) > .card-body {
+	container: fa-steps / inline-size;
+}
+@container fa-steps (max-width: 640px) {
+	.fa-card .fa-scroll:has(.fa-table-steps) {
+		margin: 0;
+		overflow: visible;
+	}
+	.fa-table-steps,
+	.fa-table-steps > tbody {
+		display: block;
+	}
+	.fa-table-steps > thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.fa-table-steps > tbody > tr {
+		display: grid;
+		gap: 0.75rem 1rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.fa-table-steps > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.fa-table-steps > tbody > tr > *,
+	.fa-table-steps > tbody > tr > th,
+	.fa-table-steps .fa-step-num {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+		text-align: left;
+		white-space: normal;
+	}
+	.fa-table-steps > tbody > tr > th,
+	.fa-table-steps > tbody > tr > .fa-step-act {
+		grid-column: 1 / -1;
+	}
+	.fa-table-steps > tbody > tr > .fa-step-act:empty {
+		display: none;
+	}
+	.fa-table-steps .fa-step-num::before {
+		content: attr(data-label);
+		display: block;
+		margin-bottom: 0.2rem;
+		font-size: 0.77rem;
+		color: var(--fa-quiet);
+	}
+	.fa-table-steps .fa-step-bar {
+		max-width: none;
+	}
+}
+
+/* The canvas is taken out of flow so it never holds its box open, and the
+   skeleton covers the box until backend.load() answers. */
+.fa-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 270px;
+
+	& > canvas {
+		position: absolute;
+		inset: 0;
+	}
+	@media (max-width: 575.98px) {
+		min-height: 250px;
+	}
+}
+.fa-chart-tall {
+	min-height: 320px;
+
+	@media (max-width: 575.98px) {
+		min-height: 300px;
+	}
+}
+.fa-skel {
+	position: absolute;
+	inset: 0;
+	display: none;
+	height: auto;
+}
+.fa-page.is-loading .fa-skel {
+	display: block;
+}
+.fa-page.is-loading .fa-chart > canvas {
+	visibility: hidden;
+}
+.fa-page.is-loading .fa-table-steps tbody,
+.fa-page.is-loading .fa-leaks,
+.fa-page.is-loading .fa-table-rows tbody {
+	opacity: 0.55;
+}
+
+/* The group switch keeps its natural width and a clear gap to the key. */
+.fa-groupby {
+	align-self: flex-start;
+	max-width: 100%;
+	margin-bottom: 1.25rem;
+}
+
+/* Keys are plain HTML, so a long one wraps rather than running into the
+   chart. Each swatch takes its color from the --fa-c set by .fa-c*. */
+.fa-key {
+	display: flex;
+	gap: 0.4rem 1.1rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--fa-quiet);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	& li[hidden] {
+		display: none;
+	}
+}
+.fa-key-bar {
+	width: 10px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--fa-c, var(--basalt-series-1));
+}
+.fa-key-band {
+	width: 18px;
+	height: 10px;
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--fa-c, var(--basalt-series-1)) 32%, transparent);
+	box-shadow: inset 0 0 0 1.5px var(--fa-c, var(--basalt-series-1));
+}
+.fa-key-tick {
+	width: 3px;
+	height: 14px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+.fa-key-ring {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	border: 2px solid var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.fa-key-line {
+	width: 18px;
+	height: 0;
+	border-top: 2.5px solid var(--fa-c, var(--basalt-series-1));
+	border-radius: 2px;
+}
+.fa-key-line-dotted {
+	border-top-style: dotted;
+	border-top-width: 3px;
+}
+.fa-c1 {
+	--fa-c: var(--basalt-series-1);
+}
+.fa-c2 {
+	--fa-c: var(--basalt-series-2);
+}
+.fa-c3 {
+	--fa-c: var(--basalt-series-3);
+}
+.fa-c4 {
+	--fa-c: var(--basalt-series-4);
+}
+.fa-c5 {
+	--fa-c: var(--basalt-series-5);
+}
+.fa-c6 {
+	--fa-c: var(--basalt-series-6);
+}
+.fa-c7 {
+	--fa-c: var(--basalt-series-7);
+}
+.fa-c8 {
+	--fa-c: var(--basalt-series-8);
+}
+.fa-cr {
+	--fa-c: color-mix(in srgb, var(--basalt-copy) 30%, transparent);
+}
+.fa-ct {
+	--fa-c: var(--basalt-copy);
+}
+
+/* "Show the numbers" opens the figures behind a chart, and those tables
+   wrap their headers to fit the card instead of scrolling sideways. */
+.fa-data {
+	margin-top: 1.25rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+	}
+	& summary::-webkit-details-marker {
+		display: none;
+	}
+	& summary:hover {
+		color: var(--basalt-copy);
+	}
+	& summary:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& summary .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+	& .fa-scroll {
+		margin-top: 0.75rem;
+	}
+	& .fa-table > thead > tr > th {
+		white-space: normal;
+		vertical-align: bottom;
+	}
+	& .fa-table > tbody > tr > * {
+		white-space: normal;
+	}
+	& .fa-table.table-sm > :not(caption) > * > :not(:first-child):not(:last-child) {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+}
+
+/* Each leak is one button row; on a phone the chevron gives its room
+   back to the text. */
+.fa-leaks {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.fa-leaks-none {
+	list-style: none;
+}
+.fa-leak {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+	align-items: center;
+	width: 100%;
+	padding: 0.8rem 0.5rem;
+	border: 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	text-align: start;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+	transition: background-color 170ms ease;
+
+	.fa-leaks > li:last-child & {
+		border-bottom: 0;
+	}
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.fa-leak-rank {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 50%;
+	font-size: 0.77rem;
+	font-weight: 600;
+	background: color-mix(in srgb, var(--basalt-copy) 7%, transparent);
+}
+.fa-leak-body {
+	display: grid;
+	gap: 0.1rem;
+	min-width: 0;
+}
+.fa-leak-title {
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+.fa-leak-nums {
+	font-size: 0.8rem;
+	color: var(--fa-quiet);
+}
+.fa-leak-gain {
+	font-size: 0.9rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.fa-leak-unit {
+	font-weight: 400;
+	color: var(--fa-quiet);
+}
+.fa-leak-go {
+	color: var(--fa-quiet);
+}
+/* Leaks rise in rank order on first view, each rank badge settling in
+   a beat after its row. */
+@media (prefers-reduced-motion: no-preference) {
+	.fa-leaks.is-arriving > li {
+		animation: fa-rise 480ms ease-out calc(var(--fa-at, 0) * 90ms) both;
+	}
+	.fa-leaks.is-arriving .fa-leak-rank {
+		animation: fa-rank-pop 420ms cubic-bezier(0.34, 1.4, 0.64, 1) calc(var(--fa-at, 0) * 90ms + 180ms) both;
+	}
+	@keyframes fa-rise {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+	}
+	@keyframes fa-rank-pop {
+		from {
+			transform: scale(0.4);
+		}
+	}
+}
+@media (max-width: 575.98px) {
+	.fa-leak {
+		gap: 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+	.fa-leak-go {
+		display: none;
+	}
+}
+
+/* The drill-down toolbar: the search grows to fill the line and the
+   export button keeps to the right edge. */
+.fa-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.fa-toolbar-end {
+	margin-left: auto;
+}
+.fa-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--fa-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+	@media (max-width: 575.98px) {
+		flex-basis: 100%;
+		max-width: none;
+	}
+}
+
+/* Header buttons sort the drill-down; the sorted column shows its arrow
+   at full strength, and numeric headers put the arrow first. */
+.fa-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	color: inherit;
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .bi {
+		font-size: 0.7rem;
+		opacity: 0.5;
+	}
+}
+th[aria-sort] .fa-sort {
+	color: var(--basalt-copy);
+}
+th[aria-sort] .fa-sort .bi {
+	opacity: 1;
+}
+.text-end > .fa-sort {
+	flex-direction: row-reverse;
+}
+.fa-table-rows > tbody > tr[data-fa-row] {
+	cursor: pointer;
+}
+.fa-rowlink {
+	padding: 0;
+	border: 0;
+	border-radius: 3px;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+/* When the card cannot hold all nine columns, each row turns into a quiet
+   card: the source with its device and region on the first line, then a
+   muted line of labeled counts. The card body is the size container. */
+.fa-card:has(.fa-table-rows) > .card-body {
+	container: fa-rows / inline-size;
+}
+@container fa-rows (max-width: 900px) {
+	.fa-card .fa-scroll:has(.fa-table-rows) {
+		margin: 0;
+		overflow: visible;
+	}
+	.fa-table-rows,
+	.fa-table-rows > tbody {
+		display: block;
+	}
+	.fa-table-rows > thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.fa-table-rows > tbody > tr {
+		display: flex;
+		gap: 0 1.1rem;
+		row-gap: 0.3rem;
+		flex-wrap: wrap;
+		align-items: baseline;
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.fa-table-rows > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.fa-table-rows > tbody > tr:hover {
+		background: var(--basalt-wash);
+	}
+	.fa-table-rows > tbody > tr > * {
+		display: block;
+		padding: 0;
+		border: 0;
+	}
+	/* The row's ::before is a full-width break, which drops the counts onto
+     their own line under the source, device and region. */
+	.fa-table-rows > tbody > tr::before {
+		content: "";
+		flex-basis: 100%;
+		order: 1;
+	}
+	.fa-table-rows > tbody > tr > :nth-child(-n + 3) {
+		order: 0;
+	}
+	.fa-table-rows > tbody > tr > :nth-child(2),
+	.fa-table-rows > tbody > tr > :nth-child(3) {
+		font-size: 0.8rem;
+		color: var(--fa-quiet);
+	}
+	.fa-table-rows > tbody > tr > :nth-child(n + 4) {
+		order: 2;
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+	}
+	.fa-table-rows > tbody > tr > :nth-child(4)::before {
+		content: "Visits ";
+		color: var(--fa-quiet);
+	}
+	.fa-table-rows > tbody > tr > :nth-child(5)::before {
+		content: "Sign-ups ";
+		color: var(--fa-quiet);
+	}
+	.fa-table-rows > tbody > tr > :nth-child(6)::before {
+		content: "Activated ";
+		color: var(--fa-quiet);
+	}
+	.fa-table-rows > tbody > tr > :nth-child(7)::before {
+		content: "Trials ";
+		color: var(--fa-quiet);
+	}
+	.fa-table-rows > tbody > tr > :nth-child(8)::before {
+		content: "Paid ";
+		color: var(--fa-quiet);
+	}
+	.fa-table-rows > tbody > tr > :nth-child(9)::before {
+		content: "Visit to paid ";
+		color: var(--fa-quiet);
+	}
+}
+/* On a phone a row keeps the two ends of the funnel and the rate between
+   them; the middle steps wait in the row's own funnel. */
+@media (max-width: 575.98px) {
+	.fa-table-rows > tbody > tr > :is(:nth-child(5), :nth-child(6), :nth-child(7)) {
+		display: none;
+	}
+}
+.fa-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.25rem;
+}
+.fa-foot-label {
+	font-size: 0.8rem;
+	color: var(--fa-quiet);
+}
+
+/* Drawer sections get the room of a card (the .75rem gap plus .75rem of
+   margin), and each heading keeps a clear gap to what follows it. */
+.fa-drawer .offcanvas-body {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+
+	& > * {
+		flex-shrink: 0;
+	}
+}
+.fa-drawer-h {
+	margin: 0.75rem 0 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fa-drawer-hint {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--fa-quiet);
+}
+.fa-drawer-lead {
+	margin: 0;
+	font-size: 1rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-family: inherit;
+		color: var(--basalt-copy);
+	}
+}
+.fa-drawer-bar {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.75rem;
+
+	& .fa-drawer-h {
+		margin: 0;
+	}
+}
+.fa-rank-track,
+.fa-mini-track {
+	position: relative;
+	height: 10px;
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--basalt-copy) 7%, transparent);
+}
+/* One breakdown shows at a time: the name, a bar measured against the
+   best group, and the rate. Groups under the average get a quieter bar. */
+.fa-rank {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.fa-rank-row {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) 3.25rem;
+	align-items: center;
+	font-size: 0.875rem;
+
+	&.is-below .fa-rank-fill {
+		background: color-mix(in srgb, var(--basalt-series-1) 45%, var(--basalt-plane));
+	}
+}
+.fa-rank-name {
+	overflow: hidden;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.fa-rank-fill {
+	display: block;
+	height: 100%;
+	border-radius: 5px;
+	background: var(--basalt-series-1);
+}
+.fa-rank-avg {
+	position: absolute;
+	top: -3px;
+	bottom: -3px;
+	width: 2px;
+	margin-left: -1px;
+	border-radius: 1px;
+	background: var(--basalt-copy);
+}
+.fa-rank-rate {
+	font-weight: 650;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.fa-rank-key {
+	display: inline-block;
+	width: 2px;
+	height: 0.8em;
+	margin-right: 0.4rem;
+	border-radius: 1px;
+	vertical-align: -0.05em;
+	background: var(--basalt-copy);
+}
+/* The advice box for a leak: a lightbulb beside a heading and one tip. */
+.fa-drawer-fix {
+	display: flex;
+	gap: 0.75rem;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--basalt-copy) 4%, var(--basalt-plane));
+
+	& .bi {
+		color: var(--basalt-copy);
+	}
+	& .fa-drawer-h {
+		margin: 0 0 0.4rem;
+	}
+}
+/* A group's own funnel: each stage's fill shifts from series 3 toward
+   series 1 as it goes down, with the average marked as a stroke. */
+.fa-mini {
+	display: flex;
+	gap: 0.85rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.fa-mini-top {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin-bottom: 0.3rem;
+	font-size: 0.85rem;
+}
+.fa-mini-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.fa-mini-num {
+	font-weight: 650;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.fa-mini-fill {
+	display: block;
+	height: 100%;
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--basalt-series-3) var(--fa-mix, 100%), var(--basalt-series-1));
+}
+.fa-step1 .fa-mini-fill {
+	--fa-mix: 75%;
+}
+.fa-step2 .fa-mini-fill {
+	--fa-mix: 50%;
+}
+.fa-step3 .fa-mini-fill {
+	--fa-mix: 25%;
+}
+.fa-step4 .fa-mini-fill {
+	--fa-mix: 0%;
+}
+.fa-mini-avg {
+	position: absolute;
+	top: -3px;
+	bottom: -3px;
+	width: 3px;
+	margin-left: -1.5px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+.fa-mini-note {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	color: var(--fa-quiet);
+}
+
+/* On paper the controls, toolbar, buttons and pager drop out, and the
+   numbers toggle stops animating. */
+@media print {
+	.fa-controls form,
+	.fa-toolbar,
+	.fa-step-act,
+	.fa-leak-go,
+	.fa-foot nav {
+		display: none;
+	}
+	.fa-data summary .bi {
+		transition: none;
+	}
+}

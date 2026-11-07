@@ -1,0 +1,1557 @@
+/*
+ * Page editor (page-editor.html). Every class here starts with .pe-,
+ * and colors come only from --basalt-* tokens, so each palette and dark
+ * mode restyles the editor, its live preview and the cards beneath it.
+ */
+
+/* The editor keeps four local tokens. Muted text leans toward the body
+   color so small labels still pass contrast in every palette. */
+.pe-page {
+	--pe-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--pe-line: var(--basalt-edge);
+	--pe-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--pe-tone: var(--basalt-series-1);
+
+	& .dropdown-item .bi {
+		margin-right: 0.6rem;
+	}
+
+	& .dropdown-item.pe-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+
+		&:hover,
+		&:focus {
+			color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+			background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+		}
+	}
+}
+
+/* A tone class hands one numbered chart color to everything inside it. */
+.pe-tone-1 {
+	--pe-tone: var(--basalt-series-1);
+}
+.pe-tone-2 {
+	--pe-tone: var(--basalt-series-2);
+}
+.pe-tone-3 {
+	--pe-tone: var(--basalt-series-3);
+}
+.pe-tone-4 {
+	--pe-tone: var(--basalt-series-4);
+}
+.pe-tone-5 {
+	--pe-tone: var(--basalt-series-5);
+}
+.pe-tone-6 {
+	--pe-tone: var(--basalt-series-6);
+}
+.pe-tone-7 {
+	--pe-tone: var(--basalt-series-7);
+}
+.pe-tone-8 {
+	--pe-tone: var(--basalt-series-8);
+}
+
+/* Whatever the script hides with the hidden attribute stays hidden, even
+   where its component asks for flex or grid. */
+.pe-head .basalt-hero-actions .btn[hidden],
+.pe-saved[hidden],
+.pe-card-head .btn[hidden],
+.pe-block-form[hidden],
+.pe-pair-remove[hidden],
+.pe-form[hidden],
+[data-pe="settings-view"][hidden] {
+	display: none;
+}
+
+/* Form controls, and the boxes that sit with them, stop at one reading
+   width. */
+.pe-field .form-control,
+.pe-field-top,
+.pe-pairs,
+.pe-pictures,
+.pe-editor,
+.pe-snippet {
+	max-width: 36rem;
+}
+
+/* Small uppercase captions look the same wherever they appear: over the
+   exits list and across the head of the history table. */
+.pe-sub,
+.pe-table thead th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--pe-quiet);
+}
+.pe-sub {
+	margin: 1.75rem 0 0.85rem;
+}
+
+/* Quiet supporting text: meta lines, hints and the optional marker. */
+.pe-meta {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--pe-quiet);
+}
+.pe-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--pe-quiet);
+}
+.pe-optional {
+	margin-left: 0.25rem;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--pe-quiet);
+}
+
+.pe-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--pe-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+/* The header puts the page name on the left and its actions on the
+   right, both resting on the same baseline; phones stack them. */
+.basalt-hero-detail.pe-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.pe-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.pe-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.pe-head .basalt-hero-actions {
+		justify-content: flex-start;
+	}
+}
+
+.pe-saved {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0.5rem 0 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--pe-quiet);
+
+	& .bi {
+		color: color-mix(in srgb, var(--basalt-success) 70%, var(--basalt-copy));
+	}
+}
+
+.pe-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+
+/* A site-menu section reads as a pale pill led by a dot in its color. */
+.pe-tag {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--pe-tone) 12%, var(--basalt-plane));
+}
+.pe-dot {
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--pe-tone);
+}
+
+/* Under 1200px the cards stack. Wider, they pair up in rows that end
+   level: sections with the preview, settings with visits, then history
+   across the full width. */
+.pe-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.pe-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.pe-card-blocks,
+	.pe-card-preview {
+		grid-column: span 6;
+	}
+	.pe-card-settings {
+		grid-column: span 7;
+	}
+	.pe-card-traffic {
+		grid-column: span 5;
+	}
+	.pe-card-history {
+		grid-column: span 12;
+	}
+}
+
+/* Each card opens with a title row; an action button may wrap below. */
+.pe-card {
+	min-width: 0;
+}
+.pe-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.pe-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.pe-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div:first-child {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.pe-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pe-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--pe-quiet);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* A section row wraps so its form can open underneath, full width. */
+.pe-blocks {
+	gap: 0.6rem;
+}
+.pe-block.basalt-sortable-item {
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	padding: 0.5rem 0.6rem 0.5rem 0.4rem;
+}
+.pe-block.is-open {
+	border-color: color-mix(in srgb, var(--pe-tone) 45%, var(--basalt-edge));
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--pe-tone) 12%, transparent);
+
+	/* A short bar in the section's own color marks the open row. */
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.85rem;
+		left: 0;
+		width: 3px;
+		height: 1.6rem;
+		border-radius: 0 3px 3px 0;
+		background: var(--pe-tone);
+	}
+}
+.pe-kind {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.35rem;
+	height: 2.35rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--pe-tone) 78%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--pe-tone) 20%, var(--basalt-plane));
+}
+.pe-kind-sm {
+	width: 1.85rem;
+	height: 1.85rem;
+	border-radius: 8px;
+	font-size: 0.9rem;
+}
+.pe-block-main {
+	display: flex;
+	gap: 0.1rem;
+	flex: 1 1 0;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	padding: 0.3rem 0.4rem;
+	border: 0;
+	border-radius: 8px;
+	text-align: start;
+	color: inherit;
+	background: transparent;
+
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.pe-block-name {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pe-block-sum {
+	font-size: 0.8rem;
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	color: var(--pe-quiet);
+}
+
+/* A hidden section grays its icon, strikes its summary and wears a tag. */
+.pe-block.is-hidden {
+	& .pe-kind {
+		color: var(--pe-quiet);
+		background: var(--basalt-plane-alt);
+	}
+	& .pe-block-sum {
+		text-decoration: line-through;
+		text-decoration-color: color-mix(in srgb, var(--pe-quiet) 60%, transparent);
+	}
+}
+.pe-hidden-tag {
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--pe-quiet);
+	background: var(--basalt-plane-alt);
+}
+.pe-eye,
+.pe-more {
+	flex: none;
+	color: var(--pe-quiet);
+}
+.pe-eye[aria-pressed="true"] {
+	color: var(--basalt-copy);
+}
+.pe-block-form {
+	flex: 0 0 100%;
+	min-width: 0;
+	margin: 0.5rem 0 0.3rem;
+	padding: 1.25rem 0.3rem 0.25rem 2.65rem;
+	border-top: 1px solid var(--pe-line);
+}
+@media (max-width: 575.98px) {
+	.pe-block.basalt-sortable-item {
+		gap: 0.25rem 0.4rem;
+		padding-right: 0.3rem;
+		padding-left: 0.25rem;
+	}
+	.pe-block {
+		& .basalt-sortable-handle {
+			width: 1.5rem;
+		}
+		& .pe-kind {
+			width: 2.1rem;
+			height: 2.1rem;
+			font-size: 0.95rem;
+		}
+		& .btn-icon {
+			--bs-btn-padding-x: 0.4rem;
+		}
+	}
+	.pe-block-form {
+		padding-left: 0.4rem;
+	}
+}
+.pe-block-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 1.25rem;
+}
+
+/* Fields sit flush and are spaced only by the gap between neighbors. */
+.pe-field {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.pe-field + .pe-field,
+.pe-field-row + .pe-field,
+.pe-field + .pe-field-row,
+.pe-block-form > .pe-hint {
+	margin-top: 1.25rem;
+}
+fieldset.pe-field > legend {
+	float: left;
+	width: 100%;
+	margin-bottom: 0.5rem;
+	padding: 0;
+	font-size: 1rem;
+	line-height: 1.5;
+
+	& + * {
+		clear: both;
+	}
+}
+.pe-field-row {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+
+	& > .pe-field + .pe-field {
+		margin-top: 0;
+	}
+}
+.pe-field .form-control.pe-input-sm {
+	max-width: 18rem;
+}
+.pe-field .form-control.pe-input-md {
+	max-width: 24rem;
+}
+.pe-field-top {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+.pe-count {
+	font-size: 0.77rem;
+	color: var(--pe-quiet);
+
+	&.is-over {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+	}
+}
+.pe-address {
+	max-width: 28rem;
+}
+.pe-select {
+	width: auto;
+	min-width: 11rem;
+	max-width: 100%;
+}
+
+/* Item rows: two inputs side by side, or stacked for an answer, with the
+   remove button beside them. */
+.pe-pairs {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pe-pair {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+}
+.pe-pair-fields {
+	display: grid;
+	gap: 0.5rem;
+	flex: 1;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+	min-width: 0;
+}
+.pe-pair-fields-stack {
+	grid-template-columns: minmax(0, 1fr);
+}
+.pe-pair-remove {
+	flex: none;
+	margin-top: 0.2rem;
+	color: var(--pe-quiet);
+}
+.pe-add-item {
+	margin-top: 0.5rem;
+	padding: 0.25rem 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--pe-link);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Picture choices are three centered cards, or a list of rows on phones. */
+.pe-pictures {
+	gap: 0.6rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.pe-picture.basalt-choice-card {
+	align-items: center;
+	padding: 0.9rem 0.6rem 0.8rem;
+	text-align: center;
+}
+.pe-picture .basalt-choice-card-title {
+	padding: 0 0.25rem;
+	font-size: 0.85rem;
+}
+@media (max-width: 575.98px) {
+	.pe-pictures {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.pe-picture.basalt-choice-card {
+		gap: 0.75rem;
+		flex-direction: row;
+		padding: 0.6rem 2.5rem 0.6rem 0.8rem;
+		text-align: start;
+	}
+}
+
+/* The rich-text box draws a single focus ring around toolbar and text
+   together, so the inner field drops its own. */
+.pe-editor {
+	border: 1px solid var(--basalt-edge-strong, var(--pe-line));
+	border-radius: 12px;
+	background: var(--basalt-plane);
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue-border, var(--basalt-hue));
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+}
+.pe-toolbar {
+	display: flex;
+	gap: 0.1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.4rem 0.5rem;
+	border-bottom: 1px solid var(--pe-line);
+	border-radius: 12px 12px 0 0;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 70%, var(--basalt-plane));
+}
+.pe-toolbar-sep {
+	width: 1px;
+	height: 20px;
+	margin: 0 0.25rem;
+	background: var(--basalt-edge-strong, var(--pe-line));
+}
+.pe-tool {
+	display: inline-grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1rem;
+	color: var(--basalt-copy-body, var(--basalt-copy));
+	background: transparent;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus {
+		outline: 0;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+	&[aria-pressed="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+	}
+}
+.pe-editor-body {
+	min-height: 7.5rem;
+	padding: 0.9rem 1.1rem;
+	cursor: text;
+
+	&:focus,
+	&:focus-visible {
+		outline: 0;
+		box-shadow: none;
+	}
+	&:empty::before {
+		content: attr(data-placeholder);
+		color: var(--pe-quiet);
+	}
+}
+
+/* Prose is shared by the editor and the preview's text sections. It must
+   stay ahead of the preview rules, whose paragraph reset wins the tie. */
+.pe-prose {
+	font-size: 0.9rem;
+	line-height: 1.65;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body, var(--basalt-copy));
+
+	& > :last-child {
+		margin-bottom: 0;
+	}
+	& p {
+		margin: 0 0 0.7rem;
+	}
+	& ul,
+	& ol {
+		margin: 0 0 0.7rem;
+		padding-left: 1.3rem;
+	}
+	& li {
+		margin-bottom: 0.2rem;
+	}
+	& li::marker {
+		color: var(--basalt-hue);
+	}
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The preview card hands all spare height to a browser-like frame,
+   which becomes a phone with a thick bezel in phone mode. */
+.pe-card-preview .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+.pe-stage {
+	flex: 1;
+	min-height: 0;
+}
+.pe-device {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	margin: 0 auto;
+	border: 1px solid var(--basalt-edge-strong, var(--pe-line));
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--basalt-copy) 35%, transparent);
+	transition:
+		max-width 260ms ease,
+		border-radius 260ms ease;
+}
+.pe-device-bar {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.5rem 0.8rem;
+	border-bottom: 1px solid var(--pe-line);
+	background: var(--basalt-plane-alt);
+}
+.pe-device-dots {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex: none;
+
+	& span {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--basalt-edge-strong, var(--pe-line));
+	}
+}
+.pe-device-url {
+	flex: 1;
+	min-width: 0;
+	padding: 0.2rem 0.7rem;
+	border-radius: 999px;
+	overflow: hidden;
+	font-size: 0.75rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--pe-quiet);
+	background: var(--basalt-plane);
+}
+.pe-device-screen {
+	height: 34rem;
+	overflow-x: hidden;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+.pe-device.is-phone {
+	max-width: 22rem;
+	border-radius: 28px;
+	border-width: 6px;
+	border-color: color-mix(in srgb, var(--basalt-copy) 82%, var(--basalt-plane));
+
+	& .pe-device-dots {
+		display: none;
+	}
+	& .pe-device-bar {
+		justify-content: center;
+		padding: 0.7rem 1rem 0.5rem;
+	}
+	& .pe-device-url {
+		flex: 0 1 auto;
+		text-align: center;
+	}
+}
+@media (min-width: 1200px) {
+	.pe-stage {
+		position: sticky;
+		top: 5.5rem;
+		align-self: flex-start;
+		width: 100%;
+	}
+	.pe-device-screen {
+		height: clamp(26rem, calc(100vh - 15rem), 46rem);
+	}
+}
+
+/* Inside the frame the site runs on its own smaller type scale and
+   answers to its own width through a container query. */
+.pe-site {
+	container: pe-site / inline-size;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+
+	& p {
+		margin: 0;
+	}
+}
+.pe-nav {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 0.8rem 1.1rem;
+	border-bottom: 1px solid var(--pe-line);
+}
+.pe-nav-logo {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-weight: 750;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--basalt-hue);
+	}
+}
+.pe-nav-links {
+	display: none;
+	gap: 0.9rem;
+	margin-left: auto;
+	font-size: 0.75rem;
+	color: var(--pe-quiet);
+
+	& .is-here {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.pe-nav-btn {
+	display: none;
+	padding: 0.2rem 0.65rem;
+	border: 1px solid var(--basalt-edge-strong, var(--pe-line));
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.pe-nav-menu {
+	margin-left: auto;
+	font-size: 1.1rem;
+	color: var(--basalt-copy);
+}
+@container pe-site (min-width: 26rem) {
+	.pe-nav-links,
+	.pe-nav-btn {
+		display: inline-flex;
+	}
+	.pe-nav-menu {
+		display: none;
+	}
+}
+
+/* Every section of the mock is a slot: hovering outlines it faintly,
+   and the open one gets a solid outline with its name in the corner. */
+.pe-slot {
+	position: relative;
+	cursor: pointer;
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 3px;
+		border: 2px solid transparent;
+		border-radius: 10px;
+		pointer-events: none;
+		transition: border-color 170ms ease;
+	}
+	&:hover::after,
+	&.is-hover::after {
+		border-color: color-mix(in srgb, var(--basalt-hue) 35%, transparent);
+	}
+	&.is-current::after {
+		border-color: color-mix(in srgb, var(--basalt-hue) 82%, var(--basalt-copy));
+	}
+	&.is-current .pe-slot-tag {
+		opacity: 1;
+	}
+}
+.pe-slot-tag {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	z-index: 1;
+	padding: 0.1rem 0.5rem;
+	border-radius: 0 10px 0 8px;
+	font-size: 0.67rem;
+	font-weight: 650;
+	color: var(--basalt-on-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 82%, var(--basalt-copy));
+	opacity: 0;
+	transition: opacity 170ms ease;
+}
+
+/* The building blocks every mock section shares: padding, headings,
+   lead text, buttons and captions. */
+.pe-s {
+	padding: 1.6rem 1.25rem;
+}
+.pe-s-eyebrow {
+	margin-bottom: 0.4rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-hue) 65%, var(--basalt-copy));
+}
+.pe-s-h1 {
+	font-size: 1.35rem;
+	font-weight: 750;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+	color: var(--basalt-copy);
+}
+.pe-s-h2 {
+	margin-bottom: 0.8rem;
+	font-size: 1rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.pe-s-lead {
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	text-wrap: pretty;
+	color: var(--basalt-copy-body);
+}
+.pe-s-btns {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: center;
+	margin-top: 0.9rem;
+
+	& .pe-s-btn {
+		margin-top: 0;
+	}
+}
+.pe-s-btn {
+	display: inline-block;
+	margin-top: 0.9rem;
+	padding: 0.4rem 0.95rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 650;
+	color: var(--basalt-on-hue);
+	/* The fill leans toward the text color so the label stays legible. */
+	background: color-mix(in srgb, var(--basalt-hue) 82%, var(--basalt-copy));
+}
+.pe-s-btn-ghost {
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: inset 0 0 0 1px var(--basalt-edge-strong, var(--pe-line));
+}
+.pe-s-caption {
+	margin-top: 0.5rem;
+	font-size: 0.71rem;
+	text-align: center;
+	color: var(--pe-quiet);
+}
+.pe-site-empty {
+	padding: 3rem 1rem;
+	text-align: center;
+	color: var(--pe-quiet);
+}
+
+/* The hero glows with two soft washes unless gradients are switched off. */
+.pe-s-hero {
+	padding: 2rem 1.4rem 1.8rem;
+	text-align: center;
+	background:
+		radial-gradient(
+			120% 90% at 0% 0%,
+			color-mix(in srgb, var(--basalt-series-1) 16%, transparent),
+			transparent 60%
+		),
+		radial-gradient(
+			110% 90% at 100% 10%,
+			color-mix(in srgb, var(--basalt-series-2) 16%, transparent),
+			transparent 60%
+		),
+		var(--basalt-plane);
+
+	:root[data-basalt-gradients="off"] & {
+		background: var(--basalt-plane);
+	}
+}
+
+/* Plan cards go from one column to two, then four, as the mock widens. */
+.pe-plans {
+	display: grid;
+	gap: 0.6rem;
+}
+@container pe-site (min-width: 26rem) {
+	.pe-plans {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@container pe-site (min-width: 44rem) {
+	.pe-plans {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.pe-plan {
+	position: relative;
+	padding: 0.85rem 0.8rem 0.8rem;
+	border: 1px solid var(--pe-line);
+	border-radius: 12px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--pe-tone) 5%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 0.8rem;
+		left: 0.8rem;
+		height: 3px;
+		border-radius: 0 0 3px 3px;
+		background: var(--pe-tone);
+	}
+	&.is-picked {
+		border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--pe-line));
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+	}
+}
+.pe-plan-flag {
+	display: inline-block;
+	margin-bottom: 0.3rem;
+	padding: 0.05rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.65rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.pe-plan-name {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.pe-plan-price {
+	margin-top: 0.25rem;
+	font-size: 0.71rem;
+	color: var(--pe-quiet);
+
+	& b {
+		display: block;
+		font-size: 1.25rem;
+		font-weight: 750;
+		line-height: 1.15;
+		color: var(--basalt-copy);
+	}
+}
+.pe-plan-year {
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--pe-tone) 42%, var(--basalt-copy));
+}
+.pe-plan-line {
+	margin-top: 0.4rem;
+	font-size: 0.71rem;
+	line-height: 1.45;
+	color: var(--basalt-copy-body);
+}
+
+/* Feature tiles fill the row as the mock gets room for them. */
+.pe-feats {
+	display: grid;
+	gap: 0.5rem;
+}
+@container pe-site (min-width: 26rem) {
+	.pe-feats {
+		grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+	}
+}
+.pe-feat {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	padding: 0.65rem 0.7rem;
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--pe-tone) 9%, var(--basalt-plane));
+
+	& b {
+		display: block;
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& span span {
+		display: block;
+		font-size: 0.71rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.pe-feat-mark {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	border-radius: 50%;
+	font-size: 0.7rem;
+	color: var(--basalt-plane);
+	background: var(--pe-tone);
+}
+
+.pe-s-text {
+	max-width: 34rem;
+
+	& .pe-prose {
+		font-size: 0.8rem;
+	}
+}
+
+.pe-s-quote {
+	text-align: center;
+}
+.pe-quote {
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.45;
+	text-wrap: balance;
+	color: var(--basalt-copy);
+}
+.pe-quote-who {
+	margin-top: 0.5rem;
+	font-size: 0.75rem;
+	color: var(--pe-quiet);
+
+	& b {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+
+/* Questions are ruled rows; only the first shows its answer. */
+.pe-faq {
+	border-top: 1px solid var(--pe-line);
+}
+.pe-faq-item {
+	padding: 0.6rem 0;
+	border-bottom: 1px solid var(--pe-line);
+}
+.pe-faq-q {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	font-weight: 650;
+	color: var(--basalt-copy);
+
+	& .bi {
+		flex: none;
+		color: var(--pe-quiet);
+	}
+}
+.pe-faq-a {
+	margin-top: 0.3rem;
+	font-size: 0.75rem;
+	color: var(--basalt-copy-body);
+}
+
+/* The call to action is an inset panel, flat when gradients are off. */
+.pe-s-cta {
+	margin: 0 1.25rem 1.6rem;
+	padding: 1.5rem 1.2rem;
+	border-radius: 14px;
+	text-align: center;
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--basalt-series-1) 14%, var(--basalt-plane)),
+		color-mix(in srgb, var(--basalt-series-2) 14%, var(--basalt-plane))
+	);
+
+	:root[data-basalt-gradients="off"] & {
+		background: var(--basalt-plane-alt);
+	}
+	& .pe-s-h2 {
+		margin-bottom: 0;
+	}
+}
+
+.pe-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	padding: 0.9rem 1.25rem;
+	border-top: 1px solid var(--pe-line);
+	font-size: 0.7rem;
+	color: var(--pe-quiet);
+}
+
+/* The image section's pictures are drawn in theme colors rather than
+   loaded, so they follow the palette too. */
+.pe-pic {
+	border-radius: 12px;
+	border: 1px solid var(--pe-line);
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.pe-pic-board {
+	display: grid;
+	gap: 0.4rem;
+	padding: 0.8rem;
+}
+.pe-pic-lane {
+	position: relative;
+	height: 1.25rem;
+	padding-left: 1.6rem;
+}
+.pe-pic-who {
+	position: absolute;
+	top: 0.1rem;
+	left: 0;
+	width: 1.05rem;
+	height: 1.05rem;
+	border-radius: 50%;
+	background: var(--basalt-edge-strong, var(--pe-line));
+}
+.pe-pic-bar {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	margin-left: 1.6rem;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--pe-tone) 70%, var(--basalt-plane));
+}
+.pe-pic-app {
+	display: grid;
+	place-items: center;
+	padding: 0.9rem;
+}
+.pe-pic-phone {
+	display: grid;
+	gap: 0.3rem;
+	width: 8.5rem;
+	padding: 0.7rem 0.5rem;
+	border: 4px solid var(--basalt-copy);
+	border-radius: 16px;
+	background: var(--basalt-plane);
+}
+.pe-pic-job {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+
+	& i {
+		flex: none;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--pe-tone);
+	}
+	& b {
+		flex: 1;
+		height: 0.5rem;
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--pe-tone) 35%, var(--basalt-plane));
+	}
+}
+.pe-pic-route {
+	padding: 0.5rem;
+
+	& svg {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+}
+.pe-pic-road {
+	fill: none;
+	stroke: var(--basalt-edge-strong, var(--pe-line));
+	stroke-width: 12;
+	stroke-linecap: round;
+}
+.pe-pic-path {
+	fill: none;
+	stroke: var(--basalt-hue);
+	stroke-width: 3;
+	stroke-dasharray: 8 6;
+	stroke-linecap: round;
+}
+.pe-pic-stop {
+	fill: var(--pe-tone);
+	stroke: var(--basalt-plane);
+	stroke-width: 3;
+}
+
+/* Settings open on a search-result preview, then a list of facts. */
+.pe-snippet {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--pe-line);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.pe-snippet-site {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.pe-snippet-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 50%;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.pe-snippet-name {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.pe-snippet-url {
+	font-size: 0.71rem;
+	font-weight: 400;
+	color: var(--pe-quiet);
+}
+.pe-snippet-title {
+	margin-top: 0.3rem;
+	font-size: 1.05rem;
+	font-weight: 600;
+	line-height: 1.35;
+	color: var(--pe-link);
+}
+.pe-snippet-desc {
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.pe-snippet-desc-none {
+	font-style: italic;
+	color: var(--pe-quiet);
+}
+
+/* Facts are a two-column definition list that folds to one column on
+   the narrowest screens. */
+.pe-facts {
+	margin: 1.25rem 0 0;
+
+	& dt {
+		font-weight: 500;
+		color: var(--pe-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+}
+.pe-facts-row {
+	display: grid;
+	gap: 0.25rem 1rem;
+	grid-template-columns: 9.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--pe-line);
+	font-size: 0.875rem;
+
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+}
+@media (max-width: 479.98px) {
+	.pe-facts-row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.pe-address-line {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	overflow-wrap: anywhere;
+}
+.pe-copy {
+	padding: 0.1rem 0.3rem;
+	color: var(--pe-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.pe-who {
+	display: inline-flex;
+	gap: 0.65rem;
+	align-items: center;
+}
+.pe-you {
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 6px;
+	border: 1px solid var(--pe-line);
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--pe-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* The settings form lists audiences as described radios and ends on a
+   ruled footer with its two buttons. */
+.pe-radios {
+	display: grid;
+	gap: 0.65rem;
+
+	& .form-check {
+		margin: 0;
+	}
+	& .pe-hint {
+		margin-top: 0.1rem;
+	}
+}
+.pe-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--pe-line);
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* Daily visits are bars on a baseline, weekends paler, taller on wide
+   screens. */
+.pe-spark-bars {
+	display: flex;
+	gap: 3px;
+	align-items: flex-end;
+	height: 5.5rem;
+	padding-bottom: 1px;
+	border-bottom: 1px solid var(--pe-line);
+
+	& span {
+		flex: 1;
+		min-width: 2px;
+		border-radius: 3px 3px 0 0;
+		background: var(--basalt-series-1);
+	}
+	& span.is-weekend {
+		background: color-mix(in srgb, var(--basalt-series-1) 40%, var(--basalt-plane));
+	}
+}
+@media (min-width: 1200px) {
+	.pe-spark-bars {
+		height: 8.5rem;
+	}
+}
+.pe-spark-axis {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: space-between;
+	margin-top: 0.4rem;
+	font-size: 0.75rem;
+	color: var(--pe-quiet);
+}
+
+/* Where visitors went next: a label and share above each colored track. */
+.pe-bars {
+	display: grid;
+	gap: 0.9rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pe-bars-row {
+	display: grid;
+	gap: 0.3rem 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "name value" "track track";
+	font-size: 0.875rem;
+}
+.pe-bars-name {
+	grid-area: name;
+	color: var(--basalt-copy);
+}
+.pe-bars-value {
+	grid-area: value;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.pe-bars-track {
+	grid-area: track;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--pe-tone) 12%, var(--basalt-plane-alt));
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--pe-tone);
+	}
+}
+
+/* The history table runs edge to edge; on phones each change becomes a
+   small card with its date and author underneath. */
+.pe-table {
+	--bs-table-bg: transparent;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.75rem;
+		border-bottom-color: var(--pe-line);
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+}
+.pe-col-when {
+	width: 8rem;
+	white-space: nowrap;
+	color: var(--pe-quiet);
+}
+.pe-table td.pe-col-when {
+	color: var(--basalt-copy-body);
+}
+.pe-col-who {
+	width: 13rem;
+	white-space: nowrap;
+}
+@media (max-width: 575.98px) {
+	.pe-table {
+		& thead {
+			display: none;
+		}
+		& tr {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			padding: 0.8rem 0;
+			border-bottom: 1px solid var(--pe-line);
+		}
+		& tbody tr:last-child {
+			border-bottom: 0;
+		}
+		& > :not(caption) > * > * {
+			padding: 0;
+			border: 0;
+		}
+		& td:nth-child(2) {
+			grid-column: 1 / -1;
+			grid-row: 1;
+			margin-bottom: 0.4rem;
+		}
+	}
+	.pe-col-when,
+	.pe-col-who {
+		width: auto;
+		font-size: 0.8rem;
+	}
+	.pe-table td.pe-col-when {
+		color: var(--pe-quiet);
+	}
+	.pe-table td.pe-col-who {
+		text-align: end;
+	}
+}
+
+/* With reduced motion the frame, slot outlines and slot tags change
+   without easing. */
+@media (prefers-reduced-motion: reduce) {
+	.pe-device,
+	.pe-slot::after,
+	.pe-slot-tag {
+		transition: none;
+	}
+}

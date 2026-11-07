@@ -68,14 +68,14 @@ enum KategoriKas: string
     }
 
     /**
-     * Kelas CSS tag template HexaDash (dm-tag) untuk kolom kategori di buku kas.
+     * Kelas CSS tag template Basalt (badge) untuk kolom kategori di buku kas.
      */
     public function kelasTag(): string
     {
         return match (true) {
-            $this->masuk() => 'tag-success',
-            $this->pinjaman() => 'tag-warning',
-            default => 'tag-primary',
+            $this->masuk() => 'bg-success-subtle text-success',
+            $this->pinjaman() => 'bg-warning-subtle text-warning',
+            default => 'bg-primary-subtle text-primary',
         };
     }
 

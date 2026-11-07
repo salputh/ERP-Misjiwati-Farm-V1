@@ -1,0 +1,474 @@
+/**
+ * The Basalt skin for FullCalendar 6 (MIT; pages that need it load it from
+ * assets/vendor and start it through Basalt.calendar in assets/basalt/js/components/fullcalendar.js). Colors
+ * come from theme tokens fed into FullCalendar's own --fc-* properties, so
+ * a calendar follows the palette, the surface setting and dark mode without
+ * being redrawn. An event takes a series color through classNames, such as
+ * ['basalt-fc-tone-3'] for any of 1 to 8, and the primary color otherwise.
+ */
+
+/* How strongly an event's own color tints its block, by amount. */
+@function fc-tint($amount) {
+	@return color-mix(in srgb, var(--basalt-fc-tone) $amount, var(--basalt-plane));
+}
+
+/* The colored bar at an event's start, and the shadow of a lifted event. */
+$fc-bar: inset 3px 0 0 var(--basalt-fc-tone);
+$fc-lift-ink: color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+
+/* FullCalendar's own settings, filled from Basalt tokens and grouped by
+   what they paint: surfaces, buttons, then events and markers. */
+$fc-settings: (
+	page-bg-color: var(--basalt-plane),
+	neutral-bg-color: color-mix(in srgb, var(--basalt-plane-alt) 60%, var(--basalt-plane)),
+	neutral-text-color: var(--basalt-fc-quiet),
+	border-color: var(--basalt-edge),
+	button-text-color: var(--basalt-copy),
+	button-bg-color: var(--basalt-plane),
+	button-border-color: var(--basalt-edge-strong),
+	button-hover-bg-color: var(--basalt-wash),
+	button-hover-border-color: var(--basalt-edge-strong),
+	button-active-bg-color: var(--basalt-plane),
+	button-active-border-color: var(--basalt-edge-strong),
+	event-selected-overlay-color: color-mix(in srgb, var(--basalt-copy) 6%, transparent),
+	more-link-bg-color: transparent,
+	more-link-text-color: var(--basalt-fc-quiet),
+	non-business-color: var(--basalt-fc-weekend),
+	bg-event-color: var(--basalt-series-5),
+	highlight-color: color-mix(in srgb, var(--basalt-hue) 12%, transparent),
+	today-bg-color: color-mix(in srgb, var(--basalt-hue-soft) 45%, transparent),
+	now-indicator-color: var(--basalt-hue),
+	list-event-hover-bg-color: var(--basalt-wash),
+	daygrid-event-dot-width: 8px,
+	list-event-dot-width: 8px,
+);
+
+.fc {
+	/* Small gray text is the muted token pulled toward the body color, which
+     keeps it above 4.5:1 in every palette, tinted days included. */
+	--basalt-fc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--basalt-fc-weekend: color-mix(in srgb, var(--basalt-plane-alt) 38%, var(--basalt-plane));
+	/* Tint strengths for events; dark mode raises all three below. */
+	--basalt-fc-mix-soft: 9%;
+	--basalt-fc-mix: 16%;
+	--basalt-fc-mix-hover: 24%;
+	/* Bare numbers are written out so they reach the page exactly as typed. */
+	--fc-small-font-size: 0.77rem;
+	--fc-bg-event-opacity: 0.14;
+	@each $setting, $value in $fc-settings {
+		--fc-#{$setting}: #{$value};
+	}
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+
+	[data-bs-theme="dark"] & {
+		--basalt-fc-mix-soft: 13%;
+		--basalt-fc-mix: 20%;
+		--basalt-fc-mix-hover: 30%;
+	}
+
+	a {
+		text-decoration: none;
+		color: inherit;
+	}
+	a[data-navlink]:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+}
+
+/* The toolbar wraps on narrow screens rather than running off the card.
+   Back and next are quiet icon buttons, Today a small outline button, and
+   the view switch a segmented control. */
+.fc {
+	.fc-toolbar {
+		gap: 0.75rem 1rem;
+		flex-wrap: wrap;
+
+		&.fc-header-toolbar {
+			margin-bottom: 1.25rem;
+		}
+	}
+	.fc-toolbar-chunk {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+}
+.fc-direction-ltr .fc-toolbar > * > :not(:first-child) {
+	margin-left: 0;
+}
+.fc {
+	.fc-toolbar-title {
+		font-size: var(--basalt-fs-card-title);
+		font-weight: 700;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+
+	.fc-button {
+		padding: 0.3rem 0.75rem;
+		border-radius: var(--bs-border-radius);
+		font-size: 0.8rem;
+		font-weight: 500;
+		line-height: 1.5;
+		white-space: nowrap;
+
+		.fc-icon {
+			font-size: 1.25em;
+		}
+	}
+	.fc-prev-button,
+	.fc-next-button {
+		padding-inline: 0.4rem;
+	}
+
+	/* Focus shows only for the keyboard, as an outline instead of a glow. */
+	.fc-button:focus,
+	.fc-button-primary:focus,
+	.fc-button-primary:not(:disabled).fc-button-active:focus,
+	.fc-button-primary:not(:disabled):active:focus {
+		box-shadow: none;
+	}
+	.fc-button:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+
+	/* Today, grayed out while today is on screen, keeps legible text. */
+	.fc-button:disabled {
+		opacity: 1;
+	}
+	.fc-button-primary:disabled {
+		border-color: var(--basalt-edge);
+		color: var(--basalt-fc-quiet);
+		background: var(--fc-button-bg-color);
+	}
+
+	/* The group holding back and next splits into two separate icon buttons. */
+	.fc-button-group:has(> .fc-prev-button) {
+		gap: 0.25rem;
+
+		> .fc-button {
+			margin-left: 0;
+			border-color: transparent;
+			border-radius: var(--bs-border-radius);
+			background: transparent;
+
+			&:hover {
+				background: var(--basalt-wash);
+			}
+		}
+	}
+
+	/* The group holding the lit view button becomes the segmented switch. */
+	.fc-button-group:has(> .fc-button-active) {
+		padding: 3px;
+		border: 1px solid var(--basalt-edge);
+		border-radius: calc(var(--bs-border-radius) + 3px);
+		background: var(--basalt-plane-alt);
+
+		> .fc-button {
+			margin-left: 0;
+			border: 0;
+			border-radius: var(--bs-border-radius);
+			color: var(--basalt-fc-quiet);
+			background: transparent;
+
+			&:hover {
+				color: var(--basalt-copy);
+			}
+			&.fc-button-active {
+				font-weight: 600;
+				color: var(--basalt-copy);
+				background: var(--basalt-plane);
+				box-shadow: 0 1px 2px color-mix(in srgb, var(--basalt-copy) 14%, transparent);
+			}
+		}
+	}
+}
+
+/* The grid has rounded corners, small capital weekday names, shaded
+   weekends and a tinted today. */
+.fc-theme-standard .fc-scrollgrid {
+	border-radius: 10px;
+	overflow: hidden;
+}
+.fc {
+	.fc-col-header-cell {
+		background: var(--fc-page-bg-color);
+	}
+	.fc-col-header-cell-cushion {
+		padding: 0.5rem 0.5rem;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		color: var(--basalt-fc-quiet);
+	}
+	.fc-day-sat,
+	.fc-day-sun {
+		background-color: var(--basalt-fc-weekend);
+	}
+	.fc-daygrid-day.fc-day-today,
+	.fc-timegrid-col.fc-day-today {
+		background-color: var(--fc-today-bg-color);
+	}
+
+	/* Day numbers from other months stay at full strength; today's number
+     wears a ring of the primary over its soft tint. */
+	.fc-daygrid-day-top {
+		flex-direction: row;
+		padding: 0.3rem 0.3rem 0;
+	}
+	.fc-day-other .fc-daygrid-day-top {
+		opacity: 1;
+	}
+	.fc-daygrid-day-number {
+		display: inline-grid;
+		place-items: center;
+		min-width: 1.75rem;
+		height: 1.75rem;
+		padding: 0 0.3rem;
+		border-radius: 999px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	.fc-day-other .fc-daygrid-day-number {
+		font-weight: 500;
+		color: var(--basalt-fc-quiet);
+	}
+	.fc-day-today .fc-daygrid-day-number {
+		font-weight: 700;
+		background: var(--basalt-hue-soft);
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+
+	.fc-daygrid-day-events {
+		margin-top: 0.2rem;
+	}
+	.fc-daygrid-body-natural .fc-daygrid-day-events {
+		margin-bottom: 0.5rem;
+	}
+	.fc-daygrid-day-bottom {
+		margin: 0 0.3rem 0.3rem;
+		font-size: 0.75rem;
+	}
+	.fc-daygrid-more-link {
+		padding: 0.1rem 0.3rem;
+		font-weight: 600;
+		color: var(--basalt-fc-quiet);
+
+		&:hover {
+			color: var(--basalt-copy);
+			background: var(--basalt-wash);
+		}
+	}
+}
+
+/* An event is tinted with its color and its text stays the body color;
+   all-day and timed blocks also carry a bar of the full color at the start. */
+.fc {
+	.fc-event {
+		--basalt-fc-tone: var(--basalt-hue);
+		--fc-event-bg-color: #{fc-tint(var(--basalt-fc-mix))};
+		--fc-event-border-color: var(--basalt-fc-tone);
+		--fc-event-text-color: var(--basalt-copy);
+		border-radius: 6px;
+
+		@for $series from 1 through 8 {
+			&.basalt-fc-tone-#{$series} {
+				--basalt-fc-tone: var(--basalt-series-#{$series});
+			}
+		}
+	}
+
+	.fc-h-event,
+	.fc-v-event {
+		border: 0;
+		box-shadow: $fc-bar;
+
+		&:hover {
+			background: fc-tint(var(--basalt-fc-mix-hover));
+		}
+	}
+	.fc-daygrid-block-event {
+		.fc-event-main {
+			padding: 0.1rem 0.3rem 0.1rem 0.5rem;
+			font-weight: 600;
+		}
+		&:not(.fc-event-start) {
+			box-shadow: none;
+		}
+	}
+
+	.fc-daygrid-dot-event {
+		padding: 0.2rem 0.3rem 0.2rem 0;
+		color: var(--basalt-copy);
+		background: fc-tint(var(--basalt-fc-mix-soft));
+
+		&:hover,
+		&.fc-event-mirror {
+			background: fc-tint(var(--basalt-fc-mix));
+		}
+		.fc-event-title {
+			font-weight: 500;
+		}
+		.fc-event-time {
+			font-weight: 500;
+			color: var(--basalt-fc-quiet);
+		}
+	}
+	.fc-daygrid-event-dot {
+		margin: 0 0.3rem;
+	}
+
+	.fc-timegrid-event {
+		.fc-event-main {
+			padding: 0.25rem 0.3rem 0.25rem 0.6rem;
+		}
+		.fc-event-title {
+			font-weight: 600;
+		}
+		.fc-event-time {
+			color: var(--basalt-fc-quiet);
+		}
+	}
+
+	/* A half-hour event has room for one line: the title alone, ending in an
+     ellipsis, since the hour labels beside it already give the time. */
+	.fc-timegrid-event-short {
+		.fc-event-time {
+			display: none;
+		}
+		.fc-event-title-container {
+			min-width: 0;
+		}
+		.fc-event-title {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	.fc-timegrid-event-harness-inset .fc-timegrid-event,
+	.fc-timegrid-event.fc-event-mirror {
+		box-shadow:
+			$fc-bar,
+			0 0 0 1px var(--fc-page-bg-color);
+	}
+	.fc-event:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+
+	/* A picked or focused event lifts off the grid, keeping its bar if it has one. */
+	.fc-event-dragging.fc-event-selected,
+	.fc-event-selected,
+	.fc-event:focus {
+		box-shadow:
+			$fc-bar,
+			0 4px 12px $fc-lift-ink;
+	}
+	.fc-daygrid-dot-event.fc-event-selected,
+	.fc-daygrid-dot-event:focus {
+		box-shadow: 0 4px 12px $fc-lift-ink;
+	}
+	.fc-bg-event .fc-event-title {
+		font-style: normal;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The time grid uses taller slots, faint half-hour lines and hour labels
+   pinned to the top of their slot. */
+.fc {
+	.fc-timegrid-slot {
+		height: 2.25rem;
+	}
+	.fc-timegrid-slot-minor {
+		border-top-color: color-mix(in srgb, var(--basalt-edge) 55%, transparent);
+	}
+	.fc-timegrid-slot-label-cushion,
+	.fc-timegrid-axis-cushion {
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: var(--basalt-fc-quiet);
+	}
+	.fc-timegrid-slot-label {
+		vertical-align: top;
+	}
+	.fc-timegrid-slot-label-cushion {
+		padding: 0.1rem 0.5rem 0;
+	}
+	.fc-timegrid-now-indicator-line {
+		border-top-width: 2px;
+	}
+}
+
+/* The list view groups events under bold day rows with a gray side date. */
+.fc-theme-standard .fc-list {
+	border-radius: 10px;
+	overflow: hidden;
+}
+.fc {
+	.fc-list-day-cushion {
+		padding: 0.6rem 1rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	.fc-list-day-side-text {
+		font-weight: 500;
+		color: var(--basalt-fc-quiet);
+	}
+	.fc-list-table td {
+		padding: 0.7rem 1rem;
+	}
+	.fc-list-event-time {
+		font-size: 0.8rem;
+		color: var(--basalt-fc-quiet);
+	}
+	.fc-list-event-title {
+		font-weight: 600;
+	}
+	.fc-list-event-dot {
+		border-color: var(--basalt-fc-tone);
+	}
+	.fc-list-event {
+		cursor: pointer;
+	}
+	.fc-list-empty {
+		background: var(--fc-page-bg-color);
+	}
+	.fc-list-empty-cushion {
+		margin: 3rem 0;
+		color: var(--basalt-fc-quiet);
+	}
+}
+
+/* The "+ more" popover floats as a rounded card over the month. */
+.fc {
+	.fc-popover {
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0 12px 32px $fc-lift-ink;
+	}
+	.fc-popover-header {
+		padding: 0.5rem 0.75rem;
+	}
+	.fc-popover-title {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	.fc-popover-close {
+		color: var(--basalt-fc-quiet);
+		opacity: 1;
+	}
+	.fc-more-popover .fc-popover-body {
+		padding: 0.6rem;
+	}
+}

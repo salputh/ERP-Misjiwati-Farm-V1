@@ -1,0 +1,1387 @@
+/*
+ * Styles for background-jobs.html, the background jobs monitor, all under the .jb- prefix:
+ * queue rows, the job table and its stacked card form, the throughput chart,
+ * the failed list and the single-job panel. Hero, tabs, pager, drawer frame,
+ * dialogs, toasts, steps, stepper and segmented control come from basalt.css.
+ */
+
+/* Page and panels share three text colors mixed toward the body ink, so small
+   gray copy, links and error text clear 4.5:1 on every palette and on hovered
+   rows. */
+.jb-page,
+.jb-layer {
+	--jb-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--jb-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--jb-danger-text: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+
+/* Every card spans the full row until 1200px, where the chart and the failed
+   list pair up. */
+.jb-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.jb-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+
+@media (min-width: 1200px) {
+	.jb-card {
+		grid-column: span 6;
+	}
+	.jb-card-full {
+		grid-column: span 12;
+	}
+}
+
+.jb-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+
+@media (max-width: 575.98px) {
+	.jb-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* A card heading keeps its copy on the left and wraps its tools underneath
+   once the text needs the room. */
+.jb-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+}
+
+.jb-card-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.jb-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--jb-quiet);
+}
+
+.jb-card-tools {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+/* Gray outline buttons keep a readable label on the card surface; pressed
+   toggles turn solid ink. */
+.jb-page .btn-outline-secondary,
+.jb-layer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+	--bs-btn-disabled-color: var(--jb-quiet);
+	--bs-btn-disabled-border-color: var(--basalt-edge);
+}
+
+.jb-page .btn-outline-secondary[aria-pressed="true"] {
+	--bs-btn-bg: var(--basalt-copy);
+	--bs-btn-color: var(--basalt-plane);
+	--bs-btn-border-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-copy);
+	--bs-btn-hover-color: var(--basalt-plane);
+	--bs-btn-hover-border-color: var(--basalt-copy);
+}
+
+/* Inputs and selects sit on the plane with the stronger edge, inside the page
+   and inside its panels alike. */
+.jb-page .form-control,
+.jb-page .form-select,
+.jb-layer .form-control,
+.jb-layer .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+
+.jb-page .form-control::placeholder {
+	color: var(--jb-quiet);
+	opacity: 1;
+}
+
+.jb-page .form-check-input,
+.jb-layer .form-check-input {
+	border-color: color-mix(in srgb, var(--basalt-copy-muted) 80%, transparent);
+}
+
+.jb-page .form-check-input:checked,
+.jb-page .form-check-input:indeterminate {
+	border-color: var(--basalt-hue);
+	background-color: var(--basalt-hue);
+}
+
+.jb-mono {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+
+.jb-quiet {
+	color: var(--jb-quiet);
+}
+
+/* The three regions that start hidden stay hidden even where a display rule
+   would otherwise win. */
+.jb-bulk[hidden],
+.jb-failed[hidden],
+.jb-d-error[hidden] {
+	display: none;
+}
+
+/* Links that open a job underline on hover and ring on keyboard focus. */
+.jb-failed-open:hover,
+.jb-job-open:hover {
+	text-decoration: underline;
+	color: var(--jb-link);
+}
+
+.jb-failed-open:focus-visible,
+.jb-job-open:focus-visible,
+.jb-d-trace summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* A figure that live data changes lifts for a moment. Only its position
+   moves, so the text keeps full contrast the whole time. */
+.jb-bump {
+	animation: jb-bump 600ms ease;
+}
+
+@keyframes jb-bump {
+	30% {
+		transform: translateY(-3px);
+	}
+}
+
+/* Each queue is one calm row: icon, name and state over a one-line note,
+   then the pace and the counts in columns under one set of heads, the
+   workers stepper and a single action of one width. The board is the
+   container, since the sidebar changes its width as much as the window. */
+.jb-queue-board {
+	container: jbq / inline-size;
+}
+
+.jb-queues {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.jb-queue-head,
+.jb-queue {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr) repeat(4, 3.5rem) 6.75rem 7.25rem;
+	align-items: center;
+	min-width: 0;
+}
+
+.jb-queue-head {
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-align: right;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--jb-quiet);
+}
+
+.jb-queue-head-name {
+	grid-column: 1 / 3;
+	text-align: left;
+}
+
+.jb-queue-head-workers {
+	text-align: center;
+}
+
+.jb-queue {
+	--jb-tone: var(--basalt-series-1);
+	position: relative;
+	padding: 0.85rem 0;
+	border-top: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		border-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+
+.jb-queue-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--jb-tone) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--jb-tone) 16%, var(--basalt-plane));
+}
+
+.jb-queue.is-paused .jb-queue-icon {
+	color: var(--jb-quiet);
+	background: color-mix(in srgb, var(--basalt-copy) 6%, var(--basalt-plane));
+}
+
+.jb-queue-main {
+	min-width: 0;
+}
+
+.jb-queue-name {
+	display: flex;
+	gap: 0.25rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+
+.jb-queue-line {
+	margin: 0.15rem 0 0;
+	font-size: 0.77rem;
+	line-height: 1.4;
+	color: var(--jb-quiet);
+
+	&.is-alert {
+		color: var(--jb-danger-text);
+	}
+}
+
+/* In the columns a figure is a bare number and its word is read aloud
+   only; a zero steps back so the counts that matter stand out. */
+.jb-queue-stats {
+	display: contents;
+	margin: 0;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy-body);
+}
+
+.jb-queue-figure {
+	font-size: 0.85rem;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	&.is-zero {
+		color: color-mix(in srgb, var(--jb-quiet) 60%, var(--basalt-plane));
+	}
+	&.is-bad {
+		font-weight: 650;
+		color: var(--jb-danger-text);
+	}
+}
+
+.jb-queue-figure-word,
+.jb-queue-idle,
+.jb-queue-workers-label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	white-space: nowrap;
+	clip-path: inset(50%);
+}
+
+.jb-queue-ctrl {
+	display: contents;
+}
+
+.jb-queue-workers {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: center;
+
+	& label {
+		margin: 0;
+		font-size: 0.77rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* Pause, Resume and Reconnect fill one column, so the rows line up. */
+.jb-queue-act {
+	display: flex;
+
+	& .btn {
+		flex: 1;
+		white-space: nowrap;
+	}
+}
+
+/* In a narrower board the heads go, and each row stacks its figures as
+   one line of words under the name, with the controls below that. */
+@container jbq (max-width: 819.98px) {
+	.jb-queue-head {
+		display: none;
+	}
+	.jb-queue {
+		row-gap: 0.5rem;
+		grid-template-columns: 2.25rem minmax(0, 1fr);
+		align-items: start;
+
+		&:first-child {
+			padding-top: 0;
+		}
+	}
+	.jb-queue-stats {
+		display: flex;
+		gap: 0.15rem 1rem;
+		flex-wrap: wrap;
+		grid-column: 2;
+	}
+	.jb-queue-figure {
+		color: var(--basalt-copy-body);
+
+		&.is-zero {
+			display: none;
+		}
+	}
+	.jb-queue-figure-word,
+	.jb-queue-idle,
+	.jb-queue-workers-label {
+		position: static;
+		width: auto;
+		height: auto;
+		overflow: visible;
+		clip-path: none;
+	}
+	.jb-queue-idle {
+		color: var(--jb-quiet);
+	}
+	.jb-queue-ctrl {
+		display: flex;
+		gap: 0.75rem 1rem;
+		flex-wrap: wrap;
+		grid-column: 2;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.jb-queue-act {
+		width: 7.75rem;
+	}
+}
+
+/* On a phone the action keeps its own width so it fits beside the
+   stepper. */
+@container jbq (max-width: 419.98px) {
+	.jb-queue-act {
+		width: auto;
+	}
+}
+
+/* With room to spare beside the text, the controls move up to the right
+   of the name and the figures, so a row is two lines, not three. */
+@container jbq (min-width: 560px) and (max-width: 819.98px) {
+	.jb-queue {
+		grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+	}
+	.jb-queue-ctrl {
+		grid-row: 1 / span 2;
+		grid-column: 3;
+		align-self: center;
+	}
+}
+
+/* Above the table: status tabs, then search, queue filter and the count,
+   which pushes itself to the right edge. */
+.jb-tabs {
+	margin-bottom: 1.25rem;
+}
+
+.jb-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+
+.jb-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 28rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--jb-quiet);
+		pointer-events: none;
+	}
+
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+.jb-select {
+	width: auto;
+	min-width: 10rem;
+}
+
+.jb-toolbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.8rem;
+	color: var(--jb-quiet);
+}
+
+@media (max-width: 575.98px) {
+	.jb-toolbar-count {
+		width: 100%;
+		margin-left: 0;
+	}
+	.jb-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.jb-select {
+		flex: 1 1 auto;
+	}
+}
+
+/* The selection bar appears once rows are checked, on a faint hue tint. */
+.jb-bulk {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+	padding: 0.6rem 0.6rem 0.6rem 1rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 10px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+
+	& .btn-outline-secondary {
+		--bs-btn-bg: var(--basalt-plane);
+	}
+}
+
+.jb-bulk-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* The scroller is pulled out by the cells' side padding, so the first column
+   starts on the card's left edge, under the title. */
+.jb-scroll {
+	position: relative;
+	margin: 0 -0.75rem;
+	padding: 0;
+}
+
+.jb-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	--bs-table-active-bg: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	--bs-table-active-color: var(--basalt-copy);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--jb-quiet);
+	}
+
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& td {
+		white-space: nowrap;
+	}
+	& tbody tr:hover > * {
+		--bs-table-bg-state: var(--basalt-wash);
+		color: var(--basalt-copy);
+	}
+	& tbody tr.is-picked > * {
+		--bs-table-bg-state: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	}
+	& .form-check-input {
+		margin: 0;
+		cursor: pointer;
+	}
+}
+
+.jb-check {
+	width: 2.5rem;
+}
+
+/* The job cell: its name as a button over its number in mono. */
+.jb-job {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+
+	& .jb-mono {
+		font-size: 0.71rem;
+		color: var(--jb-quiet);
+	}
+}
+
+.jb-job-open {
+	max-width: 26rem;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	overflow: hidden;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	text-overflow: ellipsis;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+}
+
+/* A queue reads as its name after a dot in the queue's series color. */
+.jb-queue-tag {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	color: var(--basalt-copy-body);
+
+	&::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--jb-tone, var(--basalt-series-1));
+	}
+}
+
+.jb-status {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 7.5rem;
+
+	& .basalt-status {
+		align-self: flex-start;
+	}
+}
+
+/* A thin track under a running job's status; its fill eases to each new width. */
+.jb-progress {
+	display: block;
+	width: 7.5rem;
+	height: 4px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 9%, transparent);
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-info);
+		transition: width 500ms ease;
+	}
+}
+
+.jb-actions {
+	display: inline-flex;
+	gap: 0.25rem;
+	justify-content: flex-end;
+
+	& .btn-icon {
+		display: inline-grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 8px;
+		color: var(--basalt-copy-body);
+	}
+
+	& .btn-icon:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	& .btn-icon:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+/* When the card is narrower than the full table, each job turns into a calm
+   card: the job and its status on top, the queue below, then a muted line of
+   facts (added, took, tries) with the action at the right. The list is a size
+   container, so this follows the card's room rather than the window's. */
+.jb-card .tab-content {
+	container: jb-list / inline-size;
+}
+
+@container jb-list (max-width: 960px) {
+	.jb-scroll {
+		margin: 0;
+		overflow: visible;
+	}
+
+	.jb-table,
+	.jb-table > thead,
+	.jb-table > tbody {
+		display: block;
+	}
+
+	.jb-table > thead > tr {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		border-bottom: 1px solid var(--basalt-edge-strong);
+	}
+	.jb-table > thead > tr > th {
+		display: none;
+	}
+	.jb-table > thead > tr > th:nth-child(-n + 2) {
+		display: block;
+		padding: 0.65rem 0;
+		border: 0;
+	}
+
+	.jb-table > tbody > tr:not(.jb-empty-row) {
+		display: grid;
+		gap: 0.4rem 1rem;
+		grid-template-columns: 1.75rem auto auto auto minmax(0, 1fr) 11rem;
+		grid-template-areas:
+			"check job   job  job   job  status"
+			".     queue queue queue queue queue"
+			".     added took tries .    actions";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+
+	.jb-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.jb-table > tbody > tr:not(.jb-empty-row) > * {
+		display: block;
+		padding: 0;
+		border: 0;
+		text-align: start;
+		white-space: nowrap;
+	}
+	.jb-table > tbody > tr > .jb-check {
+		grid-area: check;
+		align-self: start;
+		padding-top: 0.1rem;
+	}
+	.jb-table > tbody > tr > :nth-child(2) {
+		grid-area: job;
+		min-width: 0;
+	}
+	.jb-table > tbody > tr > :nth-child(3) {
+		grid-area: queue;
+		font-size: 0.8rem;
+	}
+	.jb-table > tbody > tr > :nth-child(4) {
+		grid-area: status;
+		align-self: start;
+	}
+	.jb-table > tbody > tr > [data-jb-cell="added"] {
+		grid-area: added;
+		font-size: 0.8rem;
+	}
+	.jb-table > tbody > tr > [data-jb-cell="took"] {
+		grid-area: took;
+		font-size: 0.8rem;
+	}
+	.jb-table > tbody > tr > [data-jb-cell="tries"] {
+		grid-area: tries;
+		font-size: 0.8rem;
+		color: var(--jb-quiet);
+	}
+	.jb-table > tbody > tr > :last-child {
+		grid-area: actions;
+		justify-self: end;
+	}
+	.jb-table > tbody > tr > [data-jb-cell="took"]:not(:empty)::before {
+		content: "Took ";
+	}
+	.jb-table > tbody > tr > [data-jb-cell="tries"]::before {
+		content: "Tries ";
+	}
+
+	/* A long job name wraps inside the card instead of running past it. */
+	.jb-table > tbody > tr:not(.jb-empty-row) > :nth-child(2),
+	.jb-job-open {
+		max-width: 100%;
+		text-align: start;
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	/* The status starts at the left of a fixed track, so badges line up from
+     card to card. */
+	.jb-status {
+		min-width: 0;
+	}
+	.jb-status .jb-progress {
+		width: 6.5rem;
+	}
+
+	.jb-table tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.jb-table tbody tr.is-picked {
+		background: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	}
+}
+
+/* Narrower still, the status gets its own line under the job name. */
+@container jb-list (max-width: 520px) {
+	.jb-table > tbody > tr:not(.jb-empty-row) {
+		grid-template-columns: 1.75rem auto auto auto minmax(0, 1fr) auto;
+		grid-template-areas:
+			"check job   job  job   job  job"
+			".     status status status status status"
+			".     queue queue queue queue queue"
+			".     added took tries .    actions";
+	}
+
+	.jb-status {
+		gap: 0.6rem;
+		flex-direction: row;
+		align-items: center;
+	}
+	.jb-table > tbody > tr:not(.jb-empty-row) {
+		column-gap: 0.6rem;
+	}
+}
+
+/* On phones a row keeps the job, its status and when it ran: the action
+   rises beside the status, and the queue, the job's id and the try count,
+   which the job's panel also shows, give way. */
+@container jb-list (max-width: 400px) {
+	.jb-table > tbody > tr:not(.jb-empty-row) {
+		grid-template-columns: 1.75rem max-content max-content minmax(0, 1fr) auto;
+		grid-template-areas:
+			"check job    job    job    job"
+			".     status status status actions"
+			".     added  took   .      .";
+	}
+
+	.jb-table > tbody > tr > [data-jb-cell="tries"],
+	.jb-table > tbody > tr > :nth-child(3),
+	.jb-table .jb-job .jb-mono {
+		display: none;
+	}
+}
+
+/* Placeholder rows, the empty state and freshly shown rows come after the
+   table rules so they win where both apply. */
+.jb-row-ghost {
+	& td {
+		padding-top: var(--basalt-pad-row-y);
+		padding-bottom: var(--basalt-pad-row-y);
+	}
+	& .basalt-skeleton {
+		max-width: 100%;
+	}
+}
+
+.jb-empty-row {
+	& > td {
+		padding: 0;
+		white-space: normal;
+	}
+	& .basalt-empty {
+		padding: 2.5rem 1rem;
+	}
+}
+
+.jb-new > td {
+	animation: jb-row-in 900ms ease;
+}
+
+@keyframes jb-row-in {
+	from {
+		background-color: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.jb-bump,
+	.jb-new > td {
+		animation: none;
+	}
+	.jb-progress > span {
+		transition: none;
+	}
+}
+
+/* Page buttons are bordered squares like the data tables, with the current
+   page filled in ink. */
+.jb-pager {
+	margin-top: 1.25rem;
+}
+
+.jb-page .pagination {
+	--bs-pagination-color: var(--basalt-copy-body);
+	--bs-pagination-bg: var(--basalt-plane);
+	--bs-pagination-border-color: var(--basalt-edge-strong);
+	--bs-pagination-hover-color: var(--basalt-copy);
+	--bs-pagination-hover-bg: var(--basalt-wash);
+	--bs-pagination-hover-border-color: var(--basalt-edge-strong);
+	--bs-pagination-focus-color: var(--basalt-copy);
+	--bs-pagination-focus-bg: var(--basalt-wash);
+	--bs-pagination-active-color: var(--basalt-plane);
+	--bs-pagination-active-bg: var(--basalt-copy);
+	--bs-pagination-active-border-color: var(--basalt-copy);
+	--bs-pagination-disabled-color: var(--jb-quiet);
+	--bs-pagination-disabled-bg: var(--basalt-plane);
+	--bs-pagination-disabled-border-color: var(--basalt-edge);
+
+	& .page-link {
+		color: var(--bs-pagination-color);
+	}
+	& .page-link:hover {
+		color: var(--bs-pagination-hover-color);
+	}
+
+	& .active > .page-link {
+		border-color: var(--bs-pagination-active-border-color);
+		color: var(--bs-pagination-active-color);
+		background-color: var(--bs-pagination-active-bg);
+	}
+
+	& .disabled > .page-link {
+		color: var(--bs-pagination-disabled-color);
+	}
+}
+
+/* The chart card: range switch and legend on one line, the canvas, then four
+   totals that fold to two columns on phones. */
+.jb-chart-bar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+
+.jb-legend {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+
+.jb-legend-swatch {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--basalt-success);
+
+	&.jb-legend-swatch-failed {
+		background: var(--basalt-danger);
+	}
+}
+
+.jb-chart {
+	position: relative;
+	height: 260px;
+}
+
+.jb-card canvas {
+	display: block;
+	max-width: 100%;
+}
+
+.jb-stats {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 1.5rem 0 0;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& div {
+		min-width: 0;
+	}
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.76rem;
+		font-weight: 500;
+		color: var(--jb-quiet);
+	}
+
+	& dd {
+		margin: 0;
+		font-size: 1.1rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+@media (max-width: 575.98px) {
+	.jb-stats {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Jobs that gave up: a danger-tinted icon, the job and its error, and a
+   Retry button. Skeleton rows stand in until the list arrives. */
+.jb-count {
+	font-size: 0.71rem;
+}
+
+.jb-failed {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.jb-failed-item {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: start;
+	padding: var(--basalt-pad-row-y) 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	&.is-leaving {
+		transform: translateX(12px);
+		opacity: 0;
+		transition:
+			opacity 260ms ease,
+			transform 260ms ease;
+	}
+}
+
+.jb-failed-icon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	color: var(--jb-danger-text);
+	background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+}
+
+.jb-failed-main {
+	min-width: 0;
+}
+
+.jb-failed-open {
+	display: block;
+	max-width: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-size: 0.9rem;
+	font-weight: 650;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+}
+
+.jb-failed-err {
+	margin: 0.25rem 0 0.3rem;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--jb-danger-text);
+}
+
+.jb-failed-meta {
+	margin: 0;
+	font-size: 0.76rem;
+	color: var(--jb-quiet);
+}
+
+.jb-failed-ghost {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 0;
+
+	& .basalt-skeleton-circle {
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 10px;
+	}
+}
+
+.jb-failed-ghost-lines {
+	display: flex;
+	gap: 0.5rem;
+	flex: 1;
+	flex-direction: column;
+}
+
+.jb-failed-empty {
+	flex: 1;
+	justify-content: center;
+
+	& .basalt-empty-title:focus {
+		outline: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.jb-failed-item.is-leaving {
+		transition: none;
+	}
+}
+
+/* The single-job panel: a tinted queue icon in the header, then status,
+   steps, the error card, the list of tries, the facts and the payload. */
+.jb-drawer {
+	--bs-offcanvas-width: min(480px, 100vw);
+
+	& .offcanvas-header {
+		gap: 0.75rem;
+	}
+}
+
+.jb-drawer-icon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--jb-tone, var(--basalt-hue)) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--jb-tone, var(--basalt-hue)) 16%, var(--basalt-plane));
+}
+
+.jb-d-status {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+
+	& .jb-progress {
+		width: 10rem;
+	}
+}
+
+.jb-d-steps {
+	margin-bottom: 1.5rem;
+}
+
+.jb-d-sub {
+	margin: 1.5rem 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* The error card is tinted with danger, and its stack trace folds away. */
+.jb-d-error {
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 35%, var(--basalt-edge));
+	background: color-mix(in srgb, var(--basalt-danger) 6%, var(--basalt-plane));
+}
+
+.jb-d-error-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	& > .bi {
+		color: var(--jb-danger-text);
+	}
+}
+
+.jb-d-error-title {
+	margin: 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.jb-d-error-copy {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-left: auto;
+}
+
+.jb-layer .jb-d-error-copy {
+	--bs-btn-bg: var(--basalt-plane);
+}
+
+.jb-d-error-msg {
+	margin: 0.6rem 0 0.5rem;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+}
+
+.jb-d-trace summary {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	border-radius: 4px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+
+	&::-webkit-details-marker {
+		display: none;
+	}
+	& .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+}
+
+.jb-d-trace[open] summary .bi {
+	transform: rotate(90deg);
+}
+
+/* The trace and the payload share one code-block look; the payload then
+   takes a faint wash and drops the top gap. */
+.jb-d-trace pre,
+.jb-d-payload {
+	margin: 0.6rem 0 0;
+	padding: 0.8rem 0.9rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.74rem;
+	line-height: 1.6;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+.jb-d-payload {
+	margin: 0;
+	background: color-mix(in srgb, var(--basalt-copy) 3%, var(--basalt-plane));
+}
+
+/* Tries run down a thin rail, each with a dot whose tint says how it went. */
+.jb-d-attempts {
+	position: relative;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		position: relative;
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: start;
+		padding: 0 0 1rem;
+	}
+
+	& li:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 1.45rem;
+		bottom: 0.2rem;
+		left: 0.6rem;
+		width: 2px;
+		background: var(--basalt-edge);
+	}
+
+	& li:last-child {
+		padding-bottom: 0;
+	}
+}
+
+.jb-d-attempt-dot {
+	display: grid;
+	place-items: center;
+	width: 1.3rem;
+	height: 1.3rem;
+	border-radius: 50%;
+	font-size: 0.7rem;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--basalt-copy) 8%, var(--basalt-plane));
+}
+
+.jb-d-attempt-dot-bad {
+	color: var(--jb-danger-text);
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+.jb-d-attempt-dot-ok {
+	color: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-success) 16%, var(--basalt-plane));
+}
+.jb-d-attempt-dot-run {
+	color: color-mix(in srgb, var(--basalt-info) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-info) 16%, var(--basalt-plane));
+}
+
+.jb-d-attempt-what {
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+}
+.jb-d-attempt-why {
+	display: block;
+	font-size: 0.77rem;
+	color: var(--jb-quiet);
+}
+.jb-d-attempt-time {
+	font-size: 0.76rem;
+	white-space: nowrap;
+	color: var(--jb-quiet);
+}
+
+/* Facts use the panel's own type scale: labels like its quiet lines, values
+   like its body text. */
+.jb-d-facts {
+	display: grid;
+	gap: 1rem 1.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+
+	& dt {
+		margin-bottom: 0.2rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--jb-quiet);
+	}
+	& dd {
+		display: flex;
+		gap: 0.25rem;
+		align-items: center;
+		min-width: 0;
+		margin: 0;
+		font-size: 0.875rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+.jb-d-copy {
+	display: inline-grid;
+	place-items: center;
+	width: 1.8rem;
+	height: 1.8rem;
+	border-radius: 6px;
+	color: var(--basalt-copy-body);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.jb-d-trace summary .bi {
+		transition: none;
+	}
+}
+
+/* On paper the numbers stand still and the controls that only work on
+   screen are left out. */
+@media print {
+	.jb-progress > span {
+		transition: none;
+	}
+
+	.jb-bump,
+	.jb-new > td {
+		animation: none;
+	}
+
+	.jb-card-tools,
+	.jb-actions,
+	.jb-queue-ctrl,
+	.jb-queue-head-workers {
+		display: none;
+	}
+}

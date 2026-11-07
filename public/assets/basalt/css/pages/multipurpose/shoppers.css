@@ -1,0 +1,922 @@
+/* Basalt - Store Customers page (shoppers.html)
+   Namespaced under .sc-*
+   The header, segmented control, drawer, dialog, choice cards, status
+   pills and empty state are the shared components from basalt.css; this
+   file lays out the account list and the drawer's contents. Every color
+   is a --basalt-* token, mixed with color-mix() so each palette and mode
+   keeps its own hues. The drawer and dialog sit outside the page
+   container, so they carry the page's color mixes too. */
+
+.sc-page,
+.sc-drawer,
+.sc-modal {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--sc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--sc-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--sc-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	--sc-row-on: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+/* Hues from the theme ramp: avatars, tiers and the drawer's bars. */
+.sc-tone-1 {
+	--sc-tone: var(--basalt-series-1);
+}
+.sc-tone-2 {
+	--sc-tone: var(--basalt-series-2);
+}
+.sc-tone-3 {
+	--sc-tone: var(--basalt-series-3);
+}
+.sc-tone-4 {
+	--sc-tone: var(--basalt-series-4);
+}
+.sc-tone-8 {
+	--sc-tone: var(--basalt-series-8);
+}
+/* Trade is the starting tier at list prices, so its pill stays neutral. */
+.sc-tone-plain {
+	--sc-tone: var(--basalt-copy-muted);
+}
+
+.sc-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	white-space: nowrap;
+	color: var(--sc-quiet);
+}
+.sc-strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sc-cell {
+	display: block;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sc-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--sc-link);
+}
+.sc-link:hover,
+.sc-link:focus-visible {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--basalt-copy);
+}
+.sc-page .form-control,
+.sc-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.sc-page .form-control::placeholder {
+	color: var(--sc-quiet);
+	opacity: 1;
+}
+.sc-page .dropdown-item .bi {
+	width: 1rem;
+	margin-right: 0.5rem;
+	text-align: center;
+}
+
+/* Account list card */
+.sc-list.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.sc-list.basalt-box > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+.sc-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.sc-head-text {
+	min-width: 0;
+}
+.sc-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sc-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--sc-quiet);
+}
+
+/* The reorder views: a count beside each label. */
+.sc-views .basalt-segmented-option {
+	white-space: nowrap;
+}
+.sc-count {
+	margin-left: 0.2rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--sc-quiet);
+}
+.sc-views .btn-check:checked + .basalt-segmented-option .sc-count {
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.sc-views {
+		display: flex;
+		width: 100%;
+	}
+	.sc-views .basalt-segmented-option {
+		flex: 1 1 auto;
+		min-width: 0;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+}
+
+.sc-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 1.5rem 0 0.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.sc-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 12rem;
+	max-width: 28rem;
+}
+.sc-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	z-index: 1;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--sc-quiet);
+	pointer-events: none;
+}
+.sc-search .form-control {
+	padding-left: 2.4rem;
+}
+.sc-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--sc-quiet);
+}
+@media (max-width: 575.98px) {
+	.sc-search {
+		flex-basis: 100%;
+	}
+}
+
+/* Worth a nudge
+   A soft wash of the palette marks the card that asks for action. Each
+   row: who, a bar of days since the last order (usual gap, then the days
+   past it), the state, and one action. */
+.sc-nudge.basalt-box {
+	background-image:
+		linear-gradient(180deg, color-mix(in srgb, var(--basalt-plane) 55%, transparent), var(--basalt-plane) 65%),
+		var(--basalt-grad-soft);
+}
+:root[data-basalt-gradients="off"] .sc-nudge.basalt-box {
+	background-image: none;
+}
+.sc-nudge.basalt-box > .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.sc-nudge.basalt-box > .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.sc-nudge .sc-head .btn {
+	white-space: nowrap;
+}
+.sc-nudges {
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.sc-nudge-row {
+	display: grid;
+	gap: 1rem 1.75rem;
+	grid-template-columns: minmax(15rem, 1.1fr) minmax(12rem, 1.6fr) 8.5rem 6.5rem;
+	align-items: center;
+	padding: 1rem 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+.sc-nudge-row > .sc-status {
+	justify-self: start;
+}
+.sc-nudge-row-act {
+	justify-self: end;
+}
+.sc-nudge-row-act .btn {
+	white-space: nowrap;
+}
+.sc-pace-track {
+	display: flex;
+	height: 0.6rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 7%, var(--basalt-plane));
+}
+.sc-pace-usual {
+	background: color-mix(in srgb, var(--basalt-series-1) 55%, var(--basalt-plane));
+}
+.sc-pace-late {
+	border-left: 2px solid var(--basalt-plane);
+	background: var(--sc-late);
+}
+/* The bars grow once, when the page opens; later redraws stay still. */
+.sc-nudges-grow .sc-pace-usual,
+.sc-nudges-grow .sc-pace-late {
+	transform-origin: left;
+	animation: sc-grow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.sc-nudges-grow .sc-pace-late {
+	animation-delay: 0.25s;
+}
+.sc-pace-due {
+	--sc-late: var(--basalt-warning);
+}
+.sc-pace-quiet {
+	--sc-late: var(--basalt-danger);
+}
+.sc-pace .sc-sub {
+	margin-top: 0.5rem;
+	white-space: normal;
+}
+.sc-sent {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--sc-quiet);
+}
+.sc-sent .bi {
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+}
+.sc-sent:focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.sc-key {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--sc-quiet);
+}
+.sc-key-item {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.sc-key-swatch {
+	width: 1.4rem;
+	height: 0.5rem;
+	border-radius: 999px;
+}
+.sc-key-swatch-usual {
+	background: color-mix(in srgb, var(--basalt-series-1) 55%, var(--basalt-plane));
+}
+.sc-key-swatch-late {
+	background: linear-gradient(90deg, var(--basalt-warning) 50%, var(--basalt-danger) 50%);
+}
+@media (max-width: 1199.98px) {
+	.sc-nudge-row {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"who  state act"
+			"pace pace  pace";
+	}
+	.sc-nudge-row > .sc-acc {
+		grid-area: who;
+	}
+	.sc-nudge-row > .sc-pace {
+		grid-area: pace;
+		padding-left: 3.35rem;
+	}
+	.sc-nudge-row > .sc-status {
+		grid-area: state;
+	}
+	.sc-nudge-row > .sc-nudge-row-act {
+		grid-area: act;
+	}
+}
+@media (max-width: 575.98px) {
+	.sc-nudge-row {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who   who"
+			"pace  pace"
+			"state act";
+	}
+	.sc-nudge-row > .sc-pace {
+		padding-left: 0;
+	}
+	.sc-nudge .sc-head > .btn {
+		width: 100%;
+	}
+}
+
+/* Table */
+.sc-table-wrap {
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.sc-table-wrap[hidden] {
+	display: none;
+}
+.sc-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+}
+.sc-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.6rem;
+	border-bottom-color: var(--basalt-edge);
+	vertical-align: middle;
+	color: inherit;
+	background: transparent;
+}
+.sc-table > tbody > tr:last-child > * {
+	border-bottom: 0;
+}
+.sc-table thead th {
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--sc-quiet);
+}
+.sc-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+}
+.sc-sort:hover,
+[aria-sort] .sc-sort {
+	color: var(--basalt-copy);
+}
+.sc-sort:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.sc-sort-idle {
+	opacity: 0.55;
+}
+.sc-sort:hover .sc-sort-idle {
+	opacity: 1;
+}
+
+.sc-row {
+	cursor: pointer;
+}
+.sc-row:hover {
+	background: var(--sc-row-hover);
+}
+.sc-row.is-selected {
+	background: var(--sc-row-on);
+}
+.sc-row.is-fresh {
+	animation: sc-fresh 2s ease;
+}
+@keyframes sc-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.sc-col-acc {
+	min-width: 16rem;
+}
+.sc-col-tier {
+	width: 9.5rem;
+}
+.sc-col-spend {
+	width: 9rem;
+	text-align: right;
+}
+.sc-col-spend .sc-sort {
+	flex-direction: row-reverse;
+}
+.sc-col-last {
+	width: 10rem;
+}
+.sc-col-pace {
+	width: 12rem;
+}
+.sc-col-go {
+	width: 6rem;
+	text-align: right;
+}
+
+/* The account: a lettered avatar, the name and a quiet line with the
+   buyer and the city. */
+.sc-acc {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.sc-acc-text {
+	min-width: 0;
+}
+.sc-acc-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+a.sc-acc-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.sc-acc-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.sc-avatar {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--sc-tone, var(--basalt-hue)) 20%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--sc-tone, var(--basalt-hue)) 45%, var(--basalt-plane));
+	background-image: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--sc-tone, var(--basalt-hue)) 70%, var(--basalt-plane)),
+		transparent 75%
+	);
+}
+[data-bs-theme="dark"] .sc-avatar {
+	color: var(--basalt-copy);
+	background-color: color-mix(in srgb, var(--sc-tone, var(--basalt-hue)) 38%, var(--basalt-plane));
+	background-image: linear-gradient(
+		140deg,
+		transparent 25%,
+		color-mix(in srgb, var(--sc-tone, var(--basalt-hue)) 20%, var(--basalt-plane))
+	);
+}
+:root[data-basalt-gradients="off"] .sc-avatar {
+	background-image: none;
+}
+.sc-avatar-lg {
+	width: 2.9rem;
+	height: 2.9rem;
+	font-size: 0.92rem;
+}
+
+/* Tier pill in the tier's hue. */
+.sc-tier {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.18rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--sc-tone) 42%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--sc-tone) 15%, var(--basalt-plane));
+}
+[data-bs-theme="dark"] .sc-tier {
+	color: color-mix(in srgb, var(--sc-tone) 30%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--sc-tone) 24%, var(--basalt-plane));
+}
+.sc-col-tier .sc-sub,
+.sc-col-pace .sc-sub {
+	margin-top: 0.3rem;
+}
+.sc-status {
+	font-size: 0.77rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.sc-stack-label {
+	display: none;
+}
+
+/* Below 1200px the columns no longer fit beside the menu, so each row
+   becomes a small stacked record: who and the reorder state on top, then
+   tier, spend and last order on a second line under the name. */
+@media (max-width: 1199.98px) {
+	.sc-stack-label {
+		display: inline;
+		color: var(--sc-quiet);
+	}
+	.sc-table-wrap {
+		margin: 0;
+		overflow: visible;
+	}
+	.sc-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.sc-table,
+	.sc-table tbody {
+		display: block;
+	}
+	.sc-table tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+		grid-template-areas:
+			"acc  acc   pace go"
+			"tier spend last go";
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.sc-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.sc-table > :not(caption) > * > * {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.sc-table .sc-col-acc {
+		grid-area: acc;
+	}
+	.sc-table .sc-col-pace {
+		grid-area: pace;
+	}
+	.sc-table .sc-col-go {
+		grid-area: go;
+		align-self: center;
+	}
+	.sc-table .sc-col-tier {
+		grid-area: tier;
+		padding-left: 3.35rem;
+	}
+	.sc-table .sc-col-spend {
+		grid-area: spend;
+	}
+	.sc-table .sc-col-last {
+		grid-area: last;
+	}
+}
+@media (max-width: 767.98px) {
+	.sc-table tr {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"acc   acc   go"
+			"pace  spend spend"
+			"tier  last  last";
+	}
+	.sc-table .sc-col-tier {
+		padding-left: 0;
+	}
+	.sc-table .sc-col-go {
+		align-self: start;
+	}
+	.sc-table .sc-col-spend,
+	.sc-table .sc-col-last {
+		text-align: right;
+	}
+	.sc-acc-text .sc-sub {
+		white-space: normal;
+	}
+}
+
+/* On a phone a customer keeps the name, their pace and what they have
+   spent. The tier, the last order and the notes under each wait in the
+   quick view. */
+@media (max-width: 575.98px) {
+	.sc-table .sc-row {
+		grid-template-areas:
+			"acc   acc   go"
+			"pace  spend spend";
+	}
+	.sc-table :is(.sc-col-tier, .sc-col-last),
+	.sc-table :is(.sc-col-acc, .sc-col-spend, .sc-col-pace) .sc-sub {
+		display: none;
+	}
+}
+
+.sc-more {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.sc-more[hidden] {
+	display: none;
+}
+.sc-more-text {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--sc-quiet);
+}
+.sc-more .btn {
+	white-space: nowrap;
+}
+.sc-empty {
+	margin: 1.5rem 0 0.5rem;
+}
+.sc-empty[hidden] {
+	display: none;
+}
+
+/* Drawer */
+.sc-drawer.offcanvas {
+	--bs-offcanvas-width: 480px;
+}
+@media (max-width: 575.98px) {
+	.sc-drawer.offcanvas {
+		--bs-offcanvas-width: min(400px, 92vw);
+	}
+}
+.sc-drawer .offcanvas-header {
+	gap: 0.9rem;
+}
+.sc-drawer .basalt-drawer-foot .btn {
+	white-space: nowrap;
+}
+.sc-d-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sc-d-pace {
+	display: grid;
+	gap: 0.75rem;
+	justify-items: start;
+}
+.sc-d-lead {
+	margin: 0;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+.sc-d-lead strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.sc-d-remind {
+	white-space: nowrap;
+}
+.sc-d-done {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.sc-d-done[hidden] {
+	display: none;
+}
+.sc-d-done .bi {
+	color: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+}
+.sc-d-done:focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.sc-d-note {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	color: var(--sc-quiet);
+}
+.sc-d-note:last-child {
+	margin-bottom: 0;
+}
+.sc-d-note[hidden] {
+	display: none;
+}
+
+.sc-orders {
+	margin: 0 0 0.75rem;
+	padding: 0;
+	list-style: none;
+}
+.sc-orders[hidden] {
+	display: none;
+}
+.sc-order {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto 6.5rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.sc-order:first-child {
+	border-top: 1px solid var(--basalt-edge);
+}
+.sc-order-main {
+	min-width: 0;
+}
+.sc-order-status {
+	font-size: 0.74rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.sc-order-amt {
+	font-weight: 600;
+	font-size: 0.85rem;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+/* Ranked bars: name, bar and units on one line. */
+.sc-bars {
+	display: grid;
+	gap: 0.8rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sc-bar {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 3rem;
+	align-items: center;
+	font-size: 0.875rem;
+}
+.sc-bar-name {
+	overflow: hidden;
+	font-weight: 500;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sc-bar-track {
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.sc-bar-fill {
+	transform-origin: left;
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--sc-tone);
+	animation: sc-grow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes sc-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+.sc-bar-value {
+	font-weight: 600;
+	font-size: 0.85rem;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+.sc-facts {
+	display: grid;
+	margin: 0;
+}
+.sc-facts > div {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 8.5rem minmax(0, 1fr);
+	align-items: center;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.sc-facts > div:last-child {
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.sc-facts dt {
+	font-weight: 500;
+	color: var(--sc-quiet);
+}
+.sc-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* Open-an-account dialog */
+.sc-form-row {
+	margin-bottom: 1.25rem;
+}
+.sc-form-row-last {
+	margin-bottom: 0;
+}
+.sc-modal legend.form-label {
+	float: none;
+	margin-bottom: 0.5rem;
+	font-size: inherit;
+	line-height: inherit;
+}
+.sc-tiers {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.sc-tiers .basalt-choice-card {
+	align-items: center;
+	text-align: center;
+}
+.sc-tiers .basalt-choice-card-title {
+	padding-left: 1.75rem;
+} /* matches the room kept for the check mark, so the title stays centered */
+.sc-pays .basalt-segmented-option {
+	white-space: nowrap;
+}
+@media (max-width: 575.98px) {
+	.sc-tiers {
+		grid-template-columns: 1fr;
+	}
+	.sc-tiers .basalt-choice-card {
+		align-items: flex-start;
+		text-align: left;
+	}
+	.sc-pays {
+		display: flex;
+	}
+	.sc-pays .basalt-segmented-option {
+		flex: 1 1 auto;
+		min-width: 0;
+		line-height: 1.25;
+		text-align: center;
+		white-space: normal;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-row {
+		transition: none;
+	}
+	.sc-row.is-fresh,
+	.sc-bar-fill,
+	.sc-nudges-grow .sc-pace-usual,
+	.sc-nudges-grow .sc-pace-late {
+		animation: none;
+	}
+}
+@media print {
+	.sc-toolbar,
+	.sc-views,
+	.sc-more,
+	.sc-col-go,
+	.sc-nudge-row-act,
+	.sc-nudge .sc-head .btn {
+		display: none;
+	}
+	.sc-row {
+		transition: none;
+	}
+	.sc-row.is-fresh,
+	.sc-bar-fill,
+	.sc-nudges-grow .sc-pace-usual,
+	.sc-nudges-grow .sc-pace-late {
+		animation: none;
+	}
+}

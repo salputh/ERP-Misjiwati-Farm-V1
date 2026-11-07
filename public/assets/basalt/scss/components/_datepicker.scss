@@ -1,0 +1,260 @@
+/* The date field pairs a text input with a calendar button, and
+   [data-basalt-datepicker] in assets/basalt/js/components/datepicker.js builds the month grid that opens
+   from it. The grid floats over everything, dialogs and drawers too, and
+   still fits a 320px phone. Text and button share a single focus ring. */
+
+.basalt-datepicker {
+	/* Small gray text pulls the muted token toward the body color, which keeps
+     it at 4.5:1 or better on every palette. */
+	--basalt-datepicker-quiet: color-mix(in srgb, var(--basalt-copy-muted) 82%, var(--basalt-copy));
+	/* The chosen day moves primary toward its deep shade so the number printed
+     on it stays above 4.5:1 on every palette. */
+	--basalt-datepicker-fill: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-hue-deep));
+	position: relative;
+
+	/* The group wears the ring for both parts; an invalid entry turns it red. */
+	.input-group {
+		border-radius: var(--bs-border-radius);
+
+		&:has(.form-control:focus),
+		&:has(.basalt-datepicker-btn:focus-visible) {
+			box-shadow: 0 0 0 0.25rem var(--basalt-hue-border);
+
+			> * {
+				border-color: var(--basalt-hue);
+			}
+		}
+
+		&:has(.is-invalid:focus) {
+			box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-danger) 25%, transparent);
+		}
+
+		.form-control.is-invalid {
+			border-color: var(--basalt-danger);
+		}
+	}
+
+	.form-control:focus {
+		box-shadow: none;
+	}
+
+	&.is-open .basalt-datepicker-btn {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+.basalt-datepicker-btn:focus-visible {
+	box-shadow: none;
+}
+
+.basalt-datepicker-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.875em;
+	color: var(--bs-form-invalid-color);
+}
+
+/* The calendar is fixed to the viewport and slides in from the side of the
+   field it opens on. */
+.basalt-datepicker-pop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1075;
+	width: min(21rem, calc(100vw - 16px));
+	padding: 0.875rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	overflow-y: auto;
+	text-align: start;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow:
+		0 20px 48px color-mix(in srgb, var(--basalt-copy) 18%, transparent),
+		0 2px 6px color-mix(in srgb, var(--basalt-copy) 8%, transparent);
+
+	&[hidden] {
+		display: none;
+	}
+
+	&.is-open {
+		animation: basalt-datepicker-in 170ms ease-out;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+
+		&.is-above {
+			animation-name: basalt-datepicker-in-above;
+		}
+	}
+
+	@media (min-width: 400px) {
+		padding: 1rem;
+	}
+}
+
+@keyframes basalt-datepicker-in {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+}
+
+@keyframes basalt-datepicker-in-above {
+	from {
+		transform: translateY(4px);
+		opacity: 0;
+	}
+}
+
+/* The month title sits between round previous and next buttons. */
+.basalt-datepicker-nav {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.6rem;
+}
+
+.basalt-datepicker-title {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	text-align: center;
+	color: var(--basalt-copy);
+}
+
+/* With data-years the title is a month and a year menu, side by side. */
+.basalt-datepicker-jumps {
+	display: flex;
+	gap: 0.3rem;
+	justify-content: center;
+
+	& .form-select {
+		width: auto;
+		padding-right: 1.75rem;
+		font-weight: 650;
+	}
+}
+
+.basalt-datepicker-navbtn {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	transition: background-color 150ms ease;
+
+	&:hover:not(:disabled) {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+
+	&:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+}
+
+/* Weeks are rows of equal cells with a little air between them. */
+.basalt-datepicker-grid {
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: separate;
+	border-spacing: 0 3px;
+
+	th {
+		padding: 0 0 0.3rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		text-align: center;
+		color: var(--basalt-datepicker-quiet);
+	}
+
+	abbr {
+		text-decoration: none;
+		cursor: default;
+	}
+
+	td {
+		padding: 0;
+		text-align: center;
+	}
+}
+
+/* Day marks stack in a fixed order: today, then unavailable, then chosen,
+   so a later mark always outranks an earlier one on the same day. */
+.basalt-datepicker-day {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 2.4rem;
+	padding: 0;
+	border: 0;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: transparent;
+	transition:
+		background-color 110ms ease,
+		color 110ms ease;
+
+	&.is-today {
+		font-weight: 700;
+		box-shadow: inset 0 0 0 1.5px var(--basalt-edge-strong);
+	}
+
+	&.is-off {
+		font-weight: 400;
+		color: var(--basalt-datepicker-quiet);
+		cursor: not-allowed;
+	}
+
+	&.is-struck {
+		text-decoration: line-through;
+		text-decoration-color: color-mix(in srgb, var(--basalt-datepicker-quiet) 70%, transparent);
+	}
+
+	&.is-selected {
+		font-weight: 650;
+		color: var(--basalt-on-hue);
+		background: var(--basalt-datepicker-fill);
+
+		&.is-today {
+			box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--basalt-on-hue) 55%, transparent);
+		}
+
+		/* The fill already marks the chosen day, so focus darkens it instead of
+       drawing a ring around it. */
+		&:focus-visible {
+			outline: 0;
+			background: color-mix(in srgb, var(--basalt-datepicker-fill) 86%, var(--basalt-copy));
+		}
+	}
+
+	&:hover:not(.is-off):not(.is-selected) {
+		background: var(--basalt-wash);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}

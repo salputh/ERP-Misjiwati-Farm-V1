@@ -1,0 +1,1263 @@
+/*
+ * Styles for the manual journal: journal.html (classes starting .jn-) and
+ * journal-entry-details.html (classes starting .jd-). Shared pieces such as
+ * page and detail headers, status pills, avatars, drawers, dialogs, empty
+ * states and toasts come from basalt.css; this sheet adds the status tiles,
+ * both entry tables and their stacked phone layout, the quick view, the
+ * entry form and the cards on the details page. Colors are --basalt-*
+ * tokens throughout, so each palette and light or dark mode carries over.
+ */
+
+/* Every scope these pages use shares a few mixed tones and a calmer set of
+   gray buttons. The quiet tone pulls the muted gray toward the body color
+   so small text holds 4.5:1 on light palettes and hovered rows alike. */
+:is(.jn-page, .jn-drawer, .jn-modal, .jd-page, .jd-modal) {
+	--jn-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--jn-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--jn-good: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	--jn-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--jn-bad: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+	--jn-line: var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+
+	& .btn-outline-secondary {
+		--bs-btn-color: var(--basalt-copy-body);
+		--bs-btn-border-color: var(--basalt-edge-strong);
+		--bs-btn-hover-color: var(--basalt-copy);
+		--bs-btn-hover-bg: var(--basalt-wash);
+		--bs-btn-hover-border-color: var(--basalt-edge-strong);
+		--bs-btn-active-color: var(--basalt-copy);
+		--bs-btn-active-bg: var(--basalt-wash);
+		--bs-btn-active-border-color: var(--basalt-edge-strong);
+	}
+}
+
+.jn-page .btn-outline-primary {
+	--bs-btn-color: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-plane));
+}
+
+/* Text fields sit on the plain surface with a firm edge and a readable hint. */
+:is(.jn-page, .jn-modal, .jd-page) .form-control {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+
+	&::placeholder {
+		color: var(--jn-quiet);
+		opacity: 1;
+	}
+}
+
+.jn-quiet {
+	color: var(--jn-quiet);
+}
+.jn-stack {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+
+/* Anything marked hidden, and any list or slot the script left empty, takes
+   no room at all, whatever display its own rule gives it. */
+.jn-card-head > .btn[hidden],
+.jn-table[hidden],
+.jn-empty[hidden],
+.jn-foot[hidden],
+.jd-none[hidden],
+.jd-error[hidden],
+.jd-head .basalt-hero-actions:empty,
+.jd-fact-sub:empty,
+.jd-files:empty,
+.jd-notes:empty {
+	display: none;
+}
+
+/* Column headings, drawer section headings and the form's line headings all
+   read as the same small uppercase label. */
+.jn-table > thead > tr > th,
+.jn-d-heading,
+:is(.jn-d-lines, .jd-lines) thead th,
+.jn-lines-head {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--jn-quiet);
+}
+
+/* Each card is a size container, so its contents respond to the card's own
+   width rather than the window's. Padding tightens on phones. */
+:is(.jn-card, .jd-card) {
+	container: jn-card / inline-size;
+	min-width: 0;
+
+	&.basalt-box .card-body {
+		padding: 1.75rem;
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem var(--basalt-pad-x-narrow);
+		}
+	}
+}
+
+:is(.jn-card-head, .jd-card-head) {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+}
+
+:is(.jn-card-title, .jd-card-title) {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+
+/* The queue title takes focus after an approval; only keyboard users see a ring. */
+.jn-card-title {
+	&:focus {
+		outline: none;
+	}
+	&:focus-visible {
+		border-radius: 4px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+}
+
+:is(.jn-card-sub, .jd-card-desc) {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--jn-quiet);
+}
+
+/* Four plain status figures, each marked by a short bar in its status
+   color above the label. Pressing one filters the list further down. */
+.jn-glance {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.jn-tile {
+	--jn-tone: var(--basalt-copy-muted);
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: flex-start;
+	width: 100%;
+	height: 100%;
+	padding: 0.9rem 1rem 1rem;
+	border: 1px solid transparent;
+	border-radius: 12px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&::before {
+		content: "";
+		width: 1.75rem;
+		height: 4px;
+		margin-bottom: 0.4rem;
+		border-radius: 4px;
+		background: var(--jn-tone);
+	}
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-edge-strong);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.jn-tile-waiting {
+	--jn-tone: var(--basalt-warning);
+}
+.jn-tile-posted {
+	--jn-tone: var(--basalt-success);
+}
+.jn-tile-reversed {
+	--jn-tone: var(--basalt-info);
+}
+.jn-tile-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--jn-quiet);
+}
+.jn-tile-value {
+	font-size: 1.6rem;
+	font-weight: 700;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+}
+.jn-tile-sub {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--jn-quiet);
+}
+
+/* A narrow card fits two tiles per row, and the narrowest lets labels wrap. */
+@container jn-card (max-width: 620px) {
+	.jn-glance {
+		gap: 0.5rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@container jn-card (max-width: 340px) {
+	.jn-tile {
+		padding: 0.75rem 0.65rem 0.8rem;
+	}
+	.jn-tile-label {
+		white-space: normal;
+	}
+}
+
+/* Search on the left, status filter beside it, wrapping as space runs out. */
+.jn-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+
+.jn-search {
+	position: relative;
+	flex: 1 1 14rem;
+	min-width: 11rem;
+	max-width: 24rem;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--jn-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+
+.jn-filter {
+	flex-wrap: wrap;
+}
+
+/* On a phone the five filter choices split one full-width row between them. */
+@container jn-card (max-width: 480px) {
+	.jn-filter {
+		display: flex;
+		flex-wrap: nowrap;
+		width: 100%;
+	}
+	.jn-filter .basalt-segmented-option {
+		flex: 1 1 auto;
+		justify-content: center;
+		padding-left: 0.3rem;
+		padding-right: 0.3rem;
+		font-size: 0.8rem;
+	}
+}
+
+/* Cells in every entry table stay on a single line. */
+.jn-table td,
+:is(.jn-d-lines, .jd-lines) td {
+	white-space: nowrap;
+}
+
+.jn-col-date,
+.jd-col-code {
+	width: 4.5rem;
+}
+
+/* The two list tables reach past the card padding by the cell padding, so
+   the first column's text lines up with the card title above it. */
+.jn-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	width: calc(100% + 1.5rem);
+	margin: 0 -0.75rem;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.75rem;
+		vertical-align: middle;
+	}
+	& > thead > tr > th {
+		padding-top: 0.65rem;
+		padding-bottom: 0.65rem;
+		border-bottom-color: var(--basalt-edge-strong);
+		white-space: nowrap;
+	}
+	& > tbody > tr:last-child > * {
+		border-bottom-width: 0;
+	}
+	& tbody tr {
+		cursor: pointer;
+	}
+	& tbody tr:hover > * {
+		--bs-table-bg-state: var(--basalt-wash);
+		color: var(--basalt-copy);
+	}
+	& .jn-pick {
+		width: 2.5rem;
+		padding-right: 0;
+	}
+	& .form-check-input {
+		display: block;
+		margin: 0;
+		border-color: var(--basalt-edge-strong);
+		cursor: pointer;
+
+		&:disabled {
+			cursor: default;
+		}
+	}
+	& .jn-col-desc {
+		width: 24%;
+	}
+	& .jn-col-accts {
+		width: 30%;
+	}
+}
+
+.jn-col-ref {
+	width: 6.5rem;
+}
+.jn-ellip {
+	max-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* With room to spare, the description (and accounts, while shown) take the
+   leftover width and every other column shrinks to its content. */
+@container jn-card (min-width: 601px) {
+	.jn-table > tbody > tr > td:not(.jn-ellip) {
+		width: 1%;
+	}
+}
+
+.jn-num {
+	color: var(--basalt-copy);
+}
+.jn-ref {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.jn-arrow {
+	margin: 0 0.2rem;
+}
+
+.jn-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* A person is an avatar and a name that trims itself when the cell is tight. */
+.jn-who {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	max-width: 100%;
+
+	& .basalt-avatar {
+		flex-shrink: 0;
+	}
+}
+.jn-who-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+
+.jn-acts {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: flex-end;
+
+	& .btn-icon {
+		width: 32px;
+		height: 32px;
+		padding: 0;
+	}
+}
+
+/* A row just added glows in the brand tint and fades back to the card. */
+.jn-row.is-fresh > td {
+	animation: jn-fresh 1600ms ease both;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+@keyframes jn-fresh {
+	from {
+		background-color: color-mix(in srgb, var(--basalt-hue) 12%, transparent);
+	}
+}
+
+.jn-empty {
+	padding: 2rem 1rem;
+}
+.jn-foot {
+	margin: 1rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+	color: var(--jn-quiet);
+}
+
+/* As the card narrows, columns the quick view repeats drop out one by one:
+   the author first, then the accounts, then the reference. */
+@container jn-card (max-width: 1240px) {
+	.jn-table-all [data-cell="who"],
+	.jn-table-all .jn-col-who {
+		display: none;
+	}
+}
+@container jn-card (max-width: 920px) {
+	.jn-table-all [data-cell="accts"],
+	.jn-table-all .jn-col-accts {
+		display: none;
+	}
+	.jn-table-all .jn-col-desc {
+		width: auto;
+	}
+}
+@container jn-card (max-width: 980px) {
+	.jn-table-waiting [data-cell="accts"],
+	.jn-table-waiting .jn-col-accts {
+		display: none;
+	}
+	.jn-table-waiting .jn-col-desc {
+		width: auto;
+	}
+}
+@container jn-card (max-width: 880px) {
+	.jn-table-waiting [data-cell="who"],
+	.jn-table-waiting .jn-col-who {
+		display: none;
+	}
+}
+@container jn-card (max-width: 740px) {
+	.jn-table-all [data-cell="ref"],
+	.jn-table-all .jn-col-ref {
+		display: none;
+	}
+}
+
+/* Narrower still, each row turns into a short record: description, amount
+   and buttons on top, then date, reference and status in a quieter line. */
+@container jn-card (max-width: 600px) {
+	.jn-table {
+		width: 100%;
+		margin: 0;
+	}
+	.jn-table,
+	.jn-table > tbody {
+		display: block;
+	}
+	.jn-table > thead {
+		display: none;
+	}
+	.jn-table > tbody > tr {
+		display: flex;
+		column-gap: 0.75rem;
+		flex-wrap: wrap;
+		align-items: center;
+		padding: 0.9rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+
+		&:last-child {
+			border-bottom: 0;
+		}
+		& > td {
+			display: block;
+			width: auto;
+			max-width: none;
+			padding: 0;
+			border: 0;
+		}
+		&::after {
+			content: "";
+			flex-basis: 100%;
+			order: 2;
+		}
+	}
+	.jn-table [data-cell="pick"],
+	.jn-table [data-cell="amount"],
+	.jn-table [data-cell="go"] {
+		order: 1;
+	}
+	.jn-table [data-cell="desc"] {
+		flex: 1 1 0;
+		order: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.jn-table [data-cell="date"],
+	.jn-table [data-cell="ref"],
+	.jn-table [data-cell="who"] {
+		order: 3;
+		margin-top: 0.3rem;
+		font-size: 0.8rem;
+		color: var(--jn-quiet);
+	}
+	.jn-table [data-cell="ref"]::before {
+		content: "\00b7\2002";
+		margin-left: -0.35rem;
+		font-family: var(--bs-body-font-family);
+	}
+	.jn-table [data-cell="status"] {
+		order: 3;
+		margin-top: 0.3rem;
+		margin-left: auto;
+	}
+	.jn-table [data-cell="accts"] {
+		display: none;
+	}
+	.jn-table-all [data-cell="who"] {
+		display: none;
+	}
+	.jn-table-all [data-cell="ref"] {
+		display: block;
+	}
+	.jn-table-waiting {
+		& [data-cell="who"] {
+			display: block;
+			padding-left: 1.625rem;
+		}
+		& [data-cell="who"] .basalt-avatar {
+			display: none;
+		}
+		& [data-cell="who"] .jn-who-name {
+			color: var(--jn-quiet);
+		}
+		& [data-cell="act"] {
+			order: 3;
+			margin-top: 0.5rem;
+			margin-left: auto;
+		}
+		& [data-cell="pick"] {
+			align-self: center;
+		}
+	}
+	.jn-table .jn-pick {
+		width: auto;
+		padding: 0;
+	}
+}
+
+/* At phone width the approval buttons drop to a line of their own. */
+@container jn-card (max-width: 480px) {
+	.jn-table-waiting {
+		& [data-cell="act"] {
+			flex-basis: 100%;
+			order: 4;
+			margin-left: 0;
+			margin-top: 0.75rem;
+			padding-left: 1.625rem;
+		}
+		& > tbody > tr > [data-cell="act"] {
+			display: flex;
+		}
+		& [data-cell="act"] .jn-acts {
+			justify-content: flex-start;
+		}
+	}
+	.jn-table-all [data-cell="go"] .btn-icon:last-child {
+		display: none;
+	}
+}
+
+/* The quick view: where the entry stands, its lines, then a few facts. */
+.jn-drawer {
+	--bs-offcanvas-width: min(480px, 100vw);
+}
+.jn-d-section + .jn-d-section {
+	margin-top: 1.75rem;
+}
+.jn-d-heading {
+	margin: 0 0 0.75rem;
+}
+.jn-d-state {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.jn-d-text,
+.jd-note-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+}
+
+.jn-d-facts {
+	display: grid;
+	gap: 0.75rem 1rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+	margin: 0;
+	font-size: 0.875rem;
+
+	& > div {
+		display: contents;
+	}
+	& dt {
+		font-weight: 400;
+		color: var(--jn-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		color: var(--basalt-copy);
+	}
+}
+.jn-ellip-block {
+	overflow-wrap: anywhere;
+}
+
+/* Debit and credit lines, in the quick view and on the full page alike.
+   The outer cells sit flush with the card edges. */
+:is(.jn-d-lines, .jd-lines) {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy);
+	--bs-table-border-color: var(--basalt-edge);
+	margin: 0;
+	font-size: 0.875rem;
+
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		white-space: nowrap;
+	}
+	& tfoot > tr > * {
+		border-top: 1px solid var(--basalt-edge-strong);
+		border-bottom: 0;
+		font-weight: 700;
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+}
+
+.jn-d-lines {
+	& > :not(caption) > * > * {
+		padding: 0.6rem 0.5rem;
+	}
+	& .text-end {
+		width: 1%;
+		padding-left: 1.25rem;
+	}
+}
+.jn-acct {
+	color: var(--basalt-copy);
+}
+
+/* The new entry dialog: date and description, the lines, the running
+   totals, then an optional attachment. */
+.jn-form-row {
+	margin-bottom: 1.25rem;
+}
+.jn-form-row-last {
+	margin: 1.5rem 0 0;
+}
+.jn-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--jn-quiet);
+}
+.jn-optional {
+	margin-left: 0.25rem;
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--jn-quiet);
+}
+.jn-modal .invalid-feedback {
+	color: var(--jn-bad);
+}
+.jn-file {
+	max-width: 26rem;
+}
+
+.jn-lines {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+}
+.jn-lines-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* The heading row and each line share one grid, so the labels sit over
+   their inputs. */
+.jn-lines-head,
+.jn-line {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: minmax(0, 1fr) 8.5rem 8.5rem 2.25rem;
+	align-items: center;
+}
+.jn-lines-head {
+	padding-bottom: 0.4rem;
+}
+.jn-lines-list {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0 0 0.9rem;
+	padding: 0;
+	list-style: none;
+}
+.jn-line .form-control {
+	text-align: right;
+}
+
+/* The first two lines can't go, since an entry needs two, so their remove
+   button keeps its slot but stays invisible rather than grayed out. */
+.jn-line-remove {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: var(--basalt-edge);
+	display: inline-grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	padding: 0;
+
+	&:disabled {
+		visibility: hidden;
+	}
+}
+.jn-line-label {
+	display: none;
+}
+
+.jn-totals {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+}
+.jn-totals-sums {
+	display: flex;
+	gap: 0.25rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		margin-left: 0.3rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The balance verdict turns green, amber or red with what it reports. */
+.jn-totals-state {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.84rem;
+	font-weight: 600;
+	color: var(--jn-quiet);
+
+	&.is-ok {
+		color: var(--jn-good);
+	}
+	&.is-off {
+		color: var(--jn-warn);
+	}
+	&.is-error {
+		color: var(--jn-bad);
+	}
+}
+
+/* Phones can't fit three footer buttons in a row: Cancel and Save draft
+   pair up and Submit spans beneath them. Each line stacks its account
+   over the two amounts. */
+@media (max-width: 575.98px) {
+	.jn-form .basalt-dialog-foot {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+	.jn-form .basalt-dialog-foot > [data-jn-f="submit"] {
+		grid-column: 1 / -1;
+	}
+	.jn-lines-head {
+		display: none;
+	}
+	.jn-line {
+		column-gap: 0;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+		grid-template-areas: "acct acct acct" "dr cr remove";
+		align-items: end;
+		padding-bottom: 0.9rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.jn-line-acct {
+		grid-area: acct;
+	}
+	.jn-line-dr {
+		grid-area: dr;
+		margin-right: 0.6rem;
+	}
+	.jn-line-cr {
+		grid-area: cr;
+	}
+	.jn-line-remove {
+		grid-area: remove;
+		margin-left: 0.6rem;
+	}
+	.jn-line-remove:disabled {
+		display: none;
+	}
+	.jn-line-label {
+		display: block;
+		margin-bottom: 0.3rem;
+		font-size: 0.77rem;
+		color: var(--jn-quiet);
+	}
+}
+
+/* The details header puts the title block and its actions on one baseline;
+   below tablet width the actions move under the title. */
+.basalt-hero-detail.jd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+
+	@media (max-width: 767.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.jd-head {
+	& .basalt-hero-actions {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		align-self: end;
+		justify-content: flex-end;
+		margin: 0;
+
+		@media (max-width: 767.98px) {
+			justify-content: flex-start;
+		}
+	}
+	& .basalt-hero-title:focus {
+		outline: none;
+	}
+}
+
+.jd-tags {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+
+.jd-link {
+	border-radius: 4px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--jn-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* Five facts in a grid of two, three or five columns as the page widens. */
+.jd-facts {
+	display: grid;
+	gap: 1.25rem 1.5rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+
+	@media (min-width: 768px) {
+		gap: 1.25rem 2rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	@media (min-width: 1200px) {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+}
+
+.jd-fact {
+	min-width: 0;
+
+	& dt {
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--jn-quiet);
+	}
+	& dd {
+		display: flex;
+		gap: 0.25rem;
+		flex-direction: column;
+		min-width: 0;
+		margin: 0.3rem 0 0;
+	}
+}
+
+.jd-fact-main {
+	min-width: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+
+	& .jn-who-name {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.jd-fact-sub {
+	font-size: 0.8rem;
+	color: var(--jn-quiet);
+}
+
+/* The full lines table scrolls sideways inside its card rather than
+   pushing the page wider; type and then code give way as it narrows. */
+.jd-scroll {
+	margin: 0 -0.75rem;
+	padding: 0 0.75rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.jd-lines {
+	width: 100%;
+
+	& > :not(caption) > * > * {
+		padding: 0.8rem 0.75rem;
+		vertical-align: middle;
+	}
+}
+.jd-col-type {
+	width: 9rem;
+}
+.jd-col-amt,
+.jd-lines td.text-end {
+	width: 1%;
+}
+.jd-lines .text-end {
+	padding-left: 2rem;
+}
+
+@container jn-card (max-width: 600px) {
+	.jd-lines .jd-col-type {
+		display: none;
+	}
+}
+@container jn-card (max-width: 420px) {
+	.jd-lines .jd-col-code {
+		display: none;
+	}
+	.jd-lines > :not(caption) > * > :nth-child(2) {
+		padding-left: 0;
+	}
+	.jd-lines .text-end {
+		padding-left: 0.75rem;
+	}
+}
+
+.jd-check {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 1.25rem 0 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--jn-good);
+
+	&.is-off {
+		color: var(--jn-warn);
+	}
+}
+
+/* From 1200px the trail and the attachments sit side by side and end
+   level; narrower, each card takes the whole row. */
+.jd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+
+	@media (min-width: 1200px) {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: stretch;
+	}
+}
+
+/* The trail is a dotted timeline: a colored dot per step, joined by a thin
+   rule, with a hollow ring for the step still to come. */
+.jd-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.jd-step {
+	position: relative;
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	padding: 0 0 1.1rem 1.75rem;
+	font-size: 0.875rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.3rem;
+		left: 0;
+		width: 0.75rem;
+		height: 0.75rem;
+		border-radius: 50%;
+		background: var(--jd-step, var(--basalt-copy-muted));
+	}
+	&:not(:last-child)::after {
+		content: "";
+		position: absolute;
+		top: 1.25rem;
+		bottom: 0.1rem;
+		left: calc(0.375rem - 1px);
+		width: 2px;
+		background: var(--jn-line);
+	}
+}
+.jd-step-info {
+	--jd-step: var(--basalt-info);
+}
+.jd-step-warning {
+	--jd-step: var(--basalt-warning);
+}
+.jd-step-success {
+	--jd-step: var(--basalt-success);
+}
+.jd-step-danger {
+	--jd-step: var(--basalt-danger);
+}
+.jd-step-wait::before {
+	background: var(--basalt-plane);
+	box-shadow: inset 0 0 0 2px var(--basalt-warning);
+}
+.jd-step-what {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.jd-step-note {
+	color: var(--basalt-copy-body);
+}
+.jd-step-when {
+	font-size: 0.8rem;
+	color: var(--jn-quiet);
+}
+
+/* Attachments list as a tile icon, a trimmed name with its size, and a
+   download button, separated by hairlines. */
+.jd-files {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.jd-file {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	padding: 0.7rem 0;
+	border-top: 1px solid var(--jn-line);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	& .btn-icon {
+		flex: none;
+		width: 34px;
+		height: 34px;
+		padding: 0;
+	}
+}
+.jd-file-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-wash);
+}
+.jd-file-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.jd-file-name {
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.jd-file-size {
+	font-size: 0.77rem;
+	color: var(--jn-quiet);
+}
+
+/* The "nothing here yet" line keeps a gap above the note form, but not
+   under the attachments list. */
+.jd-none {
+	margin: 0 0 1rem;
+	font-size: 0.875rem;
+	color: var(--jn-quiet);
+}
+.jd-files + .jd-none {
+	margin-bottom: 0;
+}
+
+/* Notes stack with hairlines between them; a new one slides in from just
+   above, unless motion is reduced. */
+.jd-notes {
+	margin: 0 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+
+.jd-note {
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--jn-line);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&.is-fresh {
+		animation: jd-in 400ms ease both;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+.jd-note-text {
+	max-width: 72ch;
+}
+.jd-note-meta {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	color: var(--jn-quiet);
+}
+@keyframes jd-in {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+}
+
+.jd-note-form-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+}
+.jd-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--jn-bad);
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.jn-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

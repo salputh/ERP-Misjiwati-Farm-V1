@@ -1,0 +1,990 @@
+/*
+ * Link menus (menus.html). Every class here starts with .cmm-.
+ *
+ * Each tab is a single card for one menu: its name and on/off switch, a
+ * preview dressed like the place the menu lives (header bar, footer,
+ * signed-in sidebar, phone tab bar), then the links themselves, each with
+ * a grab handle. Only theme tokens supply color.
+ */
+
+/* The last save, or the count of edits since, sits to the left of Save. */
+.cmm-save {
+	align-items: center;
+}
+.cmm-save-state {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0.5rem 0 0;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+	/* Unsaved edits darken the note and put an amber dot before it. */
+	&.is-dirty {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	&.is-dirty::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--basalt-warning);
+	}
+}
+
+/* A tab whose menu is switched off carries a crossed eye; the same amber
+   marks the hidden notice inside the card. */
+.cmm-tabs {
+	margin-bottom: 1.25rem;
+}
+.cmm-tabs-off {
+	display: inline-flex;
+	font-size: 0.9rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.cmm-tabs-off .bi,
+.cmm-notice .bi {
+	color: color-mix(in srgb, var(--basalt-warning) 55%, var(--basalt-copy));
+}
+
+/* The card opens with the menu's name on the left and its switch and
+   Add button on the right, wrapping under each other when tight. */
+.cmm-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--basalt-edge);
+
+	@media (max-width: 575.98px) {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+}
+.cmm-head-text {
+	min-width: 0;
+}
+.cmm-head-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cmm-head-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.cmm-head-actions {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+
+/* The switch drops Bootstrap's float and indent so it lines up with the button. */
+.cmm-shown {
+	&.form-check {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+	}
+	& .form-check-input {
+		float: none;
+		margin: 0;
+	}
+	& .form-check-label {
+		font-size: 0.875rem;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--basalt-copy);
+	}
+}
+
+/* A switched-off menu explains itself in one tinted line under the head. */
+.cmm-notice {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	margin: 0;
+	padding: 0.75rem var(--basalt-pad-x);
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 9%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The preview band is a faint wash with a small caps caption above the frame. */
+.cmm-preview {
+	padding: 1.5rem var(--basalt-pad-x);
+	border-bottom: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-canvas));
+
+	@media (max-width: 575.98px) {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+}
+.cmm-preview-label {
+	margin: 0 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* The frame is a size container, so each look can fold up when it is narrow.
+   Off, it turns gray and its border goes dashed. */
+.cmm-site {
+	position: relative;
+	container: cmm-site / inline-size;
+	max-width: 60rem;
+	margin: 0 auto;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+	transition: filter 200ms ease;
+
+	&.is-off {
+		border-style: dashed;
+		filter: grayscale(1);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* A browser strip with three dots and the address sits on top of the web looks. */
+.cmm-site-chrome {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 0.5rem 1rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+.cmm-site-dots {
+	display: inline-flex;
+	gap: 0.3rem;
+
+	& i {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--basalt-edge-strong);
+	}
+}
+.cmm-site-address {
+	padding: 0.1rem 0.85rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	background: var(--basalt-plane);
+}
+.cmm-site-page {
+	min-height: 11.5rem;
+	padding: 1.75rem 1.5rem;
+}
+.cmm-site-page-short {
+	min-height: 0;
+	padding: 1.25rem 1.5rem;
+}
+
+/* Page content in the previews is only gray bars of varying width. */
+.cmm-skel {
+	display: grid;
+	gap: 0.65rem;
+
+	& i {
+		display: block;
+		width: 62%;
+		height: 0.6rem;
+		border-radius: 999px;
+		background: var(--basalt-edge);
+	}
+	& i:first-child {
+		width: 38%;
+		height: 0.95rem;
+		margin-bottom: 0.2rem;
+	}
+	& i:nth-child(3) {
+		width: 48%;
+	}
+}
+
+/* Fieldline's mark and name, with an optional area name after a divider. */
+.cmm-brand {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.95rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.cmm-brand-mark {
+	display: grid;
+	place-items: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}
+.cmm-brand-sub {
+	padding-left: 0.5rem;
+	border-left: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* Whatever link the pointer rests on below lights up in the preview. This
+   comes before the looks, so an open dropdown or the current sidebar
+   link keeps its own colors. In the header the item hands its light to
+   its button. */
+.cmm-site .is-hot,
+.cmm-bar-item.is-hot > .cmm-bar-link {
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-hue) 45%, transparent);
+}
+.cmm-bar-item.is-hot {
+	background: none;
+	box-shadow: none;
+}
+
+/* The header look: logo, links with dropdowns, a call to action. */
+.cmm-bar {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	gap: 1.5rem;
+	align-items: center;
+	padding: 0.9rem 1.25rem;
+	border-bottom: 1px solid var(--basalt-edge);
+}
+.cmm-bar-nav {
+	display: flex;
+	gap: 0.25rem;
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cmm-bar-item {
+	position: relative;
+}
+.cmm-bar-link {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.4rem 0.65rem;
+	border: 0;
+	border-radius: 8px;
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: none;
+
+	& .bi {
+		font-size: 0.65rem;
+		transition: transform 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+}
+button.cmm-bar-link {
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* An open item keeps the hover wash and flips its chevron. */
+.cmm-bar-item.is-open > .cmm-bar-link {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+
+	& .bi {
+		transform: rotate(180deg);
+	}
+}
+
+.cmm-bar-drop {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	left: 0;
+	z-index: 2;
+	display: grid;
+	gap: 0.1rem;
+	min-width: 13rem;
+	margin: 0;
+	padding: 0.4rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	background: var(--basalt-plane);
+	list-style: none;
+	box-shadow: var(--basalt-card-shadow);
+
+	&.is-entering {
+		animation: cmm-drop 170ms ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
+	}
+}
+@keyframes cmm-drop {
+	from {
+		transform: translateY(-4px);
+		opacity: 0;
+	}
+}
+
+.cmm-bar-droplink {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.4rem 0.6rem;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		font-size: 0.7rem;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+}
+.cmm-bar-cta {
+	padding: 0.4rem 0.85rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-on-hue);
+	background: color-mix(in srgb, var(--basalt-hue) 84%, var(--basalt-copy));
+}
+.cmm-bar-burger {
+	display: none;
+}
+
+/* In a narrow frame the header turns into its phone form: a burger on the
+   right and the links opened as a list, the open dropdown indented below. */
+@container cmm-site (max-width: 49rem) {
+	.cmm-bar {
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+	.cmm-bar-cta {
+		display: none;
+	}
+	.cmm-bar-burger {
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		margin-left: auto;
+		border-radius: 8px;
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	.cmm-bar-nav {
+		gap: 0.1rem;
+		flex-basis: 100%;
+		flex-direction: column;
+		order: 3;
+		padding-top: 0.6rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	.cmm-bar-link {
+		justify-content: space-between;
+		width: 100%;
+	}
+	.cmm-bar-drop {
+		position: static;
+		min-width: 0;
+		margin: 0.2rem 0 0.3rem 0.65rem;
+		padding: 0 0 0 0.5rem;
+		border: 0;
+		border-left: 2px solid var(--basalt-edge);
+		border-radius: 0;
+		box-shadow: none;
+	}
+	.cmm-site-page {
+		min-height: 0;
+		padding: 1.25rem;
+	}
+}
+
+/* The footer look: a brand column, then one column per top-level link. */
+.cmm-footer {
+	padding: 1.5rem 1.5rem 1rem;
+	border-top: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-canvas) 60%, var(--basalt-plane));
+}
+.cmm-footer-cols {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+.cmm-footer-tag {
+	max-width: 14rem;
+	margin: 0.65rem 0 0;
+	font-size: 0.77rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.cmm-footer-head {
+	display: inline-block;
+	margin: 0 0 0.5rem -0.4rem;
+	padding: 0.1rem 0.4rem;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cmm-footer-col {
+	& ul {
+		display: grid;
+		gap: 0.3rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	& li {
+		width: fit-content;
+		margin-left: -0.4rem;
+		padding: 0.1rem 0.4rem;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+	}
+}
+.cmm-footer-base {
+	margin: 1.25rem 0 0;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.75rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+/* The sidebar look used by the portal, partner and help menus: a rail of
+   links beside a blank app screen that greets the signed-in account. */
+.cmm-app {
+	display: grid;
+	grid-template-columns: 15rem 1fr;
+	min-height: 18rem;
+}
+.cmm-rail {
+	padding: 1rem 0.75rem;
+	border-right: 1px solid var(--basalt-edge);
+	background: color-mix(in srgb, var(--basalt-canvas) 50%, var(--basalt-plane));
+
+	& .cmm-brand {
+		margin: 0 0 1rem;
+		padding: 0 0.5rem;
+	}
+}
+.cmm-rail-list {
+	display: grid;
+	gap: 0.1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cmm-rail-link {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.5rem 0.6rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+
+	& > .bi:first-child {
+		width: 1rem;
+		font-size: 0.95rem;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+	&.is-current {
+		color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+		background: var(--basalt-hue-soft);
+	}
+	&.is-current > .bi:first-child,
+	&.is-hot > .bi:first-child {
+		color: inherit;
+	}
+}
+.cmm-rail-ext {
+	margin-left: auto;
+	font-size: 0.7rem;
+}
+.cmm-rail-empty {
+	margin: 0;
+	padding: 1.25rem 0.75rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 8px;
+	font-size: 0.77rem;
+	text-align: center;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.cmm-app-main {
+	padding: 1.25rem 1.5rem;
+}
+.cmm-app-hello {
+	margin: 0 0 1rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cmm-app-cards {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+	margin-top: 1.25rem;
+
+	& i {
+		display: block;
+		height: 5rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 10px;
+		background: color-mix(in srgb, var(--basalt-canvas) 60%, var(--basalt-plane));
+	}
+}
+
+/* Too narrow for both, the rail keeps the room and the app screen goes. */
+@container cmm-site (max-width: 34rem) {
+	.cmm-app {
+		grid-template-columns: 1fr;
+		min-height: 0;
+	}
+	.cmm-rail {
+		border-right: 0;
+	}
+	.cmm-app-main {
+		display: none;
+	}
+}
+
+/* The phone look drops the frame entirely and draws a handset instead,
+   with the tabs along the bottom of its screen. */
+.cmm-site-phone {
+	border: 0;
+	overflow: visible;
+	background: none;
+	box-shadow: none;
+
+	&.is-off .cmm-phone {
+		border-style: dashed;
+	}
+}
+.cmm-phone {
+	width: 18rem;
+	max-width: 100%;
+	margin: 0 auto;
+	padding: 0.5rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 2rem;
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+}
+.cmm-phone-screen {
+	display: flex;
+	flex-direction: column;
+	height: 22rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 1.5rem;
+	overflow: hidden;
+	background: var(--basalt-canvas);
+}
+.cmm-phone-top {
+	padding: 1rem 1rem 0.7rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+}
+.cmm-phone-page {
+	flex: 1;
+	padding: 1.1rem 1rem;
+}
+.cmm-phone-bar {
+	display: grid;
+	grid-template-columns: repeat(var(--cmm-tabs), minmax(0, 1fr));
+	margin: 0;
+	padding: 0.4rem 0.3rem 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.2rem;
+		flex-direction: column;
+		align-items: center;
+		min-width: 0;
+		padding: 0.3rem 0.1rem;
+		border-radius: 8px;
+		font-size: 0.67rem;
+		font-weight: 600;
+		text-align: center;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+	& li .bi {
+		font-size: 1.05rem;
+	}
+	& li span {
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	& li.is-current {
+		color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	}
+}
+
+/* Under the preview, the links in order: one full-width row each. */
+.cmm-tree {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cmm-item {
+	position: relative;
+}
+.cmm-row {
+	position: relative;
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--basalt-edge);
+	background: var(--basalt-plane);
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--basalt-wash) 60%, var(--basalt-plane));
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* A dropdown's or column's links step in and hang off a thin rail in the
+   group's color. */
+.cmm-tree-sub .cmm-row {
+	padding-top: 0.8rem;
+	padding-bottom: 0.8rem;
+	padding-left: calc(var(--basalt-pad-x) + 2.5rem);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: calc(var(--basalt-pad-x) + 0.8rem);
+		width: 2px;
+		background: color-mix(in srgb, var(--cmm-tone) 45%, var(--basalt-edge));
+	}
+}
+
+.cmm-grip {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 1.75rem;
+	height: 2.25rem;
+	margin-left: -0.45rem;
+	padding: 0;
+	border: 0;
+	border-radius: 6px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	background: none;
+	cursor: grab;
+	touch-action: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* Top-level links walk through the six chart colors in turn, and the links
+   inside each one inherit its color, so a group reads as a unit. */
+.cmm-list > .cmm-tree > .cmm-item {
+	&:nth-child(6n + 1) {
+		--cmm-tone: var(--basalt-series-1);
+	}
+	&:nth-child(6n + 2) {
+		--cmm-tone: var(--basalt-series-2);
+	}
+	&:nth-child(6n + 3) {
+		--cmm-tone: var(--basalt-series-3);
+	}
+	&:nth-child(6n + 4) {
+		--cmm-tone: var(--basalt-series-4);
+	}
+	&:nth-child(6n + 5) {
+		--cmm-tone: var(--basalt-series-5);
+	}
+	&:nth-child(6n + 6) {
+		--cmm-tone: var(--basalt-series-6);
+	}
+}
+.cmm-row-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--cmm-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cmm-tone) 15%, var(--basalt-plane));
+}
+.cmm-tree-sub .cmm-row-icon {
+	width: 1.85rem;
+	height: 1.85rem;
+	border-radius: 8px;
+	font-size: 0.85rem;
+}
+
+/* Name on top as a button that opens the sheet; under it the address and
+   any notes, wrapping as needed. */
+.cmm-row-text {
+	display: flex;
+	gap: 0.2rem;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+}
+.cmm-row-label {
+	align-self: flex-start;
+	max-width: 100%;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-size: 0.95rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+}
+.cmm-row-meta {
+	display: flex;
+	gap: 0.2rem 0.9rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+.cmm-row-url {
+	min-width: 0;
+	font-family: var(--bs-font-monospace);
+	font-size: 0.77rem;
+	overflow-wrap: anywhere;
+}
+.cmm-row-newtab {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	white-space: nowrap;
+
+	& .bi {
+		font-size: 0.7rem;
+	}
+}
+.cmm-row-actions {
+	flex: none;
+}
+
+/* Phones pull the rows in to the narrow gutter and shrink the tiles;
+   nested links lose theirs. */
+@media (max-width: 575.98px) {
+	.cmm-row {
+		gap: 0.6rem;
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.cmm-tree-sub .cmm-row {
+		padding-left: calc(var(--basalt-pad-x-narrow) + 1.75rem);
+	}
+	.cmm-tree-sub .cmm-row::before {
+		left: calc(var(--basalt-pad-x-narrow) + 0.8rem);
+	}
+	.cmm-row-icon {
+		width: 1.85rem;
+		height: 1.85rem;
+		border-radius: 8px;
+		font-size: 0.85rem;
+	}
+	.cmm-tree-sub .cmm-row-icon {
+		display: none;
+	}
+}
+
+/* Below 400px the tiles go altogether and the address gets their room. */
+@media (max-width: 399.98px) {
+	.cmm-row-icon {
+		display: none;
+	}
+}
+
+/* While dragging, the picked row floats under the pointer. A bar marks the
+   gap it would land in; a ring marks a link it would go inside. */
+.cmm-item.is-dragging {
+	z-index: 5;
+	opacity: 0.88;
+	pointer-events: none;
+
+	& > .cmm-row {
+		border: 1px solid color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge));
+		border-radius: 10px;
+		box-shadow: var(--basalt-card-shadow);
+	}
+}
+[data-cmm-root].is-sorting,
+[data-cmm-root].is-sorting * {
+	cursor: grabbing;
+	user-select: none;
+}
+.cmm-row.is-drop-above::after,
+.cmm-row.is-drop-below::after {
+	content: "";
+	position: absolute;
+	right: var(--basalt-pad-x);
+	left: var(--basalt-pad-x);
+	height: 3px;
+	border-radius: 3px;
+	background: var(--basalt-hue);
+}
+.cmm-row.is-drop-above::after {
+	top: -2px;
+}
+.cmm-row.is-drop-below::after {
+	bottom: -2px;
+}
+.cmm-row.is-drop-into {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--basalt-hue) 50%, transparent);
+}
+
+/* A row that has just moved glows for a moment and fades back. */
+.cmm-row.is-moved {
+	animation: cmm-moved 1.2s ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+@keyframes cmm-moved {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 14%, var(--basalt-plane));
+	}
+}
+
+/* The drag hint closes the card; an empty menu shows its own start instead. */
+.cmm-tip {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	padding: 1.1rem var(--basalt-pad-x) 1.3rem;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+
+	@media (max-width: 575.98px) {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+}
+.cmm-empty {
+	padding: 3rem 1rem;
+}
+
+/* In the side sheet the link types and icons are tile grids, selects keep
+   to a readable width, and Remove sits apart on the far left. */
+.cmm-kinds {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+
+	& .basalt-choice[hidden] {
+		display: none;
+	}
+}
+.cmm-icons {
+	display: grid;
+	gap: 0.4rem;
+	grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
+
+	& .basalt-choice {
+		padding: 0.6rem 0;
+	}
+	& .basalt-choice > .bi {
+		font-size: 1.05rem;
+	}
+}
+.cmm-drawer {
+	& .form-text {
+		margin-top: 0.4rem;
+	}
+	& .cmm-select {
+		max-width: 19rem;
+	}
+	& .form-switch {
+		margin-bottom: 0;
+	}
+}
+.cmm-drawer-remove {
+	margin-right: auto;
+}

@@ -4,23 +4,18 @@
     'judul' => null,
 ])
 
-{{-- Peringatan bergaya katalog template (HexaDash: Alert). Dengan judul memakai alert-big template. --}}
+{{-- Peringatan Basalt (Bootstrap alert). Dengan judul, judulnya tampil tebal di atas isi. --}}
 <div {{ $attributes->class([
     'alert alert-'.$warna,
     'alert-dismissible fade show' => $bisaDitutup,
-    'alert-big' => $judul,
 ]) }} role="alert">
-    <div class="alert-content">
-        @if ($judul)
-            <h6 class="alert-heading">{{ $judul }}</h6>
-        @endif
+    @if ($judul)
+        <h2 class="alert-heading h6">{{ $judul }}</h2>
+    @endif
 
-        <p>{{ $slot }}</p>
+    <p class="mb-0">{{ $slot }}</p>
 
-        @if ($bisaDitutup)
-            <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Tutup">
-                <img src="{{ asset('assets/img/svg/x.svg') }}" alt="x" class="svg" aria-hidden="true">
-            </button>
-        @endif
-    </div>
+    @if ($bisaDitutup)
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+    @endif
 </div>

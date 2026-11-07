@@ -1,4 +1,4 @@
-<div class="col-12 mb-25">
+<div class="col-12 mb-4">
     <x-kartu judul="Uang makan" subjudul="Dipotong dari slip gaji setiap ABK setelah RHPP periode itu keluar. Jabatan lain tidak dipotong.">
         <x-slot:ekstra>
             <x-tombol wire:click="ubah" data-bs-toggle="modal" data-bs-target="#modal-uang-makan">Ubah uang makan</x-tombol>
@@ -8,23 +8,23 @@
             <x-peringatan warna="success" bisaDitutup="true">{{ $pesan }}</x-peringatan>
         @endif
 
-        {{-- Statistik template (HexaDash: Statistics, Basic) --}}
-        <div class="dm-statistics-wrap d-flex flex-wrap">
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Per orang per hari</span>
-                <p class="statistics-item__number">Rp @angka($this->uangMakan['per_hari'])</p>
+        {{-- Statistik template  --}}
+        <div class="d-flex flex-wrap">
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Per orang per hari</span>
+                <p class="h5 mb-0">Rp @angka($this->uangMakan['per_hari'])</p>
             </div>
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Jumlah hari</span>
-                <p class="statistics-item__number">@angka($this->uangMakan['hari']) hari</p>
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Jumlah hari</span>
+                <p class="h5 mb-0">@angka($this->uangMakan['hari']) hari</p>
             </div>
-            <div class="statistics-item statistics-default">
-                <span class="statistics-item__title">Dipotong per ABK</span>
-                <p class="statistics-item__number">Rp @angka($this->uangMakan['total'])</p>
+            <div class="border rounded p-3 h-100">
+                <span class="d-block small text-body-secondary">Dipotong per ABK</span>
+                <p class="h5 mb-0">Rp @angka($this->uangMakan['total'])</p>
             </div>
         </div>
 
-        <p class="fs-13 color-light mt-15 mb-0">
+        <p class="small text-body-secondary mt-3 mb-0">
             ABK yang sudah punya transaksi Pinjaman Makan atas namanya di kas operasional dipotong sebesar transaksi itu, bukan nilai bawaan ini.
         </p>
     </x-kartu>

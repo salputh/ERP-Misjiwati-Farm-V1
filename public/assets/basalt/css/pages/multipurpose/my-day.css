@@ -1,0 +1,678 @@
+/* Basalt - My Day (my-day.html)
+   Namespaced under .myd-*
+   Meetings, focus and free time keep one color each in the ring, the
+   agenda, the week strips and the keys, all from the --basalt-* tokens,
+   so they follow every palette and dark mode. */
+
+.myd-page {
+	--myd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--myd-link: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	--myd-meeting: var(--basalt-series-1);
+	--myd-focus: var(--basalt-series-3);
+	--myd-free: color-mix(in srgb, var(--basalt-edge-strong) 70%, var(--basalt-plane));
+	--myd-late: var(--basalt-danger);
+}
+
+/* Cards share one head: a title, a line under it, and a key or link. */
+.myd-card.card {
+	overflow: hidden;
+}
+.myd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.myd-card-head > div:first-child {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+.myd-card-pad {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.myd-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.myd-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--myd-quiet);
+}
+.myd-card-link {
+	font-size: 0.875rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--myd-link);
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+/* Keys */
+.myd-legend {
+	display: flex;
+	gap: 0.4rem 1rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.81rem;
+	color: var(--myd-quiet);
+
+	& li {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+}
+.myd-key {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--myd-tone);
+}
+.myd-page .is-meeting {
+	--myd-tone: var(--myd-meeting);
+}
+.myd-page .is-focus {
+	--myd-tone: var(--myd-focus);
+}
+.myd-page .is-free {
+	--myd-tone: var(--myd-free);
+}
+
+/* Work this week: four tiles, each a figure over a bar per weekday. */
+.myd-work {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.myd-work-tile.card {
+	display: grid;
+	gap: 0.1rem 1rem;
+	grid-template-columns: 1fr auto;
+	grid-template-areas: "head head" "figure bars" "note bars";
+	align-items: end;
+	padding: 1rem 1.25rem;
+	color: var(--basalt-copy);
+	text-decoration: none;
+	transition: border-color 170ms ease;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--tone) 45%, var(--basalt-edge));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.myd-work-head {
+	grid-area: head;
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-bottom: 0.4rem;
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--myd-quiet);
+
+	.bi {
+		font-size: 1rem;
+		color: var(--tone);
+	}
+}
+.myd-work-figure {
+	grid-area: figure;
+	font-size: 1.75rem;
+	font-weight: 750;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+}
+.myd-work-note {
+	grid-area: note;
+	font-size: 0.81rem;
+	color: var(--myd-quiet);
+}
+.myd-work-bars {
+	grid-area: bars;
+	display: flex;
+	gap: 3px;
+	align-items: flex-end;
+	height: 2.6rem;
+}
+.myd-work-bar {
+	width: 0.6rem;
+	height: calc(var(--value, 8) * 1%);
+	border-radius: 3px 3px 1px 1px;
+	background: color-mix(in srgb, var(--tone) 45%, var(--basalt-plane));
+	transition: background-color 130ms ease;
+
+	&.is-today,
+	&:hover {
+		background: var(--tone);
+	}
+	&.is-ahead {
+		height: 8%;
+		background: var(--basalt-edge);
+	}
+}
+@media (max-width: 1199.98px) {
+	.myd-work {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 575.98px) {
+	.myd-work {
+		gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Your day: the next meeting as a big countdown, the rest as one line. */
+.myd-next {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0 clamp(1.5rem, 3.5vw, 3.5rem);
+	align-items: end;
+	padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.25rem, 3.4vw, 3rem);
+}
+.myd-next-kicker {
+	grid-column: 1 / -1;
+	margin: 0 0 0.75rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--myd-quiet);
+}
+.myd-next-count {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	line-height: 0.85;
+}
+.myd-next-num {
+	font-family: "Chivo Mono", monospace;
+	font-size: clamp(4.5rem, 3rem + 6vw, 9rem);
+	font-weight: 600;
+	letter-spacing: -0.06em;
+	color: transparent;
+	background: var(--basalt-grad);
+	background-clip: text;
+}
+.myd-next-unit {
+	font-size: clamp(1.4rem, 1rem + 1.4vw, 2.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.myd-next-main {
+	min-width: 0;
+	padding-bottom: 0.35rem;
+}
+.myd-next-title {
+	margin: 0 0 0.3rem;
+	font-size: clamp(1.35rem, 1rem + 1vw, 2rem);
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--basalt-copy);
+}
+.myd-next-when {
+	margin: 0 0 1rem;
+	color: var(--myd-quiet);
+}
+.myd-next-act {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+}
+.myd-next-faces {
+	display: flex;
+	gap: 0.4rem;
+}
+.myd-next-then {
+	grid-column: 1 / -1;
+	margin: 1.75rem 0 0;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.95rem;
+	color: var(--basalt-copy-body);
+
+	& span {
+		margin-right: 0.35rem;
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+	& b {
+		font-weight: 400;
+		white-space: nowrap;
+	}
+	& em {
+		font-style: normal;
+		color: var(--myd-quiet);
+	}
+	& i {
+		margin: 0 0.6rem;
+		font-style: normal;
+		color: var(--basalt-copy-faint);
+	}
+}
+.myd-next-num,
+.myd-next-title {
+	opacity: 0;
+	transform: translateY(8px);
+	transition:
+		opacity 600ms ease,
+		transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.myd-next-title {
+	transition-delay: 120ms;
+}
+.myd-page.is-in .myd-next-num,
+.myd-page.is-in .myd-next-title {
+	opacity: 1;
+	transform: none;
+}
+@media (max-width: 575.98px) {
+	.myd-next {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.myd-next-main {
+		margin-top: 1rem;
+	}
+	/* On phones the later items stack, one per line, without separators. */
+	.myd-next-then {
+		& span,
+		& b {
+			display: block;
+		}
+		& i {
+			display: none;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.myd-next-num,
+	.myd-next-title {
+		transition: none;
+	}
+}
+
+/* List bar: search, a filter and a count, the same in both lists. */
+.myd-listbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.25rem var(--basalt-pad-x) 0.75rem;
+}
+.myd-listbar-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 10rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--myd-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.myd-listbar-select.form-select {
+	width: auto;
+	flex: none;
+}
+.myd-listbar-count {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	color: var(--myd-quiet);
+}
+
+/* Tasks */
+.myd-tasks,
+.myd-waits {
+	margin: 0;
+	padding: 0 0 0.5rem;
+	list-style: none;
+}
+.myd-task {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: 0 0.85rem;
+	align-items: center;
+	padding: 0.8rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+.myd-task-check.form-check-input {
+	width: 1.1rem;
+	height: 1.1rem;
+	margin: 0;
+	cursor: pointer;
+}
+.myd-task-main {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.myd-task-title {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	text-decoration: none;
+
+	&:hover {
+		color: var(--myd-link);
+		text-decoration: underline;
+	}
+}
+.myd-task.is-done .myd-task-title {
+	font-weight: 500;
+	color: var(--myd-quiet);
+	text-decoration: line-through;
+}
+.myd-task-meta {
+	font-size: 0.81rem;
+	color: var(--myd-quiet);
+}
+.myd-task-end {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	justify-content: flex-end;
+}
+.myd-task-due {
+	font-size: 0.81rem;
+	white-space: nowrap;
+	color: var(--myd-quiet);
+
+	&.is-today {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+	&.is-late {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--myd-late) 70%, var(--basalt-copy));
+	}
+}
+@media (max-width: 575.98px) {
+	.myd-task {
+		grid-template-columns: auto 1fr;
+	}
+	.myd-task-end {
+		grid-column: 2;
+		justify-content: flex-start;
+	}
+}
+
+/* Waiting on you */
+.myd-wait {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: 0 0.85rem;
+	align-items: start;
+	padding: 0.85rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+.myd-wait-main {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-width: 0;
+}
+.myd-wait-who {
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.myd-wait-ago,
+.myd-wait-where {
+	font-size: 0.81rem;
+	font-weight: 400;
+	color: var(--myd-quiet);
+}
+.myd-wait-title {
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+	text-decoration: none;
+
+	&:hover {
+		color: var(--myd-link);
+		text-decoration: underline;
+	}
+}
+.myd-wait > .btn {
+	white-space: nowrap;
+}
+
+.myd-empty {
+	padding: 1.5rem var(--basalt-pad-x);
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* The week: one strip a day on a shared clock, the hours underneath. */
+.myd-week {
+	display: grid;
+	gap: 0.6rem;
+	padding: 1.5rem var(--basalt-pad-x) var(--basalt-pad-x);
+}
+.myd-week-row {
+	display: grid;
+	grid-template-columns: 3rem 1fr 6.5rem;
+	gap: 1rem;
+	align-items: center;
+
+	&.is-today .myd-week-day {
+		color: var(--basalt-hue);
+	}
+}
+.myd-week-day {
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.myd-week-strip {
+	position: relative;
+	height: 1.6rem;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--basalt-edge) 55%, transparent);
+}
+.myd-week-row.is-axis .myd-week-strip {
+	height: 1rem;
+	background: none;
+}
+.myd-week-block {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--myd-left);
+	width: var(--myd-width);
+	border: 1px solid var(--basalt-plane);
+	border-radius: 6px;
+	background: var(--myd-tone);
+	transition: filter 170ms ease;
+
+	&:hover,
+	&:focus-visible {
+		filter: brightness(1.1);
+		outline: 2px solid var(--basalt-copy);
+		outline-offset: 1px;
+	}
+}
+.myd-week-now {
+	position: absolute;
+	top: -0.3rem;
+	bottom: -0.3rem;
+	left: var(--myd-left);
+	width: 2px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+.myd-week-hour {
+	position: absolute;
+	left: var(--myd-left);
+	transform: translateX(-50%);
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--myd-quiet);
+
+	&:first-child {
+		transform: none;
+	}
+	&:last-child {
+		transform: translateX(-100%);
+	}
+}
+.myd-week-total {
+	font-size: 0.81rem;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	color: var(--myd-quiet);
+}
+@media (max-width: 575.98px) {
+	.myd-week-row {
+		grid-template-columns: 2.5rem 1fr;
+	}
+	.myd-week-total {
+		display: none;
+	}
+	.myd-week-hour:nth-child(even) {
+		display: none;
+	}
+}
+
+/* The wave: once the page has settled the four work cards lift one after
+   another with their edge lit in their own tone, their day bars stand up,
+   the "Then" items follow, and the task and request rows rise in. A list
+   ripples again when its filter or sort changes. The order comes from each
+   item's place among its siblings, so the markup carries no delays. */
+.myd-work-tile:nth-child(2) {
+	--myd-wave-i: 1;
+}
+.myd-work-tile:nth-child(3) {
+	--myd-wave-i: 2;
+}
+.myd-work-tile:nth-child(4) {
+	--myd-wave-i: 3;
+}
+.myd-work-bar:nth-child(2),
+.myd-next-then b:nth-of-type(2),
+.myd-tasks > li:nth-child(2),
+.myd-waits > li:nth-child(2) {
+	--myd-step: 1;
+}
+.myd-work-bar:nth-child(3),
+.myd-next-then b:nth-of-type(3),
+.myd-tasks > li:nth-child(3),
+.myd-waits > li:nth-child(3) {
+	--myd-step: 2;
+}
+.myd-work-bar:nth-child(4),
+.myd-next-then b:nth-of-type(4),
+.myd-tasks > li:nth-child(4),
+.myd-waits > li:nth-child(4) {
+	--myd-step: 3;
+}
+.myd-work-bar:nth-child(5),
+.myd-next-then b:nth-of-type(5),
+.myd-tasks > li:nth-child(5),
+.myd-waits > li:nth-child(5) {
+	--myd-step: 4;
+}
+.myd-work-bar:nth-child(6),
+.myd-next-then b:nth-of-type(6),
+.myd-tasks > li:nth-child(6),
+.myd-waits > li:nth-child(6) {
+	--myd-step: 5;
+}
+.myd-work-bar:nth-child(7),
+.myd-tasks > li:nth-child(n + 7),
+.myd-waits > li:nth-child(n + 7) {
+	--myd-step: 6;
+}
+
+.myd-page.is-waving {
+	& .myd-work-tile {
+		animation: myd-wave 680ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--myd-wave-i, 0) * 90ms) backwards;
+	}
+	& .myd-work-bar {
+		transform-origin: center bottom;
+		animation: myd-grow 520ms cubic-bezier(0.22, 1, 0.36, 1)
+			calc(160ms + var(--myd-wave-i, 0) * 90ms + var(--myd-step, 0) * 35ms) backwards;
+	}
+	& .myd-next-then b {
+		display: inline-block;
+		animation: myd-rise 460ms cubic-bezier(0.22, 1, 0.36, 1) calc(420ms + var(--myd-step, 0) * 90ms) backwards;
+	}
+}
+.myd-page.is-waving,
+.myd-tasks.is-waving,
+.myd-waits.is-waving {
+	& .myd-task,
+	& .myd-wait {
+		animation: myd-row 520ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--myd-step, 0) * 60ms) backwards;
+	}
+}
+@keyframes myd-wave {
+	0% {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	45% {
+		opacity: 1;
+		border-color: color-mix(in srgb, var(--tone) 60%, var(--basalt-edge));
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 16%, transparent);
+		transform: translateY(-4px);
+	}
+	100% {
+		transform: none;
+	}
+}
+@keyframes myd-grow {
+	from {
+		transform: scaleY(0);
+	}
+}
+@keyframes myd-rise {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+@keyframes myd-row {
+	0% {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	50% {
+		border-top-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-edge));
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.myd-page.is-waving .myd-work-tile,
+	.myd-page.is-waving .myd-work-bar,
+	.myd-page.is-waving .myd-next-then b,
+	.myd-page.is-waving .myd-task,
+	.myd-page.is-waving .myd-wait,
+	.myd-tasks.is-waving .myd-task,
+	.myd-waits.is-waving .myd-wait {
+		animation: none;
+	}
+}

@@ -1,0 +1,1303 @@
+/*
+ * Notes (notes.html), every class under .nt-*.
+ * The page is an app of its own: no admin sidebar, top bar or page
+ * header. The list pane opens with the workspace menu, which is also the
+ * way back to the dashboard, and the open note takes the rest of the
+ * window. Tags, empty states, skeletons, filter chips, dropdowns, toasts
+ * and the hold-to-confirm dialog come from basalt.css.
+ */
+
+/* Page tokens, shared by the app and its two dialogs. */
+.nt-page,
+.nt-dialog {
+	/* The muted token leans toward the body color here, so small gray text
+     keeps 4.5:1 on the light palettes and on tinted notes. */
+	--nt-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--nt-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--nt-danger-text: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+	--nt-selected: color-mix(in srgb, var(--basalt-hue) 11%, var(--basalt-plane));
+	--nt-hover: color-mix(in srgb, var(--basalt-copy) 5%, var(--basalt-plane));
+	--nt-line: var(--basalt-edge);
+	/* Only four type sizes appear: the shared card title and section sizes,
+     body text and one small muted size. */
+	--nt-fs-body: 0.9rem;
+	--nt-fs-small: 0.77rem;
+	/* Every pane takes its side padding from the shared spacing scale. */
+	--nt-x: var(--basalt-pad-x);
+}
+@media (max-width: 767.98px) {
+	.nt-page,
+	.nt-dialog {
+		--nt-x: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Shared controls inside the app use the page's body size. */
+.nt-page .dropdown-menu {
+	--bs-dropdown-font-size: var(--nt-fs-body);
+}
+.nt-app .btn,
+.nt-app .form-control,
+.nt-app .form-select {
+	--bs-btn-font-size: var(--nt-fs-body);
+	font-size: var(--nt-fs-body);
+}
+
+/* A note's tint is one of the palette's status colors, so yellow stays
+   yellowish in every palette and in dark mode. */
+.nt-tone-yellow {
+	--nt-tone: var(--basalt-warning);
+}
+.nt-tone-green {
+	--nt-tone: var(--basalt-success);
+}
+.nt-tone-blue {
+	--nt-tone: var(--basalt-info);
+}
+.nt-tone-pink {
+	--nt-tone: var(--basalt-danger);
+}
+
+/* A tint swatch; with no tint it is a dashed empty ring. */
+.nt-dot {
+	display: inline-block;
+	flex: none;
+	width: 0.8rem;
+	height: 0.8rem;
+	border-radius: 50%;
+	border: 1.5px dashed var(--basalt-edge-strong);
+	background: transparent;
+}
+.nt-dot-yellow {
+	border: 0;
+	background: var(--basalt-warning);
+}
+.nt-dot-green {
+	border: 0;
+	background: var(--basalt-success);
+}
+.nt-dot-blue {
+	border: 0;
+	background: var(--basalt-info);
+}
+.nt-dot-pink {
+	border: 0;
+	background: var(--basalt-danger);
+}
+
+/* Key hints come in two kinds: outlined ones that sit on buttons and
+   fields, and filled ones in running text. */
+.nt-kbd,
+.nt-menu-key {
+	border-radius: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+	font:
+		600 var(--nt-fs-small)/1.3 "Chivo Mono",
+		monospace;
+	color: inherit;
+	background: transparent;
+	box-shadow: none;
+}
+.nt-kbd {
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.4rem;
+}
+.nt-menu-key {
+	margin-left: auto;
+	padding: 0 0.3rem;
+}
+.nt-page kbd:not(.nt-kbd),
+.nt-dialog kbd {
+	padding: 0.05rem 0.3rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge);
+	font:
+		600 var(--nt-fs-small)/1.3 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+	box-shadow: none;
+}
+
+/* Square icon buttons for the note toolbar; a pressed one is lit. */
+.nt-icon-btn.btn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	--bs-btn-color: var(--nt-quiet);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: transparent;
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 9px;
+}
+.nt-icon-btn[aria-pressed="true"] {
+	color: var(--nt-link);
+	background: var(--nt-selected);
+}
+.nt-icon-btn:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+/* A quieter danger button, because Bootstrap's outline danger falls
+   under 4.5:1 in most palettes. */
+.nt-danger-btn.btn {
+	--bs-btn-color: var(--nt-danger-text);
+	--bs-btn-border-color: color-mix(in srgb, var(--basalt-danger) 40%, var(--basalt-edge));
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-danger-soft);
+	--bs-btn-hover-border-color: var(--basalt-danger);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-danger-soft);
+	--bs-btn-active-border-color: var(--basalt-danger);
+}
+
+/* The app fills the window edge to edge. The page never scrolls; only
+   the panes inside it do. */
+.nt-shell {
+	height: 100vh;
+	height: 100dvh;
+	min-height: 0;
+	overflow: hidden;
+}
+.nt-page {
+	height: 100%;
+}
+
+/* Two columns: the list of notes, then the open note. */
+.nt-app {
+	--nt-rail: 22rem;
+	position: relative;
+	display: grid;
+	grid-template-columns: var(--nt-rail) minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr);
+	height: 100%;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+@media (max-width: 1199.98px) {
+	.nt-app {
+		--nt-rail: 20rem;
+	}
+}
+.nt-list,
+.nt-editor {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+}
+.nt-list {
+	border-right: 1px solid var(--nt-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.nt-editor {
+	position: relative;
+	background: var(--basalt-plane);
+}
+
+/* Tablets and phones get one pane at a time. A note slides in when it
+   opens, and its back arrow slides the list back. */
+@media (max-width: 991.98px) {
+	.nt-app {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.nt-list,
+	.nt-editor {
+		grid-area: 1 / 1 / 2 / 2;
+	}
+	.nt-list {
+		border-right: 0;
+	}
+	.nt-app[data-view="list"] .nt-editor,
+	.nt-app[data-view="note"] .nt-list {
+		display: none;
+	}
+	.nt-app[data-view="note"] .nt-editor {
+		animation: nt-slide-in 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.nt-app[data-view="list"] .nt-list {
+		animation: nt-slide-back 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+@keyframes nt-slide-in {
+	from {
+		translate: 2.5rem 0;
+		opacity: 0;
+	}
+}
+@keyframes nt-slide-back {
+	from {
+		translate: -1.5rem 0;
+		opacity: 0;
+	}
+}
+
+/* The head of the list: a back link, the workspace menu and New note. */
+.nt-side-head {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem 0.75rem 0.75rem 0.5rem;
+}
+.nt-side-back.btn-icon {
+	flex: none;
+	color: var(--nt-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.nt-ws {
+	flex: 1;
+	min-width: 0;
+}
+.nt-ws-btn {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:hover,
+	&[aria-expanded="true"] {
+		background: var(--nt-hover);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.nt-ws-btn .nt-side-title .bi {
+	margin-left: 0.3rem;
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+	transition: rotate 170ms ease;
+}
+.nt-ws-btn[aria-expanded="true"] .nt-side-title .bi {
+	rotate: 180deg;
+}
+.nt-side-mark {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: var(--basalt-on-hue);
+	background: var(--basalt-grad);
+}
+.nt-side-brand-text {
+	min-width: 0;
+}
+.nt-side-title {
+	display: flex;
+	align-items: center;
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.nt-side-sub {
+	display: block;
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--nt-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--nt-quiet);
+}
+
+/* The workspace menu repeats the mark and lists the app-wide actions. */
+.nt-ws-menu.dropdown-menu {
+	min-width: 17.5rem;
+}
+.nt-ws-head {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.5rem 0.7rem 0.4rem;
+}
+.nt-ws-head-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.nt-ws-name {
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.nt-ws-app {
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+}
+/* This menu and the view menu share roomy rows with a fixed icon column. */
+.nt-ws-menu .dropdown-item,
+.nt-views .dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+.nt-ws-menu .dropdown-item > .bi,
+.nt-views .dropdown-item > .bi {
+	width: 1rem;
+	text-align: center;
+}
+/* The Dark mode item carries aria-pressed and draws a small switch. */
+.nt-switch {
+	position: relative;
+	flex: none;
+	width: 1.9rem;
+	height: 1.1rem;
+	margin-left: auto;
+	border-radius: 999px;
+	background: var(--basalt-edge-strong);
+	transition: background-color 170ms ease;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0.1rem;
+		left: 0.1rem;
+		width: 0.8rem;
+		height: 0.8rem;
+		border-radius: 50%;
+		background: var(--basalt-plane);
+		transition: translate 170ms ease;
+	}
+}
+[aria-pressed="true"] > .nt-switch {
+	background: var(--basalt-hue);
+}
+[aria-pressed="true"] > .nt-switch::after {
+	translate: 0.8rem 0;
+}
+
+/* New note is the notebook's one primary action and never scrolls away. */
+.nt-side-new.btn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+}
+
+/* Search and the filter button sit on one row under the head. */
+.nt-list-tools {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.25rem 0.75rem 0.75rem;
+}
+.nt-search {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--nt-quiet);
+		pointer-events: none;
+	}
+}
+.nt-search .form-control {
+	padding-left: 2.4rem;
+	padding-right: 2.4rem;
+}
+/* The / hint steps aside once the field has focus or text. */
+.nt-search-key.nt-kbd {
+	position: absolute;
+	top: 50%;
+	right: 0.7rem;
+	transform: translateY(-50%);
+	margin: 0;
+	color: var(--nt-quiet);
+	pointer-events: none;
+}
+.nt-search:focus-within .nt-search-key,
+.nt-search .form-control:not(:placeholder-shown) ~ .nt-search-key {
+	display: none;
+}
+.nt-filter-btn.btn {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	width: 2.6rem;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* The filter menu holds tag and tint chips that toggle on and off. */
+.nt-filter.dropdown-menu {
+	width: min(18rem, calc(100vw - 2rem));
+	padding: 0.3rem 0 0.85rem;
+}
+.nt-filter-title.dropdown-header {
+	padding: 0.65rem 1rem 0.4rem;
+	font-size: var(--nt-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--nt-quiet);
+}
+.nt-tagnav,
+.nt-colors {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	padding: 0 1rem;
+}
+.nt-tagnav {
+	margin: 0;
+	list-style: none;
+}
+.nt-tagnav-count {
+	margin-left: 0.3rem;
+	font-size: var(--nt-fs-small);
+	font-variant-numeric: tabular-nums;
+	color: var(--nt-quiet);
+}
+.nt-tagnav-none {
+	padding: 0.3rem 0;
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+}
+.nt-tagnav-item,
+.nt-colors-item {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border: 1px solid var(--nt-line);
+	border-radius: 999px;
+	font-size: var(--nt-fs-small);
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+.nt-tagnav-item {
+	padding: 0.25rem 0.65rem;
+}
+.nt-colors-item {
+	padding: 0.25rem 0.65rem 0.25rem 0.5rem;
+}
+.nt-tagnav-item:hover,
+.nt-colors-item:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.nt-tagnav-item[aria-pressed="true"],
+.nt-colors-item[aria-pressed="true"] {
+	border-color: var(--basalt-hue-border);
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.nt-tagnav-item:focus-visible,
+.nt-colors-item:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+/* Chips for the filters in use; the row collapses when there are none. */
+.nt-applied {
+	padding: 0 0.75rem 0.75rem;
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* The view picker, the sort and the count of notes shown. */
+.nt-list-head {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0 0.75rem 0.6rem;
+}
+.nt-viewdd {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.nt-viewbtn {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	max-width: 100%;
+	padding: 0.3rem 0.5rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+	background: transparent;
+}
+.nt-viewbtn > .bi:first-child {
+	font-size: var(--nt-fs-body);
+	color: var(--nt-quiet);
+}
+.nt-viewbtn-chev {
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+	transition: rotate 170ms ease;
+}
+.nt-viewbtn[aria-expanded="true"] .nt-viewbtn-chev {
+	rotate: 180deg;
+}
+.nt-viewbtn:hover,
+.nt-viewbtn[aria-expanded="true"] {
+	background: var(--nt-hover);
+}
+.nt-viewbtn:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: -2px;
+}
+.nt-list-sort.form-select {
+	flex: none;
+	width: 9.5rem;
+	min-height: 0;
+	padding-top: 0.3rem;
+	padding-bottom: 0.3rem;
+}
+.nt-list-count {
+	flex: 0 0 100%;
+	order: 3;
+	margin: 0;
+	padding: 0 0.5rem;
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+}
+.nt-views.dropdown-menu {
+	min-width: 15rem;
+}
+.nt-views .dropdown-item.active,
+.nt-views .dropdown-item:active {
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--nt-selected);
+}
+.nt-views-count {
+	margin-left: auto;
+	font-size: var(--nt-fs-small);
+	font-variant-numeric: tabular-nums;
+	color: var(--nt-quiet);
+}
+
+/* The rows scroll under the fixed controls above, with a soft shadow
+   along the edge where they disappear. */
+.nt-list-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	border-top: 1px solid var(--nt-line);
+	overflow-y: auto;
+	box-shadow: inset 0 12px 12px -14px var(--basalt-scrim);
+	overscroll-behavior: contain;
+}
+
+/* Pinned and Other notes headings stick while their rows scroll. */
+.nt-group {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	margin: 0;
+	padding: 0.5rem var(--nt-x) 0.3rem;
+	border-bottom: 1px solid var(--nt-line);
+	font-size: var(--nt-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--nt-quiet);
+	background: var(--basalt-plane);
+	box-shadow: 0 12px 24px -18px var(--basalt-scrim);
+}
+
+/* One row per note: a tint stripe on the left, and the open note marked
+   by a bar on the right. */
+.nt-item {
+	position: relative;
+	padding: 1rem var(--nt-x);
+	border-bottom: 1px solid var(--nt-line);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition: background-color 170ms ease;
+
+	&[class*="nt-tone--"] {
+		background: color-mix(in srgb, var(--nt-tone) 9%, var(--basalt-plane));
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		width: 4px;
+		background: var(--nt-tone, transparent);
+	}
+	&:hover {
+		background: var(--nt-hover);
+	}
+	&[class*="nt-tone--"]:hover {
+		background: color-mix(in srgb, var(--nt-tone) 15%, var(--basalt-plane));
+	}
+	&[aria-selected="true"] {
+		background: var(--nt-selected);
+		box-shadow: inset -3px 0 0 var(--basalt-hue);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.nt-item-title {
+	margin: 0 0 0.2rem;
+	overflow: hidden;
+	font-size: var(--nt-fs-body);
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.nt-item-pin {
+	margin-right: 0.3rem;
+	font-size: var(--nt-fs-small);
+	color: var(--basalt-copy);
+}
+.nt-item-snip {
+	display: -webkit-box;
+	margin: 0 0 0.4rem;
+	overflow: hidden;
+	font-size: var(--nt-fs-small);
+	line-height: 1.5;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	color: var(--basalt-copy-body);
+}
+.nt-item-meta {
+	display: flex;
+	gap: 0.25rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+}
+.nt-item-check {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	font-variant-numeric: tabular-nums;
+
+	&.is-done {
+		color: var(--basalt-copy-body);
+	}
+}
+.nt-item-tag {
+	color: var(--basalt-copy-body);
+}
+.nt-item-when {
+	margin-left: auto;
+	white-space: nowrap;
+}
+/* Search hits are highlighted inside titles, snippets and tags. */
+.nt-mark {
+	padding: 0 0.1em;
+	border-radius: 3px;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-warning) 38%, var(--basalt-plane));
+}
+
+/* Loading rows match the real ones; the empty state stays compact. */
+.nt-skeleton-item {
+	padding: 1rem var(--nt-x);
+	border-bottom: 1px solid var(--nt-line);
+}
+.nt-w-70 {
+	width: 70%;
+}
+.nt-w-50 {
+	width: 50%;
+}
+.nt-empty {
+	padding: 2.5rem 1.25rem;
+}
+.nt-empty .basalt-empty-text {
+	color: var(--nt-quiet);
+}
+
+/* The foot of the list holds quick capture, or Empty trash in the trash. */
+.nt-list-foot {
+	padding: 0.75rem;
+	border-top: 1px solid var(--nt-line);
+	box-shadow: 0 -12px 24px -18px var(--basalt-scrim);
+}
+.nt-list-purge.btn {
+	width: 100%;
+}
+.nt-list-purge[hidden],
+.nt-capture[hidden] {
+	display: none;
+}
+.nt-capture {
+	display: flex;
+	gap: 0.4rem;
+}
+.nt-capture .form-control {
+	flex: 1;
+	min-width: 0;
+	border-style: dashed;
+
+	&:focus {
+		border-style: solid;
+	}
+}
+.nt-capture-go.btn {
+	flex: none;
+	width: 2.6rem;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* With no note open, the editor pane shows a centered prompt. */
+.nt-editor-none {
+	margin: auto;
+	padding: 3rem 1.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.nt-editor-none .basalt-empty-text {
+	color: var(--nt-quiet);
+}
+.nt-note {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The note's top bar holds still while the note scrolls beneath it. */
+.nt-note-bar {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 4.75rem;
+	padding: 0.75rem var(--nt-x);
+	border-bottom: 1px solid var(--nt-line);
+	background: var(--basalt-plane);
+	box-shadow: 0 12px 24px -18px var(--basalt-scrim);
+}
+.nt-note-back.btn {
+	display: none;
+}
+@media (max-width: 991.98px) {
+	.nt-note-back.btn {
+		display: inline-grid;
+	}
+	.nt-note-bar {
+		padding-left: 0.5rem;
+	}
+}
+@media (max-width: 767.98px) {
+	.nt-note-bar {
+		gap: 0.25rem;
+		min-height: 4.25rem;
+		padding-right: 0.5rem;
+	}
+}
+
+/* Save status: quiet while all is well, bold red when a save failed. */
+.nt-save {
+	display: inline-flex;
+	gap: 0.4rem;
+	flex: 1 1 auto;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+
+	&[data-state="error"] {
+		font-weight: 600;
+		color: var(--nt-danger-text);
+	}
+	&[data-state="saving"] .bi {
+		animation: nt-spin 1s linear infinite;
+	}
+}
+.nt-save-text {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.nt-save-retry.btn {
+	flex: none;
+	padding: 0 0.25rem;
+	font-size: var(--nt-fs-small);
+	text-decoration: underline;
+	color: var(--basalt-copy);
+}
+@keyframes nt-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+.nt-save-hint {
+	flex: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+@media (max-width: 575.98px) {
+	.nt-save-hint {
+		display: none;
+	}
+}
+
+/* Toolbar actions, and the tint picker that opens from it. */
+.nt-note-tools {
+	display: flex;
+	gap: 0.1rem;
+	flex: none;
+	align-items: center;
+}
+.nt-note-tools .dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.nt-color-btn .nt-dot {
+	width: 0.95rem;
+	height: 0.95rem;
+}
+.nt-color-menu {
+	min-width: 11rem;
+}
+.nt-color-menu-set {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.nt-color-menu-legend {
+	float: none;
+	width: auto;
+	margin: 0;
+	padding: 0.3rem 1rem 0.4rem;
+	font-size: var(--nt-fs-small);
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--nt-quiet);
+}
+.nt-color-menu .dropdown-item {
+	cursor: pointer;
+}
+.nt-color-menu .btn-check:checked + .dropdown-item {
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--nt-selected);
+}
+.nt-color-menu .btn-check:focus-visible:not(:checked) + .dropdown-item {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: -2px;
+}
+
+/* An archived note gets a blue strip above it, a trashed one a red strip. */
+.nt-banner {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.75rem var(--nt-x);
+	border-bottom: 1px solid var(--nt-line);
+	font-size: var(--nt-fs-body);
+	color: var(--basalt-copy);
+	background: var(--basalt-info-soft);
+
+	&[hidden] {
+		display: none;
+	}
+	&[data-kind="trashed"] {
+		background: var(--basalt-danger-soft);
+	}
+}
+.nt-banner-text {
+	flex: 1 1 16rem;
+	margin: 0;
+}
+.nt-banner-actions {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+
+/* The note is a sheet on a desk, so it reads as the place to write.
+   The desk takes the note's tint. */
+.nt-note-scroll {
+	flex: 1;
+	min-height: 0;
+	padding: 1.5rem var(--nt-x) 2.5rem;
+	overflow-y: auto;
+	background: color-mix(in srgb, var(--basalt-plane-alt) 60%, var(--basalt-plane));
+	overscroll-behavior: contain;
+}
+.nt-note[class*="nt-tone--"] .nt-note-scroll {
+	background: color-mix(in srgb, var(--nt-tone) 10%, var(--basalt-plane));
+}
+.nt-note-paper {
+	max-width: 48rem;
+	padding: 1.75rem 2rem 2rem;
+	border: 1px solid var(--nt-line);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+	box-shadow:
+		0 1px 2px color-mix(in srgb, var(--basalt-scrim) 40%, transparent),
+		0 12px 28px -20px var(--basalt-scrim);
+}
+@media (max-width: 767.98px) {
+	.nt-note-scroll {
+		padding-top: 1rem;
+		padding-bottom: 2rem;
+	}
+	.nt-note-paper {
+		padding: 1.25rem 1.25rem 1.5rem;
+	}
+}
+
+/* Editable text has no box at rest, a soft field under the pointer and
+   a clear field while typing, and it always shows keyboard focus. */
+.nt-note-title,
+.nt-note-body,
+.nt-check-text,
+.nt-check-new {
+	display: block;
+	width: 100%;
+	border: 1px solid transparent;
+	border-radius: 9px;
+	font: inherit;
+	color: var(--basalt-copy);
+	background: transparent;
+	cursor: text;
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease,
+		box-shadow 130ms ease;
+}
+.nt-note-title {
+	width: calc(100% + 1.2rem);
+	margin-left: -0.6rem;
+	padding: 0.3rem 0.6rem;
+	overflow: hidden;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	resize: none;
+}
+.nt-note-body {
+	width: calc(100% + 1.2rem);
+	margin: 1.25rem 0 0 -0.6rem;
+	padding: 0.4rem 0.6rem;
+	overflow: hidden;
+	font-size: var(--nt-fs-body);
+	line-height: 1.65;
+	color: var(--basalt-copy-body);
+	resize: none;
+}
+.nt-note:not(.is-locked) .nt-note-title:hover,
+.nt-note:not(.is-locked) .nt-note-body:hover,
+.nt-note:not(.is-locked) .nt-check-text:hover,
+.nt-check-new:hover {
+	border-color: var(--nt-line);
+	background: var(--basalt-plane-alt);
+}
+.nt-note:not(.is-locked) .nt-note-title:focus,
+.nt-note:not(.is-locked) .nt-note-body:focus,
+.nt-note:not(.is-locked) .nt-check-text:focus,
+.nt-check-new:focus {
+	border-color: var(--basalt-hue);
+	outline: none;
+	background: var(--basalt-plane);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-hue) 22%, transparent);
+}
+/* Touch screens cannot hover, so there the fields show faintly at rest. */
+@media (hover: none) {
+	.nt-note:not(.is-locked) .nt-note-title,
+	.nt-note:not(.is-locked) .nt-note-body {
+		border-color: var(--nt-line);
+		background: color-mix(in srgb, var(--basalt-plane-alt) 60%, var(--basalt-plane));
+	}
+}
+.nt-note.is-locked .nt-note-title:focus-visible,
+.nt-note.is-locked .nt-note-body:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.nt-note-title::placeholder,
+.nt-note-body::placeholder,
+.nt-check-new::placeholder {
+	color: var(--nt-quiet);
+	opacity: 1;
+}
+.nt-note-meta {
+	margin: 0.3rem 0 0;
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+}
+
+/* The checklist: a heading with progress, then one row per item. */
+.nt-check {
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--nt-line);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.nt-check-head {
+	display: flex;
+	gap: 0.25rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin-bottom: 0.75rem;
+}
+.nt-check-title {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.nt-check-count {
+	margin: 0;
+	font-size: var(--nt-fs-small);
+	font-variant-numeric: tabular-nums;
+	color: var(--nt-quiet);
+}
+.nt-check-clear.btn {
+	margin-left: auto;
+	padding: 0;
+	font-size: var(--nt-fs-small);
+	color: var(--basalt-copy-body);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.nt-check-bar {
+	height: 4px;
+	margin-bottom: 0.5rem;
+	background: var(--basalt-plane-alt);
+}
+.nt-check-bar .progress-bar {
+	background: var(--basalt-success);
+	transition: width 0.3s ease;
+}
+.nt-check-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.nt-check-item {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: start;
+	padding: 0.1rem 0;
+}
+.nt-check-item .form-check-input {
+	width: 1.1rem;
+	height: 1.1rem;
+	margin: 0.42rem 0 0;
+}
+.nt-check-text {
+	padding: 0.3rem 0.5rem;
+	overflow: hidden;
+	font-size: var(--nt-fs-body);
+	line-height: 1.45;
+	resize: none;
+}
+.nt-check-item.is-done .nt-check-text {
+	text-decoration: line-through;
+	color: var(--nt-quiet);
+}
+/* The remove button appears with the row's hover or focus, and always
+   on touch screens. */
+.nt-check-remove {
+	color: var(--nt-quiet);
+	opacity: 0;
+}
+.nt-check-item:hover .nt-check-remove,
+.nt-check-item:focus-within .nt-check-remove {
+	opacity: 1;
+}
+@media (hover: none) {
+	.nt-check-remove {
+		opacity: 1;
+	}
+}
+.nt-check-add {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	padding: 0.3rem 2.4rem 0.3rem 0;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.nt-check-add .bi {
+	width: 1.1rem;
+	text-align: center;
+	color: var(--nt-quiet);
+}
+/* The add field is a ghost row: its dashed outline marks where the next
+   item goes. */
+.nt-check-new {
+	padding: 0.4rem 0.5rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	font-size: var(--nt-fs-body);
+}
+
+/* Tags close the sheet, with a line of help under the input. */
+.nt-note-tags {
+	margin-top: 1.5rem;
+}
+.nt-note-label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-size: var(--nt-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.nt-note-help {
+	margin: 0.4rem 0 0;
+	font-size: var(--nt-fs-small);
+	color: var(--nt-quiet);
+}
+
+/* A trashed note still reads as a note: its controls go, but nothing
+   turns gray. */
+.nt-note.is-locked .nt-note-title,
+.nt-note.is-locked .nt-note-body {
+	cursor: default;
+}
+.nt-note.is-locked .nt-check-remove,
+.nt-note.is-locked .basalt-tags-remove,
+.nt-note.is-locked .basalt-tags-input,
+.nt-note.is-locked .nt-note-help {
+	display: none;
+}
+.nt-note.is-locked .nt-check-item .form-check-input,
+.nt-note.is-locked .nt-check-text {
+	pointer-events: none;
+}
+
+/* The keyboard shortcuts dialog lists each key beside what it does. */
+.nt-keys {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+	}
+	& dt {
+		flex: 0 0 7.5rem;
+		font-weight: 400;
+	}
+	& dd {
+		margin: 0;
+		font-size: var(--nt-fs-body);
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* Reduced motion stops the transitions, the pane slides and the spinner. */
+@media (prefers-reduced-motion: reduce) {
+	.nt-item,
+	.nt-note-title,
+	.nt-note-body,
+	.nt-check-text,
+	.nt-check-new,
+	.nt-ws-btn .bi,
+	.nt-viewbtn-chev,
+	.nt-switch,
+	.nt-switch::after,
+	.nt-check-bar .progress-bar {
+		transition: none;
+	}
+	.nt-app .nt-list,
+	.nt-app .nt-editor,
+	.nt-save[data-state="saving"] .bi {
+		animation: none;
+	}
+}
+
+/* A printed note is just the sheet, without the list or the controls. */
+@media print {
+	.nt-list,
+	.nt-note-bar,
+	.nt-check-add,
+	.nt-check-remove {
+		display: none;
+	}
+	.nt-shell,
+	.nt-app {
+		height: auto;
+		overflow: visible;
+	}
+	.nt-app {
+		display: block;
+	}
+	.nt-note-scroll {
+		padding: 0;
+		overflow: visible;
+		background: none;
+	}
+	.nt-note-paper {
+		border: 0;
+		box-shadow: none;
+	}
+	.nt-note * {
+		transition: none;
+	}
+}

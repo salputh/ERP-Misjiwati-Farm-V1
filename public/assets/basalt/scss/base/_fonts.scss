@@ -1,0 +1,75 @@
+/* The two self-hosted variable webfonts, Schibsted Grotesk for text and Chivo
+   Mono for figures and code. One file per subset holds every weight. Both are
+   licensed under the SIL Open Font License 1.1 (assets/basalt/fonts/OFL.txt). */
+@use "sass:map";
+
+/* Unicode ranges of the two subsets each family ships. */
+// A range such as U+0100-02BA is not a subtraction.
+// stylelint-disable scss/operator-no-unspaced
+$subsets: (
+	latin-ext: (
+		U+0100-02BA,
+		U+02BD-02C5,
+		U+02C7-02CC,
+		U+02CE-02D7,
+		U+02DD-02FF,
+		U+0304,
+		U+0308,
+		U+0329,
+		U+1D00-1DBF,
+		U+1E00-1E9F,
+		U+1EF2-1EFF,
+		U+2020,
+		U+20A0-20AB,
+		U+20AD-20C0,
+		U+2113,
+		U+2C60-2C7F,
+		U+A720-A7FF,
+	),
+	latin: (
+		U+0000-00FF,
+		U+0131,
+		U+0152-0153,
+		U+02BB-02BC,
+		U+02C6,
+		U+02DA,
+		U+02DC,
+		U+0304,
+		U+0308,
+		U+0329,
+		U+2000-206F,
+		U+20AC,
+		U+2122,
+		U+2191,
+		U+2193,
+		U+2212,
+		U+2215,
+		U+FEFF,
+		U+FFFD,
+	),
+);
+
+/* Each family lists its weight span and the file prefix of its subsets. */
+$families: (
+	"Schibsted Grotesk": (
+		weights: 400 900,
+		file: schibsted,
+	),
+	"Chivo Mono": (
+		weights: 300 700,
+		file: chivomono,
+	),
+);
+
+@each $family, $face in $families {
+	@each $subset, $range in $subsets {
+		@font-face {
+			font-family: $family;
+			font-style: normal;
+			font-weight: map.get($face, weights);
+			font-display: swap;
+			unicode-range: $range;
+			src: url("../fonts/#{map.get($face, file)}-#{$subset}.woff2") format("woff2");
+		}
+	}
+}

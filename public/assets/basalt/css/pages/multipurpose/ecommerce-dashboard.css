@@ -1,0 +1,808 @@
+/* Basalt - E-Commerce dashboard
+   Namespaced under .ec-*
+   Four store figures that switch the sales chart, orders
+   to handle, stock that is running low (with a restock
+   drawer), best sellers and how customers paid.
+   The header, segmented switch, status pills, stepper,
+   drawer and toasts are the shared components. */
+
+.ec-page,
+.ec-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--ec-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--ec-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--ec-up: color-mix(in srgb, var(--basalt-success) 60%, var(--basalt-copy));
+	/* The chart's line takes the color of the figure it shows; the script
+     sets --ec-now when the figure changes. */
+	--ec-now: var(--basalt-series-1);
+	--ec-before: color-mix(in srgb, var(--basalt-copy-muted) 70%, transparent);
+}
+
+/* Grid
+   Sales and the orders to handle take the whole row. Below 1200px every
+   card does; from desktop width the others pair up and each pair ends
+   level. */
+.ec-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.ec-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+@media (min-width: 1200px) {
+	.ec-card-wide {
+		grid-column: span 7;
+	}
+	.ec-card-narrow {
+		grid-column: span 5;
+	}
+	.ec-card-half {
+		grid-column: span 6;
+	}
+}
+
+/* Card */
+.ec-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+.ec-card-head {
+	margin-bottom: 1.5rem;
+}
+.ec-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ec-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--ec-quiet);
+}
+/* The card's way on to the full page, pinned to the bottom so the cards
+   in a pair end on the same line. */
+.ec-card-more {
+	align-self: flex-start;
+	margin-top: auto;
+	padding-top: 1.5rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--ec-link);
+}
+.ec-card-more:hover {
+	color: var(--basalt-copy);
+}
+.ec-card-more .bi {
+	display: inline-block;
+	transition: transform 170ms ease;
+}
+.ec-card-more:hover .bi {
+	transform: translateX(3px);
+}
+.ec-switch {
+	align-self: flex-start;
+	margin-bottom: 1.25rem;
+}
+/* A head with its control on the right, which wraps under the title
+   when the card gets narrow. */
+.ec-card-head-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.ec-card-head-row > :first-child {
+	flex: 1 1 12rem;
+	min-width: 0;
+}
+.ec-card-head-row > .ec-switch {
+	margin-bottom: 0;
+}
+
+/* Sales
+   Title and legend share a row; under them four figure tiles, each in
+   its own chart color, pick what the chart shows. */
+.ec-card-full .card-body {
+	container: ec-sales / inline-size;
+}
+.ec-sales-head {
+	display: flex;
+	gap: 0.75rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.ec-sales-head .ec-card-head {
+	margin-bottom: 0;
+}
+.ec-legend {
+	display: flex;
+	gap: 0.4rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0.3rem 0 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	list-style: none;
+}
+.ec-legend li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.ec-legend-swatch {
+	width: 1rem;
+	height: 3px;
+	border-radius: 2px;
+}
+.ec-legend-swatch-now {
+	background: var(--ec-now);
+}
+.ec-legend-swatch-before {
+	background: repeating-linear-gradient(90deg, var(--ec-before) 0 4px, transparent 4px 7px);
+}
+
+.ec-metrics {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin-bottom: 1.75rem;
+}
+@container ec-sales (min-width: 17rem) {
+	.ec-metrics {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.ec-metric {
+		padding: 1rem 1rem 1.05rem;
+	}
+}
+@container ec-sales (min-width: 36rem) {
+	.ec-metrics {
+		gap: 1rem;
+	}
+	.ec-metric {
+		padding: 1.1rem 1.25rem 1.2rem;
+	}
+}
+@container ec-sales (min-width: 52rem) {
+	.ec-metrics {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+.ec-metric {
+	position: relative;
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	grid-template-areas: "icon change" "label label" "value value" "sub sub";
+	align-items: center;
+	padding: 1.1rem 1.25rem 1.2rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 0.9rem;
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+}
+.ec-metric:hover {
+	border-color: var(--basalt-edge-strong);
+}
+/* The chosen tile is outlined in its color; the tiles stay plain. */
+.btn-check:checked + .ec-metric {
+	border-color: color-mix(in srgb, var(--tone) 55%, var(--basalt-edge));
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone) 55%, var(--basalt-edge));
+}
+.btn-check:focus-visible:not(:checked) + .ec-metric {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.ec-metric-icon {
+	display: grid;
+	grid-area: icon;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 0.65rem;
+	font-size: 1rem;
+	color: var(--basalt-plane);
+	background: var(--tone);
+}
+.ec-metric-change {
+	grid-area: change;
+	justify-self: end;
+	font-size: 0.8rem;
+	font-weight: 650;
+	white-space: nowrap;
+}
+.ec-metric-change .bi {
+	margin-right: 0.1rem;
+}
+.ec-metric-change-good {
+	color: color-mix(in srgb, var(--basalt-success) 42%, var(--basalt-copy));
+}
+.ec-metric-change-bad {
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+.ec-metric-label {
+	grid-area: label;
+	margin-top: 1rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--ec-quiet);
+}
+.ec-metric-value {
+	grid-area: value;
+	margin-top: 0.2rem;
+	font-size: clamp(1.2rem, 5.5cqi, 1.6rem);
+	font-weight: 750;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ec-metric-sub {
+	grid-area: sub;
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--ec-quiet);
+}
+.ec-chart {
+	position: relative;
+	height: 300px;
+}
+.ec-chart canvas {
+	display: block;
+	max-width: 100%;
+}
+
+/* Best sellers
+   The season's top pieces as photos, the tallest for the one that made
+   most; on a narrow card they turn into rows with a small photo each. */
+.ec-best-card .card-body {
+	container-type: inline-size;
+}
+.ec-best-head {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.ec-best-total {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 700;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+
+	& small {
+		display: block;
+		margin-top: 0.2rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--ec-quiet);
+	}
+}
+.ec-best {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	align-items: end;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ec-best-row {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	min-width: 0;
+}
+.ec-best-photo {
+	position: relative;
+	display: block;
+	aspect-ratio: 3 / calc(3.4 + 1.6 * var(--ec-share, 1));
+	overflow: hidden;
+	border-radius: 0.9rem;
+	background: var(--basalt-plane-alt);
+
+	& img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center top;
+		transform: scale(1.05);
+		transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+	}
+}
+.ec-best.is-drawn .ec-best-photo img {
+	transform: none;
+}
+.ec-best-row:hover .ec-best-photo img {
+	transform: scale(1.03);
+}
+.ec-best-rank {
+	position: absolute;
+	top: 0.6rem;
+	left: 0.6rem;
+	padding: 0.15rem 0.55rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-plane) 88%, transparent);
+}
+.ec-best-text {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	min-width: 0;
+}
+.ec-best-value {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ec-best-name {
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ec-best-name:hover {
+	text-decoration: underline;
+	color: var(--ec-link);
+}
+.ec-best-sub {
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--ec-quiet);
+}
+@container (max-width: 40rem) {
+	.ec-best {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0;
+	}
+	.ec-best-row {
+		flex-direction: row;
+		gap: 1rem;
+		align-items: center;
+		padding: 0.75rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.ec-best-row:first-child {
+		padding-top: 0;
+	}
+	.ec-best-row:last-child {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+	.ec-best-photo {
+		flex: none;
+		width: 4.25rem;
+		aspect-ratio: 4 / 5;
+		border-radius: 0.65rem;
+	}
+	.ec-best-rank {
+		top: 0.3rem;
+		left: 0.3rem;
+		padding: 0.05rem 0.4rem;
+		font-size: 0.7rem;
+	}
+}
+
+/* Orders to handle
+   Pulled out by the cells' side padding, so the first column's text
+   starts on the card's left edge, under the title. */
+.ec-scroll {
+	margin: 0 -0.75rem;
+}
+.ec-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+}
+.ec-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y, 1.2rem) 0.75rem;
+}
+.ec-table > thead > tr > th {
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--ec-quiet);
+}
+.ec-table > tbody > tr:last-child > * {
+	border-bottom-width: 0;
+}
+.ec-table tbody tr:hover > * {
+	--bs-table-bg-state: var(--basalt-wash);
+}
+.ec-table td {
+	white-space: nowrap;
+}
+.ec-table .ec-table-main {
+	width: 100%;
+}
+.ec-table tr[hidden] {
+	display: none;
+}
+.ec-table-name {
+	display: block;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+a.ec-table-name:hover {
+	text-decoration: underline;
+	color: var(--ec-link);
+}
+.ec-table-id {
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	text-decoration: none;
+	color: var(--ec-link);
+}
+.ec-table-id:hover {
+	text-decoration: underline;
+}
+.ec-table-amount {
+	font-weight: 650;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+/* Gray buttons sit on the card, and their label keeps its contrast. */
+.ec-page .btn-outline-secondary,
+.ec-drawer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+}
+/* Row actions share one width, before and after they are used, so the
+   column doesn't jump. */
+.ec-act {
+	min-width: 6.5rem;
+	white-space: nowrap;
+}
+/* What a used action leaves behind: a quiet note, centered where the
+   button was. */
+.ec-done {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	justify-content: center;
+	min-width: 6.5rem;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	color: var(--ec-quiet);
+}
+.ec-done .bi {
+	color: var(--ec-up);
+}
+
+/* A narrow card (a phone, or the half-width card on a small desktop):
+   each order becomes a short stacked record. Number, who and the total
+   on top, the status and the action under them. */
+.ec-card-orders .card-body {
+	container: ec-orders / inline-size;
+}
+@container ec-orders (max-width: 560px) {
+	.ec-scroll {
+		margin: 0;
+	}
+	.ec-card-orders .ec-table,
+	.ec-card-orders .ec-table > tbody {
+		display: block;
+	}
+	.ec-card-orders .ec-table > thead {
+		display: none;
+	}
+	.ec-card-orders .ec-table > tbody > tr {
+		display: grid;
+		gap: 0.75rem 1rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas: "id who total" "status status act";
+		align-items: center;
+		padding: 1.2rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.ec-card-orders .ec-table > tbody > tr[hidden] {
+		display: none;
+	}
+	.ec-card-orders .ec-table > tbody > tr:first-child {
+		padding-top: 0;
+	}
+	.ec-card-orders .ec-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.ec-card-orders .ec-table > tbody > tr > * {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.ec-card-orders .ec-table > tbody > tr > :nth-child(1) {
+		grid-area: id;
+	}
+	.ec-card-orders .ec-table > tbody > tr > :nth-child(2) {
+		grid-area: who;
+		min-width: 0;
+	}
+	.ec-card-orders .ec-table-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.ec-card-orders .ec-table > tbody > tr > :nth-child(3) {
+		grid-area: status;
+	}
+	.ec-card-orders .ec-table > tbody > tr > :nth-child(4) {
+		grid-area: total;
+	}
+	.ec-card-orders .ec-table > tbody > tr > :nth-child(5) {
+		grid-area: act;
+	}
+}
+
+/* Running low
+   The same table as the orders beside it, so the rows of the two cards
+   line up: the product, how long it lasts, and the action. On a narrow
+   card the product sits over its pill, with the action beside both. */
+.ec-table-stock .basalt-status {
+	font-variant-numeric: tabular-nums;
+}
+.ec-card-stock .card-body {
+	container: ec-stock / inline-size;
+}
+@container ec-stock (max-width: 420px) {
+	.ec-table-stock,
+	.ec-table-stock > tbody {
+		display: block;
+	}
+	.ec-table-stock > thead {
+		display: none;
+	}
+	.ec-table-stock > tbody > tr {
+		display: grid;
+		gap: 0.5rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "name act" "left act";
+		align-items: center;
+		padding: 1.2rem 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.ec-table-stock > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.ec-table-stock > tbody > tr > * {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.ec-table-stock > tbody > tr > :nth-child(1) {
+		grid-area: name;
+		min-width: 0;
+		white-space: normal;
+	}
+	.ec-table-stock > tbody > tr > :nth-child(2) {
+		grid-area: left;
+	}
+	.ec-table-stock > tbody > tr > :nth-child(3) {
+		grid-area: act;
+	}
+}
+
+/* How customers paid
+   A ring with the total in its middle, and the methods listed under it
+   in the ring's colors. */
+.ec-ring {
+	position: relative;
+	height: 210px;
+	margin-bottom: 1.5rem;
+}
+.ec-ring canvas {
+	display: block;
+	max-width: 100%;
+}
+.ec-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	pointer-events: none;
+}
+.ec-ring-center strong {
+	font-size: 1.35rem;
+	font-weight: 750;
+	color: var(--basalt-copy);
+}
+.ec-ring-center span {
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--ec-quiet);
+}
+.ec-pay {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ec-pay-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 0.75rem minmax(0, 1fr) auto auto;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.ec-pay-row:first-child {
+	padding-top: 0;
+}
+.ec-pay-row:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.ec-pay-swatch {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 0.2rem;
+	background: var(--tone);
+}
+.ec-pay-name {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ec-pay-share {
+	color: var(--ec-quiet);
+}
+.ec-pay-value {
+	min-width: 4.5rem;
+	font-weight: 650;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+
+/* Restock drawer */
+/* A click on - or + leaves no ring round the stepper; typing in it or
+   reaching it by keyboard still lights it up. */
+.ec-drawer .basalt-stepper:focus-within:not(:has(:focus-visible)) {
+	border-color: var(--basalt-control-line);
+	box-shadow: none;
+}
+.ec-drawer-lead {
+	margin: 0 0 1.5rem;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+.ec-drawer-lead strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.ec-drawer-hint {
+	margin: 0.6rem 0 0;
+	font-size: 0.8rem;
+	color: var(--ec-quiet);
+}
+.ec-po {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.875rem;
+}
+.ec-po th,
+.ec-po td {
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.ec-po th {
+	padding-right: 1rem;
+}
+.ec-po td {
+	text-align: right;
+	white-space: nowrap;
+}
+.ec-po-total th,
+.ec-po-total td {
+	border-bottom: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* AI suggestions: the sparkle sits beside the title, and the ideas share
+   out the card's height beside Running low until fewer than four are
+   left. */
+.ec-ideas-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.ec-ideas {
+	flex: 1 1 auto;
+
+	.basalt-idea {
+		align-content: center;
+	}
+}
+.ec-ideas:not(:has(> :nth-child(4))) {
+	align-content: start;
+}
+.ec-idea-drop {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	color: var(--ec-quiet);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-copy);
+	}
+}
+.ec-ideas-done {
+	padding: 2rem 0;
+	text-align: center;
+	color: var(--ec-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ec-best-photo img {
+		transform: none;
+		transition: none;
+	}
+	.ec-card-more .bi,
+	.ec-metric {
+		transition: none;
+	}
+}
+
+@media print {
+	.ec-best-photo img {
+		transform: none;
+	}
+	.ec-act,
+	.ec-done,
+	.ec-switch {
+		display: none;
+	}
+}
+
+/* On narrow screens the rows are laid out as lines whose cells no longer
+   meet, so the hovered row takes the tint itself and the gaps match. */
+.ec-table > tbody > tr:hover {
+	background-color: var(--basalt-wash);
+}

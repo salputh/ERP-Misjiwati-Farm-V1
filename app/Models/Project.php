@@ -54,7 +54,7 @@ class Project extends Model
     }
 
     /**
-     * Modifier kartu media-ui di halaman Project template: media-ui--late, --completed, --onHold, atau --early.
+     * Modifier kartu project (project-kartu--*): media-ui--late, --completed, --onHold, atau --early.
      */
     public function modifierKartu(): string
     {

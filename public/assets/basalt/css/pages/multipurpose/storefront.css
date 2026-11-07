@@ -1,0 +1,871 @@
+/* Basalt - Storefront (storefront.html)
+   Namespaced under .sp-*
+   Built from shared parts: the plain page head, cards, styled selects,
+   status pills, switches, segmented control, the record drawer, dialog
+   head and foot, empty states and toasts. This file lays them out and
+   styles what belongs to this page only: the product photos, the front
+   page window, the catalog grid, the kind chips, the quick view and
+   the sale dialog. */
+
+.sp-page,
+.sp-drawer,
+.sp-sale-dialog {
+	/* Small gray text: the muted token pulled toward the body color so it
+     clears 4.5:1 on every palette. */
+	--sp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--sp-line: var(--basalt-edge);
+	--sp-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+}
+
+/* Cards */
+.sp-card.card {
+	container: sp-card / inline-size;
+	overflow: hidden;
+}
+.sp-cardhead {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.sp-cardhead-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sp-cardhead-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--sp-quiet);
+}
+.sp-quiet {
+	font-weight: 400;
+	color: var(--sp-quiet);
+}
+.sp-help {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	color: var(--sp-quiet);
+}
+.sp-help a,
+.sp-foot a {
+	color: var(--sp-link);
+}
+.sp-error {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-copy));
+}
+
+/* Product photo
+   A tinted tile with the product's icon sits under the photo, so the card
+   still reads while the photo loads or when it cannot be fetched. */
+.sp-photo {
+	--sp-tone: var(--basalt-series-1);
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	font-size: 1.6rem;
+	color: color-mix(in srgb, var(--sp-tone) 72%, var(--basalt-copy));
+	background: linear-gradient(
+		160deg,
+		color-mix(in srgb, var(--sp-tone) 24%, var(--basalt-plane)),
+		color-mix(in srgb, var(--sp-tone) 8%, var(--basalt-plane))
+	);
+}
+:root[data-basalt-gradients="off"] .sp-photo {
+	background: color-mix(in srgb, var(--sp-tone) 24%, var(--basalt-plane));
+}
+.sp-photo-2 {
+	--sp-tone: var(--basalt-series-2);
+}
+.sp-photo-3 {
+	--sp-tone: var(--basalt-series-3);
+}
+.sp-photo-4 {
+	--sp-tone: var(--basalt-series-4);
+}
+.sp-photo > img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.sp-thumb {
+	display: block;
+	flex-shrink: 0;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	overflow: hidden;
+}
+.sp-thumb .sp-photo {
+	font-size: 0.9rem;
+}
+
+/* Chips laid over a photo: a light pill with the tone in its text. */
+.sp-chip {
+	--sp-chip: var(--basalt-hue);
+	position: absolute;
+	top: 0.7rem;
+	left: 0.7rem;
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--sp-chip) 50%, var(--basalt-copy));
+	background: var(--basalt-plane);
+	box-shadow: 0 1px 3px color-mix(in srgb, var(--basalt-copy) 18%, transparent);
+}
+.sp-chip-danger {
+	--sp-chip: var(--basalt-danger);
+}
+.sp-chip-info {
+	--sp-chip: var(--basalt-info);
+}
+.sp-chip-warning {
+	--sp-chip: var(--basalt-warning);
+}
+.sp-chip-front {
+	right: 0.7rem;
+	left: auto;
+	color: var(--basalt-copy);
+}
+.sp-chip-front .bi {
+	color: var(--sp-link);
+}
+
+/* Shared lines of a product card. */
+.sp-eyebrow {
+	margin: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--sp-quiet);
+}
+.sp-rating {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sp-stars {
+	display: inline-flex;
+	gap: 0.1rem;
+	font-size: 0.77rem;
+	color: var(--basalt-warning);
+}
+.sp-prices {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0.3rem 0 0;
+}
+.sp-price {
+	font-size: 1.1rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	color: var(--basalt-copy);
+}
+.sp-was,
+.sp-per {
+	font-size: 0.8rem;
+	color: var(--sp-quiet);
+}
+
+/* Front page window */
+.sp-window.card {
+	background: var(--basalt-grad-soft);
+}
+.sp-front {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-head);
+	list-style: none;
+}
+.sp-front-item {
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.sp-front-spot {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--sp-quiet);
+}
+
+/* The product as a customer sees it: photo left, details right. */
+.sp-tile {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	border: 1px solid var(--sp-line);
+	border-radius: 16px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease;
+}
+.sp-front .sp-tile:not(.sp-tile-empty):hover {
+	border-color: var(--basalt-edge-strong);
+	box-shadow: 0 10px 28px -18px var(--basalt-scrim);
+}
+.sp-tile-art {
+	position: relative;
+	flex: 0 0 8rem;
+	min-height: 9rem;
+}
+.sp-tile-art .sp-chip {
+	top: 0.5rem;
+	left: 0.5rem;
+}
+.sp-tile-body {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1rem 1.1rem 1.1rem;
+}
+.sp-tile-body > p {
+	margin: 0;
+}
+.sp-tile-name {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+	line-height: 1.35;
+	text-wrap: balance;
+	color: var(--basalt-copy);
+}
+.sp-tile-open {
+	padding: 0;
+	border: 0;
+	font: inherit;
+	text-align: left;
+	color: inherit;
+	background: none;
+}
+/* The whole tile is the target; the button inside stays the one stop. */
+.sp-tile-open::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: 16px;
+}
+.sp-tile-open:focus-visible {
+	outline: 0;
+}
+.sp-tile:has(.sp-tile-open:focus-visible) {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.sp-tile-avail {
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--sp-quiet);
+}
+.sp-tile.is-hidden .sp-photo {
+	filter: grayscale(1);
+}
+
+.sp-tile-empty {
+	gap: 1rem;
+	align-items: center;
+	padding: 1.25rem;
+	border-style: dashed;
+	background: color-mix(in srgb, var(--basalt-plane) 55%, transparent);
+}
+.sp-tile-emptyicon {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	color: var(--sp-quiet);
+	background: var(--basalt-wash);
+}
+
+@container sp-card (max-width: 980px) {
+	.sp-front {
+		gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Toolbar: search, order and kind chips */
+.sp-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: 1.5rem var(--basalt-pad-x) 0;
+}
+.sp-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 13rem;
+}
+.sp-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--sp-quiet);
+	pointer-events: none;
+}
+.sp-search .form-control {
+	padding-left: 2.4rem;
+}
+.sp-sort {
+	flex: 0 0 auto;
+	width: 10rem;
+}
+
+.sp-kinds {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	padding: 1rem var(--basalt-pad-x) 1.5rem;
+	border-bottom: 1px solid var(--sp-line);
+}
+.sp-kind {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.4rem 0.85rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	line-height: 1.3;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease,
+		color 130ms ease;
+}
+.sp-kind:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.sp-kind-n {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--sp-quiet);
+}
+.btn-check:checked + .sp-kind {
+	border-color: transparent;
+	color: color-mix(in srgb, var(--basalt-hue) 58%, var(--basalt-copy));
+	background: var(--basalt-hue-soft);
+}
+.btn-check:checked + .sp-kind .sp-kind-n {
+	color: inherit;
+}
+/* The picked chip is its own marker; only an unpicked one shows a ring. */
+.btn-check:focus-visible:not(:checked) + .sp-kind {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+/* Catalog grid: square photos straight on the page, as in a shop
+   window, with a few quiet lines under each. Quick view and full page
+   wait in a tray that rises from the photo's foot on hover or focus. */
+.sp-grid {
+	display: grid;
+	gap: 2.25rem 1.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 13.5rem), 1fr));
+	margin: 0;
+	padding: 1.5rem var(--basalt-pad-x);
+	list-style: none;
+}
+.sp-grid-empty {
+	grid-column: 1 / -1;
+}
+.sp-item {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	cursor: pointer;
+}
+.sp-item:hover .sp-item-name a {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.sp-item:has(.sp-item-name a:focus-visible) .sp-item-art {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.sp-item-media {
+	position: relative;
+}
+.sp-item-art {
+	aspect-ratio: 1;
+	border-radius: 4px;
+	overflow: hidden;
+}
+.sp-item-tray {
+	position: absolute;
+	right: 0.6rem;
+	bottom: 0.6rem;
+	z-index: 2;
+	display: inline-flex;
+	gap: 0.1rem;
+	padding: 0.2rem;
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--basalt-plane) 84%, transparent);
+	box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+	backdrop-filter: blur(8px);
+	opacity: 0;
+	transform: translateY(0.35rem);
+	transition:
+		opacity 0.18s ease,
+		transform 0.18s ease;
+
+	& .btn-icon {
+		width: 1.9rem;
+		height: 1.9rem;
+		padding: 0;
+		border-radius: 8px;
+		color: var(--basalt-copy-body);
+	}
+	& .btn-icon:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.sp-item:hover .sp-item-tray,
+.sp-item:focus-within .sp-item-tray {
+	opacity: 1;
+	transform: none;
+}
+/* Touch screens have no hover, so the tray stays up. */
+@media (hover: none) {
+	.sp-item-tray {
+		opacity: 1;
+		transform: none;
+	}
+}
+.sp-item-body {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+	padding-top: 0.85rem;
+}
+.sp-item-body .sp-eyebrow {
+	margin-bottom: 0.3rem;
+	overflow: hidden;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0;
+	text-transform: none;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.sp-item-name {
+	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 650;
+	line-height: 1.3;
+}
+.sp-item-name a {
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:focus-visible {
+		box-shadow: none;
+	}
+}
+.sp-item-body .sp-price {
+	font-size: 0.95rem;
+	font-weight: 600;
+}
+/* Rating, stock and the badges share one quiet line; the badges drop
+   their pill and read as colored words. */
+.sp-item-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.15rem 0.75rem;
+	align-items: center;
+	margin: 0.55rem 0 0;
+	font-size: 0.75rem;
+	color: var(--sp-quiet);
+
+	/* Stock reads as a colored dot and word, not a pill. */
+	& .basalt-status {
+		padding: 0;
+		font-size: 0.75rem;
+		font-weight: 600;
+		white-space: nowrap;
+		background: none;
+	}
+	& .sp-chip {
+		position: static;
+		padding: 0;
+		font-size: 0.75rem;
+		background: none;
+		box-shadow: none;
+	}
+}
+.sp-item-rating {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: baseline;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		font-size: 0.72rem;
+		color: var(--basalt-warning);
+	}
+}
+.sp-store {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 0;
+	margin: 0.6rem 0 0;
+	padding-left: 2.5em;
+}
+.sp-store .form-check-label {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--sp-quiet);
+	cursor: pointer;
+}
+.sp-item.is-hidden .sp-photo {
+	filter: grayscale(1);
+}
+.sp-item.is-hidden .sp-item-name a {
+	color: var(--sp-quiet);
+}
+
+/* Narrow cards: two tiles across. */
+@container sp-card (max-width: 560px) {
+	.sp-grid {
+		gap: 1.75rem 0.85rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.sp-tile-art {
+		flex-basis: 7rem;
+	}
+}
+
+.sp-foot {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	font-size: 0.8rem;
+	color: var(--sp-quiet);
+}
+
+@media (max-width: 575.98px) {
+	.sp-cardhead,
+	.sp-toolbar,
+	.sp-kinds,
+	.sp-front,
+	.sp-grid,
+	.sp-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.sp-toolbar {
+		flex-wrap: wrap;
+	}
+	.sp-search {
+		flex: 1 1 100%;
+		min-width: 0;
+		max-width: 28rem;
+	}
+}
+
+/* Quick view */
+.sp-section {
+	margin-bottom: 2rem;
+}
+.sp-section:last-child {
+	margin-bottom: 0;
+}
+.sp-section-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.sp-drawer .sp-tile {
+	margin-bottom: 1.5rem;
+}
+.sp-switch {
+	margin-bottom: 1.25rem;
+}
+.sp-switch:last-child {
+	margin-bottom: 0;
+}
+.sp-switch .form-check {
+	margin-bottom: 0;
+}
+.sp-switch .sp-help {
+	padding-left: 2.5em;
+}
+/* An unavailable switch keeps a readable label; the help line says why. */
+.sp-switch .form-check-input:disabled ~ .form-check-label {
+	color: var(--sp-quiet);
+	opacity: 1;
+}
+.sp-field-select {
+	width: 12.5rem;
+	max-width: 100%;
+}
+
+.sp-lead {
+	margin: 0 0 0.9rem;
+	font-size: 0.875rem;
+	color: var(--sp-quiet);
+}
+.sp-lead-score {
+	font-size: 1.1rem;
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+.sp-bars {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+.sp-bar {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 4rem minmax(0, 1fr) 2.5rem;
+	align-items: center;
+	font-size: 0.8rem;
+}
+.sp-bar-label {
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.sp-bar-track {
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-wash);
+}
+.sp-bar-fill {
+	display: block;
+	width: var(--sp-w);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-success);
+}
+.sp-bar-fill-mid {
+	background: var(--basalt-warning);
+}
+.sp-bar-fill-down {
+	background: var(--basalt-danger);
+}
+.sp-bar-n {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.sp-more {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--sp-link);
+}
+.sp-more:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.sp-orders {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sp-order {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto 3.75rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--sp-line);
+	font-size: 0.85rem;
+}
+.sp-order:first-child {
+	padding-top: 0;
+}
+.sp-order-who {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.sp-order-no {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--sp-link);
+}
+.sp-order-cust {
+	text-decoration: none;
+	color: var(--sp-quiet);
+}
+.sp-order-no:hover,
+a.sp-order-cust:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.sp-order-qty {
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.sp-order-date {
+	text-align: right;
+	white-space: nowrap;
+	color: var(--sp-quiet);
+}
+.sp-order-none {
+	display: block;
+	border-bottom: 0;
+	color: var(--sp-quiet);
+}
+
+/* A narrow panel keeps the preview's details on one or two lines. */
+@container basalt-drawer (max-width: 420px) {
+	.sp-drawer .sp-tile-art {
+		flex-basis: 6.5rem;
+	}
+}
+
+/* Run a sale */
+.sp-dlg-group {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.sp-dlg-group > legend {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: inherit;
+	line-height: inherit;
+}
+.sp-dlg-row {
+	display: flex;
+	gap: 1.25rem 2rem;
+	flex-wrap: wrap;
+	margin-top: 1.5rem;
+}
+.sp-picks {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.sp-pick {
+	position: relative;
+	display: flex;
+}
+.sp-pick > .form-check-input {
+	position: absolute;
+	top: 50%;
+	left: 0.9rem;
+	transform: translateY(-50%);
+	margin: 0;
+}
+.sp-pick-label {
+	display: grid;
+	gap: 0.75rem;
+	flex: 1;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	min-width: 0;
+	padding: 0.7rem 1rem 0.7rem 2.6rem;
+	border: 1px solid var(--sp-line);
+	border-radius: 12px;
+	cursor: pointer;
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+}
+.sp-pick-label:hover {
+	background: var(--basalt-wash);
+}
+.sp-pick > .form-check-input:checked + .sp-pick-label {
+	border-color: color-mix(in srgb, var(--basalt-hue) 45%, var(--sp-line));
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+}
+.sp-pick-name {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.sp-pick-note {
+	font-size: 0.75rem;
+	font-weight: 400;
+	color: var(--sp-quiet);
+}
+.sp-pick-price {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+.sp-salesum {
+	margin: 1.5rem 0 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.sp-salesum strong {
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.sp-picks {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sp-tile,
+	.sp-item-tray,
+	.sp-kind,
+	.sp-pick-label {
+		transition: none;
+	}
+}

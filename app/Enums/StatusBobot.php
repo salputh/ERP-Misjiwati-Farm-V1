@@ -40,15 +40,15 @@ enum StatusBobot: string
     }
 
     /**
-     * Kelas CSS lencana status dari template HexaDash.
+     * Kelas CSS lencana status dari template Basalt.
      */
     public function kelasLencana(): string
     {
         return match ($this) {
-            self::Baik => 'bg-opacity-success color-success',
-            self::Waspada => 'bg-opacity-warning color-warning',
-            self::Buruk => 'bg-opacity-danger color-danger',
-            self::Belum => 'bg-opacity-light color-gray',
+            self::Baik => 'bg-success-subtle text-success',
+            self::Waspada => 'bg-warning-subtle text-warning',
+            self::Buruk => 'bg-danger-subtle text-danger',
+            self::Belum => 'bg-body-secondary text-body-secondary',
         };
     }
 }

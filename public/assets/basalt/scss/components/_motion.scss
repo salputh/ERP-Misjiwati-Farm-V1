@@ -1,0 +1,163 @@
+/* Only the overview pages ask for movement, which keeps the rest of the app
+   calm to move around in. basalt.js reads three hooks: a container with
+   [data-basalt-motion] has its cards staggered in through .basalt-enter, a
+   [data-basalt-countup] figure runs up to its value once, and a
+   [data-basalt-lift] card rises a touch on hover. Reduced motion stops all three. */
+@keyframes basalt-rise {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+}
+
+.basalt-enter {
+	animation: basalt-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Until the page has settled every animation holds its first frame (the
+   cards stay unseen) and an on-screen chart stays hidden; basalt.js lets
+   them all go together, so nothing moves while the page is still busy. */
+.basalt-motion-held {
+	& *,
+	& *::before,
+	& *::after {
+		animation-play-state: paused;
+	}
+}
+.basalt-chart-held {
+	visibility: hidden;
+}
+
+/* The stage stays out of sight until the page's own scripts have built its
+   lists and charts, so nothing below them jumps as they fill in; basalt.js
+   marks the page built. A page that runs no scripts shows after 2s anyway. */
+:root:not(.basalt-built) .basalt-stage {
+	visibility: hidden;
+	animation: basalt-stage-show 0s 2s forwards;
+}
+@keyframes basalt-stage-show {
+	to {
+		visibility: visible;
+	}
+}
+
+/* The lift only answers a real pointer, so touch screens never stick raised. */
+[data-basalt-lift] {
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+
+	@media (hover: hover) {
+		&:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 14px 30px -22px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+		}
+	}
+}
+
+/* Bar fills grow out of their track the first time they come into view;
+   basalt.js adds the classes. A bar waiting below the fold sits at zero. */
+@keyframes basalt-grow-x {
+	from {
+		transform: scaleX(0);
+	}
+}
+@keyframes basalt-grow-y {
+	from {
+		transform: scaleY(0);
+	}
+}
+.basalt-grow-wait-x {
+	transform: scaleX(0);
+}
+.basalt-grow-wait-y {
+	transform: scaleY(0);
+}
+.basalt-grow-wait-x,
+.basalt-grow-x {
+	transform-origin: left center;
+}
+.basalt-grow-wait-y,
+.basalt-grow-y {
+	transform-box: fill-box;
+	transform-origin: center bottom;
+}
+/* A ring's arc runs round from nothing; a sparkline draws in from the left. */
+@keyframes basalt-grow-arc {
+	from {
+		stroke-dasharray: 0 var(--basalt-arc-total, 100);
+	}
+}
+@keyframes basalt-grow-line {
+	from {
+		clip-path: inset(0 100% 0 0);
+	}
+}
+.basalt-grow-wait-arc {
+	stroke-dasharray: 0 var(--basalt-arc-total, 100);
+}
+.basalt-grow-wait-line {
+	clip-path: inset(0 100% 0 0);
+}
+.basalt-grow-arc {
+	animation: basalt-grow-arc 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: calc(var(--basalt-grow-i, 0) * 60ms);
+}
+.basalt-grow-line {
+	animation: basalt-grow-line 0.9s cubic-bezier(0.33, 1, 0.68, 1) both;
+	animation-delay: calc(var(--basalt-grow-i, 0) * 80ms);
+}
+/* A block in a wave pops in place, a little after the one before it. */
+@keyframes basalt-grow-pop {
+	from {
+		opacity: 0;
+		transform: scale(0.4);
+	}
+}
+.basalt-grow-wait-pop {
+	opacity: 0;
+	transform: scale(0.4);
+}
+.basalt-grow-pop {
+	animation: basalt-grow-pop 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+	animation-delay: calc(var(--basalt-grow-i, 0) * var(--basalt-grow-step, 45ms));
+}
+.basalt-grow-x {
+	animation: basalt-grow-x 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: calc(var(--basalt-grow-i, 0) * 40ms);
+}
+.basalt-grow-y {
+	animation: basalt-grow-y 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: calc(var(--basalt-grow-i, 0) * var(--basalt-grow-step, 30ms));
+}
+/* A piece with transitions of its own (a hover fade, a value that eases)
+   would also ease out to its waiting state and back while it grows: a
+   second animation per piece, hundreds at once on a long strip of days,
+   started in the same frame as everything else. Growing stands in for them. */
+.basalt-stage {
+	& .basalt-grow-wait-x,
+	& .basalt-grow-wait-y,
+	& .basalt-grow-wait-arc,
+	& .basalt-grow-wait-line,
+	& .basalt-grow-wait-pop,
+	& .basalt-grow-x,
+	& .basalt-grow-y,
+	& .basalt-grow-arc,
+	& .basalt-grow-line,
+	& .basalt-grow-pop {
+		transition: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.basalt-enter {
+		animation: none;
+	}
+	[data-basalt-lift] {
+		&,
+		&:hover {
+			transform: none;
+			transition: none;
+		}
+	}
+}

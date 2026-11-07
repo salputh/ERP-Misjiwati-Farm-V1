@@ -1,0 +1,382 @@
+/* Reusable interface pieces that are not a Bootstrap component of their own:
+   the dialog layout (header with icon, body, footer, and a variant with a
+   live preview beside the form), the press-and-hold button, the circular
+   progress meter and the record status pill. They are shown on
+   modals.html, progress.html and badges.html; the press-and-hold
+   timing is driven from basalt.js through [data-basalt-hold]. */
+
+/* Motion-sensitive visitors get the end state without the tween. */
+@mixin still {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+/* Dialog layout. The header pairs a tinted icon tile with a title and one
+   sentence on what the dialog is for, and stands in for .modal-header in any
+   .modal-content. Rows of fields in the body are spaced well apart, and
+   the footer right-aligns its buttons and wraps them when space runs out. */
+.basalt-dialog-head {
+	display: flex;
+	gap: 0.875rem;
+	align-items: flex-start;
+	padding: 1.35rem 1.5rem 0.75rem;
+
+	.btn-close {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+
+	&-icon {
+		--basalt-dialog-tone: var(--basalt-hue);
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 14px;
+		font-size: 1.2rem;
+		color: var(--basalt-dialog-tone);
+		background: color-mix(in srgb, var(--basalt-dialog-tone) 12%, transparent);
+
+		@each $tone in (danger, success) {
+			&-#{$tone} {
+				--basalt-dialog-tone: var(--basalt-#{$tone});
+			}
+		}
+	}
+
+	&-title {
+		margin: 0 0 0.1rem;
+		font-size: 1.1rem;
+		font-weight: 800;
+		letter-spacing: -0.01em;
+	}
+
+	&-sub {
+		margin: 0;
+		font-size: 0.875rem;
+		text-wrap: pretty;
+		color: var(--basalt-copy-muted);
+	}
+}
+
+.basalt-dialog-body {
+	padding: 0.5rem 1.5rem 1.5rem;
+
+	> .row {
+		--bs-gutter-y: 1.25rem;
+	}
+}
+
+/* When the dialog scrolls, only its body moves; the header and the footer
+   buttons hold their place, which keeps them reachable on short screens. */
+.modal-dialog-scrollable {
+	.basalt-dialog-body {
+		min-height: 0;
+		overflow-y: auto;
+	}
+	.basalt-dialog-head,
+	.basalt-dialog-foot {
+		flex-shrink: 0;
+	}
+}
+
+.basalt-dialog-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	padding: 1.1rem 1.5rem 1.35rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* The preview variant sets the form and a preview panel side by side. It
+   measures the dialog rather than the screen, so it drops to one column
+   whenever the dialog itself gets narrow, tablets and phones included. */
+.basalt-dialog-split {
+	container: basalt-dialog / inline-size;
+
+	&-body {
+		display: grid;
+		gap: 1.5rem;
+		grid-template-columns: minmax(0, 1fr) 260px;
+
+		@container basalt-dialog (max-width: 640px) {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+}
+
+.basalt-preview-panel {
+	align-self: start;
+	padding: 1rem;
+	border-radius: 16px;
+	background: var(--basalt-canvas);
+
+	&-label {
+		display: block;
+		margin-bottom: 0.6rem;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+}
+
+/* Press and hold guards a destructive action: it fires only after the button
+   has been held down, by pointer or with Enter or Space, for data-hold-ms
+   milliseconds (1500 when the attribute is absent). A fill sweeps across
+   the button while it is held. */
+.basalt-hold {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: none;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		transform: scaleX(var(--basalt-hold, 0));
+		transform-origin: left center;
+		/* A solid button gets darker under the fill rather than paler, so its
+       label never loses contrast mid-press. Outline and quiet buttons take a
+       faint wash of their own label color. */
+		background: color-mix(in srgb, var(--basalt-copy) 26%, transparent);
+	}
+
+	&:is([class*="btn-outline-"], .btn-secondary, .btn-light)::before {
+		background: color-mix(in srgb, currentColor 12%, transparent);
+	}
+
+	&.is-done::before {
+		transform: scaleX(1);
+	}
+
+	/* An outline button keeps its label color while it is held and after. */
+	&[class*="btn-outline-"]:is(.is-holding, .is-done) {
+		border-color: var(--bs-btn-border-color);
+		color: var(--bs-btn-color);
+		background-color: var(--basalt-plane);
+	}
+
+	/* When the button carries per-moment labels, they overlap in a single grid
+     cell, so its width is set once by the longest of them. */
+	&:has(.basalt-hold-state) {
+		display: inline-grid;
+	}
+
+	/* With reduced motion the hold still lasts as long; the fill just shows
+     at half strength instead of sweeping. */
+	@include still {
+		&.is-holding::before {
+			transform: scaleX(1);
+			opacity: 0.5;
+		}
+	}
+}
+
+.basalt-hold-state {
+	display: inline-flex;
+	gap: 0.5rem;
+	grid-area: 1 / 1;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
+	transition:
+		opacity 170ms ease,
+		visibility 170ms;
+
+	@include still {
+		transition: none;
+	}
+}
+
+/* The idle label shows at rest, the busy one while the press lasts, the done
+   one once the action has fired. */
+%hold-label-off {
+	visibility: hidden;
+	opacity: 0;
+}
+%hold-label-on {
+	visibility: visible;
+	opacity: 1;
+}
+
+.basalt-hold-busy,
+.basalt-hold-done {
+	@extend %hold-label-off;
+}
+
+.basalt-hold.is-holding {
+	.basalt-hold-idle {
+		@extend %hold-label-off;
+	}
+	&:not(.is-done) .basalt-hold-busy {
+		@extend %hold-label-on;
+	}
+}
+
+.basalt-hold.is-done {
+	.basalt-hold-idle,
+	.basalt-hold-busy {
+		@extend %hold-label-off;
+	}
+	.basalt-hold-done {
+		@extend %hold-label-on;
+	}
+}
+
+/* The progress ring reads --value from 0 to 100 and draws that share of the
+   circle, starting at twelve o'clock. Its center is ordinary text, free to
+   say whatever the ring stands for. --size and --thickness scale it, and
+   the small size leaves the caption out. */
+.basalt-ring {
+	--value: 0;
+	--size: 120px;
+	--thickness: 10px;
+	--tone: var(--basalt-hue);
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	width: var(--size);
+	height: var(--size);
+
+	svg {
+		position: absolute;
+		inset: 0;
+		transform: rotate(-90deg);
+		width: 100%;
+		height: 100%;
+	}
+
+	&-track,
+	&-bar {
+		fill: none;
+		stroke-width: var(--thickness);
+	}
+	&-track {
+		stroke: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+	}
+
+	&-bar {
+		stroke: var(--tone);
+		stroke-linecap: round;
+		stroke-dasharray: 100 100;
+		stroke-dashoffset: calc(100 - var(--value));
+		transition: stroke-dashoffset 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+		animation: basalt-ring-draw 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+		@include still {
+			transition: none;
+			animation: none;
+		}
+	}
+
+	&-label {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		line-height: 1.1;
+		text-align: center;
+	}
+
+	&-value {
+		font-size: calc(var(--size) * 0.24);
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		color: var(--basalt-copy);
+	}
+
+	&-caption {
+		font-size: 0.71rem;
+		color: var(--basalt-copy-muted);
+	}
+
+	@each $tone in (success, warning, danger) {
+		&-#{$tone} {
+			--tone: var(--basalt-#{$tone});
+		}
+	}
+
+	&-sm {
+		--size: 72px;
+		--thickness: 8px;
+
+		.basalt-ring-caption {
+			display: none;
+		}
+	}
+}
+
+@keyframes basalt-ring-draw {
+	from {
+		stroke-dashoffset: 100;
+	}
+}
+
+/* A status pill marks where a record stands (paid, waiting on you, answered,
+   overdue). It is a soft tint of one tone, optionally led by an icon or a
+   dot, and a live dot breathes. The text is pulled hard toward the copy
+   color, because success and warning are pale and the type is small. */
+$status-tones: (
+	info: info,
+	success: success,
+	warning: warning,
+	danger: danger,
+	primary: hue,
+);
+
+.basalt-status {
+	--stp-tone: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--stp-tone) 48%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--stp-tone) 14%, transparent);
+
+	.bi {
+		font-size: 0.85em;
+	}
+
+	&-dot::before {
+		content: "";
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--stp-tone);
+	}
+
+	&-live::before {
+		animation: basalt-status-pulse 1.8s ease-in-out infinite;
+
+		@include still {
+			animation: none;
+		}
+	}
+
+	@each $name, $token in $status-tones {
+		&-#{$name} {
+			--stp-tone: var(--basalt-#{$token});
+		}
+	}
+}
+
+@keyframes basalt-status-pulse {
+	50% {
+		opacity: 0.35;
+	}
+}

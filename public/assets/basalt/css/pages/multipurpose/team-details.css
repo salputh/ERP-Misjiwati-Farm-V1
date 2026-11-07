@@ -1,0 +1,975 @@
+/* Basalt - Team Details (team-details.html)
+   One team in full. Namespaced under .tmd-*; every color is a
+   --basalt-* token, so palettes and dark mode carry through.
+   The back link, cards, ring, status pills, avatars, dialogs,
+   empty state and toasts are the shared components. */
+
+.tmd-page,
+.tmd-layer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     keeps its contrast in the lighter palettes. */
+	--tmd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--tmd-link: color-mix(in srgb, var(--basalt-hue) 72%, var(--basalt-copy));
+	--tmd-track: color-mix(in srgb, var(--basalt-copy) 9%, var(--basalt-plane));
+	--tmd-danger-text: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+}
+
+/* One color per team or project, from the palette's chart colors, and
+   the next color along for the far end of the team's cover. The cover
+   blends them by hue, so the middle stays bright instead of graying. */
+.tmd-tone-1 {
+	--tmd-tone: var(--basalt-series-1);
+	--tmd-tone-end: var(--basalt-series-2);
+}
+.tmd-tone-2 {
+	--tmd-tone: var(--basalt-series-2);
+	--tmd-tone-end: var(--basalt-series-3);
+}
+.tmd-tone-3 {
+	--tmd-tone: var(--basalt-series-3);
+	--tmd-tone-end: var(--basalt-series-4);
+}
+.tmd-tone-4 {
+	--tmd-tone: var(--basalt-series-4);
+	--tmd-tone-end: var(--basalt-series-5);
+}
+.tmd-tone-5 {
+	--tmd-tone: var(--basalt-series-5);
+	--tmd-tone-end: var(--basalt-series-6);
+}
+.tmd-tone-6 {
+	--tmd-tone: var(--basalt-series-6);
+	--tmd-tone-end: var(--basalt-series-7);
+}
+.tmd-tone-7 {
+	--tmd-tone: var(--basalt-series-7);
+	--tmd-tone-end: var(--basalt-series-8);
+}
+.tmd-tone-8 {
+	--tmd-tone: var(--basalt-series-8);
+	--tmd-tone-end: var(--basalt-series-1);
+}
+
+.tmd-icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--tmd-tone, var(--basalt-hue)) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tmd-tone, var(--basalt-hue)) 15%, var(--basalt-plane));
+}
+
+/* Gray buttons keep their label contrast; no label wraps. */
+.tmd-page .btn-outline-secondary,
+.tmd-layer .btn-outline-secondary {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-border-color: var(--basalt-edge-strong);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-border-color: var(--basalt-edge-strong);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-active-bg: var(--basalt-wash);
+	--bs-btn-active-border-color: var(--basalt-edge-strong);
+}
+.tmd-page .btn,
+.tmd-layer .btn {
+	white-space: nowrap;
+}
+
+.tmd-person {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.tmd-person:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--tmd-link);
+}
+
+.tmd-menu .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+.tmd-menu-note {
+	display: block;
+	max-width: 15rem;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	white-space: normal;
+	color: var(--tmd-quiet);
+}
+
+/* Back link and cover
+   The team's cover carries the page's color: its two palette colors
+   across the top, its icon drawn large and faint, as on its Teams card. */
+.tmd-back {
+	--basalt-hero-muted: var(--tmd-quiet);
+	--basalt-hero-fg: var(--basalt-copy);
+}
+.tmd-back .bi {
+	margin-right: 0.3rem;
+}
+
+.tmd-cover.basalt-box {
+	margin-bottom: 1.5rem;
+	overflow: hidden;
+}
+.tmd-cover-band {
+	position: relative;
+	height: 6rem;
+	overflow: hidden;
+	background: linear-gradient(115deg, var(--tmd-tone), var(--tmd-tone-end));
+	background: linear-gradient(115deg in oklch, var(--tmd-tone), var(--tmd-tone-end));
+}
+:root[data-basalt-gradients="off"] .tmd-cover-band {
+	background: var(--tmd-tone);
+}
+.tmd-cover-band .bi {
+	position: absolute;
+	top: 50%;
+	right: 2.5rem;
+	transform: translateY(-50%) rotate(-12deg);
+	font-size: 6rem;
+	line-height: 1;
+	color: color-mix(in srgb, var(--basalt-plane) 24%, transparent);
+	animation: tmd-drive 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* The icon rolls in once when the page opens. */
+@keyframes tmd-drive {
+	from {
+		transform: translate(-3rem, -50%) rotate(-12deg);
+		opacity: 0;
+	}
+}
+.tmd-cover-body {
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+}
+.tmd-icon-lg {
+	position: relative;
+	width: 4rem;
+	height: 4rem;
+	margin-top: -2rem;
+	border-radius: 18px;
+	font-size: 1.75rem;
+	background: color-mix(in srgb, var(--tmd-tone) 14%, var(--basalt-plane));
+	box-shadow: 0 0 0 5px var(--basalt-plane);
+}
+.tmd-cover-row {
+	display: flex;
+	gap: 1.25rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-top: 1rem;
+}
+.tmd-cover-text {
+	flex: 1 1 20rem;
+	min-width: 0;
+}
+.tmd-cover-title {
+	margin: 0;
+	font-size: clamp(1.4rem, 1.2rem + 0.5vw, 1.6rem);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.tmd-cover-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.95rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.tmd-cover-meta {
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--tmd-quiet);
+}
+.tmd-cover-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+@media (max-width: 575.98px) {
+	.tmd-cover-body {
+		padding: 0 var(--basalt-pad-x-narrow) 1.25rem;
+	}
+	.tmd-cover-band {
+		height: 4.5rem;
+	}
+	.tmd-cover-band .bi {
+		right: 1.25rem;
+		font-size: 4.5rem;
+	}
+	.tmd-icon-lg {
+		width: 3.25rem;
+		height: 3.25rem;
+		margin-top: -1.6rem;
+		border-radius: 14px;
+		font-size: 1.4rem;
+	}
+}
+
+/* Grid: rows whose cards end level */
+.tmd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.tmd-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+	.tmd-card-people {
+		grid-column: span 7;
+	}
+	.tmd-card-soon {
+		grid-column: span 5;
+	}
+	.tmd-card-full {
+		grid-column: span 12;
+	}
+	.tmd-card-about {
+		grid-column: span 5;
+	}
+	.tmd-card-activity {
+		grid-column: span 7;
+	}
+}
+
+/* Cards */
+.tmd-card {
+	min-width: 0;
+}
+.tmd-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.tmd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.tmd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+}
+.tmd-card-head > div {
+	min-width: 0;
+}
+.tmd-card-head .btn {
+	flex: none;
+}
+.tmd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tmd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tmd-quiet);
+}
+.tmd-card-foot {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1.25rem;
+}
+.tmd-card-foot:not(:has(> :not([hidden]))) {
+	display: none;
+}
+
+/* People and workload
+   One row per person: who they are, a bar of their open tasks split by
+   project in each project's color, the count, and a menu. */
+.tmd-cols,
+.tmd-person-row {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 2.25rem;
+	align-items: center;
+}
+.tmd-cols {
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--tmd-quiet);
+}
+.tmd-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tmd-person-row {
+	padding: 1rem 0;
+}
+.tmd-person-row + .tmd-person-row {
+	border-top: 1px solid var(--basalt-edge);
+}
+.tmd-who {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.tmd-who-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.tmd-who-name {
+	display: flex;
+	gap: 0.25rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.tmd-who-title {
+	font-size: 0.8rem;
+	color: var(--tmd-quiet);
+}
+.tmd-load {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	min-width: 0;
+}
+.tmd-load-bar {
+	display: flex;
+	gap: 3px;
+	flex: 1 1 auto;
+	height: 10px;
+	border-radius: 6px;
+	overflow: hidden;
+	background: var(--tmd-track);
+}
+.tmd-load-seg {
+	transform-origin: left center;
+	flex: none;
+	width: var(--tmd-w);
+	border-radius: 3px;
+	background: var(--tmd-tone);
+	animation: tmd-grow 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes tmd-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+.tmd-load-text {
+	display: flex;
+	flex-direction: column;
+	flex: none;
+	width: 5.5rem;
+	line-height: 1.3;
+}
+.tmd-load-text strong {
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tmd-load-text span {
+	font-size: 0.77rem;
+	color: var(--tmd-quiet);
+}
+.tmd-person-row-menu {
+	justify-self: end;
+}
+
+.tmd-key {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	color: var(--tmd-quiet);
+	list-style: none;
+}
+.tmd-key li {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+.tmd-key-dot {
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 3px;
+	background: var(--tmd-tone);
+}
+
+@media (max-width: 575.98px) {
+	.tmd-cols {
+		display: none;
+	}
+	.tmd-person-row {
+		row-gap: 0.85rem;
+		grid-template-columns: minmax(0, 1fr) 2.25rem;
+	}
+	.tmd-load {
+		grid-column: 1;
+		grid-row: 2;
+	}
+	.tmd-person-row-menu {
+		grid-column: 2;
+		grid-row: 1;
+	}
+}
+
+/* Coming up
+   A date tile in the project's color, the milestone and its project,
+   and how soon. */
+.tmd-soon {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tmd-soon-item {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.85rem 0;
+}
+.tmd-soon-item:first-child {
+	padding-top: 0;
+}
+.tmd-soon-item + .tmd-soon-item {
+	border-top: 1px solid var(--basalt-edge);
+}
+.tmd-date {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 12px;
+	line-height: 1.05;
+	color: color-mix(in srgb, var(--tmd-tone) 38%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tmd-tone) 15%, var(--basalt-plane));
+}
+.tmd-date-day {
+	font-size: 1.05rem;
+	font-weight: 800;
+}
+.tmd-date-month {
+	font-size: 0.67rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+.tmd-soon-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.tmd-soon-name {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tmd-soon-project {
+	font-size: 0.8rem;
+	color: var(--tmd-quiet);
+}
+.tmd-soon-project a {
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--tmd-quiet) 40%, transparent);
+	text-underline-offset: 3px;
+	color: var(--tmd-quiet);
+}
+.tmd-soon-project a:hover {
+	text-decoration-color: currentColor;
+	color: var(--tmd-link);
+}
+.tmd-soon-when {
+	white-space: nowrap;
+}
+@media (max-width: 419.98px) {
+	.tmd-soon-item {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.tmd-soon-when {
+		grid-column: 2;
+		justify-self: start;
+	}
+}
+
+/* Projects
+   Equal tiles in a row: a straight bar in the project's color inside
+   the left edge, the project, a ring of tasks done and what is next. */
+.tmd-card-full .card-body {
+	container-type: inline-size;
+}
+.tmd-projects {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@container (min-width: 46rem) {
+	.tmd-projects {
+		gap: 1.25rem;
+	}
+	.tmd-projects[data-count="2"] {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.tmd-projects[data-count="3"] {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+.tmd-project {
+	position: relative;
+	display: flex;
+	gap: 1.1rem;
+	flex-direction: column;
+	padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--tmd-tone) 4%, var(--basalt-plane));
+}
+.tmd-project::before {
+	content: "";
+	position: absolute;
+	top: 1.1rem;
+	bottom: 1.1rem;
+	left: 0;
+	width: 4px;
+	border-radius: 0 4px 4px 0;
+	background: var(--tmd-tone);
+}
+.tmd-project-top {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+	min-width: 0;
+}
+.tmd-project-name {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.tmd-project-name > a {
+	font-weight: 700;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.tmd-project-name > a:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--tmd-link);
+}
+.tmd-project-sub {
+	font-size: 0.8rem;
+	color: var(--tmd-quiet);
+}
+.tmd-project-sub a {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--tmd-link);
+}
+.tmd-project-sub a:hover {
+	text-decoration: underline;
+}
+.tmd-project-mid {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+}
+.tmd-ring {
+	--size: 64px;
+	--thickness: 7px;
+	--ring-tone: var(--tmd-tone);
+	flex: none;
+}
+.tmd-ring .basalt-ring-value {
+	font-size: 0.9rem;
+	font-weight: 700;
+}
+.tmd-project-state {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.tmd-project-count {
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.tmd-project-foot {
+	margin-top: auto;
+	padding-top: 1rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+.tmd-project-next {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tmd-project-label {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--tmd-quiet);
+}
+.tmd-project-date {
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--tmd-quiet);
+}
+.tmd-project-date.is-late {
+	font-weight: 600;
+	color: var(--tmd-danger-text);
+}
+.tmd-project-note {
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+
+/* Between a phone and tiles side by side, and always for a team with one
+   project, each tile reads as one row: the project, its ring and what is
+   next, with the reason underneath when it is off track. */
+@container (min-width: 36rem) and (max-width: 45.99rem) {
+	.tmd-project {
+		display: grid;
+		gap: 1rem 1.5rem;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		align-items: center;
+	}
+	.tmd-project-note {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+	.tmd-project-foot {
+		grid-column: 3;
+		grid-row: 1;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+}
+@container (min-width: 46rem) {
+	.tmd-projects[data-count="1"] .tmd-project {
+		display: grid;
+		gap: 1rem 2rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+	}
+	.tmd-projects[data-count="1"] .tmd-project-note {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+	.tmd-projects[data-count="1"] .tmd-project-foot {
+		grid-column: 3;
+		grid-row: 1;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+}
+
+/* About the team */
+.tmd-facts {
+	margin: 0;
+}
+.tmd-fact {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+}
+.tmd-fact:first-child {
+	padding-top: 0;
+}
+.tmd-fact + .tmd-fact {
+	border-top: 1px solid var(--basalt-edge);
+}
+.tmd-fact dt {
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: var(--tmd-quiet);
+}
+.tmd-fact dd {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.tmd-fact-person {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+@media (max-width: 359.98px) {
+	.tmd-fact {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.tmd-form[hidden] {
+	display: none;
+}
+.tmd-field {
+	margin-bottom: 1.25rem;
+}
+.tmd-form-pair {
+	display: grid;
+	column-gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@container (min-width: 30rem) {
+	.tmd-form-pair {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.tmd-card-about .card-body {
+	container-type: inline-size;
+}
+.tmd-select {
+	max-width: 16rem;
+}
+.tmd-channel {
+	max-width: 16rem;
+}
+.tmd-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--tmd-danger-text);
+}
+.tmd-error[hidden] {
+	display: none;
+}
+.tmd-swatches {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.tmd-swatches legend {
+	float: none;
+	font-size: inherit;
+}
+.tmd-swatches-row {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}
+.tmd-swatch {
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	background: var(--tmd-tone);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--basalt-copy) 12%, transparent);
+	cursor: pointer;
+	transition: transform 0.12s ease;
+}
+.tmd-swatch:hover {
+	transform: scale(1.08);
+}
+/* The picked color wears a ring; that ring is also its focus marker. */
+.btn-check:checked + .tmd-swatch {
+	box-shadow:
+		0 0 0 2px var(--basalt-plane),
+		0 0 0 4px var(--tmd-tone);
+}
+.btn-check:focus-visible:not(:checked) + .tmd-swatch {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.tmd-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* Recent activity */
+.tmd-feed {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tmd-feed-item {
+	position: relative;
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+}
+.tmd-feed-item:last-child {
+	padding-bottom: 0;
+}
+.tmd-feed-item:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: 2.3rem;
+	bottom: 0.3rem;
+	left: calc(1rem - 1px);
+	width: 2px;
+	border-radius: 1px;
+	background: var(--basalt-edge);
+}
+.tmd-feed-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--tmd-tone) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tmd-tone) 15%, var(--basalt-plane));
+}
+.tmd-feed-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.25rem;
+}
+.tmd-feed-what {
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.tmd-feed-what strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tmd-feed-what a:not(.tmd-person) {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--tmd-link);
+}
+.tmd-feed-what a:not(.tmd-person):hover {
+	text-decoration: underline;
+}
+.tmd-feed-when {
+	font-size: 0.77rem;
+	color: var(--tmd-quiet);
+}
+
+/* Dialogs */
+.tmd-add-form {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.tmd-search {
+	position: relative;
+	margin-bottom: 1rem;
+}
+.tmd-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.9rem;
+	transform: translateY(-50%);
+	color: var(--tmd-quiet);
+	pointer-events: none;
+}
+.tmd-search .form-control {
+	padding-left: 2.5rem;
+}
+.tmd-pick {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tmd-pick li + li {
+	border-top: 1px solid var(--basalt-edge);
+}
+.tmd-pick-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin: 0 -0.5rem;
+	padding: 0.8rem 0.5rem;
+	border-radius: 10px;
+	cursor: pointer;
+}
+.tmd-pick-row:hover {
+	background: var(--basalt-wash);
+}
+.tmd-pick-row .form-check-input {
+	flex-shrink: 0;
+	margin: 0;
+}
+.tmd-pick-text {
+	min-width: 0;
+}
+.tmd-pick-name {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.tmd-pick-title {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--tmd-quiet);
+}
+.tmd-pick-empty {
+	padding: 1rem 0;
+}
+.tmd-add-count {
+	margin: 0;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--tmd-quiet);
+}
+.tmd-archive-note {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tmd-cover-band .bi,
+	.tmd-load-seg {
+		animation: none;
+	}
+	.tmd-swatch {
+		transition: none;
+	}
+}

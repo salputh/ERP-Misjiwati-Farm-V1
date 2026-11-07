@@ -1,0 +1,1371 @@
+/* Styles for the Employee Users directory (employee-users.html), all under the us-
+   prefix; employee-user-details.html borrows its pills, badges and avatars. Header,
+   tabs, segmented control, pager, dialogs, empty states and avatars come
+   from basalt.css, and this sheet arranges them around the figures, the
+   filter panel and the list. Colors are --basalt-* tokens blended with
+   color-mix(), so every palette and both modes keep their own hues. */
+
+/* The page's own blends. Quiet text leans toward the body color so it
+   stays at 4.5:1 on light palettes and on hovered or checked rows; link
+   color does the same because the bare primary falls short in a few. */
+.us-page {
+	--us-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	--us-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--us-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--us-ok: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	--us-danger: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--us-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	--us-row-on: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+
+	& kbd {
+		padding: 0.1rem 0.3rem;
+		border-radius: 5px;
+		border: 1px solid var(--basalt-edge-strong);
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.71rem;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+		box-shadow: none;
+	}
+
+	& .form-control::placeholder {
+		color: var(--us-quiet);
+		opacity: 1;
+	}
+}
+
+/* Avatars, cards and team chips take the chart series by position. */
+.us-tone-1 {
+	--us-tone: var(--basalt-series-1);
+}
+.us-tone-2 {
+	--us-tone: var(--basalt-series-2);
+}
+.us-tone-3 {
+	--us-tone: var(--basalt-series-3);
+}
+.us-tone-4 {
+	--us-tone: var(--basalt-series-4);
+}
+.us-tone-5 {
+	--us-tone: var(--basalt-series-5);
+}
+.us-tone-6 {
+	--us-tone: var(--basalt-series-6);
+}
+.us-tone-7 {
+	--us-tone: var(--basalt-series-7);
+}
+.us-tone-8 {
+	--us-tone: var(--basalt-series-8);
+}
+
+/* Whatever the script hides stays hidden, even where a rule sets display. */
+.us-attn[hidden],
+.us-filter-count[hidden],
+.us-bulk[hidden],
+.us-cards[hidden],
+.us-empty[hidden],
+.us-pager[hidden],
+.us-deact-transfer[hidden] {
+	display: none;
+}
+
+/* Every custom control gets the same keyboard ring. */
+.us-attn-chip:focus-visible,
+.btn-check:focus-visible:not(:checked) + .us-chip,
+.us-signin:focus-visible,
+.us-sort:focus-visible,
+.us-nocheck:focus-visible,
+.us-person-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Text links and buttons that read as links share one color. */
+.us-link,
+.us-link.btn-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--us-link);
+}
+.us-link:hover,
+.us-link:focus-visible,
+.us-link.btn-link:hover {
+	text-decoration: underline;
+	color: var(--basalt-copy);
+}
+.us-inline-link {
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--us-link);
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* The small "You" label beside a name. */
+.us-tag {
+	display: inline-block;
+	margin-left: 0.3rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 4px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.67rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	vertical-align: 0.1em;
+	color: var(--us-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* Form help, errors and the optional marker sit under their fields. */
+.us-hint {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--us-quiet);
+}
+.us-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--us-danger);
+}
+.us-optional {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--us-quiet);
+}
+.us-page .form-control,
+.us-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+
+/* In the header's seat figure ("41 / 50") the total is a step quieter. */
+.us-fig-of {
+	font-size: 0.8em;
+	font-weight: 600;
+	color: var(--us-quiet);
+}
+
+/* The strip of shortcuts to people who need a look, under the header. */
+.us-attn {
+	display: flex;
+	gap: 0.5rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: -0.25rem 0 1.25rem;
+}
+.us-attn-label {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-right: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--us-quiet);
+}
+.us-attn-list {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.us-attn-chip {
+	--t: var(--basalt-warning);
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.3rem 0.3rem 0.3rem 0.75rem;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--t) 38%, var(--basalt-edge));
+	font-size: 0.84rem;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background-color: color-mix(in srgb, var(--t) 10%, var(--basalt-plane));
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	& > .bi {
+		color: color-mix(in srgb, var(--t) 62%, var(--basalt-copy));
+	}
+	&:hover {
+		border-color: color-mix(in srgb, var(--t) 60%, var(--basalt-edge));
+		background-color: color-mix(in srgb, var(--t) 18%, var(--basalt-plane));
+	}
+}
+.us-attn-chip-info {
+	--t: var(--basalt-info);
+}
+.us-attn-chip-accent {
+	--t: var(--basalt-series-8);
+}
+.us-attn-go {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.12rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.76rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--us-link);
+	background: var(--basalt-plane);
+
+	& .bi {
+		font-size: 0.7rem;
+		transition: transform 170ms ease;
+	}
+}
+.us-attn-chip:hover .us-attn-go .bi {
+	transform: translateX(2px);
+}
+@media (prefers-reduced-motion: reduce) {
+	.us-attn-chip {
+		transition: none;
+	}
+}
+
+/* The directory card leaves room for the sticky top bar when scrolled to. */
+.us-dir.basalt-box {
+	scroll-margin-top: 5rem;
+
+	& .card-body {
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	}
+}
+@media (max-width: 575.98px) {
+	.us-dir.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Saved views scroll sideways as one row of tabs rather than wrapping. */
+.us-views {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+
+	& .basalt-tabs-list {
+		flex-wrap: nowrap;
+		width: max-content;
+		min-width: 100%;
+	}
+	& .basalt-tabs-list .nav-link {
+		white-space: nowrap;
+	}
+}
+.us-views-tabs {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: thin;
+}
+
+/* The toolbar: search on the left, filters, count and layout on the right. */
+.us-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: var(--basalt-pad-row-y) 0;
+	padding-top: var(--basalt-pad-row-y);
+	border-top: 1px solid var(--basalt-edge);
+}
+.us-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--us-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.us-applied {
+	flex: 0 1 auto;
+}
+.us-toolbar-end {
+	display: flex;
+	gap: 0.75rem 1rem;
+	align-items: center;
+	margin-left: auto;
+}
+.us-summary {
+	margin: 0;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--us-quiet);
+}
+.us-layout .basalt-segmented-option .bi {
+	margin-right: 0.3rem;
+}
+
+/* The Filters button shows how many are in use and opens a small panel of chips. */
+.us-filter-btn.btn {
+	display: inline-flex;
+	align-items: center;
+	background-color: var(--basalt-plane);
+}
+.us-filter-btn.is-on {
+	border-color: var(--basalt-hue-border);
+	color: var(--basalt-copy);
+}
+.us-filter-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.3rem;
+	height: 1.3rem;
+	margin-left: 0.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+}
+.us-filter-panel.dropdown-menu {
+	width: min(25rem, calc(100vw - 2rem));
+	padding: 1rem 1.1rem 0.8rem;
+	border-radius: 14px;
+}
+.us-filter-group {
+	min-width: 0;
+	margin: 0 0 1rem;
+	padding: 0;
+	border: 0;
+}
+.us-filter-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.4rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--us-quiet);
+}
+.us-chips {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+.us-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.22rem 0.65rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .us-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.us-filter-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.8rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .us-link {
+		padding-left: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.us-chip {
+		transition: none;
+	}
+}
+
+/* On tablets and phones the search takes a full line and the count drops out. */
+@media (max-width: 767.98px) {
+	.us-search {
+		flex: 1 1 100%;
+		max-width: none;
+	}
+	.us-toolbar-end {
+		margin-left: auto;
+	}
+	.us-summary {
+		display: none;
+	}
+}
+
+/* The bar that appears once anyone is checked. */
+.us-bulk {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.75rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-hue-border);
+	background: var(--basalt-hue-soft);
+
+	& .btn-outline-secondary {
+		background: var(--basalt-plane);
+	}
+}
+.us-bulk-count {
+	margin-right: 0.5rem;
+	font-weight: 700;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+
+/* The table bleeds out by its cells' side padding, so the first column
+   lines up with the card's title and the search box. */
+.us-table-wrap {
+	margin: 0 -0.55rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.us-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.5rem;
+		border-bottom-color: var(--basalt-edge);
+		color: inherit;
+		background: transparent;
+	}
+	& thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--us-quiet);
+	}
+}
+
+/* Column headings are buttons; the sorted one is brighter, the rest show a faint arrow. */
+.us-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+[aria-sort] .us-sort {
+	color: var(--basalt-copy);
+}
+.us-sort-idle {
+	opacity: 0.55;
+}
+.us-sort:hover .us-sort-idle {
+	opacity: 1;
+}
+
+/* Rows tint on hover and when checked; new ones flash once. */
+.us-row {
+	cursor: pointer;
+
+	&:hover {
+		background: var(--us-row-hover);
+	}
+	&.is-selected {
+		background: var(--us-row-on);
+	}
+}
+.us-row-ghost {
+	cursor: default;
+}
+.us-row.is-fresh {
+	animation: us-fresh 1.6s ease;
+}
+@keyframes us-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+.us-col-check {
+	width: 2.25rem;
+}
+.us-col-check .form-check-input {
+	margin: 0;
+	cursor: pointer;
+}
+.us-col-menu {
+	width: 6.6rem;
+	text-align: right;
+}
+.us-col-role {
+	min-width: 9.5rem;
+}
+.us-col-team {
+	min-width: 7.5rem;
+}
+.us-col-status {
+	min-width: 7.5rem;
+}
+.us-col-signin {
+	width: 6.5rem;
+}
+.us-col-last {
+	min-width: 6.5rem;
+	font-size: 0.85rem;
+	white-space: nowrap;
+}
+
+/* A lock stands in for the checkbox of people you cannot change. */
+.us-nocheck {
+	display: inline-flex;
+	justify-content: center;
+	width: 1em;
+	border-radius: 4px;
+	font-size: 0.85rem;
+	color: var(--us-quiet);
+}
+
+/* Avatar, name and email, the email cut short with an ellipsis. */
+.us-person {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.us-person-text {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	min-width: 0;
+}
+.us-person-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+.us-person-sub {
+	flex-basis: 100%;
+	max-width: 17rem;
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--us-quiet);
+}
+
+/* Each person's hue in full: dark initials on a mid tint in light mode and
+   light ones on a deep tint in dark mode. Contrast is judged on the flat
+   color; the sheen over it can only add to it. */
+.us-page .us-av {
+	font-weight: 700;
+	color: color-mix(in srgb, var(--avatar-tone) 26%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--avatar-tone) 58%, var(--basalt-plane));
+	background-image: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--avatar-tone) 44%, var(--basalt-plane)),
+		transparent 55%
+	);
+}
+[data-bs-theme="dark"] .us-page .us-av {
+	color: var(--basalt-copy);
+	background-color: color-mix(in srgb, var(--avatar-tone) 36%, var(--basalt-plane));
+	background-image: linear-gradient(
+		135deg,
+		transparent 28%,
+		color-mix(in srgb, var(--avatar-tone) 20%, var(--basalt-plane))
+	);
+}
+:root[data-basalt-gradients="off"] .us-page .us-av {
+	background-image: none;
+}
+.us-page .us-av-off {
+	--avatar-tone: var(--basalt-copy-muted);
+}
+.us-av-wrap {
+	flex: none;
+}
+
+/* Role pills take a hue by rank. */
+.us-role {
+	--r: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--r) 44%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--r) 15%, var(--basalt-plane));
+
+	& .bi {
+		font-size: 0.8em;
+	}
+}
+.us-role-1 {
+	--r: var(--basalt-series-6);
+}
+.us-role-2 {
+	--r: var(--basalt-series-1);
+}
+.us-role-3 {
+	--r: var(--basalt-series-5);
+}
+.us-role-4 {
+	--r: var(--basalt-series-3);
+}
+.us-role-5 {
+	--r: var(--basalt-series-2);
+}
+.us-role-6 {
+	--r: var(--basalt-series-8);
+}
+.us-role-7 {
+	--r: var(--basalt-series-7);
+}
+.us-role-8 {
+	--r: var(--basalt-series-4);
+}
+.us-role-9 {
+	--r: var(--basalt-copy-muted);
+}
+/* Owners and administrators get a deeper fill and a thin ring. */
+.us-role.us-role-1,
+.us-role.us-role-2 {
+	color: color-mix(in srgb, var(--r) 36%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--r) 24%, var(--basalt-plane));
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--r) 45%, transparent);
+}
+
+/* Team chips: a pale wash of the team's hue with a small square swatch. */
+.us-team {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.14rem 0.5rem 0.14rem 0.4rem;
+	border-radius: 7px;
+	border: 1px solid color-mix(in srgb, var(--us-tone) 30%, var(--basalt-edge));
+	font-size: 0.77rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background-color: color-mix(in srgb, var(--us-tone) 7%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 3px;
+		background: var(--us-tone);
+	}
+}
+
+/* Status is a word after a haloed dot. */
+.us-state {
+	--s: var(--basalt-copy-muted);
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--s);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--s) 22%, transparent);
+	}
+}
+.us-state-active {
+	--s: var(--basalt-success);
+}
+.us-state-invited {
+	--s: var(--basalt-info);
+}
+.us-state-suspended {
+	--s: var(--basalt-warning);
+}
+.us-state-deactivated {
+	color: var(--us-quiet);
+
+	/* Solid like the others; an empty ring looked like a radio button. */
+	&::before {
+		box-shadow: none;
+	}
+}
+
+/* "Online now" pulses gently in green. */
+.us-online {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-weight: 650;
+	color: var(--us-ok);
+
+	&::before {
+		content: "";
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--basalt-success);
+		animation: us-pulse 2s ease-in-out infinite;
+	}
+}
+@keyframes us-pulse {
+	50% {
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-success) 25%, transparent);
+	}
+}
+
+/* Sign-in is two square badges: the method, then the 2FA state. */
+.us-signin {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	border-radius: 9px;
+	cursor: default;
+}
+.us-signin-method {
+	--m: var(--basalt-copy-muted);
+	display: grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--m) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--m) 15%, var(--basalt-plane));
+}
+.us-signin-method-okta {
+	--m: var(--basalt-series-1);
+}
+.us-signin-method-google {
+	--m: var(--basalt-series-6);
+}
+.us-signin-mfa {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.75rem;
+	height: 1.75rem;
+	padding: 0 0.4rem;
+	border-radius: 8px;
+	font-size: 0.74rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+.us-signin-mfa-on {
+	color: var(--us-ok);
+	background: color-mix(in srgb, var(--basalt-success) 13%, var(--basalt-plane));
+}
+.us-signin-mfa-off {
+	color: var(--us-warn);
+	background: color-mix(in srgb, var(--basalt-warning) 17%, var(--basalt-plane));
+}
+.us-signin-mfa-wait {
+	color: var(--us-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* The row's own buttons; Open and Change role wait for hover or focus where a mouse is used. */
+.us-quick {
+	display: flex;
+	gap: 0.1rem;
+	align-items: center;
+	justify-content: flex-end;
+}
+.us-page .us-quick-btn.btn-icon {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border-radius: 9px;
+	color: var(--us-quiet);
+}
+.us-page .us-quick-btn.btn-icon:hover,
+.us-page .us-quick-btn.btn-icon[aria-expanded="true"] {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.us-quick-gap {
+	width: 2rem;
+}
+@media (hover: hover) and (pointer: fine) {
+	.us-row .us-quick-hover,
+	.us-card .us-quick-hover {
+		opacity: 0;
+		transition: opacity 170ms ease;
+	}
+	.us-row:hover .us-quick-hover,
+	.us-row:focus-within .us-quick-hover,
+	.us-card:hover .us-quick-hover,
+	.us-card:focus-within .us-quick-hover,
+	.us-quick-hover[aria-expanded="true"] {
+		opacity: 1;
+	}
+}
+
+/* Role menu entries carry their pill's dot and a check on the current one. */
+.us-roleitem {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	&[aria-current="true"] {
+		font-weight: 700;
+	}
+}
+.us-roleitem-dot {
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--r);
+}
+.us-roleitem-on {
+	margin-left: auto;
+}
+.us-page .dropdown-item .bi {
+	width: 1rem;
+	margin-right: 0.5rem;
+	text-align: center;
+}
+.us-page .dropdown-item .us-roleitem-on {
+	margin: 0 0 0 auto;
+}
+.us-page .dropdown-item.us-danger-item {
+	color: var(--us-danger);
+}
+.us-page .dropdown-item.us-danger-item:hover,
+.us-page .dropdown-item.us-danger-item:focus {
+	color: var(--us-danger);
+	background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+}
+
+/* Copies of team, sign-in and last active that show only once their columns go. */
+.us-fold {
+	display: none;
+	margin-top: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--us-quiet);
+}
+.us-fold.us-fold-signin {
+	display: none;
+	margin: 0 0 0 0.5rem;
+	vertical-align: middle;
+}
+
+/* Placeholder bar sizes, kept here so the markup needs no inline styles. */
+.us-sk-check {
+	width: 1rem;
+}
+.us-sk-avatar {
+	width: 32px;
+	height: 32px;
+}
+.us-sk-w0 {
+	width: 7rem;
+}
+.us-sk-w1 {
+	width: 9rem;
+}
+.us-sk-w2 {
+	width: 6rem;
+}
+.us-sk-w3 {
+	width: 11rem;
+	margin-top: 0.3rem;
+}
+.us-sk-w4 {
+	width: 6.5rem;
+}
+.us-sk-w5 {
+	width: 4.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.us-row {
+		transition: none;
+	}
+	.us-row.is-fresh,
+	.us-online::before {
+		animation: none;
+	}
+}
+
+/* Only wide screens give Team and Last active their own columns; below
+   that they fold under Role and Status so the rest keep their width. */
+@media (max-width: 1399.98px) {
+	.us-col-team,
+	.us-col-last {
+		display: none;
+	}
+	.us-fold {
+		display: block;
+	}
+	.us-fold .us-team {
+		margin-top: 0.1rem;
+	}
+}
+@media (max-width: 1199.98px) {
+	.us-person-sub {
+		max-width: 12rem;
+	}
+	.us-table > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	.us-table-wrap {
+		margin: 0 -0.4rem;
+	}
+}
+/* Narrower again, sign-in moves under the status pill on its own line, so
+   the badges line up row to row, and Open goes (the name opens the profile). */
+@media (min-width: 768px) and (max-width: 1139.98px) {
+	.us-col-signin {
+		display: none;
+	}
+	.us-fold.us-fold-signin {
+		display: flex;
+		margin: 0.3rem 0 0;
+	}
+}
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.us-table .us-quick > a.us-quick-btn {
+		display: none;
+	}
+	.us-col-menu {
+		width: 4.6rem;
+	}
+}
+@media (min-width: 992px) and (max-width: 1199.98px) {
+	.us-col-role {
+		min-width: 8rem;
+	}
+	.us-person {
+		gap: 0.5rem;
+	}
+}
+
+/* On phones every row stacks into a small card of its own. */
+@media (max-width: 767.98px) {
+	.us-table-wrap {
+		margin: 0 -0.35rem;
+		overflow: visible;
+	}
+	.us-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.us-table,
+	.us-table tbody {
+		display: block;
+	}
+	.us-table tr {
+		position: relative;
+		display: grid;
+		gap: 0.5rem 0.5rem;
+		/* The last track has a fixed width so sign-in badges start at the same
+       x on every card and never hang past the right edge. */
+		grid-template-columns: 1.6rem minmax(0, 1fr) 6.5rem;
+		grid-template-areas:
+			"check person person"
+			".     role   role"
+			".     status signin";
+		padding: var(--basalt-pad-row-y) 0.3rem;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.us-table > :not(caption) > * > * {
+		padding: 0;
+		border: 0;
+	}
+	.us-table .us-col-check {
+		grid-area: check;
+		width: auto;
+		padding-top: 0.5rem;
+	}
+	/* The menu sits in the top corner, leaving the whole width to the name and email. */
+	.us-table .us-col-person {
+		grid-area: person;
+		min-width: 0;
+		padding-right: 4rem;
+	}
+	.us-table .us-col-menu {
+		position: absolute;
+		top: var(--basalt-pad-row-y);
+		right: 0;
+		width: auto;
+	}
+	.us-table .us-quick {
+		gap: 0;
+	}
+	.us-table .us-col-role {
+		display: flex;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+		grid-area: role;
+		align-items: center;
+		min-width: 0;
+	}
+	.us-table .us-col-role .us-fold {
+		margin: 0;
+	}
+	.us-table .us-col-status {
+		display: flex;
+		gap: 0.2rem 0.6rem;
+		flex-wrap: wrap;
+		grid-area: status;
+		align-items: center;
+		min-width: 0;
+	}
+	.us-table .us-col-status .us-fold {
+		margin: 0;
+	}
+	.us-table .us-col-signin {
+		grid-area: signin;
+		width: auto;
+		text-align: left;
+	}
+	.us-table .us-quick > a.us-quick-btn {
+		display: none;
+	}
+	.us-person-sub {
+		max-width: 100%;
+	}
+	.us-row-ghost .us-col-team,
+	.us-row-ghost .us-col-last {
+		display: none;
+	}
+}
+/* On a phone a card keeps the person, their role and whether they can sign
+   in. The team, the last visit and a sign-in that is in order wait in the
+   quick view; only a missing second factor stays, since it needs action. */
+@media (max-width: 575.98px) {
+	.us-table tr {
+		gap: 0.85rem 0.75rem;
+		grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+		grid-template-areas:
+			"check person person"
+			".     role   status";
+	}
+	.us-table .us-col-signin {
+		grid-area: auto;
+		grid-column: 2 / 4;
+	}
+	.us-table .us-col-role .us-fold,
+	.us-table .us-col-status .us-fold-last,
+	.us-table tr:not(.us-row-ghost) .us-col-signin:not(:has(.us-signin-mfa-off)) {
+		display: none;
+	}
+}
+
+/* The card layout: a grid of people, each card topped by a band of their hue. */
+.us-cards {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.us-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	isolation: isolate;
+	padding: 0.7rem 0.9rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		box-shadow 170ms ease,
+		transform 170ms ease;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0 0 auto;
+		z-index: -1;
+		height: 4.6rem;
+		background: linear-gradient(
+			120deg,
+			color-mix(in srgb, var(--us-tone) 34%, var(--basalt-plane)),
+			color-mix(in srgb, var(--us-tone) 10%, var(--basalt-plane))
+		);
+	}
+	&.is-off::before {
+		background: var(--basalt-plane-alt);
+	}
+	&:hover {
+		transform: translateY(-2px);
+		border-color: color-mix(in srgb, var(--us-tone) 40%, var(--basalt-edge));
+		box-shadow: var(--basalt-card-shadow);
+	}
+	&.is-selected {
+		border-color: var(--basalt-hue-border);
+		box-shadow: 0 0 0 1px var(--basalt-hue-border);
+	}
+	&.is-fresh {
+		animation: us-fresh 1.6s ease;
+	}
+	& .us-quick-btn.btn-icon {
+		background: color-mix(in srgb, var(--basalt-plane) 72%, transparent);
+	}
+}
+.us-card-top {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 2rem;
+
+	& .form-check-input {
+		margin: 0 0 0 0.2rem;
+		cursor: pointer;
+	}
+	& .us-nocheck {
+		margin-left: 0.2rem;
+	}
+}
+.us-card-who {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: center;
+	margin: 0.1rem 0 0.7rem;
+	text-align: center;
+
+	& .us-av-wrap {
+		margin-bottom: 0.5rem;
+	}
+	& .us-av {
+		box-shadow: 0 0 0 3px var(--basalt-plane);
+	}
+}
+.us-card-name {
+	font-size: 1rem;
+}
+.us-card-name .us-person-name {
+	text-align: center;
+}
+.us-card-title {
+	font-size: 0.8rem;
+	color: var(--us-quiet);
+}
+.us-card-tags {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	justify-content: center;
+	margin-bottom: 0.9rem;
+}
+.us-card-foot {
+	display: flex;
+	gap: 0.4rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: auto;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.8rem;
+
+	& .us-state {
+		font-size: 0.8rem;
+	}
+	& .us-signin {
+		margin-left: auto;
+	}
+}
+.us-card-last {
+	color: var(--us-quiet);
+}
+:root[data-basalt-gradients="off"] .us-card::before {
+	content: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.us-card {
+		transition: none;
+	}
+	.us-card.is-fresh {
+		animation: none;
+	}
+	.us-card:hover {
+		transform: none;
+	}
+}
+
+/* Empty, no-match and failed states; a failed load also hides views and toolbar. */
+.us-empty {
+	margin: 1.5rem 0 0.5rem;
+}
+.us-page.is-failed .us-views,
+.us-page.is-failed .us-toolbar {
+	display: none;
+}
+/* basalt-empty-actions turns every .btn inline-flex, which would set a
+   loading button's stacked labels side by side; the grid comes back here. */
+.us-empty .basalt-empty-actions .btn-loading {
+	display: inline-grid;
+}
+
+.us-pager {
+	margin-top: 1rem;
+}
+
+/* Dialogs. The deactivate dialog lists what will happen as short facts. */
+.us-checks {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0 0 0.85rem;
+	padding: 0;
+	list-style: none;
+}
+.us-checks li {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+.us-checks-plain li > .bi {
+	flex: none;
+	color: var(--us-quiet);
+}
+/* A legend doing a label's job looks like the other labels, not a Bootstrap heading. */
+.modal legend.form-label {
+	margin-bottom: 0.5rem;
+	font-size: inherit;
+	line-height: inherit;
+}
+.us-reasons {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.us-seatnote {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	padding: 0.6rem 0.8rem;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	&.is-warn {
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-warning) 12%, var(--basalt-plane));
+	}
+	&.is-warn > .bi {
+		color: var(--us-warn);
+	}
+}
+.us-seats-add {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.us-kinds {
+	display: grid;
+	gap: 0.3rem;
+}
+.us-kinds .form-check-label {
+	color: var(--basalt-copy-body);
+}
+.us-deact-transfer {
+	margin-top: 1rem;
+}
+.us-invite-dialog .basalt-tags.is-invalid {
+	border-color: var(--basalt-danger);
+}
+
+/* On paper only the list itself is printed, without controls or motion. */
+@media print {
+	.us-toolbar,
+	.us-attn,
+	.us-bulk,
+	.us-views,
+	.us-pager,
+	.us-col-menu,
+	.us-col-check {
+		display: none;
+	}
+	.us-row,
+	.us-card {
+		transition: none;
+		animation: none;
+	}
+	.us-online::before {
+		animation: none;
+	}
+}

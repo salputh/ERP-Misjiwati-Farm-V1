@@ -7,7 +7,7 @@
     label="Premi pemeliharaan ABK (Rp)"
     readonly
     value="{{ $premi ? \App\Support\Format::angka($premi['premi']) : '—' }}" />
-<span class="fs-12 color-light d-block mt-5">
+<span class="small text-body-secondary d-block mt-5">
     @if (! $premi)
         Otomatis dari tabel premi ABK setelah hasil budidaya dapat dihitung.
     @elseif ($premi['batas'] === null)

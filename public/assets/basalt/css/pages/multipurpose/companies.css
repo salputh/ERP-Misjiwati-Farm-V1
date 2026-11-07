@@ -1,0 +1,1477 @@
+/*
+ * The companies page (companies.html), its quick-view drawer and its two
+ * dialogs. Every class here starts with .co-. Page header, tabs,
+ * segmented controls, pager, drawer, dialogs, choice cards, empty states
+ * and avatars are basalt.css components that this file only arranges;
+ * what it draws itself is the company table, the two revenue charts and
+ * the drawer's contents. Colors are --basalt-* tokens blended with
+ * color-mix(), so every palette and mode keeps its own hues.
+ */
+
+/* Page-wide tones. The drawer and dialogs live outside the page
+   container, so they declare the same mixes for themselves. */
+.co-page,
+.co-drawer,
+.co-modal {
+	/* Muted text leaned toward the body color keeps small print above
+     4.5:1 on the pale palettes and over a hovered row. */
+	--co-quiet: color-mix(in srgb, var(--basalt-copy-muted) 70%, var(--basalt-copy));
+	/* The bare primary dips under 4.5:1 in a few light palettes, so links blend in the text color. */
+	--co-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--co-ok: color-mix(in srgb, var(--basalt-success) 50%, var(--basalt-copy));
+	--co-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--co-info: color-mix(in srgb, var(--basalt-info) 52%, var(--basalt-copy));
+	--co-danger: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--co-row-hover: color-mix(in srgb, var(--basalt-hue) 4%, var(--basalt-plane));
+	--co-row-on: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+
+/* Industries, plans and their chart marks each take one hue from the theme ramp. */
+.co-tone-1 {
+	--co-tone: var(--basalt-series-1);
+}
+.co-tone-2 {
+	--co-tone: var(--basalt-series-2);
+}
+.co-tone-3 {
+	--co-tone: var(--basalt-series-3);
+}
+.co-tone-4 {
+	--co-tone: var(--basalt-series-4);
+}
+.co-tone-5 {
+	--co-tone: var(--basalt-series-5);
+}
+.co-tone-6 {
+	--co-tone: var(--basalt-series-6);
+}
+.co-tone-7 {
+	--co-tone: var(--basalt-series-7);
+}
+
+/* Small print under a name or figure sits on its own line and stays unwrapped. */
+.co-sub {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	white-space: nowrap;
+	color: var(--co-quiet);
+}
+.co-optional {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--co-quiet);
+}
+
+/* Text links read in the blended link color and underline on hover. */
+.co-link,
+.co-link.btn-link {
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--co-link);
+}
+.co-link:hover,
+.co-link:focus-visible,
+.co-link.btn-link:hover {
+	text-decoration: underline;
+	color: var(--basalt-copy);
+}
+
+/* Inputs on the page sit on the plain surface with the stronger edge. */
+.co-page .form-control,
+.co-page .form-select {
+	border-color: var(--basalt-edge-strong);
+	color: var(--basalt-copy);
+	background-color: var(--basalt-plane);
+}
+.co-page .form-control::placeholder {
+	color: var(--co-quiet);
+	opacity: 1;
+}
+
+/* The directory card is a size container, so the table can react to its own width. */
+.co-dir.basalt-box {
+	container: co-dir / inline-size;
+	scroll-margin-top: 5rem;
+
+	& > .card-body {
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem var(--basalt-pad-x-narrow);
+		}
+	}
+}
+
+/* The four stage tabs drop to a second line on a phone instead of scrolling away. */
+.co-views {
+	&[hidden] {
+		display: none;
+	}
+
+	& .basalt-tabs-list {
+		row-gap: 0.4rem;
+		flex-wrap: wrap;
+	}
+	& .basalt-tabs-list .nav-link {
+		white-space: nowrap;
+	}
+}
+
+/* Search, filters, applied chips and the count share one ruled row under the tabs. */
+.co-toolbar {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: var(--basalt-pad-row-y) 0 0.5rem;
+	padding-top: var(--basalt-pad-row-y);
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.co-search {
+	position: relative;
+	flex: 1 1 12rem;
+	min-width: 12rem;
+	max-width: 28rem;
+
+	@media (max-width: 767.98px) {
+		flex: 1 1 100%;
+		max-width: 28rem;
+	}
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: var(--co-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.co-applied {
+	flex: 0 1 auto;
+}
+.co-summary {
+	margin: 0 0 0 auto;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	color: var(--co-quiet);
+}
+
+/* The Filters button shows how many groups are narrowed and opens a small panel. */
+.co-filter-btn.btn {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	background-color: var(--basalt-plane);
+}
+.co-filter-btn.is-on {
+	border-color: var(--basalt-hue-border);
+	color: var(--basalt-copy);
+}
+.co-filter-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.3rem;
+	height: 1.3rem;
+	margin-left: 0.4rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 16%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+}
+.co-filter-panel.dropdown-menu {
+	width: min(25rem, calc(100vw - 2rem));
+	padding: 1.1rem 1.1rem 0.85rem;
+	border-radius: 14px;
+}
+.co-filter-group {
+	min-width: 0;
+	margin: 0 0 1.1rem;
+	padding: 0;
+	border: 0;
+}
+.co-filter-legend {
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--co-quiet);
+}
+
+/* Each option is a radio dressed as a pill; the picked one takes the primary tint. */
+.co-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.co-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.24rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+.btn-check:checked + .co-chip {
+	border-color: var(--basalt-hue-border);
+	color: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-hue) 13%, var(--basalt-plane));
+}
+.btn-check:focus-visible:not(:checked) + .co-chip {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.co-filter-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .co-link {
+		padding-left: 0;
+	}
+}
+
+/* While rows are checked, a tinted bar above the table holds the bulk actions. */
+.co-bulk {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0.5rem 0 0.75rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-hue-border);
+	background: var(--basalt-hue-soft);
+
+	&[hidden] {
+		display: none;
+	}
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn-outline-secondary {
+		background: var(--basalt-plane);
+	}
+}
+.co-bulk-count {
+	margin-right: 0.5rem;
+	font-weight: 700;
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.co-owner-item {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+/* The wrap reaches out by the cells' side padding, so the first column
+   lines up with the card's left edge under the tabs and search. */
+.co-table-wrap {
+	margin: 0 -0.6rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.co-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	margin: 0;
+	color: var(--basalt-copy-body);
+}
+.co-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.6rem;
+	border-bottom-color: var(--basalt-edge);
+	color: inherit;
+	background: transparent;
+}
+.co-table > tbody > tr:last-child > * {
+	border-bottom: 0;
+}
+.co-table thead th {
+	border-bottom-color: var(--basalt-edge-strong);
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--co-quiet);
+}
+
+/* Sortable headings are bare buttons that borrow the heading's type. */
+.co-sort {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+	background: none;
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+[aria-sort] .co-sort {
+	color: var(--basalt-copy);
+}
+.co-sort-idle {
+	opacity: 0.55;
+}
+.co-sort:hover .co-sort-idle {
+	opacity: 1;
+}
+
+/* A whole row is a link; it tints on hover, when checked and briefly when new. */
+.co-row {
+	cursor: pointer;
+
+	&:hover {
+		background: var(--co-row-hover);
+	}
+	&.is-selected {
+		background: var(--co-row-on);
+	}
+	&.is-fresh {
+		animation: co-fresh 1.8s ease;
+	}
+}
+@keyframes co-fresh {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+}
+
+/* Column widths; money sits right-aligned with its sort arrow on the left. */
+.co-col-check {
+	width: 2.4rem;
+}
+.co-col-check .form-check-input {
+	margin: 0;
+	cursor: pointer;
+}
+.co-col-co {
+	min-width: 15rem;
+}
+.co-col-plan {
+	width: 9.5rem;
+}
+.co-col-arr {
+	width: 11rem;
+	text-align: right;
+}
+.co-col-arr .co-sort {
+	flex-direction: row-reverse;
+}
+.co-col-renew {
+	width: 9.5rem;
+}
+.co-col-owner {
+	width: 11.5rem;
+}
+.co-col-menu {
+	width: 7.5rem;
+	text-align: right;
+}
+.co-cell-main {
+	display: block;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.co-col-renew .co-cell-main {
+	font-weight: 500;
+}
+
+/* The company cell: an industry tile, the linked name and a quiet line
+   with industry and city. */
+.co-org {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	min-width: 0;
+}
+.co-org-text {
+	min-width: 0;
+}
+.co-org-sub {
+	white-space: normal;
+}
+.co-org-sub .co-stage-pill {
+	margin-right: 0.4rem;
+}
+/* Second lines in the plan and date columns wrap before they widen the table. */
+.co-col-plan .co-sub,
+.co-col-renew .co-sub {
+	white-space: normal;
+}
+.co-org-name {
+	border-radius: 4px;
+	font-weight: 650;
+	text-decoration: none;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The tile carries the industry icon on a wash of that industry's hue. */
+.co-logo {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 11px;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--co-tone) 55%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--co-tone) 22%, var(--basalt-plane));
+	background-image: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--co-tone) 58%, var(--basalt-plane)),
+		transparent 75%
+	);
+}
+[data-bs-theme="dark"] .co-logo {
+	color: color-mix(in srgb, var(--co-tone) 65%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--co-tone) 26%, var(--basalt-plane));
+	background-image: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--co-tone) 44%, var(--basalt-plane)),
+		transparent 75%
+	);
+}
+:root[data-basalt-gradients="off"] .co-logo {
+	background-image: none;
+}
+.co-logo-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.2rem;
+}
+
+/* A customer's plan reads as a pill in that plan's hue. */
+.co-plan {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.18rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--co-tone) 42%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--co-tone) 15%, var(--basalt-plane));
+}
+[data-bs-theme="dark"] .co-plan {
+	color: color-mix(in srgb, var(--co-tone) 30%, var(--basalt-copy));
+	background-color: color-mix(in srgb, var(--co-tone) 24%, var(--basalt-plane));
+}
+.co-col-plan .co-sub {
+	margin-top: 0.3rem;
+}
+
+/* The stage pill is green for customers, the info hue for prospects and
+   gray for those who left. */
+.co-stage-pill {
+	--s: var(--basalt-success);
+	display: inline-flex;
+	align-items: center;
+	padding: 0.08rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--s) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--s) 13%, var(--basalt-plane));
+}
+.co-stage-pill-prospect {
+	--s: var(--basalt-info);
+}
+.co-stage-pill-former {
+	color: var(--co-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* A deal's stage, or a trial, as a smaller pill tinted by step. */
+.co-stage {
+	--s: var(--basalt-info);
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.74rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--s) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--s) 14%, var(--basalt-plane));
+}
+.co-stage-discovery {
+	--s: var(--basalt-series-2);
+}
+.co-stage-proposal {
+	--s: var(--basalt-series-1);
+}
+.co-stage-negotiation {
+	--s: var(--basalt-success);
+}
+.co-stage-signature {
+	--s: var(--basalt-hue);
+}
+.co-stage-signed {
+	--s: var(--basalt-success);
+}
+.co-stage-trial {
+	--s: var(--basalt-series-4);
+}
+.co-stage-lost {
+	color: var(--co-quiet);
+	background: var(--basalt-plane-alt);
+}
+
+/* Health is a short meter with the score beside it, both in the band's color. */
+.co-health {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 0.4rem;
+	font-size: 0.8rem;
+}
+.co-health-good {
+	--h: var(--basalt-success);
+	--h-text: var(--co-ok);
+}
+.co-health-watch {
+	--h: var(--basalt-warning);
+	--h-text: var(--co-warn);
+}
+.co-health-risk {
+	--h: var(--basalt-danger);
+	--h-text: var(--co-danger);
+}
+.co-health-track {
+	flex: none;
+	width: 3.5rem;
+	height: 0.3rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.co-health-fill {
+	display: block;
+	width: var(--w);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--h);
+}
+.co-health-num {
+	font-weight: 700;
+	color: var(--h-text);
+}
+.co-facts .co-health {
+	margin-top: 0;
+}
+
+/* Dates warm up as they near: info within sixty days, warning within thirty, danger once late. */
+.co-due-soon {
+	font-weight: 600;
+	color: var(--co-info);
+}
+.co-due-near {
+	font-weight: 700;
+	color: var(--co-warn);
+}
+.co-due-late {
+	font-weight: 700;
+	color: var(--co-danger);
+}
+
+/* The owner links to their profile; only the name underlines. */
+.co-owner {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.875rem;
+	text-decoration: none;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+
+	&:hover span {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+/* The row menu stays muted until it is hovered or open; Remove reads as danger. */
+.co-page .co-menu-btn.btn-icon {
+	border-radius: 9px;
+	color: var(--co-quiet);
+}
+.co-page .co-menu-btn.btn-icon:hover,
+.co-page .co-menu-btn.btn-icon[aria-expanded="true"] {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.co-page .dropdown-item .bi {
+	width: 1rem;
+	margin-right: 0.5rem;
+	text-align: center;
+}
+.co-page .dropdown-item.co-danger-item {
+	color: var(--co-danger);
+}
+.co-page .dropdown-item.co-danger-item:hover,
+.co-page .dropdown-item.co-danger-item:focus {
+	color: var(--co-danger);
+	background: color-mix(in srgb, var(--basalt-danger) 10%, var(--basalt-plane));
+}
+
+/* Folded copies of the owner and plan wait under the name until their column is dropped. */
+.co-fold {
+	display: none;
+}
+.co-fold-owner {
+	gap: 0.4rem;
+	align-items: center;
+	margin-top: 0.4rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--co-quiet);
+}
+.co-fold-owner .basalt-avatar {
+	width: 20px;
+	height: 20px;
+	font-size: 0.5rem;
+}
+
+@media (max-width: 1399.98px) {
+	.co-col-owner {
+		display: none;
+	}
+	.co-fold-owner {
+		display: flex;
+	}
+}
+/* Beside the sidebar on a small laptop the card is narrow: the plan moves
+   under the company so the row actions keep to the right edge. */
+@media (min-width: 768px) {
+	@container co-dir (max-width: 46rem) {
+		.co-table .co-col-plan {
+			display: none;
+		}
+		.co-table .co-col-arr,
+		.co-table .co-col-renew,
+		.co-table .co-col-menu {
+			width: 1%;
+			white-space: nowrap;
+		}
+		.co-fold-plan {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+			margin-top: 0.4rem;
+			font-size: 0.8rem;
+			white-space: nowrap;
+			color: var(--co-quiet);
+		}
+		.co-fold-plan .co-sub,
+		.co-fold-plan .co-health {
+			margin: 0;
+		}
+	}
+}
+@media (max-width: 1199.98px) {
+	.co-table > :not(caption) > * > * {
+		padding-left: 0.4rem;
+		padding-right: 0.4rem;
+	}
+	.co-table-wrap {
+		margin: 0 -0.45rem;
+	}
+	.co-col-co {
+		min-width: 11rem;
+	}
+	.co-col-arr {
+		width: 10rem;
+	}
+	.co-org-text .co-sub {
+		white-space: normal;
+	}
+}
+
+/* On a phone each row turns into a small stacked card. With the column
+   headings gone, the price and the date name themselves. */
+.co-phone-label {
+	display: none;
+}
+@media (max-width: 767.98px) {
+	.co-phone-label {
+		display: inline;
+		font-weight: 400;
+		font-size: 0.85rem;
+		color: var(--co-quiet);
+	}
+	/* In the narrow name column the stage pill gets a line of its own. */
+	.co-org-sub {
+		display: flex;
+		gap: 0.2rem 0.4rem;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+	.co-org-sub .co-stage-pill {
+		margin-right: 0;
+	}
+	.co-table-wrap {
+		margin: 0;
+		overflow: visible;
+	}
+	.co-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+	.co-table,
+	.co-table tbody {
+		display: block;
+	}
+	.co-table tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: 1.6rem minmax(0, 1fr) minmax(0, 1fr) auto;
+		grid-template-areas:
+			"check co    co    menu"
+			".     plan  arr   arr"
+			".     renew renew renew";
+		padding: var(--basalt-pad-row-y) 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.co-table > tbody > tr:last-child {
+		border-bottom: 0;
+	}
+	.co-table > :not(caption) > * > * {
+		width: auto;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		text-align: left;
+	}
+	.co-table .co-col-check {
+		grid-area: check;
+		padding-top: 0.7rem;
+	}
+	.co-table .co-col-co {
+		grid-area: co;
+	}
+	.co-table .co-col-plan {
+		grid-area: plan;
+	}
+	.co-table .co-col-arr {
+		grid-area: arr;
+	}
+	.co-table .co-col-renew {
+		display: flex;
+		gap: 0.5rem;
+		grid-area: renew;
+		align-items: baseline;
+	}
+	.co-table .co-col-renew .co-sub {
+		margin: 0;
+	}
+	.co-table .co-col-menu {
+		grid-area: menu;
+	}
+	.co-org-text .co-sub {
+		white-space: normal;
+	}
+}
+/* On a phone a row keeps the company, its plan and what it is worth. The
+   owner steps aside, and the date only stays when it needs someone:
+   late, or due within the month. */
+@media (max-width: 575.98px) {
+	.co-fold-owner {
+		display: none;
+	}
+	.co-table .co-col-renew:not(:has(.co-due-late, .co-due-near)) {
+		display: none;
+	}
+}
+
+/* Empty states and the pager close off the card. */
+.co-empty {
+	margin: 1.5rem 0 0.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+.co-pager {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	padding-top: var(--basalt-pad-row-y);
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+}
+.co-pager-meta {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--co-quiet);
+
+	& strong {
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+/* The revenue cards are size containers too, so each chart can rearrange inside a narrow card. */
+.co-insights[hidden] {
+	display: none;
+}
+.co-card {
+	container: co-card / inline-size;
+
+	& > .card-body {
+		display: flex;
+		flex-direction: column;
+		padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem var(--basalt-pad-x-narrow);
+		}
+	}
+}
+.co-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.co-card-desc {
+	margin: 0 0 1.25rem;
+	font-size: 0.875rem;
+	color: var(--co-quiet);
+}
+
+/* Industry bars: name, bar, value and count on one line, each row a
+   button that filters the table to that industry. */
+.co-bars {
+	display: grid;
+	gap: 0.1rem;
+	margin: 0 -0.6rem;
+	padding: 0;
+	list-style: none;
+}
+.co-bar {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 8.75rem minmax(0, 1fr) 4rem 6.5rem;
+	align-items: center;
+	width: 100%;
+	padding: 0.6rem;
+	border: 0;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	text-align: left;
+	color: var(--basalt-copy-body);
+	background: none;
+	transition: background-color 170ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+}
+.co-bar-name {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	& .bi {
+		flex: none;
+		width: 1rem;
+		text-align: center;
+		color: color-mix(in srgb, var(--co-tone) 70%, var(--basalt-copy));
+	}
+}
+.co-bar-track {
+	height: 0.6rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.co-bar-fill {
+	transform-origin: left;
+	display: block;
+	width: var(--w);
+	height: 100%;
+	border-radius: inherit;
+	background: var(--co-tone);
+	animation: co-grow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes co-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+.co-bar-value {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+.co-bar-count {
+	font-size: 0.8rem;
+	white-space: nowrap;
+	color: var(--co-quiet);
+}
+/* In a narrow card the bar runs underneath the name, value and count;
+   on a phone the count drops to a line of its own. Each part is placed
+   by name only inside these layouts. */
+@container co-card (max-width: 30rem) {
+	.co-bar {
+		gap: 0.4rem 1rem;
+		grid-template-columns: minmax(0, 1fr) auto 6.5rem;
+		grid-template-areas: "name value count" "track track track";
+	}
+	.co-bar-name {
+		grid-area: name;
+	}
+	.co-bar-value {
+		grid-area: value;
+	}
+	.co-bar-track {
+		grid-area: track;
+	}
+	.co-bar-count {
+		grid-area: count;
+	}
+}
+@media (max-width: 575.98px) {
+	.co-bar {
+		gap: 0.4rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "name value" "track track" "count count";
+	}
+	.co-bar-name {
+		grid-area: name;
+	}
+	.co-bar-value {
+		grid-area: value;
+	}
+	.co-bar-track {
+		grid-area: track;
+	}
+	.co-bar-count {
+		grid-area: count;
+	}
+}
+
+/* The plan ring sits beside its key, and above it once the card narrows. */
+.co-ring {
+	display: flex;
+	gap: 2.25rem;
+	flex: 1;
+	align-items: center;
+}
+.co-ring-chart {
+	position: relative;
+	flex: none;
+	width: 11.5rem;
+	height: 11.5rem;
+
+	& svg {
+		transform: rotate(-90deg);
+		width: 100%;
+		height: 100%;
+	}
+}
+.co-ring-track {
+	fill: none;
+	stroke: var(--basalt-plane-alt);
+	stroke-width: 13;
+}
+.co-ring-seg {
+	fill: none;
+	stroke: var(--co-tone);
+	stroke-width: 13;
+	transition:
+		stroke-width 210ms ease,
+		opacity 210ms ease;
+	animation: co-ring-in 0.5s ease both;
+
+	&.is-on {
+		stroke-width: 18;
+	}
+}
+.co-ring.is-picking .co-ring-seg:not(.is-on) {
+	opacity: 0.25;
+}
+@keyframes co-ring-in {
+	from {
+		opacity: 0;
+	}
+}
+/* The total sits over the ring's hole and lets the pointer through to
+   the slices. */
+.co-ring-center {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+.co-ring-value {
+	font-size: 1.35rem;
+	font-weight: 700;
+	line-height: 1.1;
+	color: var(--basalt-copy);
+}
+.co-ring-label {
+	font-size: 0.8rem;
+	color: var(--co-quiet);
+}
+.co-ring-list {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 0.75rem minmax(0, 1fr) auto;
+		align-items: start;
+		padding: 0.8rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& li:last-child {
+		border-bottom: 0;
+	}
+	& li {
+		margin: 0 -0.6rem;
+		padding-right: 0.6rem;
+		padding-left: 0.6rem;
+		border-radius: 10px;
+		outline: none;
+		transition:
+			background-color 210ms ease,
+			opacity 210ms ease;
+	}
+	& li.is-on {
+		background: color-mix(in srgb, var(--co-tone) 9%, transparent);
+	}
+	& li:focus-visible {
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+}
+.co-ring.is-picking .co-ring-list li:not(.is-on) {
+	opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+	.co-ring-seg,
+	.co-ring-list li {
+		transition: none;
+	}
+}
+.co-ring-dot {
+	width: 0.75rem;
+	height: 0.75rem;
+	margin-top: 0.3rem;
+	border-radius: 4px;
+	background: var(--co-tone);
+}
+.co-ring-name {
+	min-width: 0;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.co-ring-amt {
+	font-weight: 600;
+	text-align: right;
+	color: var(--basalt-copy);
+}
+@container co-card (max-width: 30rem) {
+	.co-ring {
+		gap: 1.25rem;
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.co-ring-chart {
+		align-self: center;
+	}
+	.co-ring-name .co-sub {
+		white-space: normal;
+	}
+}
+
+/* The quick-view drawer. On a phone it gives up the Alt-arrow stepper,
+   which is for keyboards, so the name has the room. */
+.co-drawer.offcanvas {
+	--bs-offcanvas-width: 480px;
+}
+@media (max-width: 575.98px) {
+	.co-drawer.offcanvas {
+		--bs-offcanvas-width: min(400px, 92vw);
+	}
+	.co-drawer .basalt-drawer-nav {
+		display: none;
+	}
+}
+.co-d-lead {
+	margin: 0 0 1rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Facts are a ruled two-column list: label on the left, value on the right. */
+.co-facts {
+	display: grid;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 8.5rem minmax(0, 1fr);
+		align-items: center;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+		font-size: 0.875rem;
+
+		@media (max-width: 575.98px) {
+			grid-template-columns: 6.75rem minmax(0, 1fr);
+		}
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--co-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& .co-due {
+		white-space: nowrap;
+	}
+}
+
+.co-d-switch {
+	margin-bottom: 1.25rem;
+}
+.co-d-pane[hidden] {
+	display: none;
+}
+
+/* People: avatar, name and title, their role and a mail button per line. */
+.co-people,
+.co-deals,
+.co-activity {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.co-person {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&:first-child {
+		padding-top: 0;
+	}
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+.co-person-text {
+	flex: 1;
+	min-width: 0;
+}
+.co-person-name {
+	display: block;
+	width: fit-content;
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.co-person-name:hover,
+.co-deal-name:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: var(--basalt-copy);
+}
+.co-person-name:focus-visible,
+.co-deal-name:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.co-person-text .co-sub {
+	white-space: normal;
+}
+.co-role {
+	flex: none;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.74rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.co-person-mail.btn-icon {
+	flex: none;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border-radius: 9px;
+	color: var(--co-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* Deals: a sentence on what is open, then name, stage and added value per row. */
+.co-d-note {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+.co-deal {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) auto 5.5rem;
+	align-items: center;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+
+	&:first-child {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+.co-deal-name {
+	border-radius: 4px;
+	font-weight: 500;
+	text-decoration: none;
+	color: var(--basalt-copy);
+}
+.co-deal-amt {
+	font-weight: 600;
+	text-align: right;
+	color: var(--co-ok);
+}
+.co-d-more {
+	display: inline-flex;
+	align-items: center;
+	margin-top: 1rem;
+	font-size: 0.875rem;
+}
+
+/* Activity: the note box on top, then the log with an icon per kind of entry. */
+.co-note {
+	display: grid;
+	gap: 0.6rem;
+	margin-bottom: 1.25rem;
+
+	& .invalid-feedback {
+		margin-top: -0.25rem;
+	}
+}
+.co-note-go {
+	justify-self: start;
+	white-space: nowrap;
+}
+.co-act {
+	display: flex;
+	gap: 0.8rem;
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.co-act-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9px;
+	color: var(--co-quiet);
+	background: var(--basalt-plane-alt);
+}
+.co-act-text {
+	min-width: 0;
+	color: var(--basalt-copy);
+
+	& .co-sub {
+		white-space: normal;
+	}
+}
+
+/* The add dialog keeps an even rhythm between rows, down to the last one. */
+.co-form-row,
+.co-form-row:last-of-type {
+	margin-bottom: 1.25rem;
+}
+.modal legend.form-label {
+	float: none;
+	margin-bottom: 0.5rem;
+	font-size: inherit;
+	line-height: inherit;
+}
+/* Plan cards center their text; the title's left padding matches the
+   room kept for the check mark, so it lands in the middle. */
+.co-plans {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+
+	@media (max-width: 575.98px) {
+		grid-template-columns: 1fr;
+	}
+
+	& .basalt-choice-card {
+		align-items: center;
+		text-align: center;
+	}
+	& .basalt-choice-card-title {
+		padding-left: 1.75rem;
+	}
+}
+.co-add-sum {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0;
+	padding: 0.7rem 0.9rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+
+	& > .bi {
+		color: var(--co-quiet);
+	}
+	& strong {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Motion stops for anyone who asks for less of it, and on paper. */
+@media (prefers-reduced-motion: reduce), print {
+	.co-row,
+	.co-chip,
+	.co-bar {
+		transition: none;
+	}
+	.co-row.is-fresh,
+	.co-bar-fill,
+	.co-ring-seg {
+		animation: none;
+	}
+}
+/* Printing keeps the list and charts and drops the controls around them. */
+@media print {
+	.co-toolbar,
+	.co-bulk,
+	.co-views,
+	.co-pager,
+	.co-col-menu,
+	.co-col-check {
+		display: none;
+	}
+}

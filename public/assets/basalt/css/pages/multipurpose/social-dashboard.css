@@ -1,0 +1,613 @@
+/* Basalt - Social dashboard (social-dashboard.html)
+   Namespaced under .soc-*. Five figures with trend lines, suggestions,
+   followers by week, where reach came from, the best time to post and
+   the top posts. Network colors come from the chart ramp through
+   --soc-tone; everything else reads the --basalt-* tokens. */
+
+.soc-page {
+	--soc-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+}
+
+.soc-card.basalt-box > .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.soc-card-head {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	& > div {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+	& > .basalt-segmented {
+		flex: none;
+	}
+}
+.soc-card-title {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.soc-card-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--soc-quiet);
+}
+.soc-more {
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	text-decoration: none;
+	color: var(--basalt-hue);
+}
+
+/* Rows: a wide card beside a narrow one, or two even ones, ending level. */
+.soc-row {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.soc-row {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	}
+	.soc-row-even {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* The range menu: four presets, then two dates for a range of one's own. */
+.soc-range-menu {
+	width: 17rem;
+	padding: 0.4rem;
+}
+.soc-range-presets .dropdown-item {
+	border-radius: 8px;
+
+	&[aria-pressed="true"] {
+		font-weight: 650;
+		color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 9%, transparent);
+	}
+}
+.soc-range-custom {
+	display: grid;
+	gap: 0.6rem;
+	padding: 0.3rem 0.6rem 0.5rem;
+
+	& .form-label {
+		margin-bottom: 0.25rem;
+		font-size: 0.8rem;
+	}
+	& > .btn {
+		justify-self: start;
+	}
+}
+.soc-range-title {
+	margin: 0;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--soc-quiet);
+}
+.soc-range-error {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--basalt-danger);
+}
+
+/* The lead row: one chart for the last twelve weeks beside the AI
+   suggestions, half and half from 1200px and stacked below it. */
+.soc-lead {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1200px) {
+	.soc-lead {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* The figures as tabs above the chart, three to a row when the card is
+   narrow; the picked one carries an accent bar and its number follows
+   the line while it is read. */
+.soc-metrics {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+}
+.soc-metric {
+	position: relative;
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	min-width: 0;
+	padding: 0.85rem 0.75rem;
+	border: 0;
+	border-left: 1px solid var(--basalt-edge);
+	text-align: left;
+	background: var(--basalt-plane);
+	transition: background-color 170ms ease;
+
+	&:first-child {
+		border-left: 0;
+	}
+	&:hover {
+		background: var(--basalt-plane-alt);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+	&[aria-selected="true"] {
+		background: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	}
+	&[aria-selected="true"]::after {
+		content: "";
+		position: absolute;
+		right: 0.75rem;
+		bottom: 0;
+		left: 0.75rem;
+		height: 3px;
+		border-radius: 3px 3px 0 0;
+		background: var(--basalt-hue);
+	}
+}
+.soc-metric-label {
+	overflow: hidden;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--soc-quiet);
+}
+.soc-metric-value {
+	overflow: hidden;
+	font-size: 1.3rem;
+	font-weight: 800;
+	line-height: 1.15;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	transition: color 130ms ease;
+}
+.soc-metric.is-reading .soc-metric-value {
+	color: var(--basalt-hue);
+}
+.soc-perf {
+	container: soc-perf / inline-size;
+}
+@container soc-perf (max-width: 34rem) {
+	.soc-metrics {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.soc-metric:nth-child(4) {
+		border-left: 0;
+	}
+	.soc-metric:nth-child(n + 4) {
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+
+/* The chart takes whatever height the row gives it, so the card ends
+   level with the suggestions beside it. */
+.soc-trend.basalt-trendline {
+	flex: 1 1 14rem;
+	min-height: 13rem;
+	height: auto;
+	margin-top: 2.25rem;
+}
+.soc-weeks {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.75rem;
+	font-size: 0.75rem;
+	color: var(--soc-quiet);
+}
+
+/* The AI card: a pin on each suggestion, the count of pinned ones on
+   the switch, and the pinned list with a box to tick each one off. */
+.soc-pin {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 8px;
+	color: var(--soc-quiet);
+	background: var(--basalt-plane);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-hue);
+		border-color: var(--basalt-hue);
+	}
+	&.is-on {
+		color: var(--basalt-on-hue, #fff);
+		border-color: var(--basalt-hue);
+		background: var(--basalt-hue);
+	}
+}
+.soc-kept-count {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.2rem;
+	height: 1.2rem;
+	margin-left: 0.3rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	font-size: 0.67rem;
+	font-weight: 800;
+	color: var(--basalt-on-hue, #fff);
+	background: var(--basalt-hue);
+
+	&.is-bumped {
+		animation: soc-bump 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+}
+@keyframes soc-bump {
+	40% {
+		transform: scale(1.35);
+	}
+}
+.soc-kept {
+	display: flex;
+	gap: 0.6rem;
+	flex: 1;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.soc-kept-item {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+
+	& .form-check-input {
+		margin: 0;
+	}
+	&.is-done .soc-kept-title {
+		text-decoration: line-through;
+		color: var(--soc-quiet);
+	}
+}
+.soc-kept-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	cursor: pointer;
+}
+.soc-kept-title {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.soc-kept-why {
+	overflow: hidden;
+	font-size: 0.8rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--soc-quiet);
+}
+.soc-kept-drop {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	color: var(--soc-quiet);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--basalt-danger);
+	}
+}
+.soc-kept-none {
+	display: grid;
+	flex: 1;
+	place-items: center;
+}
+@media (prefers-reduced-motion: reduce) {
+	.soc-kept-count.is-bumped {
+		animation: none;
+	}
+}
+
+/* Followers chart and its legend. */
+.soc-chart {
+	position: relative;
+	flex: 1;
+	min-height: 17rem;
+}
+.soc-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem 1rem;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8rem;
+	list-style: none;
+	color: var(--basalt-copy-body);
+
+	& li {
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+	}
+	& .bi {
+		color: var(--soc-tone);
+	}
+}
+
+/* Where people see us: a ring with the reach in its hole. */
+.soc-ring {
+	display: flex;
+	gap: 1.25rem 1.75rem;
+	flex: 1;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+}
+.soc-ring-chart {
+	position: relative;
+	flex: none;
+	width: 10.5rem;
+	height: 10.5rem;
+
+	& svg {
+		width: 100%;
+		height: 100%;
+		transform: rotate(-90deg);
+	}
+}
+.soc-ring-track {
+	fill: none;
+	stroke: var(--basalt-plane-alt);
+	stroke-width: 13;
+}
+.soc-ring-seg {
+	fill: none;
+	stroke: var(--soc-tone);
+	stroke-width: 13;
+	transition:
+		stroke-width 210ms ease,
+		opacity 210ms ease;
+
+	&.is-on {
+		stroke-width: 18;
+	}
+}
+.soc-ring.is-picking .soc-ring-seg:not(.is-on) {
+	opacity: 0.25;
+}
+.soc-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+}
+.soc-ring-value {
+	font-size: 1.35rem;
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+.soc-ring-label {
+	max-width: 7rem;
+	font-size: 0.75rem;
+	text-align: center;
+	color: var(--soc-quiet);
+}
+/* The list takes the room beside the ring, and drops under it when the
+   card is too narrow for both, so a name never runs into its figure. */
+.soc-ring-list {
+	flex: 1 1 13rem;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: grid;
+		gap: 0.6rem;
+		grid-template-columns: 0.7rem minmax(0, 1fr) auto;
+		align-items: center;
+		margin: 0 -0.5rem;
+		padding: 0.6rem 0.5rem;
+		border-radius: 10px;
+		font-size: 0.875rem;
+		outline: none;
+		transition:
+			background-color 210ms ease,
+			opacity 210ms ease;
+	}
+	& li.is-on {
+		background: color-mix(in srgb, var(--soc-tone) 10%, transparent);
+	}
+	& li:focus-visible {
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+}
+.soc-ring.is-picking .soc-ring-list li:not(.is-on) {
+	opacity: 0.55;
+}
+.soc-ring-dot {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 3px;
+	background: var(--soc-tone);
+}
+.soc-ring-name {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.soc-ring-amt {
+	font-weight: 700;
+	white-space: nowrap;
+	text-align: right;
+	color: var(--basalt-copy);
+
+	& span {
+		margin-left: 0.5rem;
+		font-weight: 500;
+		color: var(--soc-quiet);
+	}
+}
+@media (max-width: 575.98px) {
+	.soc-ring {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.soc-ring-chart {
+		align-self: center;
+	}
+}
+
+/* Best time to post: days down the side, times along the top, each
+   square as deep as the score; the strongest is outlined. */
+.soc-slots {
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: 2.5rem repeat(5, minmax(0, 1fr));
+	align-items: center;
+}
+.soc-slot-time,
+.soc-slot-day {
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--soc-quiet);
+}
+.soc-slot-time {
+	text-align: center;
+}
+.soc-slot {
+	height: 2.1rem;
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--basalt-hue) var(--soc-heat), var(--basalt-plane-alt));
+	animation: soc-slot-in 400ms ease both;
+	animation-delay: calc(var(--i) * 12ms);
+	transition: transform 170ms ease;
+
+	&:hover {
+		transform: scale(1.08);
+	}
+	&.is-best {
+		box-shadow:
+			0 0 0 2px var(--basalt-plane),
+			0 0 0 4px var(--basalt-hue);
+	}
+}
+@keyframes soc-slot-in {
+	from {
+		opacity: 0;
+		transform: scale(0.6);
+	}
+}
+
+/* Top posts: picture, title, networks and a bar for the reach. */
+.soc-top {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.soc-top-row {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 3rem minmax(0, 1fr) auto;
+	align-items: center;
+
+	& img {
+		width: 3rem;
+		height: 3rem;
+		border-radius: 10px;
+		object-fit: cover;
+	}
+}
+.soc-top-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.soc-top-title {
+	overflow: hidden;
+	font-weight: 650;
+	text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+.soc-top-meta {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.77rem;
+	color: var(--soc-quiet);
+}
+.soc-top-bar {
+	height: 4px;
+	border-radius: 4px;
+	background: var(--basalt-plane-alt);
+
+	& > span {
+		display: block;
+		width: var(--soc-w);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-hue);
+		animation: soc-bar 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+}
+@keyframes soc-bar {
+	from {
+		width: 0;
+	}
+}
+.soc-top-reach {
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.soc-slot,
+	.soc-top-bar > span {
+		animation: none;
+	}
+	.soc-ring-seg,
+	.soc-ring-list li,
+	.soc-slot {
+		transition: none;
+	}
+}

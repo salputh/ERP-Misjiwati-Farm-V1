@@ -1,4 +1,4 @@
-// Komponen Alpine untuk dashboard. Alpine dibawa Livewire; Chart.js dibawa template (assets/js/plugins.min.js).
+// Komponen Alpine untuk dashboard. Alpine dibawa Livewire; Chart.js dibawa template Basalt (assets/vendor/chart.js).
 
 import { gambarLaporan } from './gambar-laporan';
 import { gambarPayroll } from './gambar-payroll';
@@ -8,21 +8,19 @@ import { animate, stagger } from 'motion';
 import { berkasPng, muatHuruf } from './kanvas';
 import { tangkapHalaman, unduhPdf, unduhPng } from './halaman';
 
-const WARNA = { utama: '#8231D3', info: '#00AAFF', bahaya: '#FF0F0F', jantan: '#5840FF', betina: '#FA8B0C', teks: '#747474', garis: '#F1F2F6' };
+// Warna grafik dibaca dari token palet Basalt, sehingga ikut berganti saat palet atau mode terang/gelap diubah (event basalt:appearance).
+const warnaGrafik = () => ({
+    utama: window.Basalt.token('--basalt-hue', '#6d3fe0'),
+    info: window.Basalt.series(2, 0, '#2f8fd8'),
+    bahaya: window.Basalt.token('--basalt-danger', '#d93a4a'),
+    jantan: window.Basalt.series(4, 0, '#5840ff'),
+    betina: window.Basalt.series(7, 0, '#fa8b0c'),
+    teks: window.Basalt.token('--basalt-copy-muted', '#6e6790'),
+    garis: window.Basalt.token('--basalt-edge', '#e7e4f0'),
+});
 
 const angka = (nilai, desimal = 0) =>
     Number(nilai).toLocaleString('id-ID', { minimumFractionDigits: desimal, maximumFractionDigits: desimal });
-
-// Nama bulan dan hari untuk kalender jQuery UI.
-const KALENDER_INDONESIA = {
-    monthNames: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
-    monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-    dayNames: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
-    dayNamesMin: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
-    prevText: 'Bulan sebelumnya',
-    nextText: 'Bulan berikutnya',
-    firstDay: 1,
-};
 
 // Spring kartu buka-tutup: kaku dan tegas, menetap dalam sekitar 0,25 detik dengan sedikit pantulan.
 const PEGAS_KARTU = { type: 'spring', stiffness: 900, damping: 42, mass: 1 };
@@ -266,13 +264,14 @@ document.addEventListener('alpine:init', () => {
         },
 
         init() {
+            const WARNA = warnaGrafik();
             // Instance Chart disimpan di elemen, bukan di state Alpine, agar tidak dibungkus proxy.
             this.$refs.kanvas.grafik = new Chart(this.$refs.kanvas, {
                 type: 'line',
                 data: {
                     labels: this.data.hari,
                     datasets: [
-                        { label: 'Aktual', data: this.seri.data, borderColor: WARNA.utama, backgroundColor: 'rgba(130,49,211,0.10)', fill: true, tension: 0.3, borderWidth: 3, pointRadius: 0, pointHoverRadius: 5 },
+                        { label: 'Aktual', data: this.seri.data, borderColor: WARNA.utama, backgroundColor: window.Basalt.shade(WARNA.utama, 0.85), fill: true, tension: 0.3, borderWidth: 3, pointRadius: 0, pointHoverRadius: 5 },
                         { label: 'Standar', data: this.data.standar, borderColor: WARNA.info, borderDash: [5, 5], borderWidth: 2, tension: 0.3, pointRadius: 0, pointHoverRadius: 4 },
                         // Sexing hanya ada di hari sampling, jadi titiknya ditampilkan dan disambung melewati hari kosong.
                         this.dataSexing('Jantan', 'jantan', WARNA.jantan),
@@ -299,6 +298,20 @@ document.addEventListener('alpine:init', () => {
                     },
                 },
             });
+            document.addEventListener('basalt:appearance', () => this.warnai());
+        },
+
+        warnai() {
+            const WARNA = warnaGrafik();
+            const grafik = this.$refs.kanvas.grafik;
+            const [aktual, standar, jantan, betina] = grafik.data.datasets;
+            Object.assign(aktual, { borderColor: WARNA.utama, backgroundColor: window.Basalt.shade(WARNA.utama, 0.85) });
+            standar.borderColor = WARNA.info;
+            Object.assign(jantan, { borderColor: WARNA.jantan, backgroundColor: WARNA.jantan });
+            Object.assign(betina, { borderColor: WARNA.betina, backgroundColor: WARNA.betina });
+            grafik.options.scales.x.ticks.color = grafik.options.scales.x.title.color = grafik.options.scales.y.ticks.color = WARNA.teks;
+            grafik.options.scales.y.grid.color = WARNA.garis;
+            grafik.update();
         },
 
         dataSexing(label, kelamin, warna) {
@@ -320,8 +333,8 @@ document.addEventListener('alpine:init', () => {
         data,
         pilih: 'pakan',
         seri: {
-            pakan: { label: 'Pakan', satuan: 'kg', warna: WARNA.utama },
-            kematian: { label: 'Mati dan afkir', satuan: 'ekor', warna: WARNA.bahaya },
+            pakan: { label: 'Pakan', satuan: 'kg', warna: '' },
+            kematian: { label: 'Mati dan afkir', satuan: 'ekor', warna: '' },
         },
         fmt: (nilai) => angka(Math.round(nilai)),
 
@@ -333,6 +346,9 @@ document.addEventListener('alpine:init', () => {
         },
 
         init() {
+            const WARNA = warnaGrafik();
+            this.seri.pakan.warna = WARNA.utama;
+            this.seri.kematian.warna = WARNA.bahaya;
             this.$refs.kanvas.grafik = new Chart(this.$refs.kanvas, {
                 type: 'bar',
                 data: {
@@ -356,6 +372,18 @@ document.addEventListener('alpine:init', () => {
                     },
                 },
             });
+            document.addEventListener('basalt:appearance', () => this.warnai());
+        },
+
+        warnai() {
+            const WARNA = warnaGrafik();
+            this.seri.pakan.warna = WARNA.utama;
+            this.seri.kematian.warna = WARNA.bahaya;
+            const grafik = this.$refs.kanvas.grafik;
+            grafik.data.datasets[0].backgroundColor = this.seri[this.pilih].warna;
+            grafik.options.scales.x.ticks.color = grafik.options.scales.y.ticks.color = WARNA.teks;
+            grafik.options.scales.y.grid.color = WARNA.garis;
+            grafik.update();
         },
 
         ganti(kunci) {
@@ -408,30 +436,18 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    // Pemilih tanggal bergaya template: jQuery UI datepicker (dibawa assets/js/plugins.min.js).
-    // Tampil sebagai "3 Oktober 2026"; nilai Y-m-d dibaca dari data-* dan dikirim lewat event tanggal-dipilih.
+    // Pemilih tanggal Basalt (assets/basalt/js/components/datepicker.js). Tanggal Y-m-d dibaca dari data-nilai
+    // dan dikirim lewat event tanggal-dipilih saat pengguna memilih atau mengetik tanggal baru.
     Alpine.data('pilihTanggal', () => ({
         init() {
-            const { nilai, min, maks } = this.$el.dataset;
-            const pemilih = window.jQuery.datepicker;
-            const tanggal = (iso) => (iso ? pemilih.parseDate('yy-mm-dd', iso) : null);
-
-            window.jQuery(this.$refs.isian)
-                .datepicker({
-                    ...KALENDER_INDONESIA,
-                    dateFormat: 'd MM yy',
-                    minDate: tanggal(min),
-                    maxDate: tanggal(maks),
-                    onSelect: () => {
-                        const dipilih = pemilih.formatDate('yy-mm-dd', window.jQuery(this.$refs.isian).datepicker('getDate'));
-                        if (dipilih !== nilai) this.$dispatch('tanggal-dipilih', dipilih);
-                    },
-                })
-                .datepicker('setDate', tanggal(nilai));
-        },
-
-        destroy() {
-            window.jQuery(this.$refs.isian).datepicker('destroy');
+            const nilai = this.$el.dataset.nilai || '';
+            window.Basalt.datepicker.init(this.$el);
+            window.Basalt.datepicker.set(this.$el, nilai);
+            this.$el.addEventListener('change', (event) => {
+                if (event.target !== this.$el || event.detail === undefined) return;
+                const dipilih = event.detail.value || '';
+                if (dipilih && dipilih !== nilai) this.$dispatch('tanggal-dipilih', dipilih);
+            });
         },
     }));
 
@@ -451,62 +467,32 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    // Pemilih tanggal dan jam (x-pilih-waktu): tanggal memakai datepicker jQuery UI dan jam memakai wickedpicker,
-    // keduanya plugin bawaan template. Nilai berformat Y-m-dTH:i; begitu tanggal dan jam terisi, nilai gabungannya
-    // dikirim lewat event "waktu-dipilih".
+    // Pemilih tanggal dan jam (x-pilih-waktu): tanggal memakai datepicker Basalt dan jam memakai input type="time".
+    // Nilai berformat Y-m-dTH:i; begitu tanggal dan jam terisi, nilai gabungannya dikirim lewat event "waktu-dipilih".
     Alpine.data('pilihWaktu', () => ({
         tanggal: '',
         jam: '',
 
         init() {
-            const $ = window.jQuery;
-            const pemilih = $.datepicker;
             const [tanggal = '', jam = ''] = (this.$el.dataset.nilai || '').split('T');
             this.tanggal = tanggal;
             this.jam = jam;
 
-            $(this.$refs.tanggal)
-                .datepicker({
-                    ...KALENDER_INDONESIA,
-                    dateFormat: 'd MM yy',
-                    onSelect: () => {
-                        this.tanggal = pemilih.formatDate('yy-mm-dd', $(this.$refs.tanggal).datepicker('getDate'));
-                        this.kirim();
-                    },
-                })
-                .datepicker('setDate', tanggal ? pemilih.parseDate('yy-mm-dd', tanggal) : null);
-
-            // Jam dikirim saat jendela jam ditutup (tombol ×, klik di luar, Tab, atau Esc). Wickedpicker memanggil
-            // afterShow ketika jendela disembunyikan. Tidak dikirim tiap panah ditekan, karena Livewire menggambar
-            // ulang pemilih ini setiap nilainya berubah dan jendela jam akan ikut tertutup.
-            $(this.$refs.jam).wickedpicker({
-                now: jam || '07:00',
-                twentyFour: true,
-                title: 'Jam',
-                timeSeparator: ':',
-                afterShow: () => this.bacaJam(),
+            window.Basalt.datepicker.init(this.$refs.tanggal);
+            window.Basalt.datepicker.set(this.$refs.tanggal, tanggal);
+            this.$refs.tanggal.addEventListener('change', (event) => {
+                this.tanggal = event.detail?.value || '';
+                this.kirim();
             });
-            // Jam yang belum diisi tetap kosong; wickedpicker menulis jam "now" ke isian saat dipasang.
-            if (!jam) this.$refs.jam.value = '';
-        },
-
-        bacaJam() {
-            const bagian = String(window.jQuery(this.$refs.jam).wickedpicker('time') || '').match(/(\d{1,2})\D+(\d{1,2})/);
-            if (!bagian) return;
-            this.jam = `${bagian[1].padStart(2, '0')}:${bagian[2].padStart(2, '0')}`;
-            this.kirim();
+            this.$refs.jam.addEventListener('change', () => {
+                this.jam = this.$refs.jam.value;
+                this.kirim();
+            });
         },
 
         kirim() {
             const nilai = `${this.tanggal}T${this.jam}`;
             if (this.tanggal && this.jam && nilai !== this.$el.dataset.nilai) this.$dispatch('waktu-dipilih', nilai);
-        },
-
-        destroy() {
-            const $ = window.jQuery;
-            $(this.$refs.tanggal).datepicker('destroy');
-            // Wickedpicker memasang jendela jamnya sendiri di body; dibuang supaya tidak menumpuk tiap pemilih digambar ulang.
-            $.data(this.$refs.jam, 'plugin_wickedpicker')?.timepicker?.remove();
         },
     }));
 

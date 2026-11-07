@@ -1,0 +1,580 @@
+/**
+ * Styles for the Tree & Sortable page (tree-and-sortable.html), under .ts-*.
+ * This sheet covers the page around the demos: the kind filter, the card
+ * grid, each card's head and code snippet, the small helpers inside the
+ * demos and the shortcuts dialog. The components on show (.basalt-tree,
+ * .basalt-sortable, .basalt-board, .basalt-transfer) are styled in
+ * basalt.css. Colors are --basalt-* tokens, mixed where needed so small
+ * text keeps 4.5:1 in every palette.
+ */
+
+/* The page wrapper defines two mixes: a quiet gray for small text, and a
+   primary fill nudged toward the text color so on-primary text still
+   clears 4.5:1 in the lighter palettes. */
+.ts-page {
+	--ts-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--ts-fill: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+
+	&[data-ts-root] {
+		margin-top: 2rem;
+	}
+
+	& kbd {
+		display: inline-block;
+		min-width: 1.5em;
+		padding: 0.1em 0.4em;
+		border-radius: 5px;
+		border: 1px solid var(--basalt-edge-strong);
+		border-bottom-width: 2px;
+		font-size: 0.71rem;
+		line-height: 1.4;
+		text-align: center;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+		box-shadow: none;
+	}
+
+	/* A disabled outline button stays readable rather than fading to 65%. */
+	& .btn-outline-secondary {
+		--bs-btn-disabled-opacity: 1;
+		--bs-btn-disabled-color: var(--ts-quiet);
+		--bs-btn-disabled-bg: transparent;
+		--bs-btn-disabled-border-color: var(--basalt-edge);
+	}
+}
+
+/* The kind filter sits above the grid: a row of chips, then the count. */
+.ts-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.ts-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.ts-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.ts-chips .ts-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.ts-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ts-quiet);
+}
+
+/* Cards fill a twelve-track grid. Every card spans the row below 1200px;
+   from there they pair up, unless marked full or left alone by the
+   filter. */
+.ts-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.ts-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+
+	@media (min-width: 1200px) {
+		grid-column: span 6;
+	}
+	&.basalt-box .card-body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.75rem;
+
+		@media (max-width: 575.98px) {
+			padding: 1.25rem;
+		}
+	}
+}
+@media (min-width: 1200px) {
+	.ts-card-full,
+	.ts-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* The kind pill shows above the title, though the markup puts it after
+   so the title is read first. */
+.ts-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.ts-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ts-card-desc {
+	max-width: 72ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: var(--ts-quiet);
+}
+.ts-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--ts-quiet);
+}
+
+/* List group tree: Bootstrap's list group and collapse, retinted. The
+   group owns the outer edge so nested rows line up with it. */
+.ts-lgtree {
+	--bs-list-group-color: var(--basalt-copy-body);
+	--bs-list-group-bg: var(--basalt-plane);
+	--bs-list-group-border-color: var(--basalt-edge);
+	--bs-list-group-border-radius: 12px;
+	--bs-list-group-item-padding-x: 1rem;
+	--bs-list-group-item-padding-y: 0.7rem;
+	--bs-list-group-action-color: var(--basalt-copy-body);
+	--bs-list-group-action-hover-color: var(--basalt-copy);
+	--bs-list-group-action-hover-bg: var(--basalt-wash);
+	--bs-list-group-action-active-color: var(--basalt-copy);
+	--bs-list-group-action-active-bg: var(--basalt-wash);
+	--bs-list-group-active-color: var(--basalt-on-hue);
+	--bs-list-group-active-bg: var(--ts-fill);
+	--bs-list-group-active-border-color: var(--ts-fill);
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	overflow: hidden;
+	font-size: 0.875rem;
+
+	& .list-group-item.active {
+		border-color: var(--ts-fill);
+		color: var(--basalt-on-hue);
+		background-color: var(--ts-fill);
+	}
+	& .list-group-item {
+		border-left: 0;
+		border-right: 0;
+		border-radius: 0;
+	}
+	& > .list-group-item {
+		border-top-width: 1px;
+		border-bottom: 0;
+	}
+	& > .list-group-item:first-child {
+		border-top: 0;
+	}
+	& .list-group-item:focus-visible {
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+}
+.ts-lgtree-folder {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ts-lgtree-chev {
+	font-size: 0.7rem;
+	color: var(--ts-quiet);
+	transition: transform 170ms ease;
+}
+.ts-lgtree-folder[aria-expanded="true"] .ts-lgtree-chev {
+	transform: rotate(90deg);
+}
+.ts-lgtree-count {
+	margin-left: auto;
+	padding: 0.05rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge);
+	font-size: 0.71rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-canvas);
+}
+.ts-lgtree-group {
+	--bs-list-group-bg: var(--basalt-canvas);
+	border-top: 1px solid var(--basalt-edge);
+
+	& .list-group-item {
+		padding-left: 3rem;
+	}
+}
+
+/* Demos that pair a control row with a tree stack them with room between. */
+.ts-stack {
+	display: flex;
+	gap: 1.25rem;
+	flex-direction: column;
+}
+
+/* The tally above the checkbox tree: a big count, its label and two
+   buttons pushed to the end. */
+.ts-tally {
+	display: flex;
+	row-gap: 0.5rem;
+	column-gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+}
+.ts-tally-num {
+	margin: 0;
+	font-size: 1.6rem;
+	font-weight: 750;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.ts-tally-label {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--ts-quiet);
+}
+.ts-tally-actions {
+	display: flex;
+	gap: 0.5rem;
+	margin-left: auto;
+}
+
+/* The search above the searchable tree, with its count, a few words to
+   try, and an empty state when nothing matches. */
+.ts-search .form-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ts-search-field {
+	position: relative;
+
+	& .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		color: var(--ts-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.35rem;
+	}
+}
+.ts-search-meta {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.6rem;
+}
+.ts-search-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--ts-quiet);
+}
+.ts-try {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.ts-try-label {
+	margin-right: 0.1rem;
+	font-size: 0.75rem;
+	color: var(--ts-quiet);
+}
+.ts-try-btn {
+	padding: 0.1rem 0.5rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.75rem;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+.ts-empty {
+	display: flex;
+	gap: 0.6rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 1.75rem 1rem;
+	text-align: center;
+
+	& > .bi {
+		display: inline-grid;
+		place-items: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		border-radius: 50%;
+		font-size: 1.1rem;
+		color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+	}
+}
+.ts-empty-text {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--basalt-copy-body);
+}
+
+/* The drag-and-drop card splits into the tree and a side column of
+   move buttons, status and key hints; the columns sit side by side from
+   992px. */
+.ts-split {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+
+	@media (min-width: 992px) {
+		gap: 2rem;
+		grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+	}
+}
+.ts-side {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.ts-side-label,
+.ts-keymap-title {
+	margin: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--ts-quiet);
+}
+.ts-keymap-title {
+	margin: 0 0 0.5rem;
+}
+
+/* Key hints read as two columns: the keys, then what they do. The table
+   form in the dialog adds rules between rows. */
+.ts-keys {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+
+	& > div {
+		display: flex;
+		gap: 0.75rem;
+		align-items: baseline;
+		font-size: 0.8rem;
+	}
+	& dt {
+		flex: 0 0 8.5rem;
+		font-weight: 400;
+		white-space: nowrap;
+		color: var(--basalt-copy-body);
+	}
+	& dd {
+		margin: 0;
+		color: var(--ts-quiet);
+	}
+}
+.ts-keys-table {
+	& > div {
+		padding: 0.4rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	& > div:last-child {
+		border-bottom: 0;
+	}
+	& dt {
+		flex-basis: 7.5rem;
+	}
+}
+
+/* The selected path above the file tree wraps under its label when the
+   name runs long. */
+.ts-path {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.85rem;
+}
+.ts-path-label {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--ts-quiet);
+}
+.ts-path-value {
+	flex: 1 1 12rem;
+	min-width: 0;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+
+/* A trend pill under each sortable grid tile, green when good and red
+   when not. */
+.ts-trend {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+	padding: 0.1rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+.ts-trend-good {
+	color: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+	background: var(--basalt-success-soft);
+}
+.ts-trend-bad {
+	color: color-mix(in srgb, var(--basalt-danger) 50%, var(--basalt-copy));
+	background: var(--basalt-danger-soft);
+}
+
+/* Each card ends with a folded code snippet pinned to the bottom, with
+   room above it whatever the demo ends with. */
+.ts-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.ts-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0;
+		padding: 2.9rem 1rem 0.9rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+.ts-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.ts-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+
+/* The shortcuts dialog lists keys in two columns from 768px. It reuses
+   the page wrapper class, so the quiet mix applies inside it too. */
+.ts-keymap {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+
+	@media (min-width: 768px) {
+		gap: 2rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.modal-content.ts-page {
+	color: var(--basalt-copy);
+
+	& .basalt-dialog-head-sub {
+		color: var(--ts-quiet);
+	}
+}
+
+/* Reduced motion drops the transitions; print shows every card and
+   leaves out the filter and the snippets. */
+@media (prefers-reduced-motion: reduce) {
+	.ts-chip,
+	.ts-code summary .bi,
+	.ts-lgtree-chev {
+		transition: none;
+	}
+}
+@media print {
+	.ts-filter,
+	.ts-code {
+		display: none;
+	}
+	.ts-card.is-hidden {
+		display: block;
+	}
+}

@@ -1,0 +1,243 @@
+/* Compiles to assets/basalt/css/components/figure-cards.css, linked after basalt.css by
+   the pages that use it. */
+/* A row of headline figures on plain cards. The calm form is a muted
+   label, a big figure and one short note. With `basalt-figs-as-glance`
+   each label carries an icon chip in its tone (`tone-*`), and each card may
+   end on one small graphic: a meter, pips or an hour strip; a ring sits
+   beside the figure in `basalt-fig-side`. */
+.basalt-figs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr));
+	margin: 0 0 1.5rem;
+	padding: 0;
+}
+.basalt-figs-4 {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+
+	@media (max-width: 1199.98px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 575.98px) {
+	.basalt-figs {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.basalt-figs > .basalt-fig:last-child:nth-child(odd) {
+		grid-column: 1 / -1;
+	}
+}
+
+.basalt-fig {
+	--tone: var(--basalt-hue);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	margin: 0;
+	padding: 1.2rem 1.5rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 16px;
+	overflow: hidden;
+	background-color: var(--basalt-plane);
+}
+@media (max-width: 575.98px) {
+	.basalt-fig {
+		padding: 1rem;
+	}
+}
+.basalt-figs-as-glance .basalt-fig {
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--tone) 13%, transparent), transparent 62%);
+
+	:root[data-basalt-gradients="off"] & {
+		background-image: none;
+	}
+}
+
+.basalt-fig-label {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-muted);
+}
+.basalt-fig-label > span {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.basalt-fig-chip {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 1.65rem;
+	height: 1.65rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	color: color-mix(in srgb, var(--tone) 58%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tone) 18%, var(--basalt-plane));
+}
+
+.basalt-fig-body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+	margin: 0.45rem 0 0;
+}
+.basalt-figs-as-glance .basalt-fig-body {
+	margin-top: 0.7rem;
+}
+.basalt-fig-body .basalt-fig-value {
+	margin-top: 0;
+}
+.basalt-fig-side {
+	gap: 1rem;
+	flex-direction: row;
+	align-items: center;
+
+	& > span:last-child {
+		min-width: 0;
+	}
+}
+
+.basalt-fig-value {
+	display: block;
+	margin: 0.45rem 0 0;
+	font:
+		700 1.6rem/1.15 "Chivo Mono",
+		monospace;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+@media (max-width: 575.98px) {
+	.basalt-fig-value {
+		font-size: 1.35rem;
+	}
+}
+.basalt-fig-unit {
+	margin-left: 0.15rem;
+	font-family: var(--bs-body-font-family);
+	font-size: 0.85rem;
+	font-weight: 600;
+	letter-spacing: 0;
+	color: var(--basalt-copy-muted);
+}
+a.basalt-fig-value {
+	width: fit-content;
+	border-radius: 6px;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
+		color: var(--basalt-copy);
+	}
+}
+.basalt-fig-note {
+	display: block;
+	margin: 0.3rem 0 0;
+	font-size: 0.78rem;
+	color: var(--basalt-copy-muted);
+}
+
+/* A small dot before a figure that carries a state, such as a score. */
+.basalt-fig-dot {
+	display: inline-block;
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.45rem;
+	border-radius: 50%;
+	vertical-align: 0.3em;
+	background: var(--tone);
+}
+
+/* The small graphics sit at the card's foot, under the note. */
+.basalt-fig-meter,
+.basalt-fig-pips,
+.basalt-fig-hours {
+	margin-top: auto;
+	padding-top: 0.8rem;
+}
+.basalt-fig-meter {
+	display: block;
+	box-sizing: content-box;
+	height: 0.4rem;
+}
+.basalt-fig-meter > span {
+	display: block;
+	height: 100%;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+}
+.basalt-fig-meter > span > span,
+.basalt-fig-pip > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--tone);
+}
+.basalt-fig-pips {
+	display: flex;
+	gap: 0.3rem;
+}
+.basalt-fig-pip {
+	flex: 1;
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+}
+.basalt-fig-hours {
+	display: flex;
+	gap: 2px;
+	align-items: flex-end;
+	box-sizing: content-box;
+	height: 0.85rem;
+}
+.basalt-fig-hour {
+	flex: 1;
+	height: 0.4rem;
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+
+	&.is-on {
+		background: color-mix(in srgb, var(--tone) 60%, var(--basalt-plane));
+	}
+	&.is-now {
+		height: 100%;
+		background: var(--tone);
+	}
+}
+.basalt-fig-ring {
+	flex: none;
+	width: 3.25rem;
+	height: 3.25rem;
+
+	& svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+		transform: rotate(-90deg);
+	}
+	& circle {
+		fill: none;
+		stroke-width: 5;
+	}
+}
+.basalt-fig-ring-track {
+	stroke: color-mix(in srgb, var(--tone) 16%, var(--basalt-plane));
+}
+.basalt-fig-ring-fill {
+	stroke: var(--tone);
+}

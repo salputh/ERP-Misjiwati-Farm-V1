@@ -1,0 +1,687 @@
+/* Basalt - Landing Pages (landing-pages.html)
+   Namespaced under .lp-*
+   The header, cards, drawer, status pills, dialog and toasts are the
+   shared components from basalt.css; this file lays out the four
+   figures, the list of pages, the two ranked lists and the side panel,
+   which is drawn like the page editor. Every color is a --basalt-*
+   token; the photos are the catalog's. */
+
+.lp-page,
+.lp-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on the lighter palettes and on hovered rows. */
+	--lp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--lp-line: var(--basalt-edge);
+	--lp-fs-body: 0.875rem;
+	--lp-fs-small: 0.77rem;
+}
+.lp-page .basalt-status,
+.lp-drawer .basalt-status {
+	font-size: var(--lp-fs-small);
+}
+
+/* Chart ramp colors, by number. */
+.lp-tone-1 {
+	--lp-tone: var(--basalt-series-1);
+}
+.lp-tone-2 {
+	--lp-tone: var(--basalt-series-2);
+}
+.lp-tone-3 {
+	--lp-tone: var(--basalt-series-3);
+}
+.lp-tone-4 {
+	--lp-tone: var(--basalt-series-4);
+}
+.lp-tone-5 {
+	--lp-tone: var(--basalt-series-5);
+}
+.lp-tone-6 {
+	--lp-tone: var(--basalt-series-6);
+}
+.lp-tone-7 {
+	--lp-tone: var(--basalt-series-7);
+}
+.lp-tone-8 {
+	--lp-tone: var(--basalt-series-8);
+}
+
+/* Cards */
+.lp-card.card {
+	container-type: inline-size;
+	margin-bottom: 1.5rem;
+	overflow: hidden;
+}
+.lp-card-side.card {
+	margin-bottom: 0;
+}
+.lp-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--lp-line);
+}
+.lp-card-head-plain {
+	padding-bottom: 1.25rem;
+	border-bottom: 0;
+}
+.lp-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.lp-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--lp-fs-body);
+	color: var(--lp-quiet);
+}
+
+.lp-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-head);
+}
+.lp-search {
+	position: relative;
+	flex: 0 1 22rem;
+	min-width: 12rem;
+}
+.lp-search > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	transform: translateY(-50%);
+	color: var(--lp-quiet);
+	pointer-events: none;
+}
+.lp-search .form-control {
+	padding-left: 2.4rem;
+	font-size: var(--lp-fs-body);
+}
+
+/* Text-only chips that wrap rather than scroll. */
+.lp-chips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+.lp-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border: 1px solid var(--lp-line);
+	border-radius: 999px;
+	font-size: var(--lp-fs-small);
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+}
+.lp-chip:hover {
+	background: var(--basalt-wash);
+}
+.lp-chip:focus {
+	outline: none;
+}
+.lp-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.lp-chip[aria-pressed="true"] {
+	border-color: color-mix(in srgb, var(--basalt-hue) 55%, var(--lp-line));
+	background: var(--basalt-hue-soft);
+}
+.lp-chip-n {
+	font-weight: 500;
+	color: var(--lp-quiet);
+}
+.lp-chip[aria-pressed="true"] .lp-chip-n {
+	color: var(--basalt-copy);
+}
+
+/* The table
+   One line per cell. As the card narrows, the last edit, the address
+   and the order count step out; the side panel shows them all. */
+.lp-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.lp-table-wrap[hidden] {
+	display: none;
+}
+.lp-table {
+	--bs-table-bg: transparent;
+	font-size: var(--lp-fs-body);
+}
+.lp-table > :not(caption) > * > * {
+	padding: var(--basalt-pad-row-y) 0.5rem;
+	border-color: var(--lp-line);
+	white-space: nowrap;
+	vertical-align: middle;
+	color: var(--basalt-copy);
+}
+.lp-table > :not(caption) > * > :first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.lp-table > :not(caption) > * > :last-child {
+	padding-right: var(--basalt-pad-x);
+}
+.lp-table thead th {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--lp-quiet);
+}
+.lp-table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.lp-table tbody tr {
+	cursor: pointer;
+}
+.lp-table tbody tr:hover > * {
+	background: var(--basalt-wash);
+}
+/* Ranked lists */
+.lp-bars {
+	margin: 0;
+	padding: 0 var(--basalt-pad-x) var(--basalt-pad-head);
+	list-style: none;
+}
+.lp-bars-row {
+	display: grid;
+	gap: 0.4rem 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"name  count"
+		"track track"
+		"note  note";
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--lp-line);
+}
+.lp-bars-row:first-child {
+	padding-top: 0;
+}
+.lp-bars-row:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.lp-bars-name {
+	grid-area: name;
+	overflow: hidden;
+	font-size: var(--lp-fs-body);
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.lp-bars-count {
+	grid-area: count;
+	font-size: var(--lp-fs-body);
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.lp-bars-track {
+	display: block;
+	grid-area: track;
+	height: 0.5rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.lp-bars-bar {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--lp-tone);
+}
+.lp-bars-note {
+	grid-area: note;
+	font-size: var(--lp-fs-small);
+	color: var(--lp-quiet);
+}
+@container (max-width: 600px) {
+	.lp-bars {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+.lp-table td.lp-col-act {
+	width: 1%;
+}
+.lp-table .lp-col-visits,
+.lp-table .lp-col-orders {
+	text-align: right;
+}
+.lp-name {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.lp-name-text {
+	font-weight: 600;
+}
+.lp-thumb {
+	flex: none;
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.lp-path {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.lp-unit {
+	display: none;
+}
+.lp-rate {
+	display: inline-flex;
+	gap: 0.6rem;
+	align-items: center;
+}
+.lp-rate-track {
+	display: block;
+	width: 3.5rem;
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.lp-rate-bar {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-3);
+}
+@container (max-width: 1040px) {
+	.lp-table .lp-col-edited {
+		display: none;
+	}
+}
+@container (max-width: 900px) {
+	.lp-table .lp-col-path {
+		display: none;
+	}
+}
+@container (max-width: 760px) {
+	.lp-table .lp-col-orders {
+		display: none;
+	}
+	.lp-rate-track {
+		display: none;
+	}
+}
+/* Phone-sized cards: each page on two short lines. */
+@container (max-width: 600px) {
+	.lp-card-head {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.lp-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.lp-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.lp-table,
+	.lp-table tbody,
+	.lp-table tr,
+	.lp-table td {
+		display: block;
+		width: 100%;
+	}
+	.lp-table tbody tr {
+		display: grid;
+		gap: 0.4rem 0.75rem;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"name   status act"
+			"visits rate   act";
+		align-items: center;
+		padding: 1rem var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--lp-line);
+	}
+	.lp-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.lp-table > :not(caption) > * > *,
+	.lp-table > :not(caption) > * > :first-child,
+	.lp-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+	.lp-table tbody tr:hover > * {
+		background: none;
+	}
+	.lp-table tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.lp-table td.lp-col-name {
+		grid-area: name;
+	}
+	.lp-table td.lp-col-status {
+		grid-area: status;
+		justify-self: end;
+	}
+	.lp-table td.lp-col-visits {
+		grid-area: visits;
+		padding-left: calc(40px + 0.75rem);
+		text-align: left;
+		color: var(--basalt-copy-body);
+	}
+	.lp-table .lp-unit {
+		display: inline;
+	}
+	.lp-table td.lp-col-rate {
+		grid-area: rate;
+		justify-self: end;
+	}
+	.lp-table td.lp-col-act {
+		grid-area: act;
+		width: auto;
+	}
+	.lp-empty {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* Side panel: the page as the editor shows it */
+.lp-drawer {
+	--bs-offcanvas-width: 500px;
+}
+.lp-drawer .offcanvas-title {
+	white-space: nowrap;
+}
+.lp-tile {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 10px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--basalt-series-1) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-1) 16%, var(--basalt-plane));
+}
+.lp-r-state {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.lp-r-state .lp-quiet {
+	font-size: var(--lp-fs-body);
+}
+.lp-r-hint {
+	margin: 0.75rem 0 0;
+}
+.lp-frame {
+	border: 1px solid var(--lp-line);
+	border-radius: 12px;
+	overflow: hidden;
+}
+.lp-frame-bar {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.4rem 0.7rem;
+	border-bottom: 1px solid var(--lp-line);
+	background: var(--basalt-plane-alt);
+}
+.lp-frame-dots {
+	display: inline-flex;
+	gap: 0.25rem;
+}
+.lp-frame-dots i {
+	display: block;
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--basalt-edge-strong);
+}
+.lp-frame-url {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	overflow: hidden;
+	font-size: var(--lp-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+}
+.lp-frame-page {
+	display: grid;
+	gap: 0.6rem;
+	padding: 0.6rem;
+}
+.lp-pv {
+	display: flex;
+	gap: 0.4rem;
+	flex-direction: column;
+	padding: 0.75rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 8px;
+}
+.lp-pv-head {
+	font-size: var(--lp-fs-small);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.lp-pv-hero {
+	position: relative;
+	padding: 0;
+	border-style: solid;
+	overflow: hidden;
+}
+.lp-pv-img {
+	display: block;
+	width: 100%;
+	height: 8.5rem;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.lp-pv-hero .lp-pv-title {
+	padding: 0.65rem 0.75rem 0;
+	font-size: 0.95rem;
+	font-weight: 800;
+	color: var(--basalt-copy);
+}
+.lp-pv-hero .lp-pv-btn {
+	margin: 0 0.75rem 0.75rem;
+}
+.lp-pv-btn {
+	align-self: flex-start;
+	padding: 0.2rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.lp-pv-grid {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.lp-pv-item {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.lp-pv-thumb {
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1;
+	border-radius: 6px;
+	object-fit: cover;
+	background: var(--basalt-plane-alt);
+}
+.lp-pv-name {
+	overflow: hidden;
+	font-size: 0.7rem;
+	line-height: 1.3;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+}
+.lp-pv-line {
+	display: block;
+	height: 0.4rem;
+	border-radius: 999px;
+	background: var(--basalt-plane-alt);
+}
+.lp-pv-line-short {
+	width: 60%;
+}
+.lp-pv-quote {
+	flex-direction: row;
+	align-items: center;
+}
+.lp-pv-quote .bi {
+	font-size: 1.1rem;
+	color: var(--lp-quiet);
+}
+.lp-pv-form {
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.lp-pv-form .lp-pv-head {
+	flex: 1 1 100%;
+}
+.lp-pv-field {
+	flex: 1 1 auto;
+	height: 1.4rem;
+	border: 1px solid var(--lp-line);
+	border-radius: 6px;
+	background: var(--basalt-plane);
+}
+.lp-pv-form .lp-pv-btn {
+	align-self: center;
+}
+
+.lp-blocks {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.lp-block {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.65rem 0;
+	border-bottom: 1px solid var(--lp-line);
+}
+.lp-block:first-child {
+	padding-top: 0;
+}
+.lp-block:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.lp-block-n {
+	flex: none;
+	width: 1.25rem;
+	font-size: var(--lp-fs-small);
+	font-weight: 700;
+	text-align: center;
+	color: var(--lp-quiet);
+}
+.lp-block-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 8px;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+}
+.lp-block-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.lp-block-type {
+	font-size: var(--lp-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.lp-stats {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin: 0;
+}
+.lp-stats > div {
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--lp-line);
+	border-radius: 12px;
+}
+.lp-stats dt {
+	font-size: var(--lp-fs-small);
+	font-weight: 500;
+	color: var(--lp-quiet);
+}
+.lp-stats dd {
+	margin: 0.2rem 0 0;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.lp-form-row {
+	margin-bottom: 1.25rem;
+}
+
+/* Drawer header on a phone
+   The subtitle stays on one line, and the tile and the "1 of N" count
+   step out so the title keeps its room beside the arrows. */
+.lp-drawer .basalt-drawer-sub {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+@media (max-width: 479.98px) {
+	.lp-drawer .offcanvas-header > [aria-hidden="true"]:first-child,
+	.lp-drawer .basalt-drawer-pos {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lp-table tbody tr,
+	.lp-chip {
+		transition: none;
+	}
+}
+@media print {
+	.lp-toolbar,
+	.lp-col-act {
+		display: none;
+	}
+}

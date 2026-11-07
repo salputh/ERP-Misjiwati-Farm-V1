@@ -1,31 +1,31 @@
 @props(['simulasi', 'real'])
 
-<div class="col-12 mb-25">
+<div class="col-12 mb-4">
     <x-peringatan warna="info" judul="Perhitungan otomatis biaya sapronak">Estimasi menggunakan populasi DOC pada periode, pemakaian pakan per jenis, harga master pakan terkini, dan biaya OVK dari dokumen RHPP inti. Pembelian Obat Ayam di Kas Operasional tetap menjadi biaya operasional kandang dan tidak dihitung sebagai OVK.</x-peringatan>
 </div>
 
 @if ($simulasi['kekurangan'])
-    <div class="col-12 mb-25">
+    <div class="col-12 mb-4">
         <x-peringatan warna="warning">
             Biaya sapronak belum lengkap: {{ implode(' ', $simulasi['kekurangan']) }}
         </x-peringatan>
     </div>
 @endif
 
-<div class="col-lg-6 mb-25">
-    <div class="card card-default card-md h-100">
-        <div class="card-header">
-            <h6>Estimasi otomatis dari data periode</h6>
-        </div>
-        <div class="card-body">
-            <div class="table4 table-responsive">
-                <table class="table tabel-laporan mb-0">
+<div class="col-lg-6 mb-4">
+    <section class="card basalt-box db-card h-100">
+<div class="db-card-body">
+<header class="db-card-head">
+<div><h2 class="db-card-title">Estimasi otomatis dari data periode</h2></div>
+</header>
+            <div class="tabel-data table-responsive">
+                <table class="table tabel-laporan mb-0 db-table">
                     <thead>
-                        <tr class="userDatatable-header">
-                            <th><span class="userDatatable-title">Komponen / kandang</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Jumlah</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Harga</span></th>
-                            <th class="text-end"><span class="userDatatable-title">Total (Rp)</span></th>
+                        <tr>
+                            <th>Komponen / kandang</th>
+                            <th class="text-end">Jumlah</th>
+                            <th class="text-end">Harga</th>
+                            <th class="text-end">Total (Rp)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -41,15 +41,15 @@
                             <tr>
                                 <td>
                                     Pakan {{ $baris['jenis'] }}
-                                    <span class="d-block fs-12 color-light">{{ $baris['kandang'] }}</span>
+                                    <span class="d-block small text-body-secondary">{{ $baris['kandang'] }}</span>
                                     @if ($baris['masalah'])
-                                        <span class="d-block fs-12 color-danger">{{ $baris['masalah'] }}</span>
+                                        <span class="d-block small text-danger">{{ $baris['masalah'] }}</span>
                                     @endif
                                 </td>
                                 <td class="text-end text-nowrap">
                                     @angka($baris['zak'], 2) zak
                                     @if ($baris['kg'] !== null)
-                                        <span class="d-block fs-12 color-light">@angka($baris['kg'], 2) kg</span>
+                                        <span class="d-block small text-body-secondary">@angka($baris['kg'], 2) kg</span>
                                     @endif
                                 </td>
                                 <td class="text-end">
@@ -64,11 +64,11 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center color-light">Belum ada catatan pemberian pakan.</td></tr>
+                            <tr><td colspan="4" class="text-center text-body-secondary">Belum ada catatan pemberian pakan.</td></tr>
                         @endforelse
                         @foreach ($simulasi['ovk']['baris'] as $baris)
                             <tr>
-                                <td>OVK · {{ $baris['kandang'] }} <span class="d-block fs-12 color-light">Dokumen RHPP inti, dibagi menurut DOC</span></td>
+                                <td>OVK · {{ $baris['kandang'] }} <span class="d-block small text-body-secondary">Dokumen RHPP inti, dibagi menurut DOC</span></td>
                                 <td class="text-end">—</td>
                                 <td class="text-end">—</td>
                                 <td class="text-end">@angka($baris['total'])</td>
@@ -83,26 +83,28 @@
                     </tfoot>
                 </table>
             </div>
-            <p class="fs-13 color-light mt-15 mb-0">Harga pakan memakai master terkini, bukan harga historis pembelian. Perbarui harga pada Master Data untuk menyesuaikan estimasi.</p>
-        </div>
-    </div>
+            <p class="small text-body-secondary mt-3 mb-0">Harga pakan memakai master terkini, bukan harga historis pembelian. Perbarui harga pada Master Data untuk menyesuaikan estimasi.</p>
+        
+</div>
+</section>
 </div>
 
-<div class="col-lg-6 mb-25">
-    <div class="card card-default card-md h-100">
-        <div class="card-header">
-            <h6>Realisasi dari dokumen RHPP inti</h6>
-        </div>
+<div class="col-lg-6 mb-4">
+    <section class="card basalt-box db-card h-100">
+<div class="db-card-body">
+        <header class="db-card-head">
+<div><h2 class="db-card-title">Realisasi dari dokumen RHPP inti</h2></div>
+</header>
         @if ($real)
-            <div class="card-body">
-                <div class="table4 table-responsive">
-                    <table class="table tabel-laporan mb-0">
+            <div>
+                <div class="tabel-data table-responsive">
+                    <table class="table tabel-laporan mb-0 db-table">
                         <thead>
-                            <tr class="userDatatable-header">
-                                <th><span class="userDatatable-title">Uraian</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Jumlah</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Harga</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Total (Rp)</span></th>
+                            <tr>
+                                <th>Uraian</th>
+                                <th class="text-end">Jumlah</th>
+                                <th class="text-end">Harga</th>
+                                <th class="text-end">Total (Rp)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -123,12 +125,13 @@
                         </tfoot>
                     </table>
                 </div>
-                <p class="fs-13 color-light mt-15 mb-0">Nilai ini dibaca dari RHPP Real yang tersimpan; tidak diganti oleh estimasi master.</p>
+                <p class="small text-body-secondary mt-3 mb-0">Nilai ini dibaca dari RHPP Real yang tersimpan; tidak diganti oleh estimasi master.</p>
             </div>
         @else
-            <div class="card-body">
-                <p class="color-light mb-0">Dokumen RHPP Real belum tersedia untuk periode ini.</p>
+            <div>
+                <p class="text-body-secondary mb-0">Dokumen RHPP Real belum tersedia untuk periode ini.</p>
             </div>
         @endif
     </div>
+</section>
 </div>

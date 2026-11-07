@@ -1,0 +1,1890 @@
+/* Styles for file-uploads.html, all under the upload- prefix. Colors
+   come from --basalt-* tokens or mixes of two, so every field, pill and
+   piece map follows the chosen palette and the dark theme. */
+
+/* Page-wide tokens. Each tone is pulled toward the text color, which flips
+   with the theme, so small gray and colored words clear 4.5:1 everywhere. */
+.upload-page {
+	--upload-quiet: color-mix(in srgb, var(--basalt-copy-muted) 80%, var(--basalt-copy));
+	--upload-accent: color-mix(in srgb, var(--basalt-hue) 68%, var(--basalt-copy));
+	--upload-ok: color-mix(in srgb, var(--basalt-success) 52%, var(--basalt-copy));
+	--upload-warn: color-mix(in srgb, var(--basalt-warning) 42%, var(--basalt-copy));
+	--upload-bad: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	/* The primary button fill sits a shade firmer than the raw hue so its
+     label stays readable in every palette. */
+	--upload-fill: color-mix(in srgb, var(--basalt-hue) 84%, var(--basalt-copy));
+	--upload-line: color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	--upload-dash: color-mix(in srgb, var(--basalt-copy) 26%, transparent);
+	--upload-tint: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+
+	& .btn-primary {
+		--bs-btn-color: var(--basalt-on-hue);
+		--bs-btn-bg: var(--upload-fill);
+		--bs-btn-border-color: var(--upload-fill);
+		--bs-btn-hover-color: var(--basalt-on-hue);
+		--bs-btn-hover-bg: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+		--bs-btn-hover-border-color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+		--bs-btn-active-color: var(--basalt-on-hue);
+		--bs-btn-active-bg: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+		--bs-btn-active-border-color: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	}
+
+	/* A disabled button turns into a flat gray tile with readable words,
+     instead of Bootstrap's faded copy of the live one. */
+	& .btn:disabled {
+		--bs-btn-disabled-opacity: 1;
+		--bs-btn-disabled-color: var(--upload-quiet);
+		--bs-btn-disabled-bg: var(--basalt-plane-alt);
+		--bs-btn-disabled-border-color: transparent;
+	}
+
+	& .form-control::placeholder,
+	& .upload-compose-text::placeholder {
+		color: var(--upload-quiet);
+		opacity: 1;
+	}
+
+	& .form-control:disabled,
+	& .form-control:disabled::file-selector-button {
+		color: var(--upload-quiet);
+	}
+
+	& .min-w-0 {
+		min-width: 0;
+	}
+
+	/* The shared tile hint uses the plain muted token, which falls just short
+     of 4.5:1 on a checked tile in the lighter palettes. */
+	& .basalt-choice-hint {
+		color: var(--upload-quiet);
+	}
+}
+
+/* The chips filter the grid by kind; the count sits at the far end. */
+.upload-filter {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.75rem;
+}
+
+.upload-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.upload-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.upload-chips .upload-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+
+.upload-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+
+/* A twelve-column grid. Every card fills the row until 1200px, where the
+   width classes pair them up; a filtered grid goes back to full rows. */
+.upload-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.upload-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+
+@media (min-width: 1200px) {
+	.upload-card {
+		grid-column: span 6;
+	}
+	.upload-card-full {
+		grid-column: span 12;
+	}
+	.upload-card-wide {
+		grid-column: span 8;
+	}
+	.upload-card-narrow {
+		grid-column: span 4;
+	}
+	.upload-grid.is-filtered .upload-card {
+		grid-column: span 12;
+	}
+}
+
+/* The card body is a column, so the code toggle can sink to the bottom. */
+.upload-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+
+@media (max-width: 575.98px) {
+	.upload-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+/* The kind label comes first in the markup but shows above the title. */
+.upload-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+
+.upload-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.upload-card-desc {
+	max-width: 66ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--upload-quiet);
+
+	& code {
+		color: var(--upload-accent);
+	}
+}
+
+.upload-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--upload-quiet);
+}
+
+/* Hints and errors under a field. The error borrows an icon from the font. */
+.upload-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+
+.upload-field-error {
+	display: flex;
+	gap: 0.4rem;
+	align-items: flex-start;
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--upload-bad);
+
+	&::before {
+		content: "\F33A"; /* bi-exclamation-circle */
+		font-family: "bootstrap-icons";
+		font-weight: 400;
+		line-height: 1.35;
+	}
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Quiet text buttons: Remove and Cancel, and links sitting inside a sentence. */
+.upload-link-btn {
+	--bs-btn-color: var(--upload-quiet);
+	--bs-btn-hover-color: var(--upload-bad);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: transparent;
+	--bs-btn-active-border-color: transparent;
+	--bs-btn-disabled-border-color: transparent;
+	--bs-btn-disabled-color: var(--upload-quiet);
+	font-weight: 600;
+}
+
+.upload-inline-link {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	--bs-btn-font-size: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	vertical-align: baseline;
+	color: var(--upload-accent);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* File inputs hide behind their styled labels but keep their tab stop, so
+   focus on the input draws a ring around the label beside it. */
+.upload-slot-input,
+.upload-drop-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	opacity: 0;
+	clip-path: inset(50%);
+}
+
+.upload-slot-input:focus-visible + label {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+.upload-file-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1.25rem;
+	color: var(--upload-accent);
+	background: var(--basalt-hue-soft);
+}
+
+/* Status pills start amber; each modifier after it swaps the tone. */
+.upload-pill {
+	display: inline-flex;
+	gap: 0.3rem;
+	flex-shrink: 0;
+	align-items: center;
+	padding: 0.3rem 0.65rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 650;
+	line-height: 1.2;
+	white-space: nowrap;
+	color: var(--upload-warn);
+	background: color-mix(in srgb, var(--basalt-warning) 14%, var(--basalt-plane));
+}
+
+.upload-pill-quiet {
+	color: var(--upload-quiet);
+	background: var(--basalt-plane-alt);
+}
+.upload-pill-ok {
+	color: var(--upload-ok);
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.upload-pill-warn {
+	color: var(--upload-warn);
+	background: color-mix(in srgb, var(--basalt-warning) 14%, var(--basalt-plane));
+}
+.upload-pill-bad {
+	color: var(--upload-bad);
+	background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+}
+.upload-pill-busy {
+	color: var(--upload-accent);
+	background: var(--basalt-hue-soft);
+}
+
+.upload-progress {
+	height: 0.5rem;
+	border-radius: 999px;
+	background: var(--basalt-plane-alt);
+
+	& .progress-bar {
+		width: 0;
+		border-radius: 999px;
+		background: var(--basalt-hue);
+		transition: width 200ms linear;
+	}
+}
+
+/* The submit row, with an optional note that folds away when empty. */
+.upload-actions {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+}
+
+.upload-actions-tight {
+	margin-top: 1.25rem;
+}
+
+.upload-actions-note {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* The green panel that replaces a form once it has gone through. */
+.upload-done {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+	padding: 1rem 1.1rem;
+	border-radius: 14px;
+	border: 1px solid color-mix(in srgb, var(--basalt-success) 30%, transparent);
+	background: color-mix(in srgb, var(--basalt-success) 10%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		font-size: 1.5rem;
+		color: var(--upload-ok);
+	}
+}
+
+.upload-done-title {
+	margin: 0;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.upload-done-text {
+	margin: 0.1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+
+/* After a failed submit, this box at the top of the form lists what to fix. */
+.upload-summary {
+	margin-bottom: 1.5rem;
+	padding: 1rem 1.1rem;
+	border-radius: 14px;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 40%, transparent);
+	border-left-width: 4px;
+	background: color-mix(in srgb, var(--basalt-danger) 7%, var(--basalt-plane));
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-danger);
+		outline-offset: 2px;
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+.upload-summary-title {
+	margin: 0 0 0.3rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.upload-summary-list {
+	margin: 0;
+	padding-left: 1.1rem;
+	font-size: 0.875rem;
+
+	& a {
+		font-weight: 600;
+		text-underline-offset: 2px;
+		color: var(--upload-bad);
+	}
+	& a:hover {
+		color: var(--basalt-copy);
+	}
+}
+
+/* Each turned-away file gets a pink row saying why. */
+.upload-rejects {
+	display: grid;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&:not(:empty) {
+		margin-top: 0.9rem;
+	}
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: flex-start;
+		padding: 0.5rem 0.75rem;
+		border-radius: 10px;
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+		background: color-mix(in srgb, var(--basalt-danger) 7%, var(--basalt-plane));
+	}
+
+	& li .bi {
+		line-height: 1.35;
+		color: var(--upload-bad);
+	}
+	& strong {
+		font-weight: 650;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+
+@keyframes upload-pop {
+	from {
+		transform: scale(0.94);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+
+/* Drop zones: a dashed tile that firms up and tints while files hover. */
+.upload-drop {
+	position: relative;
+}
+
+.upload-drop-label {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	min-height: 190px;
+	padding: 1.75rem 1.25rem;
+	border: 1.5px dashed var(--upload-dash);
+	border-radius: 16px;
+	text-align: center;
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue);
+		background: var(--upload-tint);
+	}
+}
+
+.upload-drop-input:focus-visible + .upload-drop-label {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+.upload-drop-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	margin-bottom: 0.4rem;
+	border-radius: 16px;
+	font-size: 1.45rem;
+	color: var(--upload-accent);
+	background: var(--basalt-hue-soft);
+	transition: transform 200ms ease;
+}
+
+.upload-drop.is-over {
+	& .upload-drop-label {
+		border-style: solid;
+		border-color: var(--basalt-hue);
+		background: color-mix(in srgb, var(--basalt-hue) 11%, var(--basalt-plane));
+	}
+
+	& .upload-drop-icon {
+		transform: translateY(-4px) scale(1.06);
+	}
+}
+
+.upload-drop-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.upload-drop-title {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.upload-drop-link {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--upload-accent);
+}
+.upload-drop-hint {
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+
+/* The row variant lays icon and words side by side; compact trims it further. */
+.upload-drop-row {
+	& .upload-drop-label {
+		gap: 1rem;
+		flex-direction: row;
+		justify-content: flex-start;
+		min-height: 0;
+		padding: 1.25rem 1.35rem;
+		text-align: left;
+	}
+
+	& .upload-drop-icon {
+		flex-shrink: 0;
+		margin: 0;
+	}
+}
+
+.upload-drop-compact {
+	& .upload-drop-label {
+		padding: 0.9rem 1rem;
+	}
+	& .upload-drop-icon {
+		width: 2.6rem;
+		height: 2.6rem;
+		border-radius: 12px;
+		font-size: 1.1rem;
+	}
+}
+
+/* Gallery: the drop zone and a counter panel side by side from 768px. */
+.upload-gallery-top {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+	.upload-gallery-top {
+		grid-template-columns: minmax(0, 1fr) 260px;
+		align-items: stretch;
+	}
+}
+
+.upload-gallery-side {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 1.25rem;
+	border-radius: 16px;
+	background: var(--basalt-plane-alt);
+}
+
+.upload-meter-row {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	margin: 0 0 0.6rem;
+}
+.upload-meter-big {
+	font-size: 2.25rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.03em;
+	color: var(--basalt-copy);
+}
+.upload-meter-of {
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+
+.upload-meter-bar {
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 10%, transparent);
+
+	& span {
+		display: block;
+		width: 0;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-hue);
+		transition: width 240ms ease;
+	}
+}
+
+.upload-meter-note {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+}
+.upload-gallery-buttons {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* Photos and the empty placeholder share one grid; the first tile is the
+   cover at double size, and the ghost goes once a photo arrives. */
+.upload-thumbs,
+.upload-ghost {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	grid-auto-flow: dense;
+	margin: 1.5rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.upload-thumbs:empty {
+	display: none;
+}
+.upload-thumbs:not(:empty) + .upload-ghost {
+	display: none;
+}
+
+.upload-ghost-tile {
+	aspect-ratio: 1;
+	border-radius: 14px;
+	border: 1.5px dashed var(--upload-line);
+}
+
+.upload-ghost-tile-cover {
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	grid-column: span 2;
+	grid-row: span 2;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--upload-quiet);
+
+	& .bi {
+		font-size: 1.3rem;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.upload-thumbs,
+	.upload-ghost {
+		gap: 0.75rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.upload-ghost-tile:nth-child(n + 4) {
+		display: none;
+	}
+}
+
+.upload-thumb {
+	position: relative;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+	min-width: 0;
+	animation: upload-pop 260ms ease;
+
+	&:first-child {
+		grid-column: span 2;
+		grid-row: span 2;
+	}
+	&.is-dragging {
+		opacity: 0.45;
+	}
+	&.is-target .upload-thumb-frame {
+		outline: 2px dashed var(--basalt-hue);
+		outline-offset: 3px;
+	}
+	& .form-control {
+		font-size: 0.8rem;
+	}
+}
+
+.upload-thumb-frame {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 0;
+	aspect-ratio: 1;
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+	cursor: grab;
+
+	& img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
+
+.upload-thumb:first-child .upload-thumb-frame {
+	min-height: 220px;
+	aspect-ratio: auto;
+}
+
+.upload-thumb-cover {
+	position: absolute;
+	top: 0.6rem;
+	left: 0.6rem;
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.25rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+
+	& .bi {
+		color: var(--upload-warn);
+	}
+}
+
+.upload-thumb-busy {
+	position: absolute;
+	right: 0.6rem;
+	bottom: 0.6rem;
+	left: 0.6rem;
+	height: 0.3rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-plane) 70%, transparent);
+
+	& span {
+		display: block;
+		width: 0;
+		height: 100%;
+		background: var(--basalt-hue);
+		transition: width 110ms linear;
+	}
+}
+
+/* The tile's buttons appear on hover or focus, and stay out on touch screens. */
+.upload-thumb-tools {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	display: flex;
+	gap: 0.25rem;
+	opacity: 0;
+	transition: opacity 170ms ease;
+}
+
+.upload-thumb:hover .upload-thumb-tools,
+.upload-thumb:focus-within .upload-thumb-tools {
+	opacity: 1;
+}
+
+@media (hover: none) {
+	.upload-thumb-tools {
+		opacity: 1;
+	}
+}
+
+.upload-thumb-tool {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	box-shadow: var(--basalt-card-shadow);
+
+	&:hover:not(:disabled) {
+		color: var(--upload-accent);
+		background: var(--basalt-hue-soft);
+	}
+	&:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+/* The trash button hovers red; it follows the shared hover so it wins. */
+.upload-thumb-tool-bad:hover:not(:disabled) {
+	color: var(--upload-bad);
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+
+.upload-thumb-meta {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: space-between;
+	min-width: 0;
+	font-size: 0.75rem;
+	color: var(--upload-quiet);
+
+	& span:first-child {
+		overflow: hidden;
+		font-weight: 600;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--basalt-copy-body);
+	}
+	& span:last-child {
+		flex-shrink: 0;
+	}
+}
+
+/* Logo: a thumbnail and name, ringed with a dashed outline while a file hovers. */
+.upload-logo {
+	border-radius: 12px;
+
+	&.is-over {
+		outline: 2px dashed var(--basalt-hue);
+		outline-offset: 6px;
+	}
+}
+
+.upload-logo-file {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.upload-logo-thumb {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 10px;
+	overflow: hidden;
+	font-size: 1.2rem;
+	color: var(--upload-accent);
+	background: var(--basalt-hue-soft);
+
+	& img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		background: var(--basalt-plane);
+	}
+}
+
+.upload-logo-name {
+	margin: 0;
+	overflow: hidden;
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.upload-logo-meta {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+
+.upload-logo-warn {
+	display: flex;
+	gap: 0.4rem;
+	margin: 0.85rem 0 0;
+	padding: 0.5rem 0.75rem;
+	border-radius: 10px;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+	background: color-mix(in srgb, var(--basalt-warning) 12%, var(--basalt-plane));
+
+	&::before {
+		content: "\F33B";
+		font-family: "bootstrap-icons";
+		line-height: 1.35;
+		color: var(--upload-warn);
+	}
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* Reply box: a borderless textarea, file chips, and a toolbar along the
+   bottom, all in one rounded frame that lights up on focus. */
+.upload-compose-box {
+	position: relative;
+	border: 1px solid var(--upload-line);
+	border-radius: 14px;
+	background: var(--bs-body-bg);
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&:focus-within {
+		border-color: var(--basalt-hue-border);
+		box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+	}
+	&.is-invalid {
+		border-color: var(--basalt-danger);
+	}
+}
+
+.upload-compose-text {
+	display: block;
+	width: 100%;
+	min-height: 5.5rem;
+	padding: 0.85rem 1rem 0.5rem;
+	border: 0;
+	outline: 0;
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+	background: transparent;
+	resize: vertical;
+
+	&:focus-visible {
+		box-shadow: none;
+	}
+}
+
+.upload-compose-files {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0 1rem;
+	list-style: none;
+
+	&:not(:empty) {
+		padding-bottom: 0.5rem;
+	}
+
+	& li {
+		display: inline-flex;
+		gap: 0.5rem;
+		align-items: center;
+		max-width: 100%;
+		padding: 0.25rem 0.25rem 0.25rem 0.3rem;
+		border-radius: 10px;
+		font-size: 0.77rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane-alt);
+		animation: upload-pop 210ms ease;
+	}
+
+	& img,
+	& .upload-compose-ficon {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 1.9rem;
+		height: 1.9rem;
+		border-radius: 6px;
+		object-fit: cover;
+		color: var(--upload-accent);
+		background: var(--basalt-plane);
+	}
+
+	& .upload-compose-fname {
+		min-width: 0;
+		max-width: 14rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	& button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.5rem;
+		height: 1.5rem;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		color: var(--upload-quiet);
+		background: transparent;
+
+		&:hover {
+			color: var(--upload-bad);
+			background: color-mix(in srgb, var(--basalt-danger) 14%, transparent);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 1px;
+		}
+	}
+}
+
+.upload-compose-bar {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.5rem 0.6rem 0.6rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+.upload-icon-btn {
+	--bs-btn-color: var(--basalt-copy-body);
+	--bs-btn-hover-color: var(--upload-accent);
+	--bs-btn-hover-bg: var(--basalt-hue-soft);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: transparent;
+	padding: 0.4rem 0.5rem;
+	font-size: 1.05rem;
+	line-height: 1;
+}
+
+.upload-compose-hint {
+	flex: 1 1 12rem;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--upload-quiet);
+}
+
+/* The overlay that says "Drop to attach" fades in over the whole box. */
+.upload-compose-over {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: center;
+	border-radius: inherit;
+	border: 2px dashed var(--basalt-hue);
+	font-weight: 650;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-hue) 10%, var(--basalt-plane));
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 130ms ease;
+}
+
+.upload-compose-box.is-over .upload-compose-over {
+	opacity: 1;
+}
+
+/* Avatar: the round crop frame, with the three preview sizes beside it. */
+.upload-avatar-stage {
+	display: flex;
+	gap: 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-bottom: 1.25rem;
+}
+
+.upload-avatar-frame {
+	position: relative;
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 180px;
+	height: 180px;
+	border-radius: 50%;
+	overflow: hidden;
+	background: var(--basalt-hue-soft);
+	box-shadow:
+		0 0 0 6px var(--basalt-plane),
+		0 0 0 7px var(--upload-line);
+	touch-action: none;
+
+	&.has-photo {
+		cursor: grab;
+	}
+	&.is-over {
+		box-shadow:
+			0 0 0 6px var(--basalt-plane),
+			0 0 0 8px var(--basalt-hue);
+	}
+	&.is-dragging {
+		cursor: grabbing;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 10px;
+	}
+}
+
+.upload-avatar-initials {
+	font-size: 3rem;
+	font-weight: 750;
+	letter-spacing: -0.02em;
+	color: var(--upload-accent);
+}
+.upload-avatar-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.upload-avatar-sizes {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-end;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.3rem;
+		flex-direction: column;
+		align-items: center;
+		font-size: 0.71rem;
+		color: var(--upload-quiet);
+	}
+	& canvas {
+		border-radius: 50%;
+		background: var(--basalt-plane-alt);
+	}
+	& li:nth-child(1) canvas {
+		width: 48px;
+		height: 48px;
+	}
+	& li:nth-child(2) canvas {
+		width: 32px;
+		height: 32px;
+	}
+	& li:nth-child(3) canvas {
+		width: 24px;
+		height: 24px;
+	}
+}
+
+.upload-avatar-zoom {
+	margin-bottom: 0.25rem;
+
+	& .form-label {
+		margin-bottom: 0.25rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+}
+
+.upload-avatar-buttons {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1rem;
+}
+
+/* Documents: the account-type tiles, a green progress line, then one row per slot. */
+.upload-docs-type {
+	--basalt-choice-min: 120px;
+	margin-bottom: 1.5rem;
+}
+
+/* Three tiles still fit across a phone at this minimum. */
+@media (max-width: 575.98px) {
+	.upload-docs-type {
+		--basalt-choice-min: 84px;
+	}
+}
+
+.upload-docs-progress {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 0.5rem;
+}
+.upload-docs-count {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 650;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.upload-docs-bar {
+	flex: 1 1 auto;
+	height: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+
+	& span {
+		display: block;
+		width: 0;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--basalt-success);
+		transition: width 260ms ease;
+	}
+}
+
+.upload-slots {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* On a phone the button drops under the text; from 768px it all sits in one line. */
+.upload-slot {
+	display: grid;
+	gap: 0.5rem 1rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-areas: "icon body status" "icon action action";
+	align-items: start;
+	padding: 1.1rem 0;
+	border-bottom: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+	&.is-over {
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--basalt-hue) 8%, transparent);
+		box-shadow: inset 0 0 0 2px var(--basalt-hue);
+	}
+	&.is-flagged {
+		background: linear-gradient(90deg, color-mix(in srgb, var(--basalt-danger) 6%, transparent), transparent 70%);
+	}
+}
+
+@media (min-width: 768px) {
+	.upload-slot {
+		grid-template-columns: auto minmax(0, 1fr) auto auto;
+		grid-template-areas: "icon body status action";
+		align-items: center;
+	}
+}
+
+.upload-slot-icon {
+	display: inline-flex;
+	grid-area: icon;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.1rem;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane-alt);
+	transition:
+		background-color 200ms ease,
+		color 200ms ease;
+}
+
+.upload-slot[data-state="done"] .upload-slot-icon {
+	color: var(--upload-ok);
+	background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+}
+.upload-slot[data-state="error"] .upload-slot-icon {
+	color: var(--upload-bad);
+	background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+}
+
+.upload-slot-body {
+	grid-area: body;
+	min-width: 0;
+}
+.upload-slot-title {
+	margin: 0;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.upload-slot-hint {
+	margin: 0.1rem 0 0;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+
+.upload-slot-file {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy-body);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.upload-slot-bar {
+	max-width: 240px;
+	height: 0.3rem;
+	margin-top: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+
+	&[hidden] {
+		display: none;
+	}
+	& span {
+		display: block;
+		width: 0;
+		height: 100%;
+		background: var(--basalt-hue);
+		transition: width 110ms linear;
+	}
+}
+
+.upload-slot-error {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--upload-bad);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.upload-slot .upload-pill {
+	grid-area: status;
+}
+.upload-slot-action {
+	display: flex;
+	gap: 0.25rem;
+	grid-area: action;
+	align-items: center;
+}
+.upload-slot-remove {
+	--bs-btn-color: var(--upload-quiet);
+	--bs-btn-hover-color: var(--upload-bad);
+	--bs-btn-border-color: transparent;
+	--bs-btn-hover-border-color: transparent;
+}
+
+/* Claim: the files that passed, one bordered row each. */
+.upload-files {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&:not(:empty) {
+		margin-top: 0.9rem;
+	}
+
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		padding: 0.5rem 0.5rem 0.5rem 0.6rem;
+		border: 1px solid var(--basalt-edge);
+		border-radius: 12px;
+		animation: upload-pop 210ms ease;
+	}
+}
+
+.upload-files-thumb {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 8px;
+	object-fit: cover;
+	color: var(--upload-accent);
+	background: var(--basalt-plane-alt);
+}
+
+.upload-files-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.upload-files-size {
+	flex-shrink: 0;
+	font-size: 0.75rem;
+	color: var(--upload-quiet);
+}
+
+/* Large file: name, piece size, the map of pieces, then the numbers. */
+.upload-chunk-file {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.upload-chunk-name {
+	margin: 0;
+	overflow: hidden;
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.upload-chunk-meta {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+
+.upload-chunk-settings {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-bottom: 1.25rem;
+
+	& .form-label {
+		margin-bottom: 0.3rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+}
+
+.upload-chunk-pieces {
+	margin: 0 0 0.5rem;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+
+/* One square per group of pieces: gray waiting, pulsing while it sends,
+   solid once sent, red and shrunk where the line dropped. */
+.upload-chunk-map {
+	display: grid;
+	gap: 4px;
+	grid-template-columns: repeat(auto-fill, minmax(14px, 1fr));
+	margin-bottom: 1.25rem;
+
+	& span {
+		aspect-ratio: 1;
+		border-radius: 4px;
+		background: var(--basalt-plane-alt);
+		transition:
+			background-color 180ms ease,
+			transform 180ms ease;
+	}
+
+	& span.is-sending {
+		background: color-mix(in srgb, var(--basalt-hue) 45%, var(--basalt-plane));
+		animation: upload-blink 700ms ease-in-out infinite alternate;
+	}
+	& span.is-done {
+		background: var(--basalt-hue);
+	}
+	& span.is-failed {
+		transform: scale(0.8);
+		background: var(--basalt-danger);
+	}
+}
+
+@keyframes upload-blink {
+	from {
+		opacity: 0.55;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.upload-chunk-stats {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+.upload-chunk-pct {
+	margin: 0;
+	font-size: 2.5rem;
+	font-weight: 750;
+	line-height: 1;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.upload-chunk-unit {
+	margin-left: 0.1rem;
+	font-size: 1.1rem;
+	font-weight: 650;
+	color: var(--basalt-copy-body);
+}
+
+.upload-chunk-dl {
+	display: flex;
+	gap: 0.5rem 1.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+
+	& dt {
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--upload-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		color: var(--basalt-copy);
+	}
+}
+
+.upload-chunk-status {
+	min-height: 1.3em;
+	margin: 0.6rem 0 0;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	&.is-bad {
+		font-weight: 600;
+		color: var(--upload-bad);
+	}
+}
+
+.upload-chunk-buttons {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1.25rem;
+}
+
+/* Import: numbered steps joined by short rules. */
+.upload-steps {
+	counter-reset: none;
+	display: flex;
+	gap: 0.5rem 0;
+	flex-wrap: wrap;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--upload-quiet);
+	}
+
+	& li + li::before {
+		content: "";
+		width: 2.5rem;
+		height: 1px;
+		margin: 0 0.75rem;
+		background: var(--upload-line);
+	}
+
+	& li.is-current {
+		color: var(--basalt-copy);
+	}
+	& li.is-current .upload-steps-num {
+		border-color: var(--upload-fill);
+		color: var(--basalt-on-hue);
+		background: var(--upload-fill);
+	}
+	& li.is-done {
+		color: var(--basalt-copy-body);
+	}
+	& li.is-done .upload-steps-num {
+		border-color: transparent;
+		color: var(--upload-ok);
+		background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+	}
+}
+
+.upload-steps-num {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 50%;
+	border: 1px solid var(--upload-line);
+	font-size: 0.75rem;
+}
+
+/* Steps that wrap on a phone lose their joining rules and space out instead. */
+@media (max-width: 575.98px) {
+	.upload-steps {
+		gap: 0.5rem 1.25rem;
+	}
+	.upload-steps li + li::before {
+		display: none;
+	}
+}
+
+.upload-csv-or {
+	margin: 0.85rem 0 0;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+.upload-csv-file {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.upload-csv-name {
+	margin: 0;
+	font-weight: 650;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.upload-csv-meta {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--upload-quiet);
+}
+
+/* Column matching: a bare fieldset holding a grid of selects. */
+.upload-map {
+	min-width: 0;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	border: 0;
+}
+.upload-map-legend {
+	float: none;
+	width: 100%;
+	margin: 0 0 0.75rem;
+	padding: 0;
+	font-size: 0.9rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.upload-map-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+
+	& .form-label {
+		margin-bottom: 0.3rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+	}
+}
+
+.upload-csv-tally {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 1rem;
+
+	& .form-check-label {
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+}
+
+/* The preview table scrolls sideways inside its frame. Positioning the frame
+   keeps the hidden notes in cells clipped by it, not widening the page. */
+.upload-table-wrap {
+	position: relative;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 14px;
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.upload-table {
+	--bs-table-bg: transparent;
+	font-size: 0.8rem;
+	white-space: nowrap;
+
+	& th {
+		padding: 0.65rem 0.85rem;
+		border-bottom-color: var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 650;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--upload-quiet);
+		background: var(--basalt-plane-alt);
+	}
+
+	& td {
+		padding: 0.6rem 0.85rem;
+		border-bottom-color: var(--basalt-edge);
+		color: var(--basalt-copy-body);
+	}
+	& tbody tr:last-child td {
+		border-bottom: 0;
+	}
+	& th.is-mapped {
+		color: var(--basalt-copy);
+	}
+
+	& td.is-bad {
+		font-weight: 600;
+		color: var(--upload-bad);
+		background: color-mix(in srgb, var(--basalt-danger) 9%, var(--basalt-plane));
+	}
+
+	& tr.is-skipped td:not(.is-bad) {
+		color: var(--upload-quiet);
+	}
+	& tr.is-skipped td:first-child {
+		text-decoration: line-through;
+	}
+}
+
+.upload-table-row {
+	font-variant-numeric: tabular-nums;
+	color: var(--upload-quiet);
+}
+
+.upload-csv-run {
+	padding: 1.5rem 0 0.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.upload-csv-run-label {
+	margin: 0 0 0.6rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+/* Native inputs: as many columns of plain fields as fit at 280px. */
+.upload-native {
+	display: grid;
+	gap: 1.5rem 2rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+
+	& .form-label {
+		font-weight: 600;
+		font-size: 0.875rem;
+	}
+}
+
+/* The code toggle sinks to the card's foot behind a thin rule; its chevron
+   turns a quarter while open. */
+.upload-code {
+	margin-top: auto;
+	padding-top: 1.5rem;
+	border-top: 0;
+
+	&::before {
+		content: "";
+		display: block;
+		border-top: 1px solid var(--basalt-edge);
+	}
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		padding-top: 0.85rem;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+/* These two stay last: each must win over the rules above it at equal weight. */
+@media (prefers-reduced-motion: reduce) {
+	.upload-page *,
+	.upload-page *::before {
+		transition: none;
+		animation: none;
+	}
+}
+
+@media print {
+	.upload-filter,
+	.upload-code {
+		display: none;
+	}
+	.upload-card.is-hidden {
+		display: block;
+	}
+}

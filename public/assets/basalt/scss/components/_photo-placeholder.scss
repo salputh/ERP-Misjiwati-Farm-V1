@@ -1,0 +1,11 @@
+/**
+ * Photo placeholders.
+ *
+ * The download carries no photos: each demo photo becomes an SVG of the same
+ * name and size under assets/basalt/images/multipurpose/, saying what goes
+ * there. The SVG is see-through, so the wash behind it comes from here and
+ * follows the palette and dark mode. Your own photos are opaque and cover it.
+ */
+img[src*="/images/"][src$=".svg"] {
+	background-color: var(--basalt-plane-alt);
+}

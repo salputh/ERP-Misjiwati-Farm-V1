@@ -1,0 +1,899 @@
+/* Customer feedback (feedback.html), every class under .fbk-*.
+   The hero, segmented control, selects, avatars, status pills, filter
+   chips, empty states, pagination, drawer, choice tiles and toasts are
+   shared parts; this file places them and draws what only this page has:
+   the reply queue, the status columns, the status chips, the feedback table
+   and the insides of its drawer and survey dialog. */
+
+.fbk-page,
+.fbk-drawer,
+.fbk-survey-dialog {
+	/* Small gray text is the muted token leaned toward the body color, so it
+     stays above 4.5:1 on the lighter palettes and on a hovered row. */
+	--fbk-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* The three score bands; the ring, the bars, the key and the score
+     pills all paint with these. */
+	/* The bands take the palette's own colors rather than traffic lights:
+     the accent for promoters, a quiet gray for passives, and for
+     detractors a rose mixed from the alert red and the accent. */
+	--fbk-promoter: var(--basalt-series-1);
+	--fbk-passive: color-mix(in srgb, var(--basalt-copy-muted) 45%, var(--basalt-plane));
+	--fbk-detractor: color-mix(in srgb, var(--basalt-danger) 72%, var(--basalt-series-1));
+}
+
+/* Every card stacks a head, its content and a footnote ruled off at the
+   bottom. On phones the head and the footnote come in to the narrow
+   gutter. */
+.fbk-card.card {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+.fbk-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 0;
+}
+.fbk-card-head-row {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+.fbk-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fbk-card-sub {
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	color: var(--fbk-quiet);
+}
+.fbk-card-foot {
+	margin: auto 0 0;
+	padding: 1.1rem var(--basalt-pad-x) var(--basalt-pad-head);
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--fbk-quiet);
+}
+@media (max-width: 575.98px) {
+	.fbk-card-head,
+	.fbk-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The two top cards share a body that fills the card, so both end level. */
+.fbk-card-body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	padding: 1.25rem var(--basalt-pad-x) var(--basalt-pad-head);
+}
+
+/* Waiting on a reply: the count, an age strip split by how long each
+   piece has waited, then the usual first-reply time against the goal. */
+.fbk-queue-figure {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0;
+}
+.fbk-queue-count {
+	font-size: 2.6rem;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--basalt-copy);
+}
+.fbk-queue-since {
+	font-size: 0.9rem;
+	color: var(--fbk-quiet);
+}
+.fbk-ages {
+	display: flex;
+	gap: 4px;
+	margin-top: 1.25rem;
+}
+.fbk-age {
+	--fbk-age: var(--basalt-series-1);
+	display: flex;
+	gap: 0.4rem;
+	flex: 1 1 var(--share, 33%);
+	flex-direction: column;
+	min-width: 3.5rem;
+}
+.fbk-age-aging {
+	--fbk-age: color-mix(in srgb, var(--basalt-series-1) 50%, var(--basalt-plane));
+}
+.fbk-age-old {
+	--fbk-age: var(--fbk-detractor);
+}
+.fbk-age-bar {
+	display: grid;
+	place-items: center;
+	height: 2.25rem;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-on-hue, #fff);
+	background: var(--fbk-age);
+}
+.fbk-age-aging .fbk-age-bar {
+	color: var(--basalt-copy);
+}
+.fbk-age-label {
+	font-size: 0.81rem;
+	text-align: center;
+	white-space: nowrap;
+	color: var(--fbk-quiet);
+}
+.fbk-firstreply {
+	display: grid;
+	gap: 0.5rem;
+	margin-top: auto;
+	padding-top: 1.5rem;
+}
+.fbk-firstreply-legend {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--fbk-quiet);
+
+	& b {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+.fbk-firstreply-track {
+	position: relative;
+	display: block;
+	height: 0.6rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--basalt-edge) 70%, transparent);
+}
+.fbk-firstreply-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-series-1);
+
+	&.is-over {
+		background: var(--fbk-detractor);
+	}
+}
+/* The goal, marked across the track. */
+.fbk-firstreply-mark {
+	position: absolute;
+	top: -5px;
+	bottom: -5px;
+	left: calc(var(--target, 80) * 1%);
+	width: 2px;
+	border-radius: 2px;
+	background: var(--basalt-copy);
+}
+
+/* What happened to feedback: a column per status, each a button that
+   filters the list to that status. */
+.fbk-flow {
+	display: grid;
+	flex: 1;
+	gap: 0.75rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.fbk-flow-step {
+	--fbk-flow: var(--basalt-series-1);
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	padding: 0.4rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+	transition: background-color 130ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&.is-on {
+		background: var(--basalt-hue-soft);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+.fbk-flow-new {
+	--fbk-flow: var(--fbk-detractor);
+}
+.fbk-flow-replied {
+	--fbk-flow: color-mix(in srgb, var(--basalt-series-1) 50%, var(--basalt-plane));
+}
+.fbk-flow-shipped {
+	--fbk-flow: var(--basalt-success);
+}
+.fbk-flow-declined {
+	--fbk-flow: var(--fbk-passive);
+}
+.fbk-flow-col {
+	display: flex;
+	flex: 1;
+	align-items: flex-end;
+	min-height: 7rem;
+}
+.fbk-flow-bar {
+	width: 100%;
+	height: calc(var(--value, 4) * 1%);
+	border-radius: 8px 8px 3px 3px;
+	background: var(--fbk-flow);
+}
+.fbk-flow-n {
+	margin-top: 0.3rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+.fbk-flow-label {
+	font-size: 0.81rem;
+	white-space: nowrap;
+	color: var(--fbk-quiet);
+}
+@media (max-width: 575.98px) {
+	.fbk-card-body {
+		padding-right: var(--basalt-pad-x-narrow);
+		padding-left: var(--basalt-pad-x-narrow);
+	}
+	.fbk-flow {
+		gap: 0.25rem;
+	}
+	.fbk-flow-step {
+		padding: 0.25rem;
+	}
+	.fbk-flow-col {
+		min-height: 5rem;
+	}
+	.fbk-flow-label {
+		font-size: 0.71rem;
+	}
+}
+
+/* The list card measures itself, so the toolbar and the table can change
+   shape with the card's width rather than the window's. */
+.fbk-list.card {
+	container-type: inline-size;
+}
+
+/* Status chips are text only, and they wrap instead of scrolling. */
+.fbk-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	padding: 1.25rem var(--basalt-pad-x) 0;
+}
+.fbk-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.85rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 999px;
+	font-size: 0.84rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease;
+
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&.is-on {
+		border-color: var(--basalt-hue-border);
+		color: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+		background: var(--basalt-hue-soft);
+	}
+	&:focus {
+		outline: none;
+	}
+	&:not(.is-on):focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&.is-on .fbk-chip-n {
+		color: inherit;
+	}
+}
+.fbk-chip-n {
+	font-weight: 600;
+	color: var(--fbk-quiet);
+}
+
+/* The search stops at a comfortable width and the two selects sit right
+   beside it. In a narrow card the search takes a row of its own and the
+   selects share the next one. */
+.fbk-toolbar {
+	display: flex;
+	gap: 0.75rem 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	padding: 1.25rem var(--basalt-pad-x) 1.5rem;
+}
+.fbk-search {
+	position: relative;
+	flex: 0 1 26rem;
+	min-width: 13rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		color: var(--fbk-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+.fbk-toolbar-select {
+	flex: 0 1 11.5rem;
+	min-width: 9.5rem;
+}
+.fbk-applied {
+	margin-top: -0.25rem;
+	padding: 0 var(--basalt-pad-x) 1.25rem;
+}
+@container (max-width: 620px) {
+	.fbk-toolbar {
+		flex-wrap: wrap;
+	}
+	.fbk-search {
+		flex: 1 1 100%;
+		min-width: 0;
+		max-width: 28rem;
+	}
+	.fbk-toolbar-select {
+		flex: 1 1 calc(50% - 0.25rem);
+		min-width: 0;
+		max-width: 14rem;
+	}
+}
+@container (max-width: 340px) {
+	.fbk-toolbar-select {
+		flex-basis: 100%;
+		max-width: 28rem;
+	}
+}
+@media (max-width: 575.98px) {
+	.fbk-chips,
+	.fbk-toolbar,
+	.fbk-applied {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The feedback table. Rows are clickable, so the whole row takes the
+   hover tint and the pointer. */
+.fbk-table-wrap {
+	border-top: 1px solid var(--basalt-edge);
+}
+.fbk-table {
+	--bs-table-bg: transparent;
+	--bs-table-hover-bg: var(--basalt-wash);
+
+	& th {
+		padding: 0.8rem 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--fbk-quiet);
+		background: transparent;
+	}
+	& td {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+		border-bottom: 1px solid var(--basalt-edge);
+		font-size: 0.88rem;
+		vertical-align: top;
+		color: var(--basalt-copy-body);
+		background: transparent;
+	}
+	& tr > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& tr > :last-child {
+		padding-right: var(--basalt-pad-x);
+	}
+	& tbody tr:last-child > td {
+		border-bottom: 0;
+	}
+	& tbody tr {
+		cursor: pointer;
+	}
+	& tbody tr:hover > td {
+		background: var(--basalt-wash);
+	}
+}
+
+/* Fixed widths for every column but the feedback itself. */
+.fbk-c-who {
+	width: 15.5rem;
+}
+.fbk-c-type {
+	width: 7.5rem;
+}
+.fbk-c-score {
+	width: 5rem;
+}
+.fbk-c-status {
+	width: 8.5rem;
+}
+.fbk-c-when {
+	width: 7rem;
+	white-space: nowrap;
+	color: var(--fbk-quiet);
+}
+.fbk-c-act {
+	width: 5.5rem;
+	text-align: right;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+/* The word "Score" stays hidden until the rows stack and the header
+   goes away. */
+.fbk-c-label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	white-space: nowrap;
+	clip-path: inset(50%);
+}
+
+.fbk-who {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	min-width: 0;
+
+	& > .basalt-avatar {
+		flex: none;
+	}
+}
+.fbk-who-text {
+	min-width: 0;
+}
+.fbk-who-name,
+.fbk-what-title {
+	display: block;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+a.fbk-who-name {
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+.fbk-who-meta,
+.fbk-what-meta {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--fbk-quiet);
+}
+
+.fbk-type {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: color-mix(in srgb, var(--fbk-type-tone) 70%, var(--basalt-copy));
+	}
+}
+.fbk-type-bug {
+	--fbk-type-tone: var(--basalt-series-1);
+}
+.fbk-type-idea {
+	--fbk-type-tone: var(--basalt-series-2);
+}
+.fbk-type-praise {
+	--fbk-type-tone: var(--basalt-series-3);
+}
+.fbk-type-question {
+	--fbk-type-tone: var(--basalt-series-4);
+}
+
+/* Planned takes its own ramp color so it never reads as Replied. */
+.fbk-status-planned {
+	--stp-tone: var(--basalt-series-2);
+}
+
+/* A score is a small tinted square in its band's color. */
+.fbk-score-pill {
+	--fbk-band: var(--fbk-promoter);
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.9rem;
+	height: 1.9rem;
+	padding: 0 0.3rem;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--fbk-band) 46%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--fbk-band) 15%, transparent);
+}
+.fbk-score-pill-passive {
+	--fbk-band: var(--fbk-passive);
+}
+.fbk-score-pill-detractor {
+	--fbk-band: var(--fbk-detractor);
+}
+
+/* Below the table: the row range and the page buttons, or the empty
+   state in the table's place. */
+.fbk-pager {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem var(--basalt-pad-x) 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	&[hidden] {
+		display: none;
+	}
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+.fbk-pager-range {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--fbk-quiet);
+}
+[data-fbk-empty] {
+	padding: 1rem var(--basalt-pad-x) 2rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* At middle widths the type column goes, since the quiet line under each
+   title already names the topic and the source. */
+@container (max-width: 1040px) {
+	.fbk-table th:nth-child(3),
+	.fbk-table td.fbk-c-type {
+		display: none;
+	}
+	.fbk-c-who {
+		width: 13.5rem;
+	}
+}
+
+/* In a narrow card each row becomes a stacked record: customer and status
+   on top, then the feedback, then one line of facts with the button. */
+@container (max-width: 760px) {
+	.fbk-table thead {
+		display: none;
+	}
+	.fbk-table tbody tr {
+		display: grid;
+		gap: 1rem 0.75rem;
+		grid-template-columns: auto auto minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who who who status"
+			"what what what what"
+			"type score when act";
+		align-items: center;
+		padding: 1.25rem var(--basalt-pad-x);
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.fbk-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.fbk-table tbody tr > td,
+	.fbk-table tbody tr > td:first-child,
+	.fbk-table tbody tr > td:last-child {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.fbk-table tbody tr > td.fbk-c-type {
+		display: block;
+	}
+	.fbk-table tbody tr:hover {
+		background: var(--basalt-wash);
+	}
+	.fbk-table tbody tr:hover > td {
+		background: transparent;
+	}
+	.fbk-c-who {
+		grid-area: who;
+		min-width: 0;
+	}
+	.fbk-c-what {
+		grid-area: what;
+	}
+	.fbk-c-type {
+		grid-area: type;
+	}
+	.fbk-c-score {
+		display: flex;
+		gap: 0.4rem;
+		grid-area: score;
+		align-items: center;
+	}
+	.fbk-c-status {
+		grid-area: status;
+		align-self: start;
+		justify-self: end;
+	}
+	.fbk-c-when {
+		grid-area: when;
+	}
+	.fbk-c-act {
+		grid-area: act;
+	}
+	.fbk-c-label {
+		position: static;
+		width: auto;
+		height: auto;
+		overflow: visible;
+		font-size: 0.8rem;
+		color: var(--fbk-quiet);
+		clip-path: none;
+	}
+}
+
+/* Narrower still, the type drops out of the stacked record too. */
+@container (max-width: 420px) {
+	.fbk-table tbody tr {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas:
+			"who who status"
+			"what what what"
+			"score when act";
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.fbk-table tbody tr > td.fbk-c-type {
+		display: none;
+	}
+}
+
+/* The drawer opens on who wrote, with their score at the right. */
+.fbk-drawer.offcanvas {
+	--bs-offcanvas-width: min(500px, 100vw);
+}
+.fbk-drawer .basalt-drawer-sub {
+	color: var(--fbk-quiet);
+}
+.fbk-from {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+
+	& > .basalt-avatar {
+		flex: none;
+	}
+	& .fbk-score-pill {
+		flex: none;
+		min-width: 2.4rem;
+		height: 2.4rem;
+		border-radius: 10px;
+		font-size: 1rem;
+	}
+}
+.fbk-from-who {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.fbk-from-name {
+	margin: 0;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fbk-from-meta {
+	margin: 0.2rem 0 0;
+	font-size: 0.84rem;
+	color: var(--fbk-quiet);
+
+	& a {
+		font-weight: 600;
+		color: color-mix(in srgb, var(--basalt-hue) 66%, var(--basalt-copy));
+	}
+}
+
+/* What they said sits in a quote with a straight accent bar, inset from
+   the top and the bottom. */
+.fbk-quote {
+	position: relative;
+	margin: 0;
+	padding: 1rem 1.1rem 1rem 1.5rem;
+	border-radius: 12px;
+	font-size: 0.95rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0.85rem;
+		bottom: 0.85rem;
+		left: 0.6rem;
+		width: 3px;
+		border-radius: 3px;
+		background: var(--basalt-hue);
+	}
+}
+.fbk-facts {
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--fbk-quiet);
+}
+
+.fbk-reply {
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+}
+.fbk-reply-head {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.fbk-reply-by {
+	font-weight: 700;
+	font-size: 0.88rem;
+	color: var(--basalt-copy);
+}
+.fbk-reply-when {
+	font-size: 0.8rem;
+	color: var(--fbk-quiet);
+}
+.fbk-reply-text {
+	margin: 0.65rem 0 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* Hints sit under their field; status and owner share a row unless the
+   drawer is narrow. */
+.fbk-hint {
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--fbk-quiet);
+}
+.fbk-hint-error {
+	color: color-mix(in srgb, var(--basalt-danger) 60%, var(--basalt-copy));
+}
+.fbk-pair {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: 1fr 1fr;
+}
+@container basalt-drawer (max-width: 400px) {
+	.fbk-pair {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* The survey dialog: what to ask, who receives it and how, and a preview
+   of the scale they will answer on. */
+.fbk-field {
+	min-width: 0;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	border: 0;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+.fbk-field > legend,
+.fbk-survey-row legend {
+	float: none;
+	width: auto;
+	padding: 0;
+	font-size: var(--bs-body-font-size);
+}
+.fbk-survey-row {
+	display: grid;
+	gap: 1.25rem 2.5rem;
+	grid-template-columns: minmax(0, 17rem) auto;
+	align-items: start;
+
+	& fieldset {
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+	& .form-check {
+		margin-bottom: 0.5rem;
+	}
+	& .form-check-label {
+		color: var(--basalt-copy);
+	}
+}
+
+.fbk-preview {
+	padding: 1.25rem 1.35rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+}
+.fbk-preview-q {
+	margin: 0 0 1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.fbk-preview-scale {
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: repeat(var(--fbk-cells, 11), minmax(0, 1fr));
+
+	& > span {
+		display: grid;
+		place-items: center;
+		height: 2.1rem;
+		border: 1px solid var(--basalt-edge-strong);
+		border-radius: 8px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+		background: var(--basalt-plane);
+	}
+}
+.fbk-preview-ends {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin: 0.5rem 0 0;
+	font-size: 0.77rem;
+	color: var(--fbk-quiet);
+}
+@media (max-width: 575.98px) {
+	.fbk-survey-row {
+		grid-template-columns: 1fr;
+	}
+	.fbk-preview-scale {
+		gap: 0.2rem;
+	}
+	.fbk-preview-scale > span {
+		height: 1.9rem;
+		font-size: 0.74rem;
+	}
+}

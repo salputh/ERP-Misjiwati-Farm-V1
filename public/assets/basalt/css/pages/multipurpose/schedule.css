@@ -1,0 +1,745 @@
+/* Basalt - Schedule (schedule.html)
+   Namespaced under .cdr-*
+   Built from shared parts: the plain page header, cards, segmented
+   controls, choice tiles, styled selects, avatars, drawers, toasts and
+   empty states. This file lays them out and styles what belongs to this
+   page only: its look for the FullCalendar month, week and list (the
+   shared theme is in basalt.css), the day panel and the event drawer. */
+
+.cdr-page,
+.cdr-drawer {
+	/* Small gray text: the muted token pulled toward the body color, so it
+     clears 4.5:1 on every palette and on tinted cells. */
+	--cdr-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--cdr-line: var(--basalt-edge);
+	--cdr-weekend: color-mix(in srgb, var(--basalt-plane-alt) 38%, var(--basalt-plane));
+	/* How much of an event's color tints its chip; dark surfaces need more. */
+	--cdr-mix: 16%;
+}
+[data-bs-theme="dark"] :is(.cdr-page, .cdr-drawer) {
+	--cdr-mix: 20%;
+}
+
+/* One color per event type, from the palette's chart series. */
+.cdr-tone-meeting {
+	--cdr-tone: var(--basalt-series-1);
+}
+.cdr-tone-customer {
+	--cdr-tone: var(--basalt-series-3);
+}
+.cdr-tone-deadline {
+	--cdr-tone: var(--basalt-series-6);
+}
+.cdr-tone-away {
+	--cdr-tone: var(--basalt-series-5);
+}
+
+.cdr-dot {
+	flex: 0 0 auto;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--cdr-tone);
+}
+
+.cdr-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cdr-section-title {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+/* Buttons drawn by the page show a ring for the keyboard only. */
+.cdr-page button:focus:not(:focus-visible),
+.cdr-drawer button:focus:not(:focus-visible) {
+	outline: 0;
+	box-shadow: none;
+}
+.cdr-page .cdr-key-item:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+
+/* Layout
+   The day panel sits beside the calendar once the month grid has room
+   for real titles; until then it follows underneath, full width. */
+.cdr-layout {
+	display: grid;
+	gap: 1.5rem;
+	align-items: stretch;
+}
+@media (min-width: 1400px) {
+	.cdr-layout {
+		grid-template-columns: minmax(0, 1fr) 18rem;
+		transition: grid-template-columns 260ms cubic-bezier(0.32, 0.72, 0, 1);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.cdr-layout {
+		transition: none;
+	}
+}
+.cdr-board.card {
+	overflow: hidden;
+}
+
+/* Toolbar */
+.cdr-toolbar {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x) 1rem;
+}
+.cdr-nav {
+	display: flex;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.cdr-nav .cdr-title {
+	margin: 0 0.75rem 0 0.5rem;
+	white-space: nowrap;
+}
+@media (min-width: 576px) {
+	.cdr-nav .cdr-title {
+		min-width: 10.5rem;
+	}
+}
+.cdr-nav .btn {
+	white-space: nowrap;
+}
+
+/* Event type key: also the filter */
+.cdr-key {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	padding: 0 var(--basalt-pad-x) 1.25rem;
+}
+.cdr-key-item {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.8rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+}
+.cdr-key-item:hover {
+	background: var(--basalt-wash);
+}
+.cdr-key-item[aria-pressed="false"] {
+	color: var(--cdr-quiet);
+}
+.cdr-key-item[aria-pressed="false"] .cdr-dot {
+	background: transparent;
+	box-shadow: inset 0 0 0 1.5px var(--cdr-tone);
+}
+
+/* The calendar (FullCalendar)
+   basalt.css themes FullCalendar for every page; this keeps the
+   Schedule's own look: no outer frame inside the card, narrower
+   weekends, a tint on the picked day, titles on up to two lines. */
+.cdr-fc-scroll {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+}
+.cdr-fc {
+	flex: 1;
+}
+.cdr-fc.fc {
+	--basalt-fc-quiet: var(--cdr-quiet);
+	--basalt-fc-weekend: var(--cdr-weekend);
+}
+.cdr-fc .fc-view-harness {
+	flex: 1;
+}
+.cdr-fc.fc-theme-standard .fc-scrollgrid,
+.cdr-fc.fc-theme-standard .fc-list {
+	border-width: 1px 0 0;
+	border-radius: 0;
+}
+.cdr-fc .fc-col-header-cell-cushion {
+	padding: 0.6rem 0.75rem;
+}
+.cdr-fc .fc-dayGridMonth-view .fc-col-header-cell {
+	text-align: left;
+}
+/* Weekdays get the room; the quieter weekend columns stay narrower.
+   All seven widths are set so the columns always fill the row. */
+@media (min-width: 576px) {
+	.cdr-fc .fc-dayGridMonth-view :is(th, td).fc-day-sat,
+	.cdr-fc .fc-dayGridMonth-view :is(th, td).fc-day-sun {
+		width: 9%;
+	}
+	.cdr-fc .fc-dayGridMonth-view :is(th, td):is(.fc-day-mon, .fc-day-tue, .fc-day-wed, .fc-day-thu, .fc-day-fri) {
+		width: 16.4%;
+	}
+}
+.cdr-fc .fc-daygrid-day {
+	cursor: pointer;
+}
+.cdr-fc .fc-dayGridMonth-view .fc-daygrid-day-frame {
+	min-height: 7.75rem;
+	padding: 0.1rem 0.1rem 0.3rem;
+}
+.cdr-fc .fc-daygrid-day:hover {
+	background-color: var(--basalt-wash);
+}
+.cdr-fc .fc-daygrid-day.fc-day-today {
+	background-color: transparent;
+}
+.cdr-fc .fc-daygrid-day.is-picked {
+	background-color: color-mix(in srgb, var(--basalt-hue-soft) 70%, var(--basalt-plane));
+}
+.cdr-fc .fc-daygrid-dot-event {
+	align-items: baseline;
+	white-space: normal;
+}
+.cdr-fc .fc-daygrid-dot-event .fc-event-title,
+.cdr-fc .fc-daygrid-block-event .fc-event-title {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+.cdr-fc .fc-daygrid-dot-event .fc-daygrid-event-dot {
+	transform: translateY(-0.05rem);
+}
+.cdr-fc .fc-daygrid-block-event {
+	--basalt-fc-mix: var(--cdr-mix);
+	white-space: normal;
+}
+.cdr-cell-dots {
+	display: none;
+}
+/* Tablet-width day cells are too narrow to spend room on a dot: the
+   tone moves to a bar at the start, as on all-day events, so names fit
+   without being cut mid-word. */
+@media (min-width: 576px) and (max-width: 991.98px) {
+	.cdr-fc .fc-daygrid-dot-event {
+		padding-left: 0.4rem;
+		box-shadow: inset 3px 0 0 var(--basalt-fc-tone);
+	}
+	.cdr-fc .fc-daygrid-dot-event .fc-daygrid-event-dot {
+		display: none;
+	}
+	.cdr-fc .fc-daygrid-dot-event:is(:focus, .fc-event-selected) {
+		box-shadow:
+			inset 3px 0 0 var(--basalt-fc-tone),
+			0 4px 12px color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+	}
+}
+
+@media (max-width: 575.98px) {
+	.cdr-fc .fc-col-header-cell-cushion {
+		padding: 0.5rem 0;
+		letter-spacing: 0;
+	}
+	.cdr-fc .fc-dayGridMonth-view .fc-col-header-cell {
+		text-align: center;
+	}
+	.cdr-fc .fc-dayGridMonth-view .fc-daygrid-day-frame {
+		min-height: 3.6rem;
+	}
+	.cdr-fc .fc-daygrid-day-top {
+		justify-content: center;
+		padding-inline: 0;
+	}
+	.cdr-cell-dots {
+		display: flex;
+		gap: 0.2rem;
+		justify-content: center;
+		padding-top: 0.2rem;
+	}
+	.cdr-cell-dots .cdr-dot {
+		width: 0.375rem;
+		height: 0.375rem;
+	}
+}
+
+/* The week scrolls sideways on narrow screens; it never scrolls up and
+   down on its own. */
+.cdr-page[data-cdr-view="week"] .cdr-fc-scroll {
+	display: block;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.cdr-page[data-cdr-view="week"] .cdr-fc {
+	min-width: 44rem;
+}
+.cdr-fc .fc-timegrid-col.fc-day-today {
+	background-color: color-mix(in srgb, var(--basalt-hue-soft) 45%, var(--basalt-plane));
+}
+.cdr-fc .fc-timegrid-slot {
+	height: 1.75rem;
+}
+.cdr-fc .fc-timeGridWeek-view .fc-col-header-cell {
+	text-align: left;
+}
+.cdr-fc .fc-timeGridWeek-view .fc-col-header-cell-cushion {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 0.6rem;
+}
+.cdr-week-num {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.85rem;
+	height: 1.85rem;
+	margin-left: -0.35rem;
+	border-radius: 999px;
+	font-size: 1.05rem;
+	font-weight: 700;
+	letter-spacing: 0;
+	color: var(--basalt-copy);
+}
+.cdr-fc .fc-day-today .cdr-week-num {
+	background: var(--basalt-hue-soft);
+	box-shadow: inset 0 0 0 2px var(--basalt-hue);
+}
+.cdr-block {
+	display: flex;
+	gap: 0.05rem;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+	font-size: 0.76rem;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.cdr-block strong {
+	font-weight: 600;
+}
+.cdr-block span {
+	color: var(--cdr-quiet);
+}
+.cdr-block.is-short {
+	justify-content: center;
+}
+.cdr-block.is-short span {
+	display: none;
+}
+.cdr-block.is-short strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* The list: time, then the title with where and who under it. */
+.cdr-fc .fc-list-table td {
+	padding: var(--basalt-pad-row-y) 1rem;
+	vertical-align: top;
+}
+.cdr-fc .fc-list-day-cushion {
+	padding: 0.6rem var(--basalt-pad-x);
+}
+.cdr-fc .fc-list-table td:first-child {
+	padding-left: var(--basalt-pad-x);
+}
+.cdr-fc .fc-list-event-graphic {
+	padding-top: calc(var(--basalt-pad-row-y) + 0.3rem);
+}
+.cdr-fc .fc-list-event-time {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cdr-row-title {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+.cdr-row-meta {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--cdr-quiet);
+}
+.cdr-fc .fc-list-empty-cushion {
+	margin: 0;
+}
+.cdr-empty {
+	padding: 2.5rem var(--basalt-pad-x);
+}
+
+/* Day panel */
+.cdr-day-head {
+	padding-right: 2.5rem;
+}
+.cdr-day-toggle {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+}
+/* The body wrapper only exists to be folded; open, its parts lay out as
+   the panel's own children. */
+.cdr-day-body {
+	display: contents;
+}
+/* Folded, the panel keeps only its toggle and the day's date: beside the
+   calendar as a slim strip with the date running down it, under the
+   calendar as its heading row. */
+.cdr-layout.is-day-shut {
+	.cdr-day.card {
+		display: block;
+	}
+	.cdr-day-body,
+	.cdr-day-eyebrow,
+	.cdr-day-desc {
+		display: none;
+	}
+}
+@media (min-width: 1400px) {
+	.cdr-layout.is-day-shut {
+		grid-template-columns: minmax(0, 1fr) 4rem;
+
+		.cdr-day.card {
+			display: flex;
+			align-items: center;
+			padding-inline: 0.5rem;
+		}
+		.cdr-day-head {
+			display: flex;
+			gap: 1rem;
+			flex-direction: column;
+			align-items: center;
+			padding-right: 0;
+		}
+		.cdr-day-toggle {
+			position: static;
+		}
+		.cdr-day .cdr-title {
+			writing-mode: vertical-rl;
+			font-size: 1rem;
+			white-space: nowrap;
+		}
+	}
+}
+.cdr-day.card {
+	position: relative;
+	display: flex;
+	overflow: hidden;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+.cdr-day-eyebrow {
+	margin: 0 0 0.3rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--cdr-quiet);
+}
+.cdr-day-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	color: var(--cdr-quiet);
+}
+.cdr-agenda {
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.cdr-agenda > li + li {
+	margin-top: 0.25rem;
+}
+.cdr-slot {
+	position: relative;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 4.5rem minmax(0, 1fr);
+	width: 100%;
+	padding: 0.8rem 0.5rem 0.8rem 0;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+}
+.cdr-slot:hover {
+	background: var(--basalt-wash);
+}
+.cdr-slot-time {
+	display: flex;
+	flex-direction: column;
+	padding-left: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.cdr-slot-time span {
+	font-weight: 500;
+	color: var(--cdr-quiet);
+}
+.cdr-slot-body {
+	position: relative;
+	min-width: 0;
+	padding-left: 0.85rem;
+}
+.cdr-slot-body::before {
+	content: "";
+	position: absolute;
+	top: 0.1rem;
+	bottom: 0.1rem;
+	left: 0;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--cdr-tone);
+}
+.cdr-slot-title {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+.cdr-slot-meta {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--cdr-quiet);
+}
+.cdr-slot-faces {
+	display: flex;
+	margin-top: 0.5rem;
+}
+.cdr-slot-faces .basalt-avatar {
+	border-color: var(--basalt-plane);
+}
+.cdr-slot:hover .cdr-slot-faces .basalt-avatar {
+	border-color: var(--basalt-wash);
+}
+.cdr-slot.is-past .cdr-slot-title {
+	font-weight: 500;
+	color: var(--cdr-quiet);
+}
+.cdr-slot.is-past .cdr-slot-body::before {
+	opacity: 0.45;
+}
+.cdr-agenda-now {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.3rem 0 0.3rem 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cdr-agenda-now::after {
+	content: "";
+	flex: 1;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--basalt-hue);
+}
+.cdr-agenda-free {
+	margin: 0;
+	padding: 0.8rem 0;
+	font-size: 0.875rem;
+	color: var(--cdr-quiet);
+}
+.cdr-day-add {
+	align-self: flex-start;
+	justify-self: start;
+	margin-top: 1rem;
+	white-space: nowrap;
+}
+
+.cdr-due {
+	margin-top: auto;
+}
+.cdr-due::before {
+	content: "";
+	display: block;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+	border-top: 1px solid var(--cdr-line);
+}
+/* Under the calendar, the panel has the width for the day and the
+   deadlines side by side. */
+@media (min-width: 768px) and (max-width: 1399.98px) {
+	.cdr-day.card {
+		display: grid;
+		column-gap: 3rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-rows: auto auto 1fr;
+	}
+	.cdr-day > :not(.cdr-due) {
+		grid-column: 1;
+	}
+	.cdr-due {
+		grid-column: 2;
+		grid-row: 1 / -1;
+		margin-top: 0;
+		padding-left: 3rem;
+		border-left: 1px solid var(--cdr-line);
+	}
+	.cdr-due::before {
+		content: none;
+	}
+}
+.cdr-due-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cdr-due-item {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	width: 100%;
+	padding: 0.8rem 0.5rem;
+	border: 0;
+	border-radius: 10px;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: transparent;
+}
+.cdr-due-item:hover {
+	background: var(--basalt-wash);
+}
+.cdr-due-title {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.cdr-due-date {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--cdr-quiet);
+}
+.cdr-due-left {
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	background: color-mix(in srgb, var(--basalt-series-6) var(--cdr-mix), var(--basalt-plane));
+}
+
+/* Event drawer */
+.cdr-drawer {
+	--bs-offcanvas-width: 440px;
+}
+.cdr-pill {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--cdr-tone) var(--cdr-mix), var(--basalt-plane));
+}
+.cdr-facts {
+	margin: 1rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+.cdr-facts li {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 1.25rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--cdr-line);
+	font-size: 0.9rem;
+	color: var(--basalt-copy);
+}
+.cdr-facts .bi {
+	color: var(--cdr-quiet);
+}
+.cdr-facts small {
+	display: block;
+	margin-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--cdr-quiet);
+}
+.cdr-facts a {
+	font-weight: 600;
+}
+.cdr-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cdr-people li {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.5rem 0;
+}
+.cdr-people strong {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.cdr-people small {
+	display: block;
+	font-size: 0.8rem;
+	color: var(--cdr-quiet);
+}
+.cdr-note {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy-body);
+}
+
+/* Event form */
+.cdr-types {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.basalt-choice.cdr-tone-meeting,
+.basalt-choice.cdr-tone-customer,
+.basalt-choice.cdr-tone-deadline,
+.basalt-choice.cdr-tone-away {
+	--basalt-choice-tone: var(--cdr-tone);
+}
+/* The day on its own row, then start and end (or days off) side by side. */
+.cdr-when {
+	display: grid;
+	gap: 1.25rem 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 10rem));
+}
+.cdr-when-day {
+	grid-column: 1 / -1;
+	max-width: 14rem;
+}
+.cdr-when [hidden] {
+	display: none;
+}
+.cdr-days {
+	max-width: 7.5rem;
+}
+/* The customer list is as wide as its longest name. */
+.cdr-select + .basalt-select-trigger {
+	max-width: 20rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cdr-key-item {
+		transition: none;
+	}
+}

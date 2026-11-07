@@ -1,0 +1,1173 @@
+/*
+ * Candidate profile (candidate-details.html). Every class here starts
+ * with .cv-, and every color goes back to a --basalt-* token, so each
+ * palette and dark mode follow along without extra rules.
+ */
+
+/* Page-wide tokens, and the stage colors the Hiring board columns use. */
+.cv-page {
+	/* Muted text leans toward the body color so small labels hold their
+     contrast in every palette. */
+	--cv-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	--cv-line: var(--basalt-edge);
+	--cv-link: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+
+	& [data-stage="applied"] {
+		--cv-stage: var(--basalt-series-5);
+	}
+	& [data-stage="screen"] {
+		--cv-stage: var(--basalt-series-2);
+	}
+	& [data-stage="interview"] {
+		--cv-stage: var(--basalt-series-1);
+	}
+	& [data-stage="offer"] {
+		--cv-stage: var(--basalt-series-4);
+	}
+	& [data-stage="hired"] {
+		--cv-stage: var(--basalt-success);
+	}
+}
+
+/* A round's color follows it from its row to its scorecard. */
+.cv-tone-1 {
+	--cv-tone: var(--basalt-series-1);
+}
+.cv-tone-2 {
+	--cv-tone: var(--basalt-series-2);
+}
+.cv-tone-3 {
+	--cv-tone: var(--basalt-series-3);
+}
+.cv-tone-4 {
+	--cv-tone: var(--basalt-series-4);
+}
+.cv-tone-5 {
+	--cv-tone: var(--basalt-series-5);
+}
+.cv-tone-6 {
+	--cv-tone: var(--basalt-series-6);
+}
+.cv-tone-7 {
+	--cv-tone: var(--basalt-series-7);
+}
+.cv-tone-8 {
+	--cv-tone: var(--basalt-series-8);
+}
+
+/* The header puts the person on the left and the actions at the bottom
+   right; on phones the actions drop under the name. */
+.basalt-hero-detail.cv-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas: "body actions";
+	align-items: end;
+
+	@media (max-width: 575.98px) {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "body" "actions";
+	}
+}
+.cv-head .basalt-hero-actions {
+	flex-wrap: nowrap;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+
+	& .btn {
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+.cv-who {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	margin-top: 0.3rem;
+
+	& .basalt-avatar {
+		flex: none;
+		box-shadow: 0 0 0 3px var(--basalt-plane);
+	}
+
+	@media (max-width: 575.98px) {
+		gap: 1rem;
+		align-items: flex-start;
+
+		& .basalt-avatar-xl {
+			width: 56px;
+			height: 56px;
+			font-size: 1.2rem;
+		}
+	}
+}
+.cv-who-text {
+	min-width: 0;
+}
+
+/* Stage pill, source pill and the application number, in one wrapping row. */
+.cv-tags {
+	display: flex;
+	gap: 0.4rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.7rem;
+
+	& .basalt-status {
+		padding: 0.25rem 0.7rem;
+		font-size: 0.77rem;
+	}
+}
+.cv-stage-pill {
+	--stp-tone: var(--cv-stage);
+	color: color-mix(in srgb, var(--cv-stage) 40%, var(--basalt-copy));
+}
+.cv-source {
+	--stp-tone: var(--basalt-series-8);
+	color: color-mix(in srgb, var(--basalt-series-8) 40%, var(--basalt-copy));
+}
+.cv-id {
+	margin-left: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--cv-quiet);
+}
+
+/* In the More menu, Turn down is the one item drawn in red. */
+.cv-page .dropdown-item {
+	& .bi {
+		margin-right: 0.6rem;
+	}
+	&.cv-danger-item {
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+	&.cv-danger-item:hover,
+	&.cv-danger-item:focus {
+		color: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+		background-color: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+}
+
+/* A turned-down candidate gets a single red-edged line under the header. */
+.cv-notice {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0 0 1.5rem;
+	padding: 0.7rem 1rem;
+	border: 1px solid color-mix(in srgb, var(--basalt-danger) 32%, var(--basalt-edge));
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-danger) 7%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+	& > .bi {
+		flex: none;
+		color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	}
+}
+
+/* Under 1200px the cards simply stack in reading order. Wider, progress,
+   interviews and scorecards keep the full width while the CV pairs with
+   the details and the documents with the notes, each pair equal height. */
+.cv-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+
+	@media (min-width: 1200px) {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		align-items: stretch;
+	}
+}
+@media (min-width: 1200px) {
+	.cv-card-progress,
+	.cv-card-rounds,
+	.cv-card-scores {
+		grid-column: span 12;
+	}
+	.cv-card-cv,
+	.cv-card-log {
+		grid-column: span 7;
+	}
+	.cv-card-details,
+	.cv-card-docs {
+		grid-column: span 5;
+	}
+}
+
+/* Every card shares one padding, a title row and the same small parts. */
+.cv-card {
+	min-width: 0;
+}
+.cv-card.basalt-box .card-body {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.cv-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div {
+		min-width: 0;
+	}
+	& .btn {
+		flex: none;
+		white-space: nowrap;
+	}
+	& .btn[hidden] {
+		display: none;
+	}
+}
+.cv-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cv-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--cv-quiet);
+}
+.cv-sub {
+	margin: 1.5rem 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--cv-quiet);
+}
+.cv-card-head + .cv-sub {
+	margin-top: 0;
+}
+.cv-quiet {
+	color: var(--cv-quiet);
+}
+.cv-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--cv-link);
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		color: var(--basalt-copy);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.cv-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The five stages read top to bottom in a narrow card and left to right
+   once it is 600px wide, joined by a line that takes the stage color
+   once passed. */
+.cv-card-progress {
+	container-type: inline-size;
+}
+.cv-track {
+	--cv-trail-from: scaleY(0);
+	--cv-trail-origin: top;
+	display: grid;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cv-step {
+	position: relative;
+	display: grid;
+	row-gap: 0.1rem;
+	column-gap: 0.9rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr);
+	grid-template-areas: "marker label" "marker note";
+	align-content: start;
+	padding-bottom: 1.25rem;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.5rem;
+		bottom: 0.25rem;
+		left: calc(1.125rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--basalt-edge);
+	}
+	&.is-done:not(:last-child)::before {
+		background: color-mix(in srgb, var(--cv-stage) 70%, var(--basalt-plane));
+	}
+}
+.cv-step-marker {
+	display: grid;
+	grid-area: marker;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--cv-quiet);
+	background: var(--basalt-plane-alt);
+
+	@media (prefers-reduced-motion: no-preference) {
+		transition:
+			background-color 240ms ease,
+			color 240ms ease,
+			box-shadow 240ms ease;
+	}
+}
+.cv-step.is-done .cv-step-marker {
+	font-size: 1rem;
+	color: var(--basalt-plane);
+	background: var(--cv-stage);
+}
+.cv-step.is-current .cv-step-marker {
+	color: color-mix(in srgb, var(--cv-stage) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cv-stage) 18%, var(--basalt-plane));
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--cv-stage) 14%, transparent);
+}
+.cv-step.is-out .cv-step-marker {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+.cv-step-label {
+	grid-area: label;
+	align-self: end;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cv-step:not(.is-done):not(.is-current):not(.is-out) .cv-step-label {
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.cv-step-note {
+	grid-area: note;
+	font-size: 0.8rem;
+	color: var(--cv-quiet);
+}
+.cv-step.is-current .cv-step-note {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--cv-stage) 40%, var(--basalt-copy));
+}
+@container (min-width: 600px) {
+	.cv-track {
+		--cv-trail-from: scaleX(0);
+		--cv-trail-origin: left;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+	.cv-step {
+		row-gap: 0.2rem;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "marker" "label" "note";
+		padding: 0 1rem 0 0;
+	}
+	.cv-step-marker {
+		margin-bottom: 0.6rem;
+	}
+	.cv-step:not(:last-child)::before {
+		top: calc(1.125rem - 1px);
+		right: 1rem;
+		bottom: auto;
+		left: 3rem;
+		width: auto;
+		height: 2px;
+	}
+}
+
+/* The first time the track is on screen, each line between passed stages
+   draws in from the stage before it, one after another. */
+.cv-track.is-waiting .cv-step.is-done:not(:last-child)::before {
+	transform: var(--cv-trail-from);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.cv-track.is-drawing .cv-step.is-done:not(:last-child)::before {
+		transform-origin: var(--cv-trail-origin);
+		animation: cv-trail-draw 500ms ease-out calc(var(--cv-at, 0) * 200ms) both;
+	}
+	.cv-track.is-drawing .cv-step:nth-child(2) {
+		--cv-at: 1;
+	}
+	.cv-track.is-drawing .cv-step:nth-child(3) {
+		--cv-at: 2;
+	}
+	.cv-track.is-drawing .cv-step:nth-child(4) {
+		--cv-at: 3;
+	}
+	@keyframes cv-trail-draw {
+		from {
+			transform: var(--cv-trail-from);
+		}
+	}
+}
+
+/* Next step, scorecards and time in the process: stacked with rules
+   between them, or three columns with dividers once there is room. */
+.cv-glance {
+	display: grid;
+	gap: 1.25rem;
+	margin: 1.75rem 0 0;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--cv-line);
+
+	& dt {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--cv-quiet);
+	}
+	& dd {
+		display: flex;
+		gap: 0.25rem;
+		flex-direction: column;
+		margin: 0.65rem 0 0;
+	}
+}
+.cv-glance-item {
+	--cv-g: var(--basalt-series-1);
+	min-width: 0;
+
+	& + .cv-glance-item {
+		padding-top: 1.25rem;
+		border-top: 1px solid var(--cv-line);
+	}
+	&[data-tone="votes"] {
+		--cv-g: var(--basalt-success);
+	}
+	&[data-tone="age"] {
+		--cv-g: var(--basalt-series-5);
+	}
+}
+@container (min-width: 600px) {
+	.cv-glance {
+		gap: 1.5rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.cv-glance-item + .cv-glance-item {
+		padding: 0 0 0 1.5rem;
+		border-top: 0;
+		border-left: 1px solid var(--cv-line);
+	}
+}
+.cv-glance-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	border-radius: 9px;
+	font-size: 0.9rem;
+	color: color-mix(in srgb, var(--cv-g) 58%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cv-g) 16%, var(--basalt-plane));
+}
+.cv-glance-value {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cv-glance-note {
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--cv-quiet);
+}
+
+/* Interview rounds sit on five shared column tracks with labels above;
+   below 820px of card the day and result move under the round's name. */
+.cv-card-rounds {
+	container-type: inline-size;
+}
+.cv-rounds {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cv-rounds-head {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr) 11rem 8rem 7rem;
+	padding-bottom: 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--cv-quiet);
+}
+.cv-rounds-col-round {
+	grid-column: 2;
+}
+.cv-rounds-col-when {
+	grid-column: 3;
+}
+.cv-rounds-col-status {
+	grid-column: 4;
+}
+.cv-round {
+	display: grid;
+	column-gap: 1rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr) 11rem 8rem 7rem;
+	align-items: center;
+	padding: var(--basalt-pad-row-y, 1.2rem) 0;
+	border-top: 1px solid var(--cv-line);
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+.cv-round-icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--cv-tone) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cv-tone) 16%, var(--basalt-plane));
+}
+.cv-round-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cv-round-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cv-round-meta {
+	font-size: 0.8rem;
+	color: var(--cv-quiet);
+
+	& .cv-link {
+		font-weight: 500;
+	}
+}
+.cv-round-when {
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+}
+.cv-round-status .basalt-status {
+	white-space: nowrap;
+}
+.cv-round-action {
+	justify-self: end;
+
+	& .btn {
+		white-space: nowrap;
+	}
+}
+@container (max-width: 820px) {
+	.cv-rounds-head {
+		display: none;
+	}
+	.cv-round {
+		row-gap: 0.3rem;
+		grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+		grid-template-areas: "icon text action" "icon when action" "icon status action";
+		align-items: start;
+	}
+	.cv-round-icon {
+		grid-area: icon;
+	}
+	.cv-round-text {
+		grid-area: text;
+	}
+	.cv-round-when {
+		grid-area: when;
+		font-size: 0.8rem;
+	}
+	.cv-round-status {
+		grid-area: status;
+		margin-top: 0.2rem;
+	}
+	.cv-round-action {
+		grid-area: action;
+		align-self: center;
+	}
+}
+
+/* Scorecards never leave a row half empty: two or four sit two across,
+   three sit three across, and a narrow card stacks them. */
+.cv-card-scores {
+	container-type: inline-size;
+}
+.cv-scores {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: minmax(0, 1fr);
+}
+@container (min-width: 600px) {
+	.cv-scores[data-count="2"],
+	.cv-scores[data-count="4"] {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@container (min-width: 860px) {
+	.cv-scores[data-count="3"] {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+/* Each card is washed in its round's color, with a bar of it inside the
+   left edge. */
+.cv-score {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.35rem 1.35rem 1.35rem 1.6rem;
+	border: 1px solid var(--cv-line);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--cv-tone) 5%, var(--basalt-plane));
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 1.1rem;
+		bottom: 1.1rem;
+		left: 0.6rem;
+		width: 3px;
+		border-radius: 2px;
+		background: var(--cv-tone);
+	}
+}
+.cv-score-head {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	& .basalt-status {
+		flex: none;
+	}
+}
+.cv-score-who {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	min-width: 0;
+}
+.cv-score-text {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cv-score-name {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cv-score-round {
+	font-size: 0.8rem;
+	color: var(--cv-quiet);
+}
+
+/* Ratings are four pips each, filled up to the score. */
+.cv-rates {
+	display: grid;
+	gap: 0.7rem;
+	margin: 1.25rem 0 0;
+}
+.cv-rate {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+
+	& dt {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+	& dd {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		margin: 0;
+	}
+}
+.cv-rate-bar {
+	display: flex;
+	gap: 3px;
+
+	& > span {
+		width: 1.35rem;
+		height: 0.4rem;
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--cv-tone) 14%, var(--basalt-plane-alt));
+	}
+	& > .is-on {
+		background: var(--cv-tone);
+	}
+}
+.cv-rate-n {
+	min-width: 0.6rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.cv-score-said {
+	margin: 1.25rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+
+	&::before {
+		content: "“";
+	}
+	&::after {
+		content: "”";
+	}
+}
+
+/* A scorecard still to come is a dashed outline with the due day and the
+   skills it will rate. It must follow .cv-score to override its fill. */
+.cv-score-waiting {
+	border-style: dashed;
+	border-color: var(--basalt-edge-strong);
+	background: var(--basalt-plane);
+}
+.cv-score-wait {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 1.25rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--cv-quiet);
+}
+.cv-score-looks {
+	margin: 1.25rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px dashed var(--basalt-edge-strong);
+
+	& dt {
+		margin-bottom: 0.6rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+		color: var(--cv-quiet);
+	}
+	& dd {
+		display: inline-block;
+		margin: 0 0.4rem 0.4rem 0;
+		padding: 0.25rem 0.65rem;
+		border-radius: 999px;
+		font-size: 0.8rem;
+		color: var(--basalt-copy-body);
+		background: color-mix(in srgb, var(--cv-tone) 10%, var(--basalt-plane));
+	}
+}
+
+/* The CV card: dated jobs, skill chips with the role's asks marked, and a
+   line of education. */
+.cv-jobs {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cv-job {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--cv-line);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+
+	@media (max-width: 575.98px) {
+		gap: 0.3rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.cv-job-years {
+	padding-top: 0.1rem;
+	font-size: 0.8rem;
+	color: var(--cv-quiet);
+}
+.cv-job-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cv-job-title {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.cv-job-note {
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+}
+.cv-skills {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cv-skill {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border: 1px solid var(--cv-line);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--basalt-copy-body);
+}
+.cv-skill-match {
+	border-color: color-mix(in srgb, var(--basalt-series-1) 35%, var(--cv-line));
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-series-1) 40%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-1) 12%, var(--basalt-plane));
+}
+/* The dot in a matching chip and the dot in its legend are one shape. */
+.cv-skill-match::before,
+.cv-legend-key {
+	content: "";
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--basalt-series-1);
+}
+.cv-legend {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.75rem 0 0;
+	font-size: 0.8rem;
+	color: var(--cv-quiet);
+}
+.cv-legend-key {
+	display: inline-block;
+	flex: none;
+}
+.cv-text {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* Details read as label and value pairs, one per row, until 360px where
+   the value drops under its label. */
+.cv-facts {
+	margin: 0;
+
+	&[hidden] {
+		display: none;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--cv-quiet);
+	}
+	& dd {
+		min-width: 0;
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+.cv-facts-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 8rem minmax(0, 1fr);
+	padding: 0.8rem 0;
+	border-top: 1px solid var(--cv-line);
+	font-size: 0.875rem;
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	@media (max-width: 359.98px) {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.cv-facts-note {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--cv-quiet);
+}
+
+/* Form fields, shared by the in-place details form and both dialogs.
+   Inputs keep a readable width except side by side or in the
+   turn-down dialog. */
+.cv-edit[hidden] {
+	display: none;
+}
+.cv-field {
+	margin-bottom: 1.25rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+	& .form-control {
+		max-width: 24rem;
+	}
+}
+.cv-field-select {
+	max-width: 14rem;
+}
+.cv-field-pair {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+	& .form-control {
+		max-width: none;
+	}
+
+	@media (max-width: 399.98px) {
+		gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.cv-book-dialog .cv-field-select {
+	max-width: 14rem;
+}
+.cv-reject-dialog {
+	& .cv-field-select {
+		max-width: 21rem;
+	}
+	& .cv-field .form-control {
+		max-width: none;
+	}
+}
+.cv-optional {
+	margin-left: 0.25rem;
+	font-weight: 400;
+	color: var(--cv-quiet);
+}
+.cv-check {
+	margin: 0;
+
+	& .form-check-input:focus:not(:focus-visible) {
+		box-shadow: none;
+	}
+}
+.cv-edit-foot {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--cv-line);
+}
+
+/* Documents list with a tinted icon per file type; the drop zone fills
+   whatever height the card has left beside the notes. */
+.cv-card-docs .card-body {
+	display: flex;
+	flex-direction: column;
+}
+.cv-docs {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cv-doc {
+	--cv-doc: var(--basalt-series-6);
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.9rem 0;
+	border-top: 1px solid var(--cv-line);
+
+	&:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+	&:last-child {
+		padding-bottom: 0;
+	}
+	&[data-kind="doc"] {
+		--cv-doc: var(--basalt-series-1);
+	}
+	&[data-kind="code"] {
+		--cv-doc: var(--basalt-series-3);
+	}
+	&[data-kind="image"] {
+		--cv-doc: var(--basalt-series-4);
+	}
+}
+.cv-doc-icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--cv-doc) 58%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--cv-doc) 15%, var(--basalt-plane));
+}
+.cv-doc-text {
+	display: flex;
+	gap: 0.2rem;
+	flex-direction: column;
+	min-width: 0;
+}
+.cv-doc-name {
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+.cv-doc-meta {
+	font-size: 0.8rem;
+	color: var(--cv-quiet);
+}
+.cv-doc-get {
+	color: var(--cv-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+	}
+}
+.cv-drop {
+	flex: 1 0 auto;
+	justify-content: center;
+	max-height: 18rem;
+	margin-top: 1.5rem;
+}
+
+/* The note box sits above the history, which hangs off a thin line of
+   round icons; notes, moves and turn-downs get their own tints. */
+.cv-note {
+	margin-bottom: 1.5rem;
+
+	& .form-control {
+		resize: vertical;
+	}
+}
+.cv-note-foot {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+}
+.cv-log {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cv-log-item {
+	position: relative;
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+	padding-bottom: 1.1rem;
+
+	&:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: 2.25rem;
+		bottom: 0.3rem;
+		left: calc(1rem - 1px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--cv-line);
+	}
+}
+.cv-log-icon {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: var(--cv-quiet);
+	background: var(--basalt-plane-alt);
+}
+.cv-log-item[data-kind="note"] .cv-log-icon {
+	color: color-mix(in srgb, var(--basalt-series-4) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-4) 18%, var(--basalt-plane));
+}
+.cv-log-item[data-kind="move"] .cv-log-icon,
+.cv-log-item[data-kind="back"] .cv-log-icon {
+	color: color-mix(in srgb, var(--basalt-series-1) 50%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-series-1) 16%, var(--basalt-plane));
+}
+.cv-log-item[data-kind="out"] .cv-log-icon {
+	color: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-danger) 14%, var(--basalt-plane));
+}
+.cv-log-text {
+	display: flex;
+	gap: 0.25rem;
+	flex-direction: column;
+	min-width: 0;
+	padding-top: 0.3rem;
+}
+.cv-log-line {
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--basalt-copy-body);
+
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+}
+.cv-log-note {
+	margin-top: 0.25rem;
+	padding: 0.65rem 0.85rem;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--basalt-series-4) 8%, var(--basalt-plane-alt));
+}
+.cv-log-when {
+	font-size: 0.77rem;
+	color: var(--cv-quiet);
+}
+.cv-log-more {
+	padding-left: 2.9rem;
+}

@@ -1,7 +1,7 @@
-<div class="col-12 mb-25">
+<div class="col-12 mb-4">
     @if (! $this->periode)
         <x-kartu judul="Daftar harga kontrak">
-            <p class="color-gray mb-0">Belum ada periode. Harga kontrak dapat dikelola setelah periode dibuat.</p>
+            <p class="text-body-secondary mb-0">Belum ada periode. Harga kontrak dapat dikelola setelah periode dibuat.</p>
         </x-kartu>
     @else
         <x-kartu judul="Daftar harga kontrak" subjudul="Harga berdasarkan rentang bobot badan rata-rata (BW)." badan="p-0">
@@ -9,30 +9,30 @@
                 <x-tombol wire:click="tambah" data-bs-toggle="modal" data-bs-target="#modal-harga-kontrak">Tambah bracket</x-tombol>
             </x-slot:ekstra>
 
-            {{-- Tabel template (HexaDash: Basic Table, Basic Usage) --}}
-            <div class="table4 p-25">
+            {{-- Tabel template  --}}
+            <div class="tabel-data">
                 @if ($pesan)
                     <x-peringatan warna="success">{{ $pesan }}</x-peringatan>
                 @endif
 
                 <div class="table-responsive">
-                    <table class="table mb-0">
+                    <table class="table mb-0 db-table">
                         <thead>
-                            <tr class="userDatatable-header">
-                                <th><span class="userDatatable-title">No.</span></th>
-                                <th class="text-end"><span class="userDatatable-title">BW Minimum (kg)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">BW Maksimum (kg)</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Harga Kontrak/kg</span></th>
-                                <th class="text-end"><span class="userDatatable-title">Aksi</span></th>
+                            <tr>
+                                <th>No.</th>
+                                <th class="text-end">BW Minimum (kg)</th>
+                                <th class="text-end">BW Maksimum (kg)</th>
+                                <th class="text-end">Harga Kontrak/kg</th>
+                                <th class="text-end">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->daftar as $hargaKontrak)
                                 <tr wire:key="harga-kontrak-{{ $hargaKontrak->id }}">
-                                    <td><div class="userDatatable-content">{{ $loop->iteration }}</div></td>
-                                    <td class="text-end"><div class="userDatatable-content">@angka($hargaKontrak->bobot_min_kg, 2)</div></td>
-                                    <td class="text-end"><div class="userDatatable-content">@angka($hargaKontrak->bobot_max_kg, 2)</div></td>
-                                    <td class="text-end"><div class="userDatatable-content">Rp @angka($hargaKontrak->harga_per_kg)</div></td>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td class="text-end">@angka($hargaKontrak->bobot_min_kg, 2)</td>
+                                    <td class="text-end">@angka($hargaKontrak->bobot_max_kg, 2)</td>
+                                    <td class="text-end">Rp @angka($hargaKontrak->harga_per_kg)</td>
                                     <td>
                                         <x-aksi.ikon :aksi="[
                                             ['kelas' => 'edit', 'label' => 'Ubah bracket harga', 'click' => 'ubah('.$hargaKontrak->id.')', 'modal' => '#modal-harga-kontrak'],
@@ -42,7 +42,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center color-light">Belum ada bracket harga kontrak untuk periode ini.</td>
+                                    <td colspan="5" class="text-center text-body-secondary">Belum ada bracket harga kontrak untuk periode ini.</td>
                                 </tr>
                             @endforelse
                         </tbody>

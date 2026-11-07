@@ -1,0 +1,307 @@
+/* Basalt - Legal pages (privacy-policy.html, terms-of-service.html)
+   Namespaced under .legal-*
+   Long-form reading: an on-page table of contents beside the text
+   from 1200px (above it on smaller screens), and prose held to about
+   70 characters a line. Every color is a --basalt-* token. */
+
+.legal-page {
+	--legal-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	/* Links: the primary alone is under 4.5:1 in a few light palettes. */
+	--legal-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+}
+
+.legal-sample {
+	margin-bottom: 1.5rem;
+}
+
+/* Layout */
+.legal-layout {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+}
+@media (min-width: 1200px) {
+	.legal-layout {
+		grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+	}
+	.legal-toc {
+		position: sticky;
+		top: calc(var(--basalt-header-h) + 1.5rem);
+	}
+}
+
+/* Table of contents */
+.legal-toc.basalt-box .card-body {
+	padding: 1.5rem;
+}
+.legal-toc-title {
+	margin: 0 0 0.75rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--legal-quiet);
+}
+.legal-toc-list {
+	counter-reset: legal-toc;
+	display: grid;
+	gap: 0.1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@media (min-width: 768px) and (max-width: 1199.98px) {
+	.legal-toc-list {
+		column-gap: 1.5rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.legal-toc-list li {
+	counter-increment: legal-toc;
+	min-width: 0;
+}
+.legal-toc-list a {
+	display: flex;
+	gap: 0.6rem;
+	padding: 0.3rem 0.6rem;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	line-height: 1.4;
+	text-decoration: none;
+	color: var(--basalt-copy-body);
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+}
+.legal-toc-list a::before {
+	content: counter(legal-toc);
+	min-width: 1.1rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--legal-quiet);
+}
+.legal-toc-list a:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.legal-toc-list a.is-current {
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.legal-toc-list a.is-current::before {
+	color: var(--basalt-copy);
+}
+
+/* Document */
+.legal-doc.basalt-box .card-body {
+	padding: 2.5rem 3rem;
+}
+@media (max-width: 767.98px) {
+	.legal-doc.basalt-box .card-body {
+		padding: 1.5rem 1.25rem;
+	}
+}
+.legal-prose {
+	max-width: 70ch;
+	font-size: 0.9375rem;
+	line-height: 1.7;
+	color: var(--basalt-copy-body);
+}
+.legal-prose section {
+	scroll-margin-top: calc(var(--basalt-header-h) + 1.5rem);
+}
+.legal-prose section + section {
+	margin-top: 2.25rem;
+}
+.legal-prose h2 {
+	margin: 0 0 0.75rem;
+	font-size: 1.125rem;
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+.legal-prose p {
+	margin: 0 0 1rem;
+}
+.legal-prose ul {
+	margin: 0 0 1rem;
+	padding-left: 1.25rem;
+}
+.legal-prose li {
+	margin-bottom: 0.4rem;
+	padding-left: 0.25rem;
+}
+.legal-prose li::marker {
+	color: var(--legal-quiet);
+}
+.legal-prose strong {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.legal-prose a {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	color: var(--legal-link);
+}
+.legal-prose a:hover {
+	color: var(--basalt-copy);
+}
+.legal-lede {
+	margin-bottom: 2rem;
+	padding-bottom: 1.75rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	font-size: 1rem;
+	color: var(--basalt-copy);
+}
+.legal-prose .legal-lede {
+	margin-bottom: 2rem;
+}
+.legal-address {
+	margin: 0 0 1rem;
+	padding: 1rem 1.25rem;
+	border-left: 3px solid var(--basalt-edge-strong);
+	font-style: normal;
+	line-height: 1.6;
+}
+.legal-top {
+	margin: 2.5rem 0 0;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.875rem;
+}
+.legal-prose .legal-top a {
+	text-decoration: none;
+}
+
+/* Editing
+   The toolbar sits on top of the document card and stays in view while
+   you scroll; the text gets a quiet ring so it is clear it can change. */
+.legal-toolbar {
+	position: sticky;
+	top: var(--basalt-header-h);
+	z-index: 2;
+	display: flex;
+	gap: 0.1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.4rem 0.75rem;
+	border-bottom: 1px solid var(--basalt-edge);
+	border-radius: inherit;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	background: var(--basalt-plane);
+}
+.legal-toolbar[hidden] {
+	display: none;
+}
+.legal-toolbar-sep {
+	width: 1px;
+	height: 20px;
+	margin: 0 0.2rem;
+	background: var(--basalt-edge-strong);
+}
+.legal-toolbar-spacer {
+	flex: 1 1 auto;
+}
+.legal-tool {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	justify-content: center;
+	min-width: 32px;
+	height: 32px;
+	padding: 0 0.4rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--basalt-copy-body);
+	background: transparent;
+	transition:
+		background-color 110ms ease,
+		color 110ms ease;
+}
+.legal-tool-text {
+	padding: 0 0.65rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+.legal-tool:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.legal-tool:focus {
+	outline: 0;
+}
+.legal-tool:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 1px;
+}
+.legal-tool[aria-pressed="true"] {
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+}
+.legal-page.is-editing .legal-doc.basalt-box {
+	border-color: var(--basalt-hue-border);
+}
+/* The card's border already says "editing"; no focus ring on the text too. */
+.legal-page.is-editing .legal-prose {
+	outline: 0;
+	box-shadow: none;
+	caret-color: var(--basalt-hue);
+}
+.legal-page.is-editing .legal-top {
+	display: none;
+}
+
+/* Publish dialog */
+.legal-dialog-title {
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+}
+.legal-dialog-sub {
+	margin: 0.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--legal-quiet, var(--basalt-copy-muted));
+}
+.legal-dialog-body {
+	display: grid;
+	gap: 1.1rem;
+}
+.legal-dialog-body [hidden] {
+	display: none;
+}
+.legal-dialog-optional {
+	font-weight: 400;
+	color: var(--basalt-copy-muted);
+}
+
+@media print {
+	.legal-toc,
+	.legal-sample,
+	.legal-top,
+	.legal-toolbar,
+	.basalt-hero-actions {
+		display: none;
+	}
+	.legal-layout {
+		display: block;
+	}
+	.legal-doc.basalt-box {
+		border: 0;
+		box-shadow: none;
+	}
+	.legal-doc.basalt-box .card-body {
+		padding: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.legal-toc-list a {
+		transition: none;
+	}
+}
+.legal-prose h2:focus {
+	outline: none;
+}

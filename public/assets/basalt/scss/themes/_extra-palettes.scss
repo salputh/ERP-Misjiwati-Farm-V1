@@ -1,0 +1,26 @@
+@use "sass:map";
+@use "tokens";
+@use "light" as day;
+
+/* Four louder palettes sit beside the core five in the appearance panel:
+   Electric, Jewel, Duotone and Pastel Pop. Each one keeps its light and dark
+   sets together, and both are written out right after each other. Every
+   dark set of this group shares one frame: hairline borders in white, a heavy
+   black shadow and a deep scrim.
+
+   The light set answers to the bare attribute as well, so it also covers a
+   page with no scheme set. The dark set needs both attributes, which already
+   outranks the bare one, and it tells form controls to draw dark. */
+@each $palette, $sets in tokens.$loud {
+	[data-basalt-palette="#{$palette}"] {
+		&,
+		&[data-bs-theme="light"] {
+			@include day.tokens(map.get($sets, light));
+		}
+
+		&[data-bs-theme="dark"] {
+			@include day.tokens(map.get($sets, dark));
+			color-scheme: dark;
+		}
+	}
+}

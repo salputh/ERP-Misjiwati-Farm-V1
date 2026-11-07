@@ -1,0 +1,402 @@
+/* Basalt - Avatars page
+   The page shell (.avp-*): the card grid, kind pill, filter
+   chips, code snippet and demo furniture. The avatar types it
+   shows live in basalt.css. Colors come from the --basalt-*
+   tokens and every text color is mixed to clear 4.5:1 in
+   all palettes. */
+
+.avp-page {
+	/* Small gray text: the muted token pulled toward the body color. */
+	--avp-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	margin-top: 2rem;
+}
+.avp-page code {
+	padding: 0 0.3em;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 4px;
+	font-size: 0.85em;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Filter row */
+.avp-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	margin-bottom: 1.75rem;
+}
+.avp-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.avp-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+}
+.avp-chip:hover {
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.avp-chip:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+.avp-chips .avp-chip[aria-pressed="true"] {
+	border-color: var(--basalt-copy);
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+}
+.avp-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--avp-quiet);
+}
+
+/* Grid */
+.avp-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.avp-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+.avp-card.is-hidden {
+	display: none;
+}
+/* Below 1200px every card takes the row; pairs start at desktop width. */
+@media (min-width: 1200px) {
+	.avp-card {
+		grid-column: span 6;
+	}
+	.avp-card-full,
+	.avp-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+/* Card */
+.avp-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+@media (max-width: 575.98px) {
+	.avp-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+/* The kind sits above the title (it follows it in the markup, so the
+   title is read first). */
+.avp-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+.avp-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.avp-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--avp-quiet);
+}
+.avp-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--avp-quiet);
+}
+
+/* The demo area: a quiet stage the components sit on. */
+.avp-stage {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1.5rem;
+	border-radius: 12px;
+	border: 1px solid var(--basalt-edge);
+	background: var(--basalt-canvas);
+}
+.avp-stage-stack {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+}
+.avp-stage-stack > .avp-stage-label {
+	flex-basis: auto;
+}
+@media (max-width: 575.98px) {
+	.avp-stage {
+		padding: 1rem;
+	}
+}
+.avp-stage-label {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--avp-quiet);
+}
+.avp-stage-label:not(:first-child) {
+	margin-top: 0.5rem;
+}
+.avp-note {
+	margin: 0.85rem 0 0;
+	font-size: 0.8rem;
+	color: var(--avp-quiet);
+}
+
+/* Code snippet */
+.avp-code {
+	margin-top: auto;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+/* Space above the snippet line, whatever the demo ends with. */
+.avp-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.75rem;
+}
+.avp-code summary {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	list-style: none;
+	cursor: pointer;
+}
+.avp-code summary::-webkit-details-marker {
+	display: none;
+}
+.avp-code summary:hover {
+	color: var(--basalt-copy);
+}
+.avp-code summary:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.avp-code summary .bi {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.avp-code[open] summary .bi {
+	transform: rotate(90deg);
+}
+.avp-code-body {
+	position: relative;
+	margin-top: 0.75rem;
+}
+.avp-code-copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+}
+.avp-code pre {
+	margin: 0;
+	padding: 2.9rem 1rem 0.9rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge);
+	overflow-x: auto;
+	overflow-y: hidden;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.76rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+/* Demo furniture (page only) */
+.avp-controls {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.avp-stage-fill {
+	gap: 1.75rem;
+	flex-grow: 1;
+	justify-content: center;
+}
+.avp-field {
+	display: grid;
+	gap: 0.3rem;
+	min-width: 0;
+}
+.avp-field .form-label {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.avp-range-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+.avp-range-row .form-range {
+	flex: 1;
+	min-width: 8rem;
+}
+.avp-range-row output {
+	min-width: 1.5rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+.avp-toolbar {
+	display: flex;
+	gap: 1rem 2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	width: 100%;
+}
+.avp-show {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 7.5rem;
+}
+.avp-row {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.avp-row-end {
+	align-items: flex-end;
+}
+.avp-cell {
+	display: grid;
+	gap: 0.4rem;
+	justify-items: center;
+}
+.avp-cell-label {
+	font-size: 0.74rem;
+	font-family: "Chivo Mono", monospace;
+	color: var(--avp-quiet);
+}
+.avp-names {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 1rem;
+}
+.avp-gen {
+	display: flex;
+	gap: 1.25rem;
+	align-items: center;
+	width: 100%;
+}
+.avp-gen .avp-field {
+	flex: 1;
+}
+.avp-gen-meta {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--avp-quiet);
+}
+.avp-edit {
+	display: flex;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	width: 100%;
+}
+.avp-edit-text {
+	display: grid;
+	gap: 0.5rem;
+	flex: 1;
+	min-width: 12rem;
+}
+.avp-edit-title {
+	margin: 0;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.avp-edit-status {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--avp-quiet);
+}
+.avp-presence-me {
+	display: flex;
+	gap: 0.9rem;
+	align-items: center;
+}
+.avp-presence-menu .basalt-avatar-status {
+	width: 0.7rem;
+	height: 0.7rem;
+}
+.avp-presence-menu .basalt-avatar-status-dot {
+	position: static;
+	display: block;
+	width: 0.7rem;
+	min-width: 0;
+	height: 0.7rem;
+	min-height: 0;
+	border: 0;
+}
+.avp-presence-me-name {
+	display: block;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.avp-tiles {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+	width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.avp-chip,
+	.avp-code summary .bi {
+		transition: none;
+	}
+}
+@media print {
+	.avp-filter,
+	.avp-code {
+		display: none;
+	}
+	.avp-card.is-hidden {
+		display: block;
+	}
+}

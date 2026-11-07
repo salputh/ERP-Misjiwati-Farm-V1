@@ -122,7 +122,7 @@ class Dashboard extends Component
         $panenTerakhir = $panenTerakhir ? Carbon::parse($panenTerakhir) : null;
         $umurSelesai = $panenTerakhir && ($this->periode->tertutup() || ($this->total['terpanen'] > 0 && $this->total['sisa'] <= 0));
         $kerjaSelesai = $panenTerakhir && $this->periode->tertutup();
-        $hariIni = today();
+        $hariIni = $this->periode->tanggalAcuan();
 
         return [
             'chick_in' => $this->periode->tanggal_chick_in,
@@ -275,8 +275,9 @@ class Dashboard extends Component
      */
     private function bobotGabungan(): array
     {
-        $kandang = collect($this->kandang);
-        $jumlahHari = (int) $kandang->min(fn (array $k) => count($k['bobot_harian']));
+        // Hanya kandang yang sudah punya data timbang; kandang tanpa timbangan tidak boleh mengosongkan ringkasan.
+        $kandang = collect($this->kandang)->filter(fn (array $k) => count($k['bobot_harian']) > 0);
+        $jumlahHari = $kandang->isEmpty() ? 0 : (int) $kandang->min(fn (array $k) => count($k['bobot_harian']));
         $totalHidup = $kandang->sum('sisa') ?: 1;
 
         $gabungan = [];

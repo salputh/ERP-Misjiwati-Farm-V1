@@ -1,0 +1,1505 @@
+/*
+ * Sliders and rating page (sliders-and-rating.html), every class prefixed
+ * sr-. Colors come only from the --basalt-* tokens, so each demo follows the
+ * palette and the light or dark theme. The sheet reads the way the page
+ * does: the filter chips, the card grid, the pieces every field is built
+ * from, the single and two-handle sliders, then one block per card in page
+ * order, and the notes at the foot.
+ */
+
+/* Page tokens. The quiet text leans the muted token toward the body color
+   so small type clears 4.5:1 on the lighter palettes. The status colors are
+   tuned for fills, so as text they are pulled toward the copy color too.
+   Stars read as gold in every palette. */
+.sr-page {
+	--sr-quiet: color-mix(in srgb, var(--basalt-copy-muted) 78%, var(--basalt-copy));
+	--sr-track: color-mix(in srgb, var(--basalt-copy) 13%, transparent);
+	--sr-off: color-mix(in srgb, var(--basalt-copy) 20%, var(--basalt-plane));
+	--sr-star: var(--basalt-warning);
+	--sr-danger-text: color-mix(in srgb, var(--basalt-danger) 62%, var(--basalt-copy));
+	--sr-success-text: color-mix(in srgb, var(--basalt-success) 48%, var(--basalt-copy));
+	--sr-warning-text: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	--sr-thumb: 20px;
+	margin-top: 2rem;
+}
+
+/* Bootstrap keeps white text on .btn-primary, which is too faint on the
+   light primaries of the dark palettes; the palette's own on-primary color
+   reads in every theme. The fill leans a little toward the text color
+   (darker in light mode, lighter in dark), which the paler primaries need
+   to clear 4.5:1. */
+.sr-page .btn-primary {
+	--sr-btn: color-mix(in srgb, var(--basalt-hue) 84%, var(--basalt-copy));
+	--sr-btn-hover: color-mix(in srgb, var(--basalt-hue) 70%, var(--basalt-copy));
+	--bs-btn-bg: var(--sr-btn);
+	--bs-btn-border-color: var(--sr-btn);
+	--bs-btn-hover-bg: var(--sr-btn-hover);
+	--bs-btn-hover-border-color: var(--sr-btn-hover);
+	--bs-btn-active-bg: var(--sr-btn-hover);
+	--bs-btn-active-border-color: var(--sr-btn-hover);
+	--bs-btn-color: var(--basalt-on-hue);
+	--bs-btn-hover-color: var(--basalt-on-hue);
+	--bs-btn-active-color: var(--basalt-on-hue);
+	--bs-btn-disabled-color: var(--basalt-on-hue);
+}
+
+.sr-page .form-control::placeholder {
+	color: var(--sr-quiet);
+	opacity: 1;
+}
+
+/* The chips only hide cards; the count under them says how many stay. */
+.sr-filter {
+	display: flex;
+	gap: 0.75rem;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 1.75rem;
+}
+
+.sr-chips {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+
+	& .sr-chip[aria-pressed="true"] {
+		border-color: var(--basalt-copy);
+		color: var(--basalt-plane);
+		background: var(--basalt-copy);
+	}
+}
+
+.sr-chip {
+	padding: 0.4rem 0.9rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease,
+		border-color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+.sr-filter-count {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--sr-quiet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sr-chip {
+		transition: none;
+	}
+}
+
+@media print {
+	.sr-filter {
+		display: none;
+	}
+}
+
+/* Twelve columns, so a card can take the row or half of it. Pairs start
+   at desktop width; below 1200px every card has a row to itself, and a
+   hidden card comes back for print. */
+.sr-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.sr-card {
+	grid-column: span 12;
+	min-width: 0;
+
+	&.is-hidden {
+		display: none;
+	}
+}
+
+@media (min-width: 1200px) {
+	.sr-card {
+		grid-column: span 6;
+	}
+	.sr-card-full,
+	.sr-grid .sr-card.is-alone {
+		grid-column: span 12;
+	}
+}
+
+@media print {
+	.sr-card.is-hidden {
+		display: block;
+	}
+}
+
+/* A card body is a column, so the code snippet can sink to the foot. */
+.sr-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+	.sr-card.basalt-box .card-body {
+		padding: 1.75rem;
+	}
+}
+
+/* The kind pill comes after the title in the markup, so the title is read
+   first, and the reversed column puts it above the title on screen. */
+.sr-card-head {
+	display: flex;
+	gap: 0.7rem;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+}
+
+.sr-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.sr-card-desc {
+	max-width: 62ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--sr-quiet);
+
+	& code {
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+	}
+}
+
+.sr-card-kind {
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.035em;
+	white-space: nowrap;
+	color: var(--sr-quiet);
+}
+
+/* The pieces every field is built from: a label row with the value on
+   the right, help under the control, an eyebrow over a group, an error
+   with its icon, the action row, and a status line that takes no room
+   until it has something to say. Labels drop Bootstrap's column styling
+   so they work inside a legend too. */
+.sr-label {
+	display: block;
+	float: none;
+	width: auto;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--basalt-copy);
+}
+
+.sr-label-sm {
+	margin-bottom: 0.3rem;
+	font-size: 0.8rem;
+}
+
+.sr-field-top {
+	display: flex;
+	gap: 0.75rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.3rem;
+
+	& .sr-label {
+		margin: 0;
+	}
+}
+
+.sr-value {
+	font-size: 0.875rem;
+	font-weight: 700;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.sr-value-sm {
+	font-size: 0.8rem;
+}
+
+.sr-help {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--sr-quiet);
+}
+
+.sr-eyebrow {
+	margin: 0 0 0.5rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
+	color: var(--sr-quiet);
+}
+
+/* The error leads with the exclamation-circle glyph from Bootstrap Icons. */
+.sr-error {
+	display: flex;
+	gap: 0.3rem;
+	align-items: flex-start;
+	margin: 0.5rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--sr-danger-text);
+
+	&::before {
+		content: "\F33A";
+		font-family: "bootstrap-icons";
+		line-height: 1.35;
+	}
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.sr-actions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 1.5rem;
+}
+
+.sr-status {
+	margin: 0.75rem 0 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--sr-success-text);
+
+	&:empty {
+		display: none;
+	}
+}
+
+/* Fieldsets here only group radios; the browser's own box is dropped. */
+.sr-faces,
+.sr-nps fieldset {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+/* One range input. The script writes --sr-fill, and the track is a
+   gradient that switches from the tone to the empty color at that point;
+   Firefox paints the filled part with its own progress pseudo-element.
+   The tone follows the value on the low-stock slider and grays out when
+   the input is disabled. */
+.sr-slide {
+	position: relative;
+	container-type: inline-size;
+}
+
+.sr-range {
+	--sr-tone: var(--basalt-hue);
+	--sr-fill: 50%;
+	display: block;
+	width: 100%;
+	height: 1.75rem;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	cursor: pointer;
+	appearance: none;
+
+	&:focus {
+		outline: none;
+	}
+
+	&::-webkit-slider-runnable-track {
+		height: 6px;
+		border-radius: 999px;
+		background: linear-gradient(to right, var(--sr-tone) 0 var(--sr-fill), var(--sr-track) var(--sr-fill) 100%);
+	}
+
+	&::-moz-range-track {
+		height: 6px;
+		border-radius: 999px;
+		background: var(--sr-track);
+	}
+
+	&::-moz-range-progress {
+		height: 6px;
+		border-radius: 999px;
+		background: var(--sr-tone);
+	}
+
+	&::-webkit-slider-thumb {
+		width: var(--sr-thumb);
+		height: var(--sr-thumb);
+		margin-top: calc((6px - var(--sr-thumb)) / 2);
+		border-radius: 50%;
+		border: 3px solid var(--sr-tone);
+		background: var(--basalt-plane);
+		box-shadow: 0 1px 3px color-mix(in srgb, var(--basalt-copy) 25%, transparent);
+		transition:
+			transform 130ms ease,
+			box-shadow 130ms ease;
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
+	&::-moz-range-thumb {
+		box-sizing: border-box;
+		width: var(--sr-thumb);
+		height: var(--sr-thumb);
+		border-radius: 50%;
+		border: 3px solid var(--sr-tone);
+		background: var(--basalt-plane);
+		box-shadow: 0 1px 3px color-mix(in srgb, var(--basalt-copy) 25%, transparent);
+	}
+
+	&:active::-webkit-slider-thumb {
+		transform: scale(1.12);
+	}
+	&:focus-visible::-webkit-slider-thumb {
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--sr-tone) 30%, transparent);
+	}
+	&:focus-visible::-moz-range-thumb {
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--sr-tone) 30%, transparent);
+	}
+
+	&:disabled {
+		--sr-tone: color-mix(in srgb, var(--basalt-copy) 32%, var(--basalt-plane));
+		cursor: not-allowed;
+	}
+
+	&.is-good {
+		--sr-tone: var(--basalt-success);
+	}
+	&.is-tight {
+		--sr-tone: var(--basalt-warning);
+	}
+	&.is-risky {
+		--sr-tone: var(--basalt-danger);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sr-range::-webkit-slider-thumb {
+		transition: none;
+	}
+}
+
+/* The small size has a thinner track and a 16px thumb. */
+.sr-range-sm {
+	--sr-thumb: 16px;
+	height: 1.4rem;
+
+	&::-webkit-slider-runnable-track {
+		height: 4px;
+	}
+
+	&::-webkit-slider-thumb {
+		margin-top: calc((4px - var(--sr-thumb)) / 2);
+		border-width: 2px;
+	}
+
+	&::-moz-range-track,
+	&::-moz-range-progress {
+		height: 4px;
+	}
+}
+
+/* The value bubble rides above the thumb while the slider is hovered,
+   focused or dragged; the script keeps it over the thumb's center. */
+.sr-bubble {
+	position: absolute;
+	bottom: calc(100% + 4px);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 0.2rem 0.5rem;
+	border-radius: 7px;
+	font-size: 0.71rem;
+	font-weight: 700;
+	line-height: 1.3;
+	white-space: nowrap;
+	color: var(--basalt-plane);
+	background: var(--basalt-copy);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 130ms ease;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		margin-left: -4px;
+		border: 4px solid transparent;
+		border-top-color: var(--basalt-copy);
+	}
+}
+
+.sr-slide:hover .sr-bubble,
+.sr-slide:focus-within .sr-bubble,
+.sr-slide.is-dragging .sr-bubble {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sr-bubble {
+		transition: none;
+	}
+}
+
+/* Tick labels under a stepped slider, built by the script. The ends hug
+   the edges, the rest center under their step, and the lit one is the
+   current value. */
+.sr-ticks {
+	position: relative;
+	height: 1.3rem;
+	margin-top: 0.1rem;
+
+	& span {
+		position: absolute;
+		top: 0;
+		transform: translateX(-50%);
+		font-size: 0.71rem;
+		white-space: nowrap;
+		color: var(--sr-quiet);
+		cursor: pointer;
+	}
+
+	& span:first-child {
+		transform: none;
+	}
+	& span:last-child {
+		transform: translateX(-100%);
+	}
+
+	& span.is-on {
+		font-weight: 700;
+		color: var(--basalt-copy);
+	}
+}
+
+/* A dense row keeps only the ends and the lit label until the slider
+   itself is wide enough for every word, whatever the screen size. */
+.sr-ticks-dense span:not(:first-child):not(:last-child):not(.is-on) {
+	visibility: hidden;
+}
+
+@container (min-width: 30rem) {
+	.sr-ticks-dense span:not(:first-child):not(:last-child):not(.is-on) {
+		visibility: visible;
+	}
+}
+
+/* Two range inputs stacked on one box. The empty track is the ::before,
+   the fill is a span the script places between the two thumb centers,
+   and both hang from the middle of the box. The inputs themselves are
+   see-through and ignore the pointer, so only the thumbs can be grabbed. */
+.sr-dual {
+	position: relative;
+	height: 1.75rem;
+}
+
+.sr-dual::before,
+.sr-dual-fill {
+	content: "";
+	position: absolute;
+	top: 50%;
+	height: 6px;
+	margin-top: -3px;
+	border-radius: 999px;
+}
+
+.sr-dual::before {
+	right: 0;
+	left: 0;
+	background: var(--sr-track);
+}
+
+.sr-dual-fill {
+	right: 0;
+	left: 0;
+	background: var(--basalt-hue);
+}
+
+.sr-dual-input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	background: transparent;
+	pointer-events: none;
+	appearance: none;
+
+	&:focus {
+		outline: none;
+	}
+
+	&::-webkit-slider-runnable-track {
+		height: 100%;
+		background: transparent;
+	}
+
+	&::-moz-range-track {
+		background: transparent;
+	}
+
+	&::-webkit-slider-thumb {
+		width: var(--sr-thumb);
+		height: var(--sr-thumb);
+		margin-top: calc((1.75rem - var(--sr-thumb)) / 2);
+		border-radius: 50%;
+		border: 3px solid var(--basalt-hue);
+		background: var(--basalt-plane);
+		box-shadow: 0 1px 3px color-mix(in srgb, var(--basalt-copy) 25%, transparent);
+		cursor: grab;
+		pointer-events: auto;
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
+	&::-moz-range-thumb {
+		box-sizing: border-box;
+		width: var(--sr-thumb);
+		height: var(--sr-thumb);
+		border-radius: 50%;
+		border: 3px solid var(--basalt-hue);
+		background: var(--basalt-plane);
+		cursor: grab;
+		pointer-events: auto;
+	}
+
+	&:focus-visible::-webkit-slider-thumb {
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 30%, transparent);
+	}
+	&:focus-visible::-moz-range-thumb {
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--basalt-hue) 30%, transparent);
+	}
+
+	/* The handle touched last is raised, so two parked together come apart. */
+	&.is-top {
+		z-index: 2;
+	}
+}
+
+/* Slider sizes and states: six fields in a grid, two across from tablet
+   width and three from 1400px. */
+.sr-states {
+	display: grid;
+	gap: 1.75rem;
+}
+
+@media (min-width: 768px) {
+	.sr-states {
+		gap: 2rem 2.5rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 1400px) {
+	.sr-states {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+/* Room above the track for the bubble, so it never covers the label. */
+.sr-slide-bubble {
+	margin-top: 1.9rem;
+}
+
+.sr-tone-word {
+	font-weight: 700;
+	color: var(--sr-success-text);
+
+	&.is-tight {
+		color: var(--sr-warning-text);
+	}
+	&.is-risky {
+		color: var(--sr-danger-text);
+	}
+}
+
+.sr-field-locked {
+	& .sr-label,
+	& .sr-value {
+		color: var(--sr-quiet);
+	}
+
+	& .sr-help .bi {
+		margin-right: 0.1rem;
+	}
+}
+
+/* Slider with number field: the label, the shared stepper and the unit
+   share one row, and the labeled marks hang under the track. */
+.sr-whole-top {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 0.6rem;
+
+	& .sr-label {
+		margin: 0 auto 0 0;
+	}
+}
+
+.sr-whole-unit {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--sr-quiet);
+}
+
+.sr-slide-marks {
+	padding-bottom: 1.3rem;
+}
+
+.sr-marks {
+	position: absolute;
+	top: 1.75rem;
+	right: 0;
+	left: 0;
+	height: 1.3rem;
+
+	& span {
+		position: absolute;
+		top: 0;
+		transform: translateX(-50%);
+		font-size: 0.7rem;
+		white-space: nowrap;
+		color: var(--sr-quiet);
+
+		&::before {
+			content: "";
+			position: absolute;
+			bottom: calc(100% + 2px);
+			left: 50%;
+			width: 2px;
+			height: 7px;
+			margin-left: -1px;
+			border-radius: 1px;
+			background: var(--sr-track);
+		}
+	}
+}
+
+/* Stepped slider with labels, and the box that shows what is read out. */
+.sr-stepped {
+	display: grid;
+	gap: 1.1rem;
+}
+
+.sr-said {
+	margin-top: 0.4rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+
+	& dl {
+		display: grid;
+		gap: 0.3rem;
+		margin: 0;
+	}
+
+	& dl > div {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--sr-quiet);
+	}
+
+	& dd {
+		display: flex;
+		gap: 0.4rem;
+		align-items: center;
+		margin: 0;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	& dd .bi {
+		font-size: 0.7rem;
+		color: var(--sr-quiet);
+	}
+}
+
+.sr-said-num {
+	font-family: "Chivo Mono", monospace;
+	font-weight: 500;
+	color: var(--sr-quiet);
+}
+
+/* Range slider with histogram: bars sit above the track, inset by half a
+   thumb so they line up with where a thumb's center can go, and the ones
+   inside the chosen span are tinted. */
+.sr-histo {
+	display: flex;
+	gap: 3px;
+	align-items: flex-end;
+	height: 120px;
+	padding: 0 calc(var(--sr-thumb) / 2);
+
+	& span {
+		flex: 1;
+		min-height: 3px;
+		border-radius: 4px 4px 1px 1px;
+		background: var(--sr-track);
+		transition: background-color 170ms ease;
+	}
+
+	& span.is-in {
+		background: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-plane));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sr-histo span {
+		transition: none;
+	}
+}
+
+.sr-price .sr-dual {
+	margin-top: 0.25rem;
+}
+
+.sr-price-boxes {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-end;
+	margin-top: 1rem;
+}
+
+.sr-price-box {
+	flex: 1 1 0;
+	min-width: 0;
+	max-width: 9rem;
+}
+
+.sr-price-dash {
+	padding-bottom: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--sr-quiet);
+}
+
+.sr-price-result {
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Time range slider. 7 am to 9 pm is 14 hours; the 11 am, 3 pm and 7 pm
+   marks sit at 4/14, 8/14 and 12/14 of the way, so they are placed
+   rather than spaced, allowing for the thumb at each end. */
+.sr-clock {
+	position: relative;
+	height: 1.1rem;
+	margin: 0.2rem 0 0.25rem;
+	font-size: 0.71rem;
+	color: var(--sr-quiet);
+
+	& span {
+		position: absolute;
+		top: 0;
+		transform: translateX(-50%);
+		white-space: nowrap;
+	}
+
+	& span:nth-child(1) {
+		left: 0;
+		transform: none;
+	}
+
+	& span:nth-child(2) {
+		left: calc(4 / 14 * (100% - var(--sr-thumb)) + var(--sr-thumb) / 2);
+	}
+	& span:nth-child(3) {
+		left: calc(8 / 14 * (100% - var(--sr-thumb)) + var(--sr-thumb) / 2);
+	}
+	& span:nth-child(4) {
+		left: calc(12 / 14 * (100% - var(--sr-thumb)) + var(--sr-thumb) / 2);
+	}
+
+	& span:nth-child(5) {
+		right: 0;
+		left: auto;
+		transform: none;
+	}
+}
+
+.sr-window-span {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Star rating input. Each star is a label over a hidden radio; lit ones
+   take the star color, hovering scales them, and the screen reader text
+   inside takes the copy color for the contrast checkers. An invalid set
+   tints its unlit stars toward the danger color. */
+.sr-stars {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+
+	& label {
+		display: inline-grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 8px;
+		font-size: 1.6rem;
+		color: var(--sr-off);
+		cursor: pointer;
+		transition:
+			color 110ms ease,
+			transform 110ms ease;
+	}
+
+	& label.is-lit {
+		color: var(--sr-star);
+	}
+	& label:hover {
+		transform: scale(1.1);
+	}
+
+	& input:focus-visible + label {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+
+	& label .visually-hidden {
+		color: var(--basalt-copy);
+	}
+
+	&.is-invalid label:not(.is-lit) {
+		color: color-mix(in srgb, var(--basalt-danger) 45%, var(--basalt-plane));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sr-stars label {
+		transition: none;
+	}
+}
+
+.sr-stars-row {
+	display: flex;
+	gap: 0.1rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.sr-stars-word {
+	margin-left: 0.6rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--sr-quiet);
+
+	&.is-set {
+		color: var(--basalt-copy);
+	}
+}
+
+.sr-stars-sm label {
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 6px;
+	font-size: 1.05rem;
+}
+
+/* The optional small sets sit together on a tinted panel. */
+.sr-aspects {
+	display: grid;
+	gap: 0.5rem 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+	margin-bottom: 1.25rem;
+	padding: 1rem 1.1rem;
+	border-radius: 12px;
+	background: var(--basalt-plane-alt);
+
+	& .sr-stars {
+		margin: 0;
+	}
+}
+
+.sr-aspects-name {
+	float: none;
+	width: auto;
+	margin: 0 0 0.2rem;
+	padding: 0;
+	font-size: 0.77rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--basalt-copy-body);
+}
+
+/* Read-only stars: two layers of five star glyphs, the lit one on top
+   and clipped to score / 5 of the width, so a 4.6 fills most of the
+   fifth star. Three sizes. */
+.sr-readonly {
+	--sr-size: 1.1rem;
+	position: relative;
+	display: inline-block;
+	font-size: var(--sr-size);
+	line-height: 1;
+	letter-spacing: 0.12em;
+	white-space: nowrap;
+}
+
+.sr-readonly::before,
+.sr-readonly-on::before {
+	content: "\F586\F586\F586\F586\F586";
+	font-family: "bootstrap-icons";
+}
+
+.sr-readonly::before {
+	color: var(--sr-off);
+}
+
+.sr-readonly-on {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: var(--share, 0%);
+	overflow: hidden;
+	color: var(--sr-star);
+}
+
+.sr-readonly-sm {
+	--sr-size: 0.8rem;
+}
+.sr-readonly-lg {
+	--sr-size: 1.6rem;
+}
+
+/* The read-only card: a big average beside a bar per score, then the
+   three sizes listed under a rule. */
+.sr-summary {
+	display: grid;
+	gap: 1.5rem 2rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+
+@media (max-width: 479.98px) {
+	.sr-summary {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.sr-summary-big {
+	margin: 0 0 0.4rem;
+	font-size: 3rem;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -0.03em;
+	color: var(--basalt-copy);
+}
+
+.sr-summary-from {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	color: var(--sr-quiet);
+}
+
+.sr-breakdown {
+	display: grid;
+	gap: 0.2rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sr-breakdown-row {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: 2.4rem minmax(0, 1fr) 2.6rem;
+	align-items: center;
+	padding: 0.2rem 0;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+
+.sr-breakdown-n {
+	display: inline-flex;
+	gap: 0.25rem;
+	align-items: center;
+
+	& .bi {
+		font-size: 0.7rem;
+		color: var(--sr-star);
+	}
+}
+
+.sr-breakdown-bar {
+	display: block;
+	height: 8px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--sr-track);
+
+	& span {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		background: var(--sr-star);
+	}
+}
+
+.sr-breakdown-pct {
+	text-align: right;
+	color: var(--sr-quiet);
+}
+
+.sr-sizes-list {
+	display: grid;
+	gap: 0.75rem;
+	margin: 0;
+	padding: 1.25rem 0 0;
+	border-top: 1px solid var(--basalt-edge);
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.4rem 1rem;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+}
+
+.sr-sizes-list-meta {
+	font-size: 0.8rem;
+	color: var(--sr-quiet);
+}
+
+/* Thumbs up and down: a question beside a pair of toggle buttons. A
+   pressed thumb swaps its outline icon for the filled one and tints. */
+.sr-thumbs {
+	display: grid;
+	gap: 1.25rem;
+}
+
+.sr-helpful {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+
+	& + .sr-helpful {
+		padding-top: 1.25rem;
+		border-top: 1px solid var(--basalt-edge);
+	}
+}
+
+.sr-helpful-q {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.sr-helpful-btns {
+	display: flex;
+	gap: 0.4rem;
+}
+
+.sr-thumb {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.75rem;
+	border-radius: 999px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue-border);
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+
+	&[aria-pressed="true"] .bi::before {
+		content: var(--sr-thumb-on);
+	}
+	&[data-sr-thumb="up"] {
+		--sr-thumb-on: "\F406";
+	}
+	&[data-sr-thumb="down"] {
+		--sr-thumb-on: "\F404";
+	}
+	&[aria-pressed="true"] .bi {
+		color: var(--basalt-hue);
+	}
+	&[aria-pressed="true"] .sr-thumb-n {
+		color: var(--basalt-copy);
+	}
+}
+
+.sr-thumb-icon {
+	padding: 0.4rem 0.65rem;
+}
+
+.sr-thumb-n {
+	font-weight: 600;
+	color: var(--sr-quiet);
+}
+
+/* Face rating: five labels over hidden radios, each an icon with a word
+   under it. The chosen face tints and grows, and the reasons fieldset
+   appears under the row once a face is picked. */
+.sr-faces-row {
+	display: grid;
+	gap: 0.4rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+
+	& label {
+		--sr-tone: var(--basalt-hue);
+		display: flex;
+		gap: 0.3rem;
+		flex-direction: column;
+		align-items: center;
+		padding: 0.7rem 0.25rem 0.6rem;
+		border-radius: 12px;
+		border: 1px solid transparent;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--sr-quiet);
+		cursor: pointer;
+		transition:
+			background-color 130ms ease,
+			border-color 130ms ease,
+			color 130ms ease;
+	}
+
+	& label .bi {
+		font-size: 1.9rem;
+		line-height: 1;
+		transition: transform 170ms ease;
+	}
+
+	& label:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+
+	& label:hover .bi {
+		transform: scale(1.08);
+	}
+
+	& input:checked + label {
+		border-color: var(--basalt-hue-border);
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+
+	& input:checked + label .bi {
+		transform: scale(1.12);
+		color: var(--basalt-hue);
+	}
+
+	& input:focus-visible + label {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sr-faces-row label,
+	.sr-faces-row label .bi {
+		transition: none;
+	}
+}
+
+.sr-reasons {
+	margin-top: 1.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+
+	& > legend {
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+}
+
+/* The 0 to 10 scale: eleven cells in a row, six to a row on a phone.
+   Each number carries its band's tone, which shows on hover and when
+   it is picked; an invalid form reddens every border. */
+.sr-nps-scale {
+	display: grid;
+	gap: 0.3rem;
+	grid-template-columns: repeat(11, minmax(0, 1fr));
+}
+
+@media (max-width: 479.98px) {
+	.sr-nps-scale {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+}
+
+.sr-nps-n {
+	--sr-tone: var(--basalt-danger);
+	display: grid;
+	place-items: center;
+	height: 2.6rem;
+	border-radius: 10px;
+	border: 1px solid var(--basalt-edge-strong);
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease,
+		transform 130ms ease;
+
+	&.is-passive {
+		--sr-tone: var(--basalt-warning);
+	}
+	&.is-promoter {
+		--sr-tone: var(--basalt-success);
+	}
+
+	&:hover {
+		transform: translateY(-1px);
+		border-color: var(--sr-tone);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sr-nps-n {
+		transition: none;
+	}
+}
+
+.sr-nps {
+	& input:checked + .sr-nps-n {
+		border-color: var(--sr-tone);
+		background: color-mix(in srgb, var(--sr-tone) 16%, var(--basalt-plane));
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--sr-tone) 20%, transparent);
+	}
+
+	& input:focus-visible + .sr-nps-n {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	&.is-invalid .sr-nps-n {
+		border-color: color-mix(in srgb, var(--basalt-danger) 55%, var(--basalt-edge-strong));
+	}
+}
+
+.sr-nps-ends {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	margin-top: 0.5rem;
+	font-size: 0.75rem;
+	color: var(--sr-quiet);
+
+	& span:last-child {
+		text-align: right;
+	}
+}
+
+.sr-nps-follow {
+	margin-top: 1.4rem;
+
+	&[hidden] {
+		display: none;
+	}
+
+	& .sr-field-top {
+		align-items: center;
+		margin-bottom: 0.5rem;
+	}
+}
+
+.sr-tag {
+	--sr-tone: var(--basalt-success);
+	flex-shrink: 0;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--sr-tone) 45%, transparent);
+	font-size: 0.71rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: color-mix(in srgb, var(--sr-tone) 18%, var(--basalt-plane));
+
+	&.is-passive {
+		--sr-tone: var(--basalt-warning);
+	}
+	&.is-detractor {
+		--sr-tone: var(--basalt-danger);
+	}
+}
+
+/* The code snippet at the foot of every card. The auto margin sinks it to
+   the bottom, so paired cards line up, and the block above keeps a gap so
+   the two never touch. */
+.sr-code {
+	margin-top: auto;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--basalt-edge);
+
+	& summary {
+		display: inline-flex;
+		gap: 0.4rem;
+		align-items: center;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--basalt-copy-body);
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+		&:hover {
+			color: var(--basalt-copy);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 3px;
+		}
+
+		& .bi {
+			font-size: 0.7rem;
+			transition: transform 170ms ease;
+		}
+	}
+
+	&[open] summary .bi {
+		transform: rotate(90deg);
+	}
+
+	& pre {
+		margin: 0.75rem 0 0;
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1px solid var(--basalt-edge);
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.76rem;
+		line-height: 1.6;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+	}
+}
+
+.sr-card .card-body > :nth-last-child(2) {
+	margin-bottom: 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sr-code summary .bi {
+		transition: none;
+	}
+}
+
+@media print {
+	.sr-code {
+		display: none;
+	}
+}
+
+/* The notes at the foot of the page, two columns from 992px. */
+.sr-notes {
+	margin-top: 3rem;
+	padding: 1.75rem;
+	border-radius: 16px;
+	border: 1px dashed var(--basalt-edge-strong);
+
+	& ul {
+		margin: 0;
+		padding-left: 1.1rem;
+	}
+
+	& li {
+		margin-bottom: 0.4rem;
+		font-size: 0.85rem;
+		line-height: 1.6;
+		color: var(--basalt-copy-body);
+	}
+
+	& code {
+		font-size: 0.8rem;
+		color: var(--basalt-copy);
+	}
+}
+
+.sr-notes-title {
+	margin: 0 0 1rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.sr-notes-grid {
+	display: grid;
+	gap: 0 2.5rem;
+}
+
+@media (min-width: 992px) {
+	.sr-notes-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}

@@ -1,0 +1,911 @@
+/* Styles for notifications.html, all under .ntf-*. The hero, cards, dropdowns,
+   switches, skeletons, empty states and toasts come from basalt.css; what is
+   here is the feed card (filter tabs, bulk bar, day labels, rows with their
+   avatar, action pill and tray, the reply and review box) and the two side
+   cards (channel matrix, quiet hours). */
+
+.ntf-page {
+	/* The quiet gray is the muted token pulled toward the body color: it holds
+     4.5:1 on every palette, unread rows included. */
+	--ntf-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	/* The primary alone misses 4.5:1 as text on a few light palettes. */
+	--ntf-link: color-mix(in srgb, var(--basalt-hue) 55%, var(--basalt-copy));
+	--ntf-success-text: color-mix(in srgb, var(--basalt-success) 55%, var(--basalt-copy));
+	--ntf-tint: color-mix(in srgb, var(--basalt-hue) 11%, var(--basalt-plane));
+	--ntf-tint-strong: color-mix(in srgb, var(--basalt-hue) 18%, var(--basalt-plane));
+	--ntf-line: var(--basalt-edge);
+
+	/* The hero's disabled button keeps full opacity and goes gray instead. */
+	& .basalt-hero-actions .btn:disabled {
+		border-color: var(--ntf-line);
+		color: var(--ntf-quiet);
+		background: var(--basalt-wash);
+		opacity: 1;
+	}
+	& .dropdown-header {
+		font-size: 0.75rem;
+		color: var(--ntf-quiet);
+	}
+}
+
+/* Feed on the left, a fixed side column on the right; one column under 992px. */
+.ntf-layout {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) 20.5rem;
+	align-items: start;
+
+	@media (max-width: 991.98px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.ntf-feed {
+	min-width: 0;
+}
+.ntf-side {
+	display: grid;
+	gap: 1.5rem;
+	min-width: 0;
+}
+
+/* The toolbar: underline tabs on the left, sort and select on the right. */
+.ntf-bar {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	padding: 0.25rem var(--basalt-pad-x) 0;
+	border-bottom: 1px solid var(--ntf-line);
+
+	@media (max-width: 575.98px) {
+		padding: 0.1rem var(--basalt-pad-x-narrow) 0;
+	}
+}
+/* The tabs keep to one row; when they do not fit they slide sideways and
+   fade at the hidden edge. The row reaches one pixel lower so the active
+   underline, which sits on the bar's rule, is not clipped. */
+.ntf-tabs {
+	display: flex;
+	column-gap: 1.35rem;
+	flex-wrap: nowrap;
+	margin-bottom: -1px;
+	padding-bottom: 1px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+
+	@media (max-width: 575.98px) {
+		column-gap: 1.1rem;
+	}
+}
+.ntf-tab {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+	white-space: nowrap;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.95rem 0 0.85rem;
+	border: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--ntf-quiet);
+	background: none;
+
+	/* The underline is a pseudo-element that sits on the bar's bottom rule. */
+	&::after {
+		content: "";
+		position: absolute;
+		right: 0;
+		bottom: -1px;
+		left: 0;
+		height: 2px;
+		border-radius: 2px 2px 0 0;
+		background: transparent;
+		transition: background-color 170ms ease;
+	}
+	&:hover {
+		color: var(--basalt-copy);
+	}
+	&:hover::after {
+		background: var(--basalt-edge-strong);
+	}
+	&[aria-pressed="true"] {
+		color: var(--basalt-copy);
+	}
+	&[aria-pressed="true"]::after {
+		background: var(--basalt-hue);
+	}
+	&[aria-pressed="true"] .ntf-tab-count {
+		color: var(--ntf-link);
+		background: var(--ntf-tint);
+	}
+	&:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: -2px;
+	}
+
+	@media (max-width: 575.98px) {
+		padding: 0.8rem 0 0.7rem;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		&::after {
+			transition: none;
+		}
+	}
+}
+.ntf-tab-count {
+	min-width: 1.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 6px;
+	font:
+		600 0.71rem/1.4 "Chivo Mono",
+		monospace;
+	text-align: center;
+	color: var(--basalt-copy);
+	background: var(--basalt-wash);
+}
+.ntf-bar-tools {
+	display: flex;
+	gap: 0.25rem;
+	align-items: center;
+	margin-left: auto;
+	padding-bottom: 0.5rem;
+
+	@media (max-width: 575.98px) {
+		justify-content: flex-end;
+		width: 100%;
+		margin: 0 -0.5rem 0 0;
+		padding: 0 0 0.4rem;
+	}
+}
+.ntf-tool {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.6rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--ntf-quiet);
+	background: none;
+
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&[aria-pressed="true"] {
+		color: var(--ntf-link);
+		background: var(--ntf-tint);
+	}
+	&:disabled {
+		opacity: 0.6;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+/* The bulk bar appears under the toolbar while select mode is on. */
+.ntf-bulk {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 0.75rem var(--basalt-pad-x);
+	border-bottom: 1px solid var(--ntf-line);
+	background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+
+	&[hidden] {
+		display: none;
+	}
+
+	@media (max-width: 575.98px) {
+		padding: 0.6rem var(--basalt-pad-x-narrow);
+	}
+}
+.ntf-bulk-all {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0;
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& .form-check-input {
+		margin: 0;
+	}
+}
+.ntf-bulk-acts {
+	display: flex;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	margin-left: auto;
+
+	@media (max-width: 575.98px) {
+		margin-left: -0.6rem;
+	}
+}
+.ntf-bulk-btn {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.3rem 0.6rem;
+	border: 0;
+	border-radius: 8px;
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+	background: none;
+
+	&:hover:not(:disabled) {
+		background: var(--ntf-tint-strong);
+	}
+	&:disabled {
+		color: var(--ntf-quiet);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+/* Each day's label sticks under the top bar while its rows scroll past. */
+.ntf-day-title {
+	position: sticky;
+	top: var(--basalt-header-h, 72px);
+	z-index: 2;
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin: 0;
+	padding: 1.1rem var(--basalt-pad-x) 0.5rem;
+	font-size: 0.81rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+
+	/* Once pinned, a soft shadow and a hairline say the list runs beneath it. */
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-bottom: 1px solid transparent;
+		pointer-events: none;
+		transition:
+			box-shadow 170ms ease,
+			border-color 170ms ease;
+	}
+	&::after {
+		content: "";
+		flex: 1;
+		order: 2;
+		height: 1px;
+		background: var(--ntf-line);
+	}
+
+	@media (max-width: 575.98px) {
+		padding: 1rem var(--basalt-pad-x-narrow) 0.4rem;
+	}
+}
+@container scroll-state(stuck: top) {
+	.ntf-day-title::before {
+		border-bottom-color: var(--basalt-edge);
+		box-shadow: 0 12px 24px -18px var(--basalt-scrim);
+	}
+}
+.ntf-day-n {
+	order: 3;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--ntf-quiet);
+}
+.ntf-list {
+	margin: 0;
+	padding: 0 0 0.3rem;
+	list-style: none;
+}
+
+/* A row. Its background is a custom property so the badge border can match it. */
+.ntf-row {
+	--ntf-row-bg: var(--basalt-plane);
+	position: relative;
+	background: var(--ntf-row-bg);
+	transition: background-color 170ms ease;
+
+	/* The divider starts where the text does, not at the avatar. */
+	& + .ntf-row::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: var(--basalt-pad-x);
+		left: calc(var(--basalt-pad-x) + 2.5rem + 0.95rem);
+		height: 1px;
+		background: var(--ntf-line);
+	}
+	&.is-unread {
+		--ntf-row-bg: color-mix(in srgb, var(--basalt-hue) 5%, var(--basalt-plane));
+	}
+	&.is-unread::before {
+		content: "";
+		position: absolute;
+		top: 0.7rem;
+		bottom: 0.7rem;
+		left: 0;
+		width: 3px;
+		border-radius: 0 3px 3px 0;
+		background: var(--basalt-hue);
+	}
+	&:hover {
+		--ntf-row-bg: color-mix(in srgb, var(--basalt-hue) 3%, var(--basalt-plane));
+	}
+	&.is-unread:hover {
+		--ntf-row-bg: color-mix(in srgb, var(--basalt-hue) 7%, var(--basalt-plane));
+	}
+	&.is-selected {
+		--ntf-row-bg: color-mix(in srgb, var(--basalt-hue) 9%, var(--basalt-plane));
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.ntf-row-main {
+	display: grid;
+	gap: 0.95rem;
+	grid-template-columns: 2.5rem minmax(0, 1fr);
+	align-items: start;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		gap: 0.8rem;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+	}
+}
+/* Select mode adds a checkbox column and pushes the divider along with it. */
+.is-selecting .ntf-row-main {
+	grid-template-columns: auto 2.5rem minmax(0, 1fr);
+}
+.is-selecting .ntf-row + .ntf-row::after {
+	left: calc(var(--basalt-pad-x) + 1em + 2.5rem + 0.95rem * 2);
+}
+.ntf-row-check {
+	margin-top: 0.7rem;
+}
+@media (max-width: 575.98px) {
+	.ntf-row + .ntf-row::after {
+		right: var(--basalt-pad-x-narrow);
+		left: calc(var(--basalt-pad-x-narrow) + 2.5rem + 0.8rem);
+	}
+	.is-selecting .ntf-row + .ntf-row::after {
+		left: calc(var(--basalt-pad-x-narrow) + 1em + 2.5rem + 0.8rem * 2);
+	}
+}
+
+/* The avatar: a monogram for people and companies, the kind's icon for system news. */
+.ntf-who {
+	--ntf-hue: var(--basalt-series-1);
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--ntf-hue) 42%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ntf-hue) 17%, var(--basalt-plane));
+}
+.ntf-who-org {
+	border-radius: 11px;
+}
+.ntf-hue-1 {
+	--ntf-hue: var(--basalt-series-1);
+}
+.ntf-hue-2 {
+	--ntf-hue: var(--basalt-series-2);
+}
+.ntf-hue-3 {
+	--ntf-hue: var(--basalt-series-3);
+}
+.ntf-hue-4 {
+	--ntf-hue: var(--basalt-series-4);
+}
+.ntf-hue-5 {
+	--ntf-hue: var(--basalt-series-5);
+}
+.ntf-hue-6 {
+	--ntf-hue: var(--basalt-series-6);
+}
+.ntf-tone-primary {
+	--ntf-tone: var(--basalt-hue);
+}
+.ntf-tone-success {
+	--ntf-tone: var(--basalt-success);
+}
+.ntf-tone-warning {
+	--ntf-tone: var(--basalt-warning);
+}
+.ntf-tone-danger {
+	--ntf-tone: var(--basalt-danger);
+}
+.ntf-tone-info {
+	--ntf-tone: var(--basalt-info);
+}
+.ntf-who-glyph {
+	border: 1px dashed color-mix(in srgb, var(--ntf-tone) 45%, var(--basalt-plane));
+	font-size: 1.05rem;
+	color: color-mix(in srgb, var(--ntf-tone) 70%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--ntf-tone) 8%, var(--basalt-plane));
+}
+/* The small kind badge on a monogram borrows the row background for its ring. */
+.ntf-who-badge {
+	position: absolute;
+	right: -0.3rem;
+	bottom: -0.3rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.3rem;
+	height: 1.3rem;
+	border: 2px solid var(--ntf-row-bg);
+	border-radius: 50%;
+	font-size: 0.62rem;
+	color: var(--basalt-plane);
+	background: color-mix(in srgb, var(--ntf-tone) 85%, var(--basalt-copy));
+	transition: border-color 170ms ease;
+}
+
+/* The text column: headline and time on one line, detail under it, then the foot. */
+.ntf-row-body {
+	min-width: 0;
+}
+.ntf-row-head {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+
+	@media (max-width: 575.98px) {
+		gap: 0.6rem;
+	}
+}
+.ntf-row-title {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 600;
+	}
+}
+.is-unread .ntf-row-title strong {
+	font-weight: 800;
+}
+/* Every time starts at the same x: a fixed, start-aligned track. */
+.ntf-row-time {
+	flex: none;
+	min-width: 4.5rem;
+	font-size: 0.75rem;
+	text-align: start;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: var(--ntf-quiet);
+}
+.ntf-row-detail {
+	margin: 0.2rem 0 0;
+	font-size: 0.81rem;
+	line-height: 1.55;
+	color: var(--ntf-quiet);
+}
+.ntf-row-foot {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-height: 2rem;
+	margin-top: 0.65rem;
+
+	@media (max-width: 575.98px) {
+		flex-wrap: wrap;
+	}
+}
+
+/* The one action per row is a soft pill; a disclosure variant carries a caret. */
+.ntf-cta {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.32rem 0.8rem;
+	border: 0;
+	border-radius: 999px;
+	font-size: 0.81rem;
+	font-weight: 600;
+	line-height: 1.35;
+	text-decoration: none;
+	color: var(--ntf-link);
+	background: var(--ntf-tint);
+	transition: background-color 130ms ease;
+
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--ntf-link);
+		background: var(--ntf-tint-strong);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	& .bi-arrow-right {
+		transition: transform 170ms ease;
+	}
+	&:hover .bi-arrow-right {
+		transform: translateX(2px);
+	}
+	&[aria-expanded="true"] .ntf-cta-caret {
+		transform: rotate(180deg);
+	}
+	&[aria-disabled="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+		cursor: progress;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+		& .bi {
+			transition: none;
+		}
+	}
+}
+.ntf-cta-caret {
+	font-size: 0.7rem;
+	transition: transform 170ms ease;
+}
+.ntf-done {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--ntf-success-text);
+}
+
+/* The tray (mark read, snooze, dismiss) shows on hover or focus, and always on touch. */
+.ntf-tray {
+	display: flex;
+	gap: 0.125rem;
+	margin-left: auto;
+	opacity: 0;
+	transition: opacity 130ms ease;
+
+	.ntf-row:hover &,
+	.ntf-row:focus-within &,
+	&:has(.show) {
+		opacity: 1;
+	}
+
+	@media (hover: none) {
+		opacity: 1;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.ntf-tray-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	color: var(--ntf-quiet);
+	background: transparent;
+
+	&:hover,
+	&[aria-expanded="true"] {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 1px;
+	}
+}
+
+/* The box that opens under a row for a reply or a review. */
+.ntf-inline {
+	margin-top: 0.8rem;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--ntf-line);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+}
+.ntf-inline-label {
+	display: block;
+	margin: 0 0 0.4rem;
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ntf-inline-text {
+	margin: 0 0 0.75rem;
+	font-size: 0.81rem;
+	color: var(--ntf-quiet);
+}
+.ntf-inline-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.65rem;
+}
+.ntf-inline-cancel {
+	text-decoration: none;
+	color: var(--ntf-link);
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--basalt-copy);
+	}
+}
+
+/* What the feed shows while loading, when empty, or after an error, and the snoozed note at its end. */
+.ntf-skel {
+	display: flex;
+	gap: 0.95rem;
+	padding: var(--basalt-pad-row-y) var(--basalt-pad-x);
+
+	@media (max-width: 575.98px) {
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+	}
+}
+.ntf-skel-lines {
+	flex: 1;
+}
+.ntf-state {
+	padding: 2.5rem 1.25rem;
+}
+.ntf-foot {
+	margin: 0;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--ntf-line);
+	font-size: 0.77rem;
+	color: var(--ntf-quiet);
+
+	@media (max-width: 575.98px) {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+}
+
+/* The side cards share one padding and title style. */
+.ntf-card {
+	padding: 1.35rem 1.35rem 1.25rem;
+
+	@media (max-width: 575.98px) {
+		padding: 1.1rem;
+	}
+}
+.ntf-card-head {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.1rem;
+}
+.ntf-card-title {
+	margin: 0 0 0.2rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ntf-card-sub {
+	margin: 0 0 0.9rem;
+	font-size: 0.77rem;
+	color: var(--ntf-quiet);
+}
+
+/* Clears the sticky header when the page jumps to the preferences card. */
+.ntf-prefs {
+	scroll-margin-top: 88px;
+}
+
+/* The channel matrix lists kinds down the side and channels across the top. */
+.ntf-matrix {
+	width: 100%;
+	border-collapse: collapse;
+
+	& thead th {
+		padding: 0 0 0.5rem;
+		vertical-align: bottom;
+	}
+	& tbody th,
+	& tbody td {
+		padding: 0.6rem 0;
+		border-top: 1px solid var(--ntf-line);
+		vertical-align: middle;
+	}
+	& tbody td {
+		width: 2.9rem;
+		text-align: center;
+	}
+	& tbody th {
+		font-weight: 400;
+		text-align: left;
+	}
+}
+.ntf-matrix-head {
+	display: flex;
+	gap: 0.1rem;
+	flex-direction: column;
+	align-items: center;
+	min-width: 2.6rem;
+	margin: 0 auto;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--ntf-quiet);
+
+	& .bi {
+		font-size: 0.95rem;
+	}
+}
+.ntf-matrix-kind {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.81rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+
+	& .bi {
+		font-size: 0.65rem;
+		color: var(--ntf-quiet);
+	}
+}
+.ntf-matrix-hint {
+	display: block;
+	font-size: 0.71rem;
+	line-height: 1.35;
+	color: var(--ntf-quiet);
+}
+/* A channel cell is a dashed outline until it is on, then a filled tile. */
+.ntf-chan {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	padding: 0;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 10px;
+	font-size: 0.9rem;
+	color: var(--ntf-quiet);
+	background: transparent;
+	transition:
+		background-color 130ms ease,
+		border-color 130ms ease,
+		transform 130ms ease;
+
+	&:hover {
+		border-style: solid;
+		border-color: color-mix(in srgb, var(--basalt-hue) 50%, var(--basalt-plane));
+		color: var(--basalt-copy);
+	}
+	&[aria-pressed="true"] {
+		border: 1px solid transparent;
+		color: var(--ntf-link);
+		background: var(--ntf-tint-strong);
+	}
+	&[aria-pressed="true"]:hover {
+		background: color-mix(in srgb, var(--basalt-hue) 24%, var(--basalt-plane));
+	}
+	&:active:not(:disabled) {
+		transform: scale(0.94);
+	}
+	&:disabled {
+		color: var(--ntf-quiet);
+		background: var(--basalt-wash);
+		cursor: not-allowed;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+/* Quiet hours: a 24-hour strip with the quiet window shaded and a line for now. */
+.ntf-day24-bar {
+	position: relative;
+	height: 1.6rem;
+	border-radius: 8px;
+	overflow: hidden;
+	background-color: var(--basalt-wash);
+	background-image: repeating-linear-gradient(
+		90deg,
+		transparent 0 calc(100% / 24 - 1px),
+		color-mix(in srgb, var(--basalt-edge-strong) 55%, transparent) calc(100% / 24 - 1px) calc(100% / 24)
+	);
+}
+.ntf-day24-quiet {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	background: color-mix(in srgb, var(--basalt-hue) 34%, var(--basalt-plane));
+	transition:
+		left 200ms ease,
+		width 200ms ease;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+.ntf-day24.is-off .ntf-day24-quiet {
+	background: color-mix(in srgb, var(--basalt-edge-strong) 60%, var(--basalt-plane));
+}
+.ntf-day24-now {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	margin-left: -1px;
+	background: var(--basalt-copy);
+}
+.ntf-day24-ticks {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.3rem;
+	font:
+		500 0.67rem/1 "Chivo Mono",
+		monospace;
+	color: var(--ntf-quiet);
+}
+.ntf-quiet-pick {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: 1fr 1fr;
+	margin-top: 1rem;
+}
+.ntf-small-label {
+	margin-bottom: 0.25rem;
+	font-size: 0.77rem;
+	color: var(--ntf-quiet);
+}
+.ntf-quiet-sum {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 1rem 0 0.3rem;
+	font-size: 0.81rem;
+	line-height: 1.45;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--ntf-link);
+	}
+}
+.ntf-hint {
+	font-size: 0.75rem;
+	color: var(--ntf-quiet);
+}

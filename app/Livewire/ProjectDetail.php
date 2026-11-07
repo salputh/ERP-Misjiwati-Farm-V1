@@ -58,10 +58,10 @@ class ProjectDetail extends Component
         $tugas = $this->project->tugas;
 
         return [
-            ['nilai' => $tugas->count(), 'label' => 'Total tugas', 'ikon' => 'at.svg', 'warna' => 'secondary'],
-            ['nilai' => $tugas->where('status', 'completed')->count(), 'label' => 'Tugas selesai', 'ikon' => 'at2.svg', 'warna' => 'primary'],
-            ['nilai' => $tugas->where('status', '!=', 'completed')->count(), 'label' => 'Belum selesai', 'ikon' => 'at4.svg', 'warna' => 'success'],
-            ['nilai' => $this->project->anggota->count(), 'label' => 'Anggota', 'ikon' => 'at3.svg', 'warna' => 'warning'],
+            ['nilai' => $tugas->count(), 'label' => 'Total tugas', 'ikon' => 'bi-list-task', 'warna' => 'secondary'],
+            ['nilai' => $tugas->where('status', 'completed')->count(), 'label' => 'Tugas selesai', 'ikon' => 'bi-check2-circle', 'warna' => 'primary'],
+            ['nilai' => $tugas->where('status', '!=', 'completed')->count(), 'label' => 'Belum selesai', 'ikon' => 'bi-hourglass-split', 'warna' => 'success'],
+            ['nilai' => $this->project->anggota->count(), 'label' => 'Anggota', 'ikon' => 'bi-people', 'warna' => 'warning'],
         ];
     }
 

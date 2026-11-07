@@ -1,0 +1,1251 @@
+/* The audit trail page (audit-trail.html), scoped under .al-*. Its header,
+   tabs, segmented switches, pager, drawer, dialogs, empty states and status
+   pills are the shared basalt.css components; this sheet arranges them and
+   draws the log itself, and it takes every color from a --basalt-* token. */
+
+/* Small gray text is the muted token pulled toward the body color, so it
+   keeps 4.5:1 on the lighter palettes and on hovered rows. */
+.al-page {
+	--al-quiet: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+
+	& kbd {
+		padding: 0.1rem 0.3rem;
+		border-radius: 5px;
+		border: 1px solid var(--basalt-edge-strong);
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.71rem;
+		color: var(--basalt-copy);
+		background: var(--basalt-canvas);
+		box-shadow: none;
+	}
+
+	& mark {
+		padding: 0 0.1em;
+		border-radius: 3px;
+		color: var(--basalt-copy);
+		background: color-mix(in srgb, var(--basalt-warning) 28%, var(--basalt-plane));
+	}
+
+	& .form-control,
+	& .form-select {
+		border-color: var(--basalt-edge-strong);
+		color: var(--basalt-copy);
+		background-color: var(--basalt-plane);
+	}
+
+	& .form-control:focus,
+	& .form-select:focus {
+		border-color: var(--basalt-hue);
+	}
+
+	& .form-control::placeholder {
+		color: var(--al-quiet);
+		opacity: 1;
+	}
+}
+
+/* Every supporting line on the page speaks in the same quiet voice. */
+.al-quiet,
+.al-note,
+.al-summary,
+.al-keep-state,
+.al-drawer-none {
+	font-size: 0.8rem;
+	color: var(--al-quiet);
+}
+
+.al-note {
+	margin: 1rem 0 0;
+}
+
+/* Areas and people borrow the chart ramp by position. */
+.al-area,
+.al-legend-item {
+	--al-area: var(--basalt-series-1);
+}
+.al-area-2,
+.al-legend-item-2 {
+	--al-area: var(--basalt-series-2);
+}
+.al-area-3,
+.al-legend-item-3 {
+	--al-area: var(--basalt-series-3);
+}
+.al-area-4,
+.al-legend-item-4 {
+	--al-area: var(--basalt-series-4);
+}
+.al-area-5,
+.al-legend-item-5 {
+	--al-area: var(--basalt-series-5);
+}
+
+.al-bar {
+	--al-bar: var(--basalt-series-1);
+}
+.al-bar-2 {
+	--al-bar: var(--basalt-series-2);
+}
+.al-bar-3 {
+	--al-bar: var(--basalt-series-3);
+}
+.al-bar-4 {
+	--al-bar: var(--basalt-series-4);
+}
+.al-bar-5 {
+	--al-bar: var(--basalt-series-5);
+}
+.al-bar-6 {
+	--al-bar: var(--basalt-series-6);
+}
+.al-bar-7 {
+	--al-bar: var(--basalt-series-7);
+}
+.al-bar-8 {
+	--al-bar: var(--basalt-series-8);
+}
+
+/* The lists the script fills carry no bullets and no indent of their own. */
+.al-archive-list,
+.al-checks,
+.al-people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Review items and people share one row layout: a hairline between rows,
+   and the first row of any stacked list sits flush against the top. */
+.al-check,
+.al-person-row {
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: var(--basalt-pad-row-y) 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+.al-check:first-child,
+.al-person-row:first-child,
+.al-keep-row:first-child,
+.al-facts > div:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+
+.al-check-title,
+.al-person-row-name {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+/* Headings the script focuses show a ring only to keyboard users. */
+.al-card-title:focus,
+.al-archive-title:focus,
+[data-al-checks-done] .basalt-empty-title:focus {
+	outline: none;
+}
+.al-card-title:focus-visible,
+.al-archive-title:focus-visible,
+[data-al-checks-done] .basalt-empty-title:focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+
+/* Cards fill the row on smaller screens and pair up from 1200px on. */
+.al-grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.al-card {
+	grid-column: span 12;
+	min-width: 0;
+}
+
+@media (min-width: 1200px) {
+	.al-card {
+		grid-column: span 6;
+	}
+	.al-card-full {
+		grid-column: span 12;
+	}
+}
+
+.al-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.75rem;
+}
+
+@media (max-width: 575.98px) {
+	.al-card.basalt-box .card-body {
+		padding: 1.25rem;
+	}
+}
+
+.al-card-head {
+	display: flex;
+	gap: 1rem 1.5rem;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+
+	& > div:first-child {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+}
+
+.al-card-head-ring {
+	flex-wrap: nowrap;
+}
+
+.al-card-title {
+	margin: 0 0 0.3rem;
+	font-size: var(--basalt-fs-card-title, 1.2rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.al-card-desc {
+	max-width: 68ch;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--al-quiet);
+}
+
+/* Above the log: the live switch, the area tabs, then one row of filters. */
+.al-live {
+	margin: 0.1rem 0 0;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& .form-check-label {
+		color: var(--basalt-copy-body);
+	}
+}
+
+.al-areas {
+	display: block;
+	margin-bottom: 1.25rem;
+}
+
+.al-toolbar {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: var(--basalt-pad-head);
+}
+
+/* Search and person boxes both carry an icon inside the field. */
+.al-search,
+.al-person {
+	position: relative;
+	min-width: 0;
+}
+
+.al-search > .bi,
+.al-person > .bi {
+	position: absolute;
+	top: 50%;
+	left: 0.85rem;
+	z-index: 1;
+	transform: translateY(-50%);
+	font-size: 0.95rem;
+	color: var(--al-quiet);
+	pointer-events: none;
+}
+
+.al-search .form-control,
+.al-person .form-control {
+	padding-left: 2.4rem;
+}
+
+/* Search stops growing at a comfortable width so the filters stay beside
+   it, and the spare room gathers before the period switch. */
+.al-search {
+	flex: 1 1 14rem;
+	max-width: 28rem;
+}
+.al-person {
+	flex: 1 1 11rem;
+	max-width: 15rem;
+}
+.al-select {
+	width: auto;
+	min-width: 11rem;
+}
+.al-period {
+	margin-left: auto;
+}
+
+/* Narrow screens give search its own row; person and kind share the next. */
+@media (max-width: 767.98px) {
+	.al-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+	.al-person,
+	.al-select {
+		flex: 1 1 10rem;
+		min-width: 0;
+		max-width: none;
+	}
+	.al-period {
+		margin-left: 0;
+	}
+}
+
+/* On phones the two filters still share a row; the period wraps below. */
+@media (max-width: 575.98px) {
+	.al-person,
+	.al-select {
+		flex-basis: 8rem;
+	}
+}
+
+.al-status {
+	display: flex;
+	gap: 0.6rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-height: 2rem;
+	margin-bottom: 0.75rem;
+
+	& .basalt-applied:empty + .al-summary {
+		margin-left: 0;
+	}
+}
+
+.al-summary {
+	margin: 0 0 0 auto;
+}
+
+/* Columns drop out and rows stack as the card narrows, so the table never
+   scrolls sideways and simply grows with the page: one scroll, not two.
+   The sidebar changes the card's width as much as the window does, so the
+   breakpoints below measure the table's own box. */
+.al-scroll {
+	container: al-log / inline-size;
+	position: relative;
+	overflow: visible;
+}
+
+.al-table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--basalt-copy-body);
+	--bs-table-border-color: var(--basalt-edge);
+	--bs-table-hover-bg: var(--basalt-wash);
+	--bs-table-hover-color: var(--basalt-copy);
+	margin-bottom: 0;
+	font-size: 0.875rem;
+
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 0.75rem;
+	}
+
+	/* The outer columns sit on the card's own edges, so times line up under
+     the title and the search box. */
+	& > :not(caption) > * > :first-child {
+		padding-left: 0;
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: 0;
+	}
+
+	& > thead th {
+		border-bottom-color: var(--basalt-edge-strong);
+		font-family: inherit;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--al-quiet);
+	}
+
+	/* A day's heading breaks the rows; the first one needs less room above. */
+	& > tbody > .al-day > th {
+		padding: 1.35rem 0 0.5rem;
+		border-bottom-color: var(--basalt-edge);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--al-quiet);
+		background: transparent;
+	}
+
+	& > tbody > .al-day:first-child > th {
+		padding-top: 0.6rem;
+	}
+}
+
+.al-col-when {
+	width: 4.5rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+	white-space: nowrap;
+
+	& time {
+		color: var(--basalt-copy);
+	}
+}
+
+.al-col-who {
+	width: 10rem;
+}
+.al-col-change {
+	width: 13rem;
+}
+.al-col-from {
+	width: 10.5rem;
+}
+
+/* A whole row opens its change; a newly arrived one glows briefly. */
+.al-row {
+	cursor: pointer;
+
+	&:hover > td {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&.is-fresh > td {
+		animation: al-fresh 2.4s ease-out;
+	}
+}
+
+@keyframes al-fresh {
+	from {
+		background: color-mix(in srgb, var(--basalt-hue) 14%, transparent);
+	}
+	to {
+		background: transparent;
+	}
+}
+
+.al-row-ghost {
+	cursor: default;
+}
+.al-row-ghost:hover > td {
+	background: transparent;
+}
+.al-row-ghost .al-col-what .basalt-skeleton {
+	display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.al-row,
+	.al-row > td {
+		transition: none;
+	}
+	.al-row.is-fresh > td {
+		animation: none;
+	}
+}
+
+.al-who {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-width: 0;
+}
+
+.al-who-name {
+	font-weight: 550;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+
+.al-open {
+	display: inline;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	color: var(--basalt-copy);
+	background: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		text-decoration-color: var(--basalt-edge-strong);
+	}
+	&:focus-visible {
+		border-radius: 3px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 3px;
+	}
+}
+
+/* A hyphenated name such as Made-to-Measure never breaks at its hyphens. */
+.al-unbroken {
+	white-space: nowrap;
+}
+
+.al-what-meta {
+	display: flex;
+	gap: 0.3rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.3rem;
+}
+
+/* The area tag is a small square in the area's chart color, then its name. */
+.al-area {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--al-quiet);
+
+	&::before {
+		content: "";
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 2px;
+		background: var(--al-area);
+	}
+}
+
+/* The old value is struck through and the new one carries the weight. */
+.al-delta {
+	display: inline-flex;
+	gap: 0.3rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 0.8rem;
+
+	& .bi {
+		font-size: 0.75rem;
+		color: var(--al-quiet);
+	}
+}
+
+.al-delta-from {
+	text-decoration: line-through;
+	text-decoration-color: var(--basalt-edge-strong);
+	color: var(--al-quiet);
+}
+.al-delta-to {
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.al-from {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		color: var(--al-quiet);
+	}
+}
+
+/* A narrower table leaves the place to the drawer, so what happened
+   keeps enough room for one or two lines. */
+@container al-log (min-width: 760px) and (max-width: 939.98px) {
+	.al-col-from {
+		display: none;
+	}
+}
+
+/* Below that every change becomes a small stacked block. */
+@container al-log (max-width: 759.98px) {
+	.al-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.al-table,
+	.al-table tbody {
+		display: block;
+	}
+	.al-table > tbody > tr {
+		display: grid;
+		column-gap: 0.75rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--basalt-edge);
+	}
+	.al-table > tbody > tr > * {
+		display: block;
+		width: auto;
+		padding: 0;
+		border: 0;
+	}
+	.al-table > tbody > .al-day {
+		padding: 0;
+	}
+	.al-table > tbody > .al-day > th {
+		grid-column: 1 / -1;
+		padding: 1.25rem 0 0.4rem;
+	}
+	.al-table > tbody > .basalt-empty-row {
+		display: block;
+	}
+	.al-col-when {
+		grid-row: 1 / span 4;
+		padding-top: 0.1rem;
+	}
+	.al-col-who,
+	.al-col-what,
+	.al-col-change,
+	.al-col-from {
+		grid-column: 2;
+	}
+	.al-col-who {
+		order: 2;
+		margin-top: 0.4rem;
+	}
+	.al-col-what {
+		grid-row: 1;
+	}
+	.al-col-change {
+		order: 3;
+		margin-top: 0.3rem;
+	}
+	.al-col-from {
+		order: 4;
+		margin-top: 0.3rem;
+	}
+	.al-row:hover > td {
+		background: transparent;
+	}
+}
+/* On a phone a change keeps what happened, who did it and what changed;
+   the device and the place wait in the drawer. */
+@container al-log (max-width: 519.98px) {
+	.al-table > tbody > tr > .al-col-from {
+		display: none;
+	}
+}
+
+.al-pager {
+	margin-top: 0.25rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+/* The archive offer under the log, and whatever the search brings back. */
+.al-archive {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 1.5rem;
+	padding: 1rem 1.1rem;
+	border: 1px dashed var(--basalt-edge-strong);
+	border-radius: 12px;
+}
+
+.al-archive-text {
+	display: flex;
+	gap: 0.75rem;
+	flex: 1 1 18rem;
+	align-items: baseline;
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+
+	& .bi {
+		font-size: 1.1rem;
+		color: var(--al-quiet);
+	}
+}
+
+.al-archive-slot:not(:empty) {
+	margin-top: 1rem;
+}
+
+.al-archive-found {
+	padding: 1.25rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 12px;
+	background: var(--basalt-plane);
+
+	& .basalt-skeleton {
+		display: block;
+		margin: 0.6rem 0;
+	}
+}
+
+.al-archive-head {
+	display: flex;
+	gap: 0.5rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+.al-archive-title {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+
+.al-archive-list li {
+	display: flex;
+	gap: 0.25rem 1rem;
+	flex-wrap: wrap;
+	padding: 0.85rem 0;
+	border-top: 1px solid var(--basalt-edge);
+	font-size: 0.85rem;
+	color: var(--basalt-copy-body);
+}
+
+.al-archive-when {
+	flex: 0 0 7.5rem;
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.77rem;
+	color: var(--al-quiet);
+}
+.al-archive-what {
+	flex: 1 1 14rem;
+	min-width: 0;
+}
+
+/* The chart's legend doubles as a row of toggles, one pill per area. */
+.al-legend {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+
+.al-legend-item {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.3rem 0.7rem;
+	border: 1px solid var(--basalt-edge-strong);
+	border-radius: 999px;
+	font-size: 0.77rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--basalt-copy-body);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		background-color 170ms ease,
+		color 170ms ease;
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+
+	/* A hidden area turns dashed and hollow, and its count is struck out. */
+	&[aria-pressed="false"] {
+		border-style: dashed;
+		color: var(--al-quiet);
+
+		& .al-legend-swatch {
+			background: transparent;
+			box-shadow: inset 0 0 0 1.5px var(--al-area);
+		}
+		& .al-legend-n {
+			text-decoration: line-through;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.al-legend-item {
+		transition: none;
+	}
+}
+
+.al-legend-swatch {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 3px;
+	background: var(--al-area);
+}
+.al-legend-n {
+	font-family: "Chivo Mono", monospace;
+	font-weight: 500;
+	font-size: 0.71rem;
+	color: var(--al-quiet);
+}
+
+.al-chart {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 280px;
+
+	& canvas:focus {
+		outline: none;
+	}
+	& canvas:focus-visible {
+		border-radius: 6px;
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 4px;
+	}
+}
+
+/* Until it draws, a canvas keeps the browser's 300px width; it must never
+   push a narrow card, or the page, past the screen edge. */
+.al-card canvas {
+	display: block;
+	max-width: 100%;
+}
+
+/* The review card: a progress ring, then flagged changes waiting on a check. */
+.al-ring {
+	--size: 72px;
+	--thickness: 8px;
+	flex-shrink: 0;
+
+	& .basalt-ring-value {
+		font-family: "Chivo Mono", monospace;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+.al-checks:empty {
+	display: none;
+}
+
+.al-check-icon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: color-mix(in srgb, var(--basalt-warning) 45%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--basalt-warning) 16%, var(--basalt-plane));
+}
+
+/* A checked item turns green and steps its title down. */
+.al-check.is-checked {
+	& .al-check-icon {
+		color: color-mix(in srgb, var(--basalt-success) 45%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+	}
+
+	& .al-check-title {
+		font-weight: 500;
+		color: var(--basalt-copy-body);
+	}
+}
+
+.al-check-meta {
+	margin: 0.2rem 0 0;
+	font-size: 0.77rem;
+	color: var(--al-quiet);
+}
+.al-check-reason {
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+
+.al-check-actions {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+@media (max-width: 575.98px) {
+	.al-check {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.al-check-actions {
+		grid-column: 2;
+		justify-content: flex-start;
+	}
+}
+
+[data-al-checks-done] {
+	margin-bottom: 1rem;
+}
+
+/* People ranked by activity, each with a bar in their avatar's color. */
+.al-person-row-main {
+	min-width: 0;
+}
+.al-person-row-role {
+	margin-left: 0.25rem;
+	font-weight: 500;
+	font-size: 0.77rem;
+	color: var(--al-quiet);
+}
+.al-person-row-meta {
+	margin: 0.3rem 0 0;
+	font-size: 0.77rem;
+	color: var(--al-quiet);
+}
+.al-people .al-history-none {
+	padding: 0;
+}
+
+.al-bar {
+	display: block;
+	height: 6px;
+	margin-top: 0.4rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--basalt-copy) 7%, transparent);
+
+	& > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--al-bar);
+	}
+}
+
+/* Retention settings: labeled rows, with the save bar pinned to the bottom. */
+.al-keep {
+	display: flex;
+	gap: 0;
+	flex-direction: column;
+	flex: 1 1 auto;
+}
+
+.al-keep-row {
+	display: flex;
+	gap: 0.75rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--basalt-pad-row-y) 0;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+.al-keep .form-label,
+.al-keep .form-check-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+
+.al-keep-hint {
+	margin: 0.2rem 0 0;
+	font-size: 0.8rem;
+	color: var(--al-quiet);
+}
+
+.al-keep-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: auto;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--basalt-edge);
+}
+
+/* The drawer that holds a single change. */
+.al-drawer {
+	& .offcanvas-header {
+		gap: 0.75rem;
+	}
+	& .offcanvas-title {
+		font-size: var(--basalt-fs-card-title, 1.2rem);
+		font-weight: 700;
+		line-height: 1.35;
+	}
+	& .basalt-drawer-sub {
+		color: var(--al-quiet);
+	}
+	& .offcanvas-body {
+		padding-top: 1.25rem;
+	}
+}
+
+/* Area, kind and flag sit under the header divider with room on both sides,
+   pills tall enough to read as pills and even gaps when they wrap. */
+.al-r-tags {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: var(--basalt-pad-head);
+
+	& > * {
+		min-height: 1.75rem;
+	}
+	& .basalt-status {
+		padding: 0.3rem 0.7rem;
+	}
+	& .al-area {
+		margin-right: 0.3rem;
+	}
+}
+
+.al-r-block {
+	margin-bottom: var(--basalt-pad-head);
+}
+
+.al-sub {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section, 1.05rem);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+
+.al-r-note {
+	margin: 0;
+	font-size: 0.85rem;
+	line-height: 1.55;
+	color: var(--basalt-copy-body);
+}
+
+/* Before and after: removed values in red and struck, added ones in green. */
+.al-diff {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 0.85rem;
+
+	& th,
+	& td {
+		padding: 0.8rem 0.6rem;
+		border-top: 1px solid var(--basalt-edge);
+		text-align: left;
+		vertical-align: top;
+	}
+
+	& thead th {
+		padding-top: 0;
+		border-top: 0;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: var(--al-quiet);
+	}
+	& tbody th {
+		width: 30%;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+
+	/* The first column starts on the section's own edge, under its heading. */
+	& tr > :first-child {
+		padding-left: 0;
+	}
+	& tr > :last-child {
+		padding-right: 0;
+	}
+
+	& del,
+	& ins {
+		display: inline;
+		padding: 0.1rem 0.3rem;
+		border-radius: 5px;
+		line-height: 1.7;
+		text-decoration: none;
+		box-decoration-break: clone;
+		-webkit-box-decoration-break: clone;
+	}
+
+	& del {
+		text-decoration: line-through;
+		text-decoration-color: color-mix(in srgb, var(--basalt-danger) 45%, transparent);
+		color: color-mix(in srgb, var(--basalt-danger) 40%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-danger) 12%, var(--basalt-plane));
+	}
+
+	& ins {
+		color: color-mix(in srgb, var(--basalt-success) 38%, var(--basalt-copy));
+		background: color-mix(in srgb, var(--basalt-success) 14%, var(--basalt-plane));
+	}
+}
+
+/* Where the change came from, as label and value pairs. */
+.al-facts {
+	display: grid;
+	gap: 0;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 7rem minmax(0, 1fr);
+		align-items: center;
+		padding: 0.8rem 0;
+		border-top: 1px solid var(--basalt-edge);
+	}
+	& dt {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--al-quiet);
+	}
+	& dd {
+		margin: 0;
+		font-size: 0.85rem;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+	& dd .bi {
+		margin-right: 0.2rem;
+		color: var(--al-quiet);
+	}
+}
+
+.al-mono,
+.al-code {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.8rem;
+}
+.al-code {
+	padding: 0.1rem 0.3rem;
+	border-radius: 5px;
+	color: var(--basalt-copy);
+	background: var(--basalt-canvas);
+}
+
+.al-copy.btn-icon {
+	width: 1.9rem;
+	height: 1.9rem;
+	margin-left: 0.25rem;
+	padding: 0;
+	border-radius: 8px;
+	vertical-align: middle;
+	color: var(--al-quiet);
+
+	&:hover {
+		color: var(--basalt-copy);
+		background: var(--basalt-wash);
+	}
+}
+
+/* Earlier changes to the same thing hang off a thin timeline. */
+.al-history {
+	margin: 0;
+	padding: 0 0 0 1rem;
+	border-left: 2px solid var(--basalt-edge);
+	list-style: none;
+
+	& li {
+		position: relative;
+		display: flex;
+		gap: 0.1rem;
+		flex-direction: column;
+		padding: 0 0 0.9rem;
+		font-size: 0.85rem;
+		color: var(--basalt-copy-body);
+	}
+
+	/* A filled dot rather than a hollow ring, so it never reads as a radio button. */
+	& li::before {
+		content: "";
+		position: absolute;
+		top: 0.3rem;
+		left: calc(-1rem - 5px);
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--basalt-edge-strong);
+	}
+
+	& .al-history-none::before {
+		display: none;
+	}
+}
+
+.al-history-when {
+	font-family: "Chivo Mono", monospace;
+	font-size: 0.75rem;
+	color: var(--al-quiet);
+}
+.al-history-none {
+	font-size: 0.85rem;
+	color: var(--al-quiet);
+	list-style: none;
+}
+.al-hint {
+	margin: 0;
+	font-size: 0.77rem;
+	color: var(--al-quiet);
+}
+
+/* The footer swaps the hold button for a plain line once nothing can be put back. */
+.al-drawer-foot {
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.al-drawer-none:focus,
+.al-drawer-none:focus-visible {
+	outline: none;
+}
+
+.al-drawer .basalt-hold[hidden],
+.al-drawer-none[hidden] {
+	display: none;
+}
+
+/* The export dialog's two choices and its file type cards. */
+.al-export-set {
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+
+	& > legend {
+		float: none;
+		margin-bottom: 0.5rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+
+.al-export-types {
+	--basalt-choice-min: 110px;
+}
+.al-export .form-check-label {
+	color: var(--basalt-copy-body);
+}
+
+/* A printed log keeps the rows and drops the controls around them. */
+@media print {
+	.al-row,
+	.al-row > td {
+		transition: none;
+		animation: none;
+	}
+	.al-toolbar,
+	.al-status,
+	.al-pager,
+	.al-archive,
+	.al-live {
+		display: none;
+	}
+}

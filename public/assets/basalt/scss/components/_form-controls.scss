@@ -1,0 +1,291 @@
+/**
+ * Three inputs that every page draws the same way: a tag field, a row of
+ * choice tiles and a round number stepper (all on field-types.html). The
+ * tag field and the stepper take their behavior from assets/basalt/js/components/fields.js through
+ * [data-basalt-tags] and [data-basalt-stepper]; the tiles are plain inputs.
+ */
+
+/* The three frames share one hairline, mixed from the text color so it
+   still shows in dark mode under palettes whose border token stays light. */
+.basalt-choice,
+.basalt-tags,
+.basalt-stepper {
+	--basalt-control-line: color-mix(in srgb, var(--basalt-copy) 16%, transparent);
+}
+
+/* Typing happens in a bare input; the frame around it carries the edge,
+   so the frame alone rings on focus and the input inside skips its own. */
+.basalt-tags-input,
+.basalt-stepper-input {
+	border: 0;
+	outline: 0;
+	color: var(--basalt-copy);
+	background: transparent;
+
+	&:focus-visible {
+		box-shadow: none;
+	}
+}
+.basalt-tags:focus-within,
+.basalt-stepper:focus-within {
+	border-color: var(--basalt-hue-border);
+	box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--basalt-hue) 18%, transparent);
+}
+
+/* Removing a tag and stepping a number both use a round, centered button. */
+.basalt-tags-remove,
+.basalt-stepper-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+}
+
+/* Tags: Enter or a comma turns the typed word into a pill, and Backspace
+   in an empty field takes the last pill back. */
+.basalt-tags {
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+	align-items: center;
+	min-height: calc(1.5em + 0.75rem + 2px);
+	padding: 0.3rem 0.4rem;
+	border: 1px solid var(--basalt-control-line);
+	border-radius: var(--bs-border-radius);
+	background: var(--bs-body-bg);
+	cursor: text;
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+
+	&-tag {
+		display: inline-flex;
+		gap: 0.2rem;
+		align-items: center;
+		padding: 0.2rem 0.25rem 0.2rem 0.6rem;
+		border-radius: 999px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		line-height: 1.3;
+		color: var(--basalt-copy);
+		background: var(--basalt-hue-soft);
+	}
+
+	&-remove {
+		width: 1.2rem;
+		height: 1.2rem;
+		font-size: 0.95rem;
+		line-height: 1;
+		color: var(--basalt-copy-muted);
+		background: transparent;
+
+		&:hover {
+			color: var(--basalt-danger);
+			background: color-mix(in srgb, var(--basalt-danger) 14%, transparent);
+		}
+	}
+
+	&-input {
+		flex: 1;
+		min-width: 8rem;
+		padding: 0.2rem 0.25rem;
+		font-size: 0.9rem;
+	}
+
+	/* A full field stops inviting input: plain cursor, placeholder in italics. */
+	&.is-full &-input {
+		cursor: default;
+
+		&::placeholder {
+			font-style: italic;
+		}
+	}
+
+	/* The line under the field: help on the left, the count kept whole on the right. */
+	&-meta {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+		margin-top: 0.3rem;
+		font-size: 0.75rem;
+		color: var(--basalt-copy-muted);
+
+		> :last-child {
+			flex-shrink: 0;
+			white-space: nowrap;
+		}
+	}
+}
+
+/* Tiles: radios or checkboxes drawn as centered cards that split the row
+   evenly; --basalt-choice-min sets how narrow one gets before the row wraps. */
+.basalt-choices {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--basalt-choice-min, 96px)), 1fr));
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	/* Bootstrap floats a legend at heading size; here it reads as a field label. */
+	> legend {
+		float: none;
+		width: 100%;
+		margin: 0 0 0.5rem;
+		padding: 0;
+		font-size: 1rem;
+		font-weight: 500;
+		line-height: 1.5;
+	}
+}
+.basalt-choice {
+	--basalt-choice-tone: var(--basalt-hue);
+	position: relative;
+	display: flex;
+	gap: 0.3rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	padding: 0.75rem 0.5rem;
+	border: 1px solid var(--basalt-control-line);
+	border-radius: 12px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.25;
+	text-align: center;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 170ms ease,
+		background-color 170ms ease,
+		box-shadow 170ms ease;
+
+	/* The real input stays in the tile for forms and keyboards, unseen. */
+	input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+	> .bi {
+		font-size: 1.1rem;
+		color: var(--basalt-choice-tone);
+	}
+	&-hint {
+		font-size: 0.71rem;
+		font-weight: 500;
+		color: color-mix(in srgb, var(--basalt-copy-muted) 72%, var(--basalt-copy));
+	}
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--basalt-choice-tone) 55%, var(--basalt-control-line));
+	}
+	&:has(input:checked) {
+		border-color: var(--basalt-choice-tone);
+		background: color-mix(in srgb, var(--basalt-choice-tone) 9%, var(--basalt-plane));
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--basalt-choice-tone) 16%, transparent);
+	}
+	&:has(input:focus-visible:not(:checked)) {
+		outline: 2px solid var(--basalt-choice-tone);
+		outline-offset: 2px;
+	}
+	&:has(input:disabled) {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	/* A tone class colors one tile by what the option means. */
+	@each $meaning in success, warning, danger {
+		&-#{$meaning} {
+			--basalt-choice-tone: var(--basalt-#{$meaning});
+		}
+	}
+}
+
+/* The compact row puts icon and word on one line, for weekdays or sizes. */
+.basalt-choices-compact {
+	--basalt-choice-min: 56px;
+	gap: 0.3rem;
+
+	.basalt-choice {
+		flex-direction: row;
+		padding: 0.4rem 0.5rem;
+		border-radius: 10px;
+	}
+}
+
+/* Wider minimums for choices that carry a few words each. */
+.basalt-choices-wide {
+	--basalt-choice-min: 120px;
+}
+.basalt-choices-wider {
+	--basalt-choice-min: 160px;
+}
+
+/* Stepper: a pill holding minus, the number and plus. */
+.basalt-stepper {
+	display: inline-flex;
+	gap: 0.1rem;
+	align-items: center;
+	padding: 0.2rem;
+	border: 1px solid var(--basalt-control-line);
+	border-radius: 999px;
+	background: var(--bs-body-bg);
+
+	&-btn {
+		width: 2rem;
+		height: 2rem;
+		color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+		transition:
+			background-color 150ms ease,
+			color 150ms ease;
+
+		&:hover:not(:disabled) {
+			color: var(--basalt-on-hue);
+			background: var(--basalt-hue);
+		}
+		&:disabled {
+			opacity: 0.4;
+			cursor: not-allowed;
+		}
+	}
+
+	/* The number is typed as text: no spin arrows, bold and centered. */
+	&-input {
+		width: 3.5rem;
+		padding: 0;
+		font-size: 1rem;
+		font-weight: 700;
+		text-align: center;
+		appearance: textfield;
+
+		&::-webkit-outer-spin-button,
+		&::-webkit-inner-spin-button {
+			margin: 0;
+			-webkit-appearance: none;
+		}
+	}
+
+	&-sm &-btn {
+		width: 1.6rem;
+		height: 1.6rem;
+	}
+	&-sm &-input {
+		width: 2.75rem;
+		font-size: 0.9rem;
+	}
+}
+
+/* Under reduced motion the frames and buttons change state at once. */
+@media (prefers-reduced-motion: reduce) {
+	.basalt-tags,
+	.basalt-choice,
+	.basalt-stepper-btn {
+		transition: none;
+	}
+}

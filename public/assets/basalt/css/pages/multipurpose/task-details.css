@@ -1,0 +1,599 @@
+/* Basalt - Task Details (task-details.html)
+   One task. Namespaced under .tkd-*; every color is a
+   --basalt-* token, so palettes and dark mode carry through.
+   Built from shared parts: the detail header, cards, status pills,
+   avatars, styled selects, the date picker, the drop zone and toasts. This file lays
+   them out and styles what belongs to this page: the checklist,
+   the details, comments, files and the activity feed. */
+
+.tkd-page {
+	/* Small gray text, pulled toward the body color so it keeps its
+     contrast in every palette. */
+	--tkd-quiet: color-mix(in srgb, var(--basalt-copy-muted) 66%, var(--basalt-copy));
+	--tkd-line: var(--basalt-edge);
+	--tkd-link: color-mix(in srgb, var(--basalt-hue) 62%, var(--basalt-copy));
+}
+
+/* Header */
+.basalt-hero-detail.tkd-head {
+	display: grid;
+	column-gap: 1.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+}
+.tkd-head .basalt-hero-actions {
+	display: flex;
+	gap: 0.5rem;
+	align-self: end;
+	align-items: center;
+	margin: 0;
+}
+.tkd-head .dropdown-item .bi {
+	margin-right: 0.6rem;
+}
+.tkd-tags {
+	display: flex;
+	gap: 0.5rem 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-top: 0.85rem;
+}
+.tkd-tags .basalt-status {
+	padding: 0.25rem 0.7rem;
+	font-size: 0.77rem;
+}
+.tkd-prio {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	font-size: 0.84rem;
+	font-weight: 600;
+	color: var(--basalt-copy-body);
+}
+.tkd-pager {
+	display: flex;
+	gap: 0.3rem;
+	margin-left: 0.3rem;
+	padding-left: 0.85rem;
+	border-left: 1px solid var(--basalt-edge);
+}
+.tkd-pager .btn.disabled {
+	opacity: 0.4;
+}
+@media (max-width: 575.98px) {
+	.basalt-hero-detail.tkd-head {
+		row-gap: 1.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.tkd-pager {
+		margin-left: auto;
+		padding-left: 0;
+		border-left: 0;
+	}
+}
+
+/* Grid: rows of two cards that end level */
+.tkd-grid {
+	display: flex;
+	gap: 1.5rem;
+	flex-direction: column;
+}
+@media (min-width: 1200px) {
+	.tkd-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		align-items: stretch;
+	}
+}
+
+/* Cards */
+.tkd-card {
+	min-width: 0;
+}
+.tkd-card.basalt-box .card-body {
+	display: flex;
+	flex-direction: column;
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+}
+@media (max-width: 575.98px) {
+	.tkd-card.basalt-box .card-body {
+		padding: 1.25rem var(--basalt-pad-x-narrow);
+	}
+}
+.tkd-card-head {
+	display: flex;
+	gap: 0.75rem 1.5rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+}
+.tkd-card-head > div {
+	min-width: 0;
+}
+.tkd-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tkd-card-title:focus {
+	outline: none;
+}
+.tkd-card-title:focus-visible {
+	border-radius: 4px;
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 3px;
+}
+.tkd-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--tkd-quiet);
+}
+.tkd-card-desc:empty {
+	display: none;
+}
+.tkd-card-desc strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.tkd-sub {
+	margin: 1.75rem 0 0.75rem;
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.035em;
+	text-transform: uppercase;
+	color: var(--tkd-quiet);
+}
+.tkd-link {
+	border-radius: 4px;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--tkd-link);
+}
+.tkd-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.tkd-link:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+.tkd-textbtn {
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 600;
+	color: var(--tkd-link);
+	background: none;
+}
+.tkd-textbtn:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: var(--basalt-copy);
+}
+.tkd-textbtn:focus-visible {
+	outline: 2px solid var(--basalt-hue);
+	outline-offset: 2px;
+}
+
+/* Facts */
+.tkd-facts {
+	display: grid;
+	gap: 0;
+	margin: 0;
+	font-size: 0.875rem;
+}
+.tkd-facts > div {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 9rem minmax(0, 1fr);
+	padding: 0.75rem 0;
+	border-bottom: 1px solid var(--tkd-line);
+}
+.tkd-facts > div:first-child {
+	padding-top: 0;
+}
+.tkd-facts > div:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+.tkd-facts dt {
+	font-weight: 500;
+	color: var(--tkd-quiet);
+}
+.tkd-facts dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+}
+@media (max-width: 399.98px) {
+	.tkd-facts > div {
+		gap: 0.25rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Notes */
+.tkd-thread {
+	display: grid;
+	gap: 1.1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tkd-thread-empty {
+	font-size: 0.875rem;
+	color: var(--tkd-quiet);
+}
+.tkd-msg {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 32px minmax(0, 1fr);
+}
+.tkd-msg-body {
+	min-width: 0;
+}
+.tkd-msg-head {
+	display: flex;
+	gap: 0.2rem 0.6rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0;
+}
+.tkd-msg-who {
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.tkd-msg-when {
+	font-size: 0.77rem;
+	color: var(--tkd-quiet);
+}
+.tkd-msg-text {
+	margin: 0.4rem 0 0;
+	padding: 0.7rem 0.95rem;
+	border-radius: 4px 12px 12px 12px;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.tkd-reply {
+	margin-top: auto;
+	padding-top: 1.5rem;
+}
+
+/* Files */
+.tkd-files {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0 0 0.9rem;
+	padding: 0;
+	list-style: none;
+}
+.tkd-files:empty {
+	display: none;
+}
+.tkd-file {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.6rem 0.75rem;
+	border: 1px solid var(--tkd-line);
+	border-radius: 12px;
+}
+.tkd-file-icon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: var(--tkd-link);
+	background: var(--basalt-hue-soft);
+}
+.tkd-file-text {
+	min-width: 0;
+}
+.tkd-file-name {
+	display: block;
+	overflow: hidden;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.tkd-file-meta {
+	display: block;
+	margin-top: 0.1rem;
+	overflow: hidden;
+	font-size: 0.77rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--tkd-quiet);
+}
+.tkd-drop {
+	padding: 1rem;
+}
+.tkd-drop .basalt-empty-text {
+	margin: 0;
+}
+
+/* Timeline */
+.tkd-feed {
+	display: grid;
+	gap: 1.1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tkd-feed-item {
+	--tkd-feed: var(--basalt-copy-muted);
+	position: relative;
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: 2rem minmax(0, 1fr);
+}
+.tkd-feed-item[data-tone="success"] {
+	--tkd-feed: var(--basalt-success);
+}
+.tkd-feed-item[data-tone="warning"] {
+	--tkd-feed: var(--basalt-warning);
+}
+.tkd-feed-item[data-tone="info"] {
+	--tkd-feed: var(--basalt-info);
+}
+.tkd-feed-item[data-tone="primary"] {
+	--tkd-feed: var(--basalt-hue);
+}
+.tkd-feed-item + .tkd-feed-item::before {
+	content: "";
+	position: absolute;
+	bottom: calc(100% - 0.1rem);
+	left: calc(1rem - 1px);
+	width: 2px;
+	height: 1.2rem;
+	background: var(--tkd-line);
+}
+.tkd-feed-mark {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	font-size: 0.85rem;
+	color: color-mix(in srgb, var(--tkd-feed) 60%, var(--basalt-copy));
+	background: color-mix(in srgb, var(--tkd-feed) 14%, var(--basalt-plane));
+}
+.tkd-feed-what {
+	margin: 0.3rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--basalt-copy-body);
+}
+.tkd-feed-what strong {
+	font-weight: 650;
+	color: var(--basalt-copy);
+}
+.tkd-feed-when {
+	margin: 0.2rem 0 0;
+	font-size: 0.77rem;
+	color: var(--tkd-quiet);
+}
+
+/* Priority and project marks */
+.tkd-prio-1 .bi {
+	color: color-mix(in srgb, var(--basalt-danger) 70%, var(--basalt-copy));
+}
+.tkd-prio-2 .bi {
+	color: color-mix(in srgb, var(--basalt-warning) 70%, var(--basalt-copy));
+}
+.tkd-prio-3 .bi {
+	color: color-mix(in srgb, var(--basalt-info) 70%, var(--basalt-copy));
+}
+.tkd-prio-4 .bi {
+	color: var(--tkd-quiet);
+}
+.tkd-dot {
+	display: inline-block;
+	flex: none;
+	width: 0.6rem;
+	height: 0.6rem;
+	margin-right: 0.5rem;
+	border-radius: 3px;
+	vertical-align: 0.05rem;
+	background: var(--tkd-c, var(--basalt-copy-muted));
+}
+.tkd-c1 {
+	--tkd-c: var(--basalt-series-1);
+}
+.tkd-c2 {
+	--tkd-c: var(--basalt-series-2);
+}
+.tkd-c3 {
+	--tkd-c: var(--basalt-series-3);
+}
+.tkd-c4 {
+	--tkd-c: var(--basalt-series-4);
+}
+.tkd-c5 {
+	--tkd-c: var(--basalt-series-5);
+}
+.tkd-c6 {
+	--tkd-c: var(--basalt-series-6);
+}
+.tkd-c7 {
+	--tkd-c: var(--basalt-series-7);
+}
+.tkd-c8 {
+	--tkd-c: var(--basalt-series-8);
+}
+.tkd-person {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+.tkd-late {
+	font-weight: 600;
+	color: color-mix(in srgb, var(--basalt-danger) 66%, var(--basalt-copy));
+}
+
+/* Overview: description, checklist and files */
+.tkd-subhead {
+	display: flex;
+	gap: 1rem;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 1.75rem 0 0.75rem;
+}
+.tkd-subhead:first-of-type {
+	margin-top: 0;
+}
+.tkd-subhead .tkd-sub {
+	margin: 0;
+}
+.tkd-sub-files {
+	margin-top: 1.75rem;
+}
+.tkd-count {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--tkd-quiet);
+}
+.tkd-desc {
+	font-size: 0.9rem;
+	line-height: 1.6;
+	color: var(--basalt-copy);
+}
+.tkd-desc[hidden] {
+	display: none;
+}
+.tkd-desc-empty {
+	color: var(--tkd-quiet);
+}
+.tkd-desc-form[hidden] {
+	display: none;
+}
+.tkd-form-foot {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+}
+.tkd-form-foot .btn {
+	white-space: nowrap;
+}
+.tkd-progress {
+	height: 6px;
+	margin-bottom: 1rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+}
+.tkd-progress[hidden] {
+	display: none;
+}
+.tkd-progress > span {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--basalt-success);
+	transition: width 240ms ease;
+}
+.tkd-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tkd-step {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--tkd-line);
+}
+.tkd-step:first-child {
+	padding-top: 0;
+}
+.tkd-step .form-check-input {
+	margin: 0;
+}
+.tkd-step-label {
+	font-size: 0.875rem;
+	color: var(--basalt-copy);
+	cursor: pointer;
+}
+.tkd-step.is-done .tkd-step-label {
+	text-decoration: line-through;
+	color: var(--tkd-quiet);
+}
+.tkd-step-remove {
+	color: var(--tkd-quiet);
+}
+.tkd-steps-empty {
+	padding-bottom: 0.25rem;
+	font-size: 0.875rem;
+	color: var(--tkd-quiet);
+}
+.tkd-step-add {
+	display: flex;
+	gap: 0.5rem;
+	margin-top: 0.9rem;
+}
+.tkd-step-add .btn {
+	flex: none;
+	white-space: nowrap;
+}
+
+/* Details form */
+.tkd-form[hidden] {
+	display: none;
+}
+.tkd-form {
+	display: grid;
+	gap: 1rem;
+}
+.tkd-field {
+	min-width: 0;
+}
+.tkd-form .basalt-select-trigger,
+.tkd-date {
+	max-width: 18rem;
+}
+.tkd-card-head .btn[hidden] {
+	display: none;
+}
+.tkd-card-head .btn {
+	flex: none;
+	white-space: nowrap;
+}
+
+/* Header actions */
+.tkd-head .basalt-hero-actions .btn-primary,
+.tkd-head .basalt-hero-actions .btn-outline-primary {
+	white-space: nowrap;
+}
+.tkd-head .basalt-hero-title {
+	overflow-wrap: anywhere;
+}
+
+@media print {
+	.tkd-head .basalt-hero-actions,
+	.tkd-reply,
+	.tkd-drop,
+	.tkd-step-add,
+	.tkd-subhead .tkd-textbtn,
+	.tkd-card-head .btn {
+		display: none;
+	}
+}

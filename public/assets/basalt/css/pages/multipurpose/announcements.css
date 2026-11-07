@@ -1,0 +1,1455 @@
+/*
+ * Announcements (announcements.html). Every class here starts with .ann-.
+ * The shared parts come from basalt.css: page headers, styled selects,
+ * segmented controls, choice tiles, avatars, status pills, skeletons,
+ * empty states, the drawer, hold to confirm and the dialog frame. This
+ * sheet places them and draws what only this page has: the post list,
+ * the post panel with its read figures and comments, the composer and
+ * the three customer previews.
+ * The page keeps to four type sizes: card title, section heading, body
+ * (--ann-fs-body) and one small size (--ann-fs-small).
+ */
+
+/* Page tokens, shared by the page and by the panel and dialogs that sit
+   outside it. The quiet text and link mixes lean toward the body color so
+   they hold 4.5:1 on the lighter palettes and on hovered rows; the fill
+   carries on-primary text at 4.5:1, as .btn-primary does. */
+.ann-page,
+.ann-drawer,
+.ann-dialog,
+.ann-delete-dialog {
+	--ann-quiet: color-mix(in srgb, var(--basalt-copy-muted) 62%, var(--basalt-copy));
+	--ann-link: color-mix(in srgb, var(--basalt-hue) 60%, var(--basalt-copy));
+	--ann-danger-text: color-mix(in srgb, var(--basalt-danger) 56%, var(--basalt-copy));
+	--ann-line: var(--basalt-edge);
+	--ann-fill: color-mix(in srgb, var(--basalt-hue) 86%, var(--basalt-copy));
+	--ann-fs-body: 0.875rem;
+	--ann-fs-small: 0.77rem;
+}
+
+/* Small gray notes and status pills share the small size. */
+.ann-quiet {
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+.ann-page .basalt-status,
+.ann-drawer .basalt-status {
+	font-size: var(--ann-fs-small);
+}
+
+/* Key caps in the panel and the shortcut list are flat and mono. */
+.ann-dialog kbd,
+.ann-drawer kbd {
+	padding: 0.05rem 0.3rem;
+	border-radius: 5px;
+	border: 1px solid var(--basalt-edge);
+	font:
+		600 var(--ann-fs-small)/1.3 "Chivo Mono",
+		monospace;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+	box-shadow: none;
+}
+
+/* Text buttons look like links and underline on hover. */
+.ann-link.btn {
+	--bs-btn-padding-x: 0;
+	--bs-btn-padding-y: 0;
+	--bs-btn-font-size: var(--ann-fs-body);
+	--bs-btn-font-weight: 600;
+	--bs-btn-color: var(--ann-link);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-active-color: var(--basalt-copy);
+	--bs-btn-border-width: 0;
+	text-decoration: none;
+	vertical-align: baseline;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+
+/* The card holding the list is a size container, so the table folds by
+   the room the card has rather than by the window. Its head carries the
+   title, one sentence and the toolbar. */
+.ann-card.card {
+	container-type: inline-size;
+	overflow: hidden;
+}
+.ann-card-head {
+	padding: var(--basalt-pad-head) var(--basalt-pad-x);
+	border-bottom: 1px solid var(--ann-line);
+}
+.ann-card-title {
+	margin: 0;
+	font-size: var(--basalt-fs-card-title);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.ann-card-desc {
+	margin: 0.3rem 0 0;
+	font-size: var(--ann-fs-body);
+	color: var(--ann-quiet);
+}
+
+/* Search and both filters share one row. */
+.ann-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	align-items: center;
+	margin-top: var(--basalt-pad-head);
+
+	& .form-control,
+	& .form-select {
+		font-size: var(--ann-fs-body);
+	}
+}
+/* The search stops at a comfortable width and spare room collects at the
+   end of the row, so the filters stay beside it. */
+.ann-search {
+	position: relative;
+	flex: 0 1 28rem;
+	min-width: 12rem;
+
+	& > .bi {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		transform: translateY(-50%);
+		color: var(--ann-quiet);
+		pointer-events: none;
+	}
+	& .form-control {
+		padding-left: 2.4rem;
+	}
+}
+/* The selects' wrapper gets out of the way, so each select shrinks along
+   with the search; it turns into a real row once the toolbar stacks. */
+.ann-toolbar-selects {
+	display: contents;
+}
+.ann-toolbar-select {
+	flex: 0 1 11.5rem;
+	min-width: 9.5rem;
+}
+
+/* Columns run Post, Audience, Status, Read and the row action. The short
+   ones get fixed tracks and Post takes whatever is left. */
+.ann-table-wrap {
+	overflow: hidden;
+}
+.ann-table {
+	--bs-table-bg: transparent;
+	table-layout: fixed;
+
+	& .ann-col-aud {
+		width: 12rem;
+	}
+	& .ann-col-status {
+		width: 8rem;
+	}
+	& .ann-col-read {
+		width: 8.5rem;
+	}
+	& .ann-col-open {
+		width: 6rem;
+	}
+	& > :not(caption) > * > * {
+		padding: var(--basalt-pad-row-y) 1rem;
+		border-color: var(--ann-line);
+		vertical-align: middle;
+		color: var(--basalt-copy);
+	}
+	& > :not(caption) > * > :first-child {
+		padding-left: var(--basalt-pad-x);
+	}
+	& > :not(caption) > * > :last-child {
+		padding-right: var(--basalt-pad-x);
+		text-align: right;
+	}
+	& thead th {
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--ann-quiet);
+	}
+	& tbody tr:last-child > * {
+		border-bottom: 0;
+	}
+}
+
+/* A row tints on hover and stays tinted while its post is in the panel. */
+.ann-row[data-ann-id] {
+	cursor: pointer;
+	transition: background-color 130ms ease;
+
+	&:hover > * {
+		background: var(--basalt-wash);
+	}
+}
+.ann-row.is-open > * {
+	background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+}
+.ann-row-title,
+.ann-row-meta {
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ann-row-title {
+	font-size: var(--ann-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ann-row-meta {
+	margin-top: 0.3rem;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+.ann-row-aud-inline {
+	display: none;
+}
+/* The title is the link to the post's full page. */
+.ann-row-link {
+	border-radius: 3px;
+	text-decoration: none;
+	color: inherit;
+
+	&:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+.ann-pin {
+	margin-right: 0.4rem;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-link);
+}
+
+/* Audience reads as an icon and a label; in a cell it clips to one line. */
+.ann-aud {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	min-width: 0;
+	font-size: var(--ann-fs-body);
+	color: var(--basalt-copy);
+
+	& > .bi {
+		flex: none;
+		color: var(--ann-quiet);
+	}
+}
+.ann-row-aud .ann-aud {
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+
+	& > .bi {
+		margin-right: 0.4rem;
+	}
+}
+
+/* The Read cell lines up a slim meter with its share. The word "Read"
+   is only for screen readers until the row becomes a card. */
+.ann-read {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-size: var(--ann-fs-body);
+}
+.ann-read-label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	white-space: nowrap;
+	clip-path: inset(50%);
+}
+.ann-meter {
+	position: relative;
+	flex: 0 0 3.75rem;
+	height: 6px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+	box-shadow: inset 0 0 0 1px var(--ann-line);
+
+	& > span {
+		background: var(--basalt-hue);
+	}
+}
+.ann-read-n {
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+}
+
+/* Loading rows stack two bars in the post cell and one elsewhere. */
+.ann-row-skeleton .basalt-skeleton {
+	display: block;
+
+	& + .basalt-skeleton {
+		margin-top: 0.5rem;
+	}
+}
+.ann-skel-mid {
+	width: 60%;
+}
+.ann-skel-short {
+	width: 35%;
+}
+
+/* Under the table, a quiet footer offers the rest of the list. */
+.ann-card-foot {
+	display: flex;
+	gap: 0.75rem 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem var(--basalt-pad-x);
+	border-top: 1px solid var(--ann-line);
+	background: color-mix(in srgb, var(--basalt-plane-alt) 45%, var(--basalt-plane));
+}
+.ann-card-note {
+	margin: 0;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+
+/* One centered block covers no posts, no results and a failed load. */
+.ann-empty {
+	max-width: 30rem;
+	margin: 1.5rem auto;
+	text-align: center;
+
+	& .basalt-empty-title {
+		font-size: var(--basalt-fs-section);
+	}
+	& .basalt-empty-text {
+		font-size: var(--ann-fs-body);
+		color: var(--ann-quiet);
+	}
+	& .basalt-empty-actions {
+		justify-content: center;
+	}
+}
+.ann-empty-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 0.6rem;
+	border-radius: 14px;
+	font-size: var(--basalt-fs-card-title);
+	color: var(--ann-link);
+	background: var(--basalt-hue-soft);
+}
+.basalt-empty-danger .ann-empty-icon {
+	color: var(--ann-danger-text);
+	background: var(--basalt-danger-soft);
+}
+
+/* In a medium card Audience joins the post's quiet line, which keeps a
+   header over every column still on show. */
+@container (max-width: 860px) {
+	.ann-table .ann-col-aud,
+	.ann-row-aud {
+		display: none;
+	}
+	.ann-row-aud-inline {
+		display: inline;
+	}
+	.ann-table .ann-col-read {
+		width: 8rem;
+	}
+}
+
+/* In a narrow card each post turns into a small record: title and status
+   on top, the quiet line under them, then Read and the action. */
+@container (max-width: 620px) {
+	.ann-card-head,
+	.ann-card-foot {
+		padding-left: var(--basalt-pad-x-narrow);
+		padding-right: var(--basalt-pad-x-narrow);
+	}
+	.ann-toolbar {
+		flex-wrap: wrap;
+	}
+	.ann-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.ann-toolbar-selects {
+		display: flex;
+		gap: 0.5rem;
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	.ann-toolbar-select {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	.ann-table {
+		table-layout: auto;
+	}
+	.ann-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		white-space: nowrap;
+		clip-path: inset(50%);
+	}
+	.ann-table,
+	.ann-table tbody,
+	.ann-table td {
+		display: block;
+		width: 100%;
+	}
+	.ann-table tbody tr {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "post status" "read open";
+		align-items: center;
+		padding: var(--basalt-pad-row-y) var(--basalt-pad-x-narrow);
+		border-bottom: 1px solid var(--ann-line);
+	}
+	.ann-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	.ann-table > :not(caption) > * > *,
+	.ann-table > :not(caption) > * > :first-child,
+	.ann-table > :not(caption) > * > :last-child {
+		padding: 0;
+		border: 0;
+		background: transparent;
+	}
+	.ann-row[data-ann-id]:hover {
+		background: var(--basalt-wash);
+	}
+	.ann-row.is-open {
+		background: color-mix(in srgb, var(--basalt-hue) 8%, var(--basalt-plane));
+	}
+	.ann-row-post {
+		grid-area: post;
+		align-self: start;
+	}
+	.ann-row-status {
+		grid-area: status;
+		align-self: start;
+		width: auto;
+	}
+	.ann-row-read {
+		grid-area: read;
+	}
+	.ann-row-open {
+		grid-area: open;
+		width: auto;
+	}
+	.ann-table td.ann-row-aud {
+		display: none;
+	}
+	.ann-row-title,
+	.ann-row-meta {
+		white-space: normal;
+	}
+	.ann-read-label {
+		position: static;
+		width: auto;
+		height: auto;
+		overflow: visible;
+		color: var(--ann-quiet);
+		clip-path: none;
+	}
+	.ann-row-skeleton {
+		grid-template-areas: "post post";
+	}
+	.ann-row-skeleton > :not(.ann-row-post) {
+		display: none;
+	}
+}
+
+/* The panel is at most 560px wide and never wider than the screen. Its
+   title takes focus on open but only shows a ring for keyboard users. */
+.ann-drawer {
+	&.offcanvas {
+		--bs-offcanvas-width: min(560px, 100vw);
+	}
+	& .offcanvas-header {
+		gap: 0.75rem;
+		align-items: flex-start;
+		border-bottom: 1px solid var(--ann-line);
+	}
+	& .offcanvas-title {
+		margin: 0;
+		font-size: var(--basalt-fs-card-title);
+		font-weight: 700;
+		line-height: 1.3;
+		color: var(--basalt-copy);
+
+		&:focus {
+			outline: none;
+		}
+		&:focus-visible {
+			outline: 2px solid var(--basalt-hue);
+			outline-offset: 2px;
+		}
+	}
+	& .basalt-drawer-sub {
+		margin-top: 0.3rem;
+		font-size: var(--ann-fs-small);
+		color: var(--ann-quiet);
+	}
+	& .offcanvas-body {
+		padding-top: var(--basalt-pad-head);
+		padding-bottom: var(--basalt-pad-head);
+	}
+}
+
+/* Status, audience and the pin share one wrapping line. */
+.ann-d-facts {
+	display: flex;
+	gap: 0.5rem 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 var(--basalt-pad-head);
+}
+
+/* The confirm request is one slim row: the ask, then its button. */
+.ann-ack {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	margin: 0 0 var(--basalt-pad-head);
+	padding: 0.6rem 0.6rem 0.6rem 0.9rem;
+	border-radius: 12px;
+	color: var(--basalt-copy);
+	background: var(--basalt-hue-soft);
+
+	& > .bi {
+		color: var(--ann-link);
+	}
+	& .btn {
+		flex: none;
+		background: var(--basalt-plane);
+	}
+}
+.ann-ack-text {
+	flex: 1;
+	margin: 0;
+	font-size: var(--ann-fs-body);
+}
+
+/* The message body, written in a small piece of Markdown. */
+.ann-prose {
+	font-size: var(--ann-fs-body);
+	line-height: 1.65;
+	color: var(--basalt-copy-body, var(--basalt-copy));
+
+	& > :last-child {
+		margin-bottom: 0;
+	}
+	& p {
+		margin: 0 0 0.85rem;
+	}
+	& ul {
+		margin: 0 0 0.85rem;
+		padding-left: 1.2rem;
+	}
+	& li {
+		margin-bottom: 0.25rem;
+	}
+	& li::marker {
+		color: var(--basalt-hue);
+	}
+	& strong {
+		font-weight: 650;
+		color: var(--basalt-copy);
+	}
+	& a {
+		text-underline-offset: 2px;
+		color: var(--ann-link);
+
+		&:hover {
+			color: var(--basalt-copy);
+		}
+	}
+}
+
+/* Reactions are small pills in one row; a chosen one takes the hue. */
+.ann-reactions {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin-top: 1.25rem;
+}
+.ann-react {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--ann-line);
+	border-radius: 999px;
+	font-size: var(--ann-fs-small);
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	transition:
+		background-color 170ms ease,
+		border-color 170ms ease;
+
+	& .bi {
+		color: var(--ann-quiet);
+	}
+	&:hover {
+		background: var(--basalt-wash);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--basalt-hue);
+		outline-offset: 2px;
+	}
+	&[aria-pressed="true"] {
+		border-color: var(--basalt-hue);
+		background: var(--basalt-hue-soft);
+	}
+	&[aria-pressed="true"] .bi {
+		color: var(--ann-link);
+	}
+}
+
+/* Each panel section opens with a rule and a room's worth of space, and
+   keeps a clear gap under its heading. */
+.ann-d-section {
+	margin-top: var(--basalt-pad-head);
+	padding-top: var(--basalt-pad-head);
+	border-top: 1px solid var(--ann-line);
+}
+.ann-d-h {
+	margin: 0 0 0.75rem;
+	font-size: var(--basalt-fs-section);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--basalt-copy);
+}
+.ann-d-line {
+	display: flex;
+	gap: 0.1rem 0.4rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0 0 0.65rem;
+	font-size: var(--ann-fs-body);
+	color: var(--basalt-copy);
+
+	& strong {
+		font-weight: 650;
+	}
+}
+.ann-d-sep {
+	margin: 0 0.3rem;
+	color: var(--ann-quiet);
+}
+.ann-d-label {
+	margin: 1.25rem 0 0.6rem;
+	font-size: var(--ann-fs-body);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ann-d-note {
+	margin: 0.6rem 0 0;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+.ann-d-note-lead {
+	margin: -0.35rem 0 1rem;
+}
+
+/* Read and confirmed share one bar, confirmed drawn inside read; the
+   legend keys reuse the same two fills. */
+.ann-bar {
+	position: relative;
+	height: 8px;
+	border-radius: 99px;
+	overflow: hidden;
+	background: var(--basalt-plane-alt);
+	box-shadow: inset 0 0 0 1px var(--ann-line);
+}
+.ann-meter > span,
+.ann-bar > span {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: inherit;
+	transition: width 500ms ease;
+}
+.ann-bar-read,
+.ann-key-read {
+	background: color-mix(in srgb, var(--basalt-hue) 38%, var(--basalt-plane));
+}
+.ann-bar-ack,
+.ann-key-ack {
+	background: var(--basalt-hue);
+}
+.ann-key {
+	display: inline-block;
+	width: 0.6rem;
+	height: 0.6rem;
+	margin-right: 0.1rem;
+	border-radius: 3px;
+}
+
+/* People still owing a read: an avatar, then the name with the team right
+   after it, so each person reads as one unit. */
+.ann-people {
+	display: grid;
+	gap: 0.8rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	& li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		min-width: 0;
+	}
+}
+.ann-people-who {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	min-width: 0;
+}
+.ann-people-name {
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--ann-fs-body);
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--basalt-copy);
+}
+.ann-people-meta {
+	font-size: var(--ann-fs-small);
+	white-space: nowrap;
+	color: var(--ann-quiet);
+}
+
+/* A comment is an avatar beside a bubble; a new one flashes the hue once. */
+.ann-comments {
+	display: grid;
+	gap: 1rem;
+	margin: 0.5rem 0 1.25rem;
+	padding: 0;
+	list-style: none;
+}
+.ann-comment {
+	display: flex;
+	gap: 0.75rem;
+}
+.ann-comment-body {
+	flex: 1;
+	min-width: 0;
+}
+.ann-comment-head {
+	display: flex;
+	gap: 0.1rem 0.5rem;
+	flex-wrap: wrap;
+	align-items: baseline;
+	margin: 0 0 0.25rem;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+.ann-comment-name {
+	font-weight: 650;
+	font-size: var(--ann-fs-body);
+	color: var(--basalt-copy);
+}
+.ann-comment-re {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0 0 0.25rem;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+.ann-comment-text {
+	margin: 0;
+	padding: 0.5rem 0.8rem;
+	border-radius: 4px 14px 14px 14px;
+	font-size: var(--ann-fs-body);
+	line-height: 1.55;
+	white-space: pre-line;
+	overflow-wrap: anywhere;
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+.ann-comment.is-new .ann-comment-text {
+	animation: ann-arrive 1.6s ease-out;
+}
+@keyframes ann-arrive {
+	from {
+		background: var(--basalt-hue-soft);
+	}
+	to {
+		background: var(--basalt-plane-alt);
+	}
+}
+.ann-comment-actions {
+	display: flex;
+	gap: 0.9rem;
+	margin-top: 0.3rem;
+	padding-left: 0.2rem;
+
+	& .ann-link.btn {
+		--bs-btn-font-size: var(--ann-fs-small);
+	}
+}
+
+/* The reply box, with a "Replying to" line when it answers someone. */
+.ann-reply {
+	margin-top: 0.75rem;
+
+	& textarea {
+		min-height: 4.5rem;
+		font-size: var(--ann-fs-body);
+		resize: vertical;
+	}
+}
+.ann-reply-to {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0 0 0.4rem;
+	font-size: var(--ann-fs-small);
+	color: var(--basalt-copy);
+
+	& .btn {
+		--bs-btn-font-size: var(--ann-fs-small);
+		margin-left: 0.25rem;
+	}
+}
+.ann-reply-foot {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 0.6rem;
+}
+.ann-reply-hint {
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+
+/* The panel footer keeps its menu at the start and Edit with the main
+   action at the end; on a slim panel the buttons share the width. */
+.ann-drawer .basalt-drawer-foot {
+	flex-wrap: nowrap;
+
+	& .btn {
+		--bs-btn-font-size: var(--ann-fs-body);
+	}
+}
+.ann-d-menu {
+	margin-right: auto;
+}
+.ann-d-more {
+	padding-left: 0.7rem;
+	padding-right: 0.7rem;
+}
+.ann-drawer .dropdown-item {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-size: var(--ann-fs-body);
+
+	&.ann-danger-item {
+		color: var(--ann-danger-text);
+	}
+	&.ann-danger-item:hover,
+	&.ann-danger-item:focus {
+		color: var(--basalt-copy);
+		background: var(--basalt-danger-soft);
+	}
+}
+@container basalt-drawer (max-width: 420px) {
+	.ann-drawer .basalt-drawer-foot > .btn {
+		flex: 1 1 auto;
+	}
+}
+
+/* The customer preview: a way back, the view switch, then the mockup. */
+.ann-back {
+	display: inline-flex;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.ann-views {
+	margin-bottom: 1.25rem;
+}
+
+/* The post as a card inside each mockup, with a button-like chip when
+   it asks for confirmation. */
+.ann-mock-card {
+	padding: 1rem;
+	border: 1px solid var(--ann-line);
+	border-radius: 14px;
+	background: var(--basalt-plane);
+}
+.ann-mock-title {
+	margin: 0 0 0.5rem;
+	font-size: var(--ann-fs-body);
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--basalt-copy);
+}
+.ann-mock-btn {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin-top: 0.75rem;
+	padding: 0.3rem 0.85rem;
+	border-radius: 10px;
+	font-size: var(--ann-fs-small);
+	font-weight: 600;
+	color: var(--basalt-on-hue);
+	background: var(--ann-fill);
+}
+.ann-prose-mock {
+	font-size: var(--ann-fs-small);
+	line-height: 1.55;
+}
+
+/* A phone outline with a status bar, the app bar and the day's screen. */
+.ann-phone {
+	width: min(100%, 20rem);
+	margin: 0 auto;
+	padding: 0.6rem;
+	border: 1px solid var(--basalt-edge-strong, var(--ann-line));
+	border-radius: 2.2rem;
+	background: var(--basalt-plane-alt);
+	box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--basalt-copy) 50%, transparent);
+}
+.ann-phone-bar {
+	display: flex;
+	justify-content: space-between;
+	padding: 0.3rem 1rem 0.4rem;
+	font-size: var(--ann-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ann-phone-app {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.6rem 0.9rem;
+	border-radius: 1.2rem 1.2rem 0 0;
+	font-weight: 700;
+	font-size: var(--ann-fs-body);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.ann-phone-app .bi-bell-fill,
+.ann-phone-brand .bi {
+	color: var(--basalt-hue);
+}
+.ann-phone-brand {
+	display: inline-flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+.ann-phone-screen {
+	display: grid;
+	gap: 0.75rem;
+	padding: 0.9rem;
+	border-radius: 0 0 1.6rem 1.6rem;
+	background: var(--basalt-canvas);
+}
+.ann-mock-job {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.65rem 0.8rem;
+	border-radius: 12px;
+	font-size: var(--ann-fs-small);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+
+/* A browser window: address bar, icon rail, placeholder rows and the
+   post floating over them like the in-app panel. */
+.ann-web {
+	border: 1px solid var(--ann-line);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-canvas);
+}
+.ann-web-top {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.5rem 0.75rem;
+	border-bottom: 1px solid var(--ann-line);
+	background: var(--basalt-plane-alt);
+}
+.ann-web-dots {
+	display: inline-flex;
+	gap: 0.3rem;
+
+	& i {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--basalt-copy) 22%, transparent);
+	}
+}
+.ann-web-url {
+	flex: 1;
+	padding: 0.1rem 0.6rem;
+	border-radius: 6px;
+	font-size: var(--ann-fs-small);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+}
+.ann-web-body {
+	display: grid;
+	grid-template-columns: 2.75rem minmax(0, 1fr);
+}
+.ann-web-nav {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	align-items: center;
+	padding: 0.75rem 0;
+	border-right: 1px solid var(--ann-line);
+	color: var(--ann-quiet);
+	background: var(--basalt-plane);
+}
+.ann-web-logo {
+	display: grid;
+	place-items: center;
+	width: 1.8rem;
+	height: 1.8rem;
+	border-radius: 8px;
+	color: var(--basalt-on-hue);
+	background: var(--ann-fill);
+}
+.ann-web-main {
+	padding: 0.75rem;
+}
+.ann-web-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: var(--ann-fs-small);
+	font-weight: 700;
+	color: var(--basalt-copy);
+}
+.ann-web-bell {
+	position: relative;
+
+	& b {
+		position: absolute;
+		top: -0.35rem;
+		right: -0.5rem;
+		min-width: 1rem;
+		padding: 0 0.25rem;
+		border-radius: 999px;
+		font-size: var(--ann-fs-small);
+		line-height: 1rem;
+		text-align: center;
+		color: var(--basalt-on-hue);
+		background: var(--ann-fill);
+	}
+}
+.ann-web-rows {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0.75rem 0;
+
+	& i {
+		height: 1.4rem;
+		border-radius: 6px;
+		background: color-mix(in srgb, var(--basalt-copy) 6%, var(--basalt-plane));
+	}
+}
+.ann-web-panel {
+	margin-left: 1.5rem;
+	border-radius: 14px;
+	box-shadow: 0 18px 36px -20px color-mix(in srgb, var(--basalt-copy) 45%, transparent);
+}
+
+/* An email: the header fields as a grid, the branded body, and a note
+   when the post is not set to go by email. */
+.ann-mail {
+	border: 1px solid var(--ann-line);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--basalt-plane);
+}
+.ann-mail-head {
+	margin: 0;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--ann-line);
+	font-size: var(--ann-fs-small);
+	background: var(--basalt-plane-alt);
+
+	& div {
+		display: grid;
+		gap: 0.5rem;
+		grid-template-columns: 4.5rem minmax(0, 1fr);
+		padding: 0.1rem 0;
+	}
+	& dt {
+		font-weight: 500;
+		color: var(--ann-quiet);
+	}
+	& dd {
+		margin: 0;
+		overflow-wrap: anywhere;
+		color: var(--basalt-copy);
+	}
+}
+.ann-mail-body {
+	padding: 1.25rem;
+}
+.ann-mail-brand {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+	margin: 0 0 1rem;
+	font-size: var(--ann-fs-body);
+	font-weight: 700;
+	color: var(--basalt-copy);
+
+	& .bi {
+		color: var(--basalt-hue);
+	}
+}
+.ann-mail-off {
+	display: flex;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0.75rem 1rem;
+	border-top: 1px solid var(--ann-line);
+	font-size: var(--ann-fs-small);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane-alt);
+}
+
+/* The composer is a single column: fields sit 1.25rem apart and the
+   dialog body's own 1.5rem follows the last one. */
+.ann-dialog {
+	& .basalt-dialog-head-title {
+		font-size: var(--basalt-fs-card-title);
+		font-weight: 700;
+	}
+	& .basalt-dialog-head-sub {
+		font-size: var(--ann-fs-body);
+		color: var(--ann-quiet);
+	}
+	& .form-label {
+		font-size: var(--ann-fs-body);
+		font-weight: 600;
+		color: var(--basalt-copy);
+	}
+}
+.ann-dialog .form-control,
+.ann-dialog .basalt-segmented-option,
+.ann-dialog .basalt-choice,
+.ann-dialog .basalt-dialog-foot .btn {
+	font-size: var(--ann-fs-body);
+}
+.ann-compose-body {
+	padding-top: 1rem;
+}
+.ann-field {
+	min-width: 0;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	border: 0;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+/* Hidden fields, audience panels and the schedule row leave the layout. */
+.ann-field[hidden],
+.ann-aud-panel[hidden],
+.ann-schedule[hidden] {
+	display: none;
+}
+.ann-field-note {
+	margin: 0.4rem 0 0;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+.ann-dialog .basalt-choices > legend.ann-sublegend,
+.ann-sublegend {
+	margin: 0 0 0.4rem;
+	font-size: var(--ann-fs-small);
+	font-weight: 600;
+	color: var(--ann-quiet);
+}
+
+/* On a phone the three audience choices lose their icons, so a label
+   like "Some teams" keeps to one line. */
+@media (max-width: 575.98px) {
+	.ann-dialog .basalt-choice {
+		white-space: nowrap;
+	}
+	.ann-dialog .basalt-choice > .bi {
+		display: none;
+	}
+}
+
+/* The panel under the audience choice that holds its pick lists. */
+.ann-aud-panel {
+	display: grid;
+	gap: 0.9rem;
+	margin: 0.75rem 0 0;
+	padding: 0.9rem;
+	border-radius: 14px;
+	background: var(--basalt-plane-alt);
+
+	& .basalt-choice {
+		background: var(--basalt-plane);
+	}
+}
+.ann-reach {
+	margin: 0.6rem 0 0;
+	font-size: var(--ann-fs-small);
+	font-weight: 600;
+	color: var(--basalt-copy);
+}
+.ann-aud-error {
+	margin-top: 0.4rem;
+}
+
+/* Pick lists for teams, roles, plans and regions are even checkbox tiles
+   in a grid: the name at the start, its count at the end, no wrapping. */
+.ann-picks {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	& > legend {
+		grid-column: 1 / -1;
+		float: none;
+		width: 100%;
+		padding: 0;
+	}
+}
+/* Roles carry a longer hint, so their tiles are wider: two across with
+   the name and the hint both whole. */
+.ann-picks[data-ann-roles] {
+	grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+.ann-pick {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	min-width: 0;
+	margin: 0;
+	padding: 0.6rem 0.75rem;
+	border: 1px solid var(--basalt-edge);
+	border-radius: 10px;
+	font-size: var(--ann-fs-body);
+	color: var(--basalt-copy);
+	background: var(--basalt-plane);
+	cursor: pointer;
+	transition:
+		border-color 130ms ease,
+		background-color 130ms ease;
+
+	&:hover {
+		border-color: var(--basalt-hue-border);
+	}
+	&:has(input:checked) {
+		border-color: var(--basalt-hue-border);
+		background: color-mix(in srgb, var(--basalt-hue) 6%, var(--basalt-plane));
+	}
+	& .form-check-input {
+		flex-shrink: 0;
+		margin: 0;
+	}
+}
+.ann-pick-name {
+	flex: 0 0 auto;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.ann-pick-hint {
+	min-width: 0;
+	margin-left: auto;
+	padding-left: 0.5rem;
+	overflow: hidden;
+	font-size: var(--ann-fs-small);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--ann-quiet);
+}
+
+/* The message editor reads as one control: a button strip over a
+   borderless textarea, ringed together on focus and when invalid. */
+.ann-editor {
+	border: 1px solid var(--bs-border-color);
+	border-radius: var(--bs-border-radius);
+	overflow: hidden;
+	background: var(--bs-body-bg);
+
+	&:focus-within {
+		border-color: var(--basalt-hue);
+		box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--basalt-hue) 22%, transparent);
+	}
+	&:has(.is-invalid) {
+		border-color: var(--bs-form-invalid-border-color);
+	}
+	&:has(.is-invalid) + .invalid-feedback {
+		display: block;
+	}
+}
+.ann-editor-bar {
+	display: flex;
+	gap: 0.1rem;
+	padding: 0.3rem;
+	border-bottom: 1px solid var(--ann-line);
+	background: var(--basalt-plane-alt);
+}
+.ann-editor-btn.btn {
+	--bs-btn-padding-x: 0.4rem;
+	--bs-btn-padding-y: 0.2rem;
+	--bs-btn-color: var(--basalt-copy);
+	--bs-btn-hover-bg: var(--basalt-wash);
+	--bs-btn-hover-color: var(--basalt-copy);
+	--bs-btn-border-width: 0;
+}
+.ann-editor-text.form-control {
+	min-height: 8rem;
+	border: 0;
+	border-radius: 0;
+	font-size: var(--ann-fs-body);
+	box-shadow: none;
+	resize: vertical;
+}
+
+/* Date and time side by side, with their error spanning both. */
+.ann-schedule {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	max-width: 24rem;
+	margin-top: 0.9rem;
+
+	& .invalid-feedback {
+		grid-column: 1 / -1;
+		margin-top: 0;
+	}
+}
+.ann-sublabel {
+	margin-bottom: 0.3rem;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+
+/* The options legend floats so it sits inside the field rather than on
+   a border line. */
+.ann-options {
+	& > legend {
+		float: left;
+		width: 100%;
+		margin: 0 0 0.6rem;
+		padding: 0;
+	}
+	& > legend + * {
+		clear: left;
+	}
+	& .form-check {
+		margin: 0 0 0.65rem;
+	}
+	& .form-check:last-child {
+		margin-bottom: 0;
+	}
+	& .form-check-label {
+		font-size: var(--ann-fs-body);
+		color: var(--basalt-copy);
+	}
+	& .ann-field-note {
+		margin-top: 0.1rem;
+	}
+}
+.ann-foot-note {
+	margin: 0;
+	font-size: var(--ann-fs-small);
+	color: var(--ann-quiet);
+}
+
+/* The shortcut list pairs each key with what it does. */
+.ann-keys {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+
+	& > div {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: 8rem minmax(0, 1fr);
+		align-items: center;
+	}
+	& dt {
+		font-weight: 400;
+	}
+	& dd {
+		margin: 0;
+		font-size: var(--ann-fs-body);
+		color: var(--basalt-copy);
+	}
+}
+
+/* With reduced motion, rows, bars and pills change at once and new
+   comments arrive without the flash. */
+@media (prefers-reduced-motion: reduce) {
+	.ann-row[data-ann-id],
+	.ann-meter > span,
+	.ann-bar > span,
+	.ann-react {
+		transition: none;
+	}
+	.ann-comment.is-new .ann-comment-text {
+		animation: none;
+	}
+}
+
+/* On paper the list drops its controls and the bars stop animating. */
+@media print {
+	.ann-toolbar,
+	.ann-row-open,
+	.ann-card-foot {
+		display: none;
+	}
+	.ann-row[data-ann-id],
+	.ann-meter > span {
+		transition: none;
+	}
+}
