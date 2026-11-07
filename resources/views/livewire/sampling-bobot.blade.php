@@ -82,7 +82,7 @@
                 </p>
 
                 {{-- Isian per lantai --}}
-                @foreach (config('sampling.lantai') as $lantai => $info)
+                @foreach ($this->susunanLantai() as $lantai => $info)
                     <section class="card basalt-box db-card bg-transparent mb-4" wire:key="lantai-{{ $lantai }}-{{ $denganSexing ? 'sexing' : 'campuran' }}">
 <div class="db-card-body">
 <header class="db-card-head">

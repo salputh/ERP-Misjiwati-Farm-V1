@@ -23,4 +23,12 @@ return [
         'bawah' => ['label' => 'Lantai bawah', 'line' => ['A', 'B', 'C', 'D', 'E', 'F']],
         'atas' => ['label' => 'Lantai atas', 'line' => ['J', 'K', 'L', 'M', 'N', 'O']],
     ],
+
+    // Kandang yang susunan line-nya berbeda dari 'lantai' di atas (kunci: nama kandang persis).
+    'susunan_kandang' => [
+        'Kandang 1' => [
+            'bawah' => ['label' => 'Lantai bawah', 'line' => ['A', 'B', 'C', 'D', 'E']],
+            'atas' => ['label' => 'Lantai atas', 'line' => ['F', 'G', 'H', 'I', 'J']],
+        ],
+    ],
 ];
