@@ -489,3 +489,52 @@ body::after { display: none; }
 @media (max-width: 575.98px) {
     .db-card-body-table > .tabel-data > :not(.table-responsive):not(table) { padding-left: 0.75rem; padding-right: 0.75rem; }
 }
+
+/* ===== Riwayat sampling di ponsel: kartu per sesi =====
+   Baris 1: tanggal + usia di kiri, jenis sampling di kanan. Baris 2: dua kotak, Ekor dan ABW
+   (ABW jantan/betina di bawah angkanya). Baris 3: ikon aksi rata kanan. Di layar lebar tetap tabel. */
+@media (max-width: 575.98px) {
+    .tabel-riwayat thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .tabel-riwayat, .tabel-riwayat tbody { display: block; width: 100%; }
+    .tabel-riwayat tbody tr:not(.riwayat-kosong) {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0.6rem 0.5rem;
+        align-items: center;
+        padding: 0.9rem 0.75rem;
+        border-bottom: 1px solid var(--basalt-edge);
+    }
+    .tabel-riwayat tbody tr:last-child { border-bottom: 0; }
+    .db-table.tabel-riwayat > tbody > tr > td { display: block; min-width: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+    .db-table.tabel-riwayat > tbody > tr > .riwayat-ekor,
+    .db-table.tabel-riwayat > tbody > tr > .riwayat-abw { padding: 0.55rem 0.75rem; border-radius: 12px; background: var(--basalt-wash, rgba(109, 63, 224, 0.08)); }
+    .db-table.tabel-riwayat > tbody > tr.riwayat-kosong > td { padding: 0.5rem 0.75rem; }
+    .tabel-riwayat .riwayat-kosong { display: block; padding: 1rem 0.75rem; }
+    .tabel-riwayat .riwayat-kosong td { display: block; }
+    .tabel-riwayat .riwayat-tanggal { font-size: 1.05rem; }
+    .tabel-riwayat .riwayat-tanggal .fw-medium { font-weight: 700 !important; }
+    .tabel-riwayat .riwayat-jenis { justify-self: end; }
+    .tabel-riwayat .riwayat-ekor,
+    .tabel-riwayat .riwayat-abw {
+        padding: 0.55rem 0.75rem;
+        border-radius: 12px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-align: start !important;
+        background: var(--basalt-wash, rgba(109, 63, 224, 0.08));
+    }
+    .tabel-riwayat .riwayat-ekor::before,
+    .tabel-riwayat .riwayat-abw::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 0.1rem;
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--basalt-copy-muted);
+    }
+    .tabel-riwayat .riwayat-abw .small { font-size: 0.75rem; font-weight: 500; }
+    .tabel-riwayat .riwayat-aksi { grid-column: 1 / -1; margin-top: -0.25rem; }
+    .tabel-riwayat .riwayat-aksi .btn-icon { width: 2.25rem; height: 2.25rem; }
+}
